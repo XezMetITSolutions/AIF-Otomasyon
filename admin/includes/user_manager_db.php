@@ -1,7 +1,7 @@
 <?php
 require_once 'database.php';
 
-class UserManager {
+class UserManagerDB {
     
     /**
      * Tüm kullanıcıları getir
