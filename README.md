@@ -68,8 +68,8 @@ Kullanıcı: superadmin
 GitHub Actions ile otomatik FTP deployment aktif:
 
 1. **GitHub Secrets** ayarla:
-   - `FTP_SERVER`: `aifcrm.metechnik.at`
-   - `FTP_USERNAME`: `d0451622`
+   - `FTP_SERVER`: `w01dc0ea.kasserver.com`
+   - `FTP_USERNAME`: `f017c2cc`
    - `FTP_PASSWORD`: `01528797Mb##`
 
 2. **Push** ettiğinde otomatik yüklenir
@@ -141,3 +141,6 @@ Bu proje özel kullanım için geliştirilmiştir.
 ---
 
 **AIF Otomasyon** - Modern, güvenli ve kullanıcı dostu otomasyon sistemi.
+
+---
+*Son güncelleme: GitHub Actions ile otomatik deployment aktif! 🚀*
