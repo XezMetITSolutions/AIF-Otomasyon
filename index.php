@@ -231,7 +231,7 @@
                 <!-- Footer -->
                 <div class="text-center mt-4">
                     <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
-                        © 2024 AIF Otomasyon. Tüm hakları saklıdır.
+                        © 2025 AIF Otomasyon. Tüm hakları saklıdır.
                     </p>
                 </div>
             </div>
