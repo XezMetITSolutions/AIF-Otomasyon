@@ -13,6 +13,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       
+    - name: List files before deploy
+      run: |
+        echo "Files to be deployed:"
+        ls -la
+        echo "Admin directory:"
+        ls -la admin/
+      
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
@@ -42,3 +49,5 @@ jobs:
           **/admin/database_*.sql
           **/admin/meeting_reports_schema.sql
           **/admin/add_aif_admin.sql
+          **/GITHUB_ACTIONS_FIX.md
+          **/DEPLOYMENT_TEST.md

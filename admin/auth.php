@@ -5,150 +5,93 @@
 require_once 'config.php';
 require_once 'includes/database.php';
 require_once 'includes/user_manager_db.php';
+require_once 'includes/permission_manager.php'; // PermissionManager'ı da dahil et
 
-class UserManager {
-    
-    public function authenticate($username, $password) {
-        try {
-            $user = UserManager::getUserByUsername($username);
-            
-            if (!$user) {
-                return false;
-            }
-            
-            // Kullanıcı aktif mi kontrol et
-            if ($user['status'] !== 'active') {
-                return false;
-            }
-            
-            // Şifre doğrulama
-            if (UserManager::verifyPassword($password, $user['password_hash'])) {
-                // Son giriş tarihini güncelle
-                UserManager::updateLastLogin($user['id']);
-                return $user;
-            }
-            
-            return false;
-        } catch (Exception $e) {
-            error_log("Authentication error: " . $e->getMessage());
-            return false;
-        }
-    }
-    
-    public function getUserByUsername($username) {
-        return UserManager::getUserByUsername($username);
-    }
-    
-    public function getAllUsers() {
-        return UserManager::getAllUsers();
-    }
-}
-
-// Session Manager
 class SessionManager {
-    
     public static function start() {
-        if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
     }
-    
+
     public static function login($user) {
         self::start();
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['full_name'] = $user['full_name'];
-        $_SESSION['byk_category_id'] = $user['byk_category_id'];
-        $_SESSION['sub_unit_id'] = $user['sub_unit_id'];
+        $_SESSION['byk'] = $user['byk'] ?? null;
+        $_SESSION['sub_unit'] = $user['sub_unit'] ?? null;
+        $_SESSION['last_login'] = $user['last_login'] ?? null;
         $_SESSION['login_time'] = time();
     }
-    
+
     public static function logout() {
         self::start();
+        session_unset();
         session_destroy();
     }
-    
+
     public static function isLoggedIn() {
         self::start();
-        return isset($_SESSION['user_id']) && isset($_SESSION['username']);
+        return isset($_SESSION['user_id']);
     }
-    
+
     public static function getCurrentUser() {
         self::start();
-        if (!self::isLoggedIn()) {
-            return null;
-        }
-        
-        return [
-            'id' => $_SESSION['user_id'],
-            'username' => $_SESSION['username'],
-            'role' => $_SESSION['role'],
-            'full_name' => $_SESSION['full_name'],
-            'byk_category_id' => $_SESSION['byk_category_id'],
-            'sub_unit_id' => $_SESSION['sub_unit_id']
-        ];
+        return self::isLoggedIn() ? $_SESSION : null;
     }
-    
+
     public static function requireLogin() {
         if (!self::isLoggedIn()) {
-            header('Location: ../index.php?error=login_required');
+            header('Location: ../index.php?error=not_logged_in');
             exit();
         }
     }
-    
+
     public static function requireRole($requiredRole) {
         self::requireLogin();
-        $user = self::getCurrentUser();
-        
-        if ($user['role'] !== $requiredRole) {
-            header('Location: ../index.php?error=insufficient_permissions');
+        $currentUser = self::getCurrentUser();
+        if ($currentUser['role'] !== $requiredRole) {
+            header('Location: ../index.php?error=no_permission');
             exit();
         }
-    }
-    
-    public static function hasRole($role) {
-        if (!self::isLoggedIn()) {
-            return false;
-        }
-        
-        $user = self::getCurrentUser();
-        return $user['role'] === $role;
     }
 }
 
-// Login işlemi
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    header('Content-Type: application/json');
-    
-    if ($_POST['action'] === 'login') {
-        $username = $_POST['username'] ?? '';
-        $password = $_POST['password'] ?? '';
-        
-        $userManager = new UserManager();
-        $user = $userManager->authenticate($username, $password);
-        
-        if ($user) {
-            SessionManager::login($user);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Giriş başarılı',
-                'redirect' => 'admin/dashboard_superadmin.php'
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Kullanıcı adı veya şifre hatalı'
-            ]);
-        }
-    } elseif ($_POST['action'] === 'logout') {
-        SessionManager::logout();
-        echo json_encode([
-            'success' => true,
-            'message' => 'Çıkış başarılı'
-        ]);
+// AJAX isteği kontrolü
+if (isset($_POST['action'])) {
+    SessionManager::start(); // AJAX istekleri için session'ı başlat
+
+    $response = ['success' => false, 'message' => 'Bilinmeyen hata.', 'redirect' => ''];
+
+    switch ($_POST['action']) {
+        case 'login':
+            $username = $_POST['username'] ?? '';
+            $password = $_POST['password'] ?? '';
+            $rememberMe = isset($_POST['rememberMe']) ? true : false;
+
+            $userManager = new UserManagerDB(); // Veritabanı tabanlı UserManager kullan
+            $user = $userManager->authenticate($username, $password);
+
+            if ($user) {
+                SessionManager::login($user);
+                $response['success'] = true;
+                $response['message'] = 'Giriş başarılı! Yönlendiriliyorsunuz...';
+                $response['redirect'] = ($user['role'] === 'superadmin') ? 'admin/dashboard_superadmin.php' : 'admin/users/dashboard_member.php';
+            } else {
+                $response['message'] = 'Kullanıcı adı veya şifre hatalı.';
+            }
+            break;
+
+        case 'logout':
+            SessionManager::logout();
+            $response['success'] = true;
+            $response['message'] = 'Çıkış yapıldı.';
+            $response['redirect'] = '../index.php';
+            break;
     }
-    
+    echo json_encode($response);
     exit();
 }
 ?>
