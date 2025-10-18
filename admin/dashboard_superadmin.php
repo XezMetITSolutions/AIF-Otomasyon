@@ -1,14 +1,14 @@
 <?php
 require_once 'auth.php';
-require_once 'includes/byk_manager.php';
+require_once 'includes/byk_manager_db.php';
 
 // Session kontrolü - sadece superadmin giriş yapabilir
 SessionManager::requireRole('superadmin');
 
 $currentUser = SessionManager::getCurrentUser();
-$userManager = new UserManager();
+$userManager = new UserManagerDB();
 $users = $userManager->getAllUsers();
-$bykStats = BYKManager::getBYKStats();
+$bykStats = BYKManagerDB::getBYKStats();
 ?>
 <!DOCTYPE html>
 <html lang="tr">

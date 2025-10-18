@@ -1,7 +1,7 @@
 <?php
 require_once 'database.php';
 
-class BYKManager {
+class BYKManagerDB {
     
     /**
      * BYK (Bölge Yönetim Kurulu) kategorilerini veritabanından getir
