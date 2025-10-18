@@ -63,6 +63,9 @@ define('DB_PASS', '01528797Mb##');
 ```
 Kullanıcı: superadmin
 Şifre: admin123
+
+Kullanıcı: AIF-Admin  
+Şifre: 01528797Mb##
 ```
 
 ## 🚀 Otomatik Deployment
