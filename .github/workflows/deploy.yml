@@ -13,15 +13,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        
-    - name: Install dependencies
-      run: |
-        composer install --no-dev --optimize-autoloader
-        
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
@@ -49,3 +40,5 @@ jobs:
           **/admin/update_password.sql
           **/admin/webhosting_*.sql
           **/admin/database_*.sql
+          **/admin/meeting_reports_schema.sql
+          **/admin/add_aif_admin.sql
