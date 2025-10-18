@@ -38,8 +38,13 @@ $bykStats = BYKManagerDB::getBYKStats();
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <div class="header-title">
-                    <h1>Superadmin Dashboard</h1>
+                <div class="header-left">
+                    <button class="navbar-toggler d-md-none" type="button">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="header-title">
+                        <h1>Superadmin Dashboard</h1>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <div class="dropdown">
@@ -259,6 +264,23 @@ $bykStats = BYKManagerDB::getBYKStats();
         // Mobile sidebar toggle
         $('.navbar-toggler').click(function() {
             $('.sidebar').toggleClass('show');
+        });
+
+        // Sidebar link click handlers
+        $('.sidebar .nav-link').click(function(e) {
+            // Remove active class from all links
+            $('.sidebar .nav-link').removeClass('active');
+            // Add active class to clicked link
+            $(this).addClass('active');
+        });
+
+        // Close sidebar on mobile when clicking outside
+        $(document).click(function(e) {
+            if ($(window).width() <= 768) {
+                if (!$(e.target).closest('.sidebar, .navbar-toggler').length) {
+                    $('.sidebar').removeClass('show');
+                }
+            }
         });
     </script>
 </body>
