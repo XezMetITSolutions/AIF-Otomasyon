@@ -31,7 +31,156 @@ $bykStats = BYKManagerDB::getBYKStats();
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
+    <!-- Generic sidebar gizli -->
+    <div style="display: none;">
+        <?php include 'includes/sidebar.php'; ?>
+    </div>
+
+    <!-- Özel Superadmin Sidebar -->
+    <nav class="sidebar custom-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-crown"></i>
+                <h4>AIF Otomasyon</h4>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="user-info">
+                    <h6><?php echo htmlspecialchars($currentUser['full_name']); ?></h6>
+                    <small>Superadmin</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-menu">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="dashboard_superadmin.php">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                        <span class="badge">Ana</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="users.php">
+                        <i class="fas fa-users"></i>
+                        <span>Kullanıcılar</span>
+                        <span class="badge"><?php echo count($users); ?></span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="permissions.php">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Yetki Yönetimi</span>
+                        <span class="badge">Sistem</span>
+                    </a>
+                </li>
+                
+                <li class="nav-divider">
+                    <span>İçerik Yönetimi</span>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="announcements.php">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Duyurular</span>
+                        <span class="badge">0</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="events.php">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Etkinlikler</span>
+                        <span class="badge">0</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="calendar.php">
+                        <i class="fas fa-calendar"></i>
+                        <span>Takvim</span>
+                        <span class="badge">2026</span>
+                    </a>
+                </li>
+                
+                <li class="nav-divider">
+                    <span>Operasyonel</span>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="inventory.php">
+                        <i class="fas fa-boxes"></i>
+                        <span>Demirbaş Listesi</span>
+                        <span class="badge">0</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="meeting_reports.php">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Toplantı Raporları</span>
+                        <span class="badge">0</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="reservations.php">
+                        <i class="fas fa-bookmark"></i>
+                        <span>Rezervasyon</span>
+                        <span class="badge">0</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="expenses.php">
+                        <i class="fas fa-undo"></i>
+                        <span>Para İadesi</span>
+                        <span class="badge">0</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="projects.php">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Proje Takibi</span>
+                        <span class="badge">0</span>
+                    </a>
+                </li>
+                
+                <li class="nav-divider">
+                    <span>Raporlama</span>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="reports.php">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Raporlar</span>
+                        <span class="badge">Genel</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="settings.php">
+                        <i class="fas fa-cog"></i>
+                        <span>Ayarlar</span>
+                        <span class="badge">Sistem</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item mt-auto">
+                    <a class="nav-link logout-link" href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Çıkış Yap</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
     <!-- Main Content -->
     <div class="main-content">
