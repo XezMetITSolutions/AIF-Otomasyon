@@ -154,7 +154,7 @@ class Database {
 class DBHelper {
     
     /**
-     * BYK kategorilerini getir
+     * BYK (Bölge Yönetim Kurulu) kategorilerini getir
      */
     public static function getBYKCategories() {
         $db = Database::getInstance();

@@ -4,21 +4,21 @@ require_once 'database.php';
 class BYKManager {
     
     /**
-     * BYK kategorilerini veritabanından getir
+     * BYK (Bölge Yönetim Kurulu) kategorilerini veritabanından getir
      */
     public static function getBYKCategories() {
         return DBHelper::getBYKCategories();
     }
     
     /**
-     * BYK alt birimlerini veritabanından getir
+     * BYK (Bölge Yönetim Kurulu) alt birimlerini veritabanından getir
      */
     public static function getBYKSubUnits($bykCategoryId = null) {
         return DBHelper::getBYKSubUnits($bykCategoryId);
     }
     
     /**
-     * BYK istatistiklerini getir
+     * BYK (Bölge Yönetim Kurulu) istatistiklerini getir
      */
     public static function getBYKStats() {
         $db = Database::getInstance();
@@ -177,7 +177,7 @@ class BYKManager {
     }
     
     /**
-     * BYK dropdown'ı için HTML oluştur
+     * BYK (Bölge Yönetim Kurulu) dropdown'ı için HTML oluştur
      */
     public static function generateBYKDropdown($selectedBYK = '', $name = 'byk', $id = 'byk') {
         $html = '<select name="' . $name . '" id="' . $id . '" class="form-select">';

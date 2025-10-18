@@ -1,6 +1,6 @@
 <?php
 /**
- * BYK (Birim Yönetim Kurulu) Yapısı ve Alt Birimleri
+ * BYK (Bölge Yönetim Kurulu) Yapısı ve Alt Birimleri
  * AT, KT, KGT, GT şeklinde 4 farklı BYK ve alt birimleri
  */
 
@@ -199,7 +199,7 @@ class BYKManager {
     }
     
     /**
-     * BYK ve alt birim dropdown'ları için HTML oluştur
+     * BYK (Bölge Yönetim Kurulu) ve alt birim dropdown'ları için HTML oluştur
      */
     public static function generateBYKDropdown($selectedBYK = '', $name = 'byk', $id = 'byk') {
         $html = '<select name="' . $name . '" id="' . $id . '" class="form-select">';
@@ -233,7 +233,7 @@ class BYKManager {
     }
     
     /**
-     * BYK istatistikleri için veri hazırla
+     * BYK (Bölge Yönetim Kurulu) istatistikleri için veri hazırla
      */
     public static function getBYKStats() {
         $stats = [];

@@ -5,7 +5,7 @@ Modern, responsive ve güvenli bir otomasyon sistemi. PHP 8.2, Bootstrap 5 ve My
 ## 🚀 Özellikler
 
 - **Dashboard**: Genel istatistikler ve kontrol paneli
-- **Kullanıcı Yönetimi**: BYK bazlı kullanıcı sistemi
+- **Kullanıcı Yönetimi**: BYK (Bölge Yönetim Kurulu) bazlı kullanıcı sistemi
 - **Takvim**: Etkinlik yönetimi ve görselleştirme
 - **Duyurular**: Duyuru yayınlama sistemi
 - **Demirbaş**: Envanter yönetimi
@@ -18,6 +18,8 @@ Modern, responsive ve güvenli bir otomasyon sistemi. PHP 8.2, Bootstrap 5 ve My
 - **Yetki Yönetimi**: Modül bazlı yetkilendirme
 
 ## 🏢 BYK Yapısı
+
+**BYK** = **Bölge Yönetim Kurulu** - AIF Otomasyon sisteminin organizasyonel yapısının temelini oluşturan 4 ana kategori.
 
 - **AT**: Ana Teşkilat (Kırmızı)
 - **KT**: Kadınlar Teşkilatı (Mor)

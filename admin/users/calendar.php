@@ -546,7 +546,7 @@ foreach ($events_2026 as $event) {
                 return;
             }
             
-            // BYK renklerini al
+            // BYK (Bölge Yönetim Kurulu) renklerini al
             const bykColors = {
                 'AT': '#dc3545',
                 'KT': '#6f42c1',
