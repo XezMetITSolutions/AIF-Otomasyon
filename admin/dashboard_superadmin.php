@@ -31,11 +31,6 @@ $bykStats = BYKManagerDB::getBYKStats();
     </style>
 </head>
 <body>
-    <!-- Generic sidebar gizli -->
-    <div style="display: none;">
-        <?php include 'includes/sidebar.php'; ?>
-    </div>
-
     <!-- Özel Superadmin Sidebar -->
     <nav class="sidebar custom-sidebar">
         <div class="sidebar-header">

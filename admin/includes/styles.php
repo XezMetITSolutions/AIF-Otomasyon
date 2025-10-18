@@ -155,17 +155,20 @@ body {
     background-color: #f8f9fa;
 }
 
-/* Sidebar Styles */
-.sidebar {
+/* Generic Sidebar Styles - Gizli */
+.sidebar:not(.custom-sidebar) {
+    display: none !important;
+}
+
+/* Özel Sidebar Styles */
+.sidebar.custom-sidebar {
     position: fixed;
     top: 0;
     left: 0;
     height: 100vh;
     width: var(--sidebar-width);
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     z-index: 1000;
     transition: all 0.3s ease;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
 
 .sidebar-header {
