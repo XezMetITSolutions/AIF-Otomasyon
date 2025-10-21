@@ -63,11 +63,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     <i class="fas fa-users"></i> Kullanıcı Yönetimi
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link <?php echo $currentPage === 'debug_users_page.php' ? 'active' : ''; ?>" href="debug_users_page.php">
-                    <i class="fas fa-bug"></i> Debug Sayfası
-                </a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link <?php echo $currentPage === 'debug_users_page.php' ? 'active' : ''; ?>" href="debug_users_page.php">
+                <i class="fas fa-bug"></i> Debug Sayfası
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link <?php echo $currentPage === 'byk_debug.php' ? 'active' : ''; ?>" href="byk_debug.php">
+                <i class="fas fa-flask"></i> BYK Debug
+            </a>
+        </li>
             <li class="nav-item">
                 <a class="nav-link <?php echo $currentPage === 'permissions.php' ? 'active' : ''; ?>" href="permissions.php">
                     <i class="fas fa-key"></i> Yetki Yönetimi
