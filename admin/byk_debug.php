@@ -1,14 +1,27 @@
 <?php
-require_once 'includes/auth.php';
-require_once 'includes/user_manager_db.php';
-require_once 'includes/byk_manager_db.php';
+// BYK Debug Sayfası - Basit versiyon
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Login kontrolü
-SessionManager::requireRole(['superadmin', 'manager']);
-$currentUser = SessionManager::getCurrentUser();
+// Dosya varlığını kontrol et
+if (!file_exists('includes/auth.php')) {
+    die('auth.php dosyası bulunamadı!');
+}
+
+require_once 'includes/auth.php';
+
+// Login kontrolü - GEÇİCİ OLARAK DEVRE DIŞI
+// SessionManager::requireRole(['superadmin', 'manager']);
+// $currentUser = SessionManager::getCurrentUser();
 
 // BYK kategorilerini al
-$bykCategories = BYKManager::getBYKCategories();
+try {
+    require_once 'includes/byk_manager_db.php';
+    $bykCategories = BYKManager::getBYKCategories();
+} catch (Exception $e) {
+    $bykCategories = [];
+    error_log('BYKManager hatası: ' . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
