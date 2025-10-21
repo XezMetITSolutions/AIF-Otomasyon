@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [$username]
             );
             
-            if ($user && password_verify($password, $user['password'])) {
+            if ($user && password_verify($password, $user['password_hash'] ?? $user['password'])) {
                 // Giriş başarılı
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_id'] = $user['id'];

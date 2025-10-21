@@ -38,12 +38,12 @@ function testLogin($username, $password) {
             $results['user_active'] = $user['status'] === 'active';
             
             // 3. Şifre hash'ini kontrol et
-            $results['password_hash'] = $user['password'];
-            $results['password_hash_length'] = strlen($user['password']);
-            $results['password_hash_start'] = substr($user['password'], 0, 20) . '...';
+            $results['password_hash'] = $user['password_hash'] ?? $user['password'] ?? null;
+            $results['password_hash_length'] = strlen($results['password_hash'] ?? '');
+            $results['password_hash_start'] = substr($results['password_hash'] ?? '', 0, 20) . '...';
             
             // 4. Şifre doğrulaması
-            $results['password_verify'] = password_verify($password, $user['password']);
+            $results['password_verify'] = password_verify($password, $results['password_hash']);
             
             // 5. Yeni şifre hash'i oluştur
             $newHash = password_hash($password, PASSWORD_DEFAULT);
