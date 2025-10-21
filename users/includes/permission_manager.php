@@ -148,7 +148,7 @@ class PermissionManager {
      */
     public static function getPermissionLevel($username, $module) {
         try {
-            require_once 'user_manager_db.php';
+            require_once '../admin/includes/user_manager_db.php';
             $db = Database::getInstance();
             
             // Kullanıcı ID'sini al
@@ -182,12 +182,12 @@ class PermissionManager {
         } catch (Exception $e) {
             error_log("getPermissionLevel error: " . $e->getMessage());
             // Hata durumunda demo verileri döndür
-        if (!isset(self::DEMO_USER_PERMISSIONS[$username])) {
-            return 'none';
-        }
-        
-        $userPermissions = self::DEMO_USER_PERMISSIONS[$username]['permissions'];
-        return isset($userPermissions[$module]) ? $userPermissions[$module] : 'none';
+            if (!isset(self::DEMO_USER_PERMISSIONS[$username])) {
+                return 'none';
+            }
+            
+            $userPermissions = self::DEMO_USER_PERMISSIONS[$username]['permissions'];
+            return isset($userPermissions[$module]) ? $userPermissions[$module] : 'none';
         }
     }
     
@@ -196,7 +196,7 @@ class PermissionManager {
      */
     public static function getUserPermissions($username) {
         try {
-            require_once 'user_manager_db.php';
+            require_once '../admin/includes/user_manager_db.php';
             $db = Database::getInstance();
             
             // Kullanıcı ID'sini al
@@ -232,8 +232,8 @@ class PermissionManager {
         } catch (Exception $e) {
             error_log("getUserPermissions error: " . $e->getMessage());
             // Hata durumunda demo verileri döndür
-        return isset(self::DEMO_USER_PERMISSIONS[$username]) ? 
-               self::DEMO_USER_PERMISSIONS[$username]['permissions'] : [];
+            return isset(self::DEMO_USER_PERMISSIONS[$username]) ? 
+                   self::DEMO_USER_PERMISSIONS[$username]['permissions'] : [];
         }
     }
     
@@ -283,7 +283,7 @@ class PermissionManager {
 
     public static function requireModuleAccess(string $module, string $minLevel = 'read'): void {
         if (!class_exists('SessionManager')) {
-            require_once dirname(__DIR__) . '/auth.php';
+            require_once 'auth.php';
         }
         $currentUser = SessionManager::getCurrentUser();
         if (!$currentUser) {
@@ -442,198 +442,3 @@ class PermissionManager {
         return '<span class="badge bg-' . $permissionData['color'] . '">' . $permissionData['name'] . '</span>';
     }
 }
-?>
-
-            }
-        }
-        
-        return $visibleModules;
-    }
-    
-    /**
-     * Kullanıcının yazma yetkisi var mı kontrol et
-     */
-    public static function canWrite($username, $module) {
-        $level = self::getPermissionLevel($username, $module);
-        return in_array($level, ['write', 'manager']);
-    }
-    
-    /**
-     * Kullanıcının admin yetkisi var mı kontrol et
-     */
-    public static function canAdmin($username, $module) {
-        $level = self::getPermissionLevel($username, $module);
-        return $level === 'manager';
-    }
-
-    public static function canView(string $username, string $module): bool {
-        $level = self::getPermissionLevel($username, $module);
-        return in_array($level, ['read', 'write', 'manager'], true);
-    }
-
-    public static function canEdit(string $username, string $module): bool {
-        return self::canAdmin($username, $module);
-    }
-
-    public static function requireModuleAccess(string $module, string $minLevel = 'read'): void {
-        if (!class_exists('SessionManager')) {
-            require_once dirname(__DIR__) . '/auth.php';
-        }
-        $currentUser = SessionManager::getCurrentUser();
-        if (!$currentUser) {
-            header('Location: ../index.php');
-            exit;
-        }
-
-        $username = $currentUser['username'];
-        $level = self::getPermissionLevel($username, $module);
-
-        $ok = $minLevel === 'read'
-            ? in_array($level, ['read', 'write', 'manager'], true)
-            : ($level === 'manager');
-
-        if (!$ok) {
-            if ($currentUser['role'] === 'superadmin' || $currentUser['role'] === 'manager') {
-                header('Location: ../admin/dashboard_superadmin.php');
-            } else {
-                header('Location: dashboard_member.php');
-            }
-            exit;
-        }
-    }
-
-    /**
-     * Varsayılan yetki profilleri
-     */
-    public static function getDefaultPermissions(string $role): array {
-        $profiles = [
-            'member' => [
-                'dashboard' => 'read',
-                'calendar' => 'read',
-                'meeting_reports' => 'read',
-                'reservations' => 'read',
-                'expenses' => 'read',
-                'announcements' => 'read',
-                'events' => 'read'
-            ],
-            'manager' => [
-                'dashboard' => 'manager',
-                'users' => 'manager',
-                'permissions' => 'manager',
-                'calendar' => 'manager',
-                'meeting_reports' => 'manager',
-                'reservations' => 'manager',
-                'expenses' => 'manager',
-                'announcements' => 'manager',
-                'events' => 'manager',
-                'inventory' => 'manager',
-                'projects' => 'manager',
-                'reports' => 'manager',
-                'settings' => 'manager'
-            ],
-            'superadmin' => [
-                'dashboard' => 'manager',
-                'users' => 'manager',
-                'permissions' => 'manager',
-                'calendar' => 'manager',
-                'meeting_reports' => 'manager',
-                'reservations' => 'manager',
-                'expenses' => 'manager',
-                'announcements' => 'manager',
-                'events' => 'manager',
-                'inventory' => 'manager',
-                'projects' => 'manager',
-                'reports' => 'manager',
-                'settings' => 'manager'
-            ]
-        ];
-
-        return $profiles[$role] ?? [];
-    }
-
-    /**
-     * Kullanıcıya varsayılan yetkileri ata
-     */
-    public static function assignDefaultPermissions(int $userId, string $role): bool {
-        try {
-            require_once '../admin/includes/user_manager_db.php';
-            $db = Database::getInstance();
-            
-            $defaultPermissions = self::getDefaultPermissions($role);
-            
-            foreach ($defaultPermissions as $moduleName => $level) {
-                // Modül ID'sini bul
-                $module = $db->fetchOne("SELECT id FROM modules WHERE name = ?", [$moduleName]);
-                if (!$module) continue;
-                
-                $canRead = in_array($level, ['read', 'write', 'manager']);
-                $canWrite = in_array($level, ['write', 'manager']);
-                $canAdmin = ($level === 'manager');
-                
-                $permissionData = [
-                    'user_id' => $userId,
-                    'module_id' => $module['id'],
-                    'can_read' => $canRead,
-                    'can_write' => $canWrite,
-                    'can_admin' => $canAdmin,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ];
-                
-                $db->insert('user_permissions', $permissionData);
-            }
-            
-            return true;
-        } catch (Exception $e) {
-            error_log("assignDefaultPermissions error: " . $e->getMessage());
-            return false;
-        }
-    }
-    
-    /**
-     * Sidebar için modül linklerini oluştur
-     */
-    public static function generateSidebarLinks($username) {
-        $visibleModules = self::getVisibleModules($username);
-        $links = [];
-        
-        foreach ($visibleModules as $moduleKey => $moduleData) {
-            $fileMap = [
-                'dashboard' => 'dashboard_member.php',
-                'users' => 'users.php',
-                'permissions' => 'permissions.php',
-                'announcements' => 'announcements.php',
-                'events' => 'events.php',
-                'calendar' => 'calendar.php',
-                'inventory' => 'inventory.php',
-                'meeting_reports' => 'meeting_reports.php',
-                'reservations' => 'reservations.php',
-                'expenses' => 'expenses.php',
-                'projects' => 'projects.php',
-                'reports' => 'reports.php',
-                'settings' => 'settings.php'
-            ];
-            
-            if (isset($fileMap[$moduleKey])) {
-                $links[] = [
-                    'file' => $fileMap[$moduleKey],
-                    'name' => $moduleData['name'],
-                    'icon' => $moduleData['icon'],
-                    'permission_level' => $moduleData['permission_level'],
-                    'permission_data' => $moduleData['permission_data']
-                ];
-            }
-        }
-        
-        return $links;
-    }
-    
-    /**
-     * Yetki badge'i için HTML oluştur
-     */
-    public static function generatePermissionBadge($level) {
-        $permissionData = self::PERMISSION_LEVELS[$level];
-        return '<span class="badge bg-' . $permissionData['color'] . '">' . $permissionData['name'] . '</span>';
-    }
-}
-?>

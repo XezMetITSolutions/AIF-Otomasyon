@@ -458,4 +458,3 @@ class PermissionManager {
         return '<span class="badge bg-' . $permissionData['color'] . '">' . $permissionData['name'] . '</span>';
     }
 }
-?>
