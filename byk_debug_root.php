@@ -49,6 +49,7 @@ echo '<form id="bykTestForm">';
 echo '<input type="text" name="first_name" placeholder="Ad" value="Debug" required><br><br>';
 echo '<input type="text" name="last_name" placeholder="Soyad" value="Test" required><br><br>';
 echo '<input type="email" name="email" placeholder="E-posta" value="debug.test@aif.com" required><br><br>';
+echo '<input type="text" name="username" placeholder="Kullanıcı Adı" value="debug.test" required><br><br>';
 echo '<select name="byk" required>';
 echo '<option value="">BYK Seçin</option>';
 if (isset($bykCategories)) {
@@ -78,6 +79,13 @@ function testBYK() {
     const form = document.getElementById('bykTestForm');
     const formData = new FormData(form);
     const userData = Object.fromEntries(formData);
+    
+    // Otomatik username oluştur (eğer boşsa)
+    if (!userData.username || userData.username === '') {
+        const firstName = userData.first_name.toLowerCase();
+        const lastName = userData.last_name.toLowerCase();
+        userData.username = firstName + '.' + lastName;
+    }
     
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = '<h3>Test Başladı...</h3>';
