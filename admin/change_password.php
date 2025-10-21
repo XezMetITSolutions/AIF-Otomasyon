@@ -1,4 +1,8 @@
 <?php
+// Error reporting ekle
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'includes/auth.php';
 require_once 'includes/user_manager_db.php';
 
@@ -15,9 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 try {
     // JSON verisini al
     $raw = file_get_contents('php://input');
+    error_log('[change_password] Raw input: ' . $raw);
+    
     $input = json_decode($raw, true);
+    error_log('[change_password] Parsed input: ' . json_encode($input));
     
     if (!$input) {
+        error_log('[change_password] JSON decode failed');
         echo json_encode(['success' => false, 'message' => 'Geçersiz JSON verisi']);
         exit;
     }
@@ -50,11 +58,18 @@ try {
     $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
     
     // Şifreyi güncelle
-    $result = UserManager::updateUser($user['id'], [
+    $updateData = [
         'password' => $hashedPassword,
         'must_change_password' => 0, // Şifre değiştirildi, tekrar değiştirmek zorunda değil
         'updated_at' => date('Y-m-d H:i:s')
-    ]);
+    ];
+    
+    error_log('[change_password] Update data: ' . json_encode($updateData));
+    error_log('[change_password] User ID: ' . $user['id']);
+    
+    $result = UserManager::updateUser($user['id'], $updateData);
+    
+    error_log('[change_password] Update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
     
     if ($result) {
         echo json_encode([
