@@ -6,8 +6,10 @@ if (isset($_SESSION['username'])) {
     require_once 'admin/auth.php';
     $user = SessionManager::getCurrentUser();
     if ($user) {
-        if ($user['role'] === 'superadmin' || $user['role'] === 'manager') {
+        if ($user['role'] === 'superadmin') {
             header('Location: admin/dashboard_superadmin.php');
+        } elseif ($user['role'] === 'manager') {
+            header('Location: manager/dashboard_manager.php');
         } else {
             header('Location: users/dashboard_member.php');
         }
@@ -36,8 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['role'] = $user['role'];
                 
                 // Role göre yönlendirme
-                if ($user['role'] === 'superadmin' || $user['role'] === 'manager') {
+                if ($user['role'] === 'superadmin') {
                     header('Location: admin/dashboard_superadmin.php');
+                } elseif ($user['role'] === 'manager') {
+                    header('Location: manager/dashboard_manager.php');
                 } else {
                     header('Location: users/dashboard_member.php');
                 }
