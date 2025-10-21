@@ -1,5 +1,5 @@
 <?php
-// Basit test sayfası
+// Basit test sayfası - Session kontrolü YOK
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -21,14 +21,7 @@ foreach ($files as $file) {
     }
 }
 
-// Include test
-try {
-    require_once 'includes/auth.php';
-    echo "✅ auth.php include başarılı<br>";
-} catch (Exception $e) {
-    echo "❌ auth.php include hatası: " . $e->getMessage() . "<br>";
-}
-
+// Include test - Sadece database.php
 try {
     require_once 'includes/database.php';
     echo "✅ database.php include başarılı<br>";
@@ -36,17 +29,18 @@ try {
     echo "❌ database.php include hatası: " . $e->getMessage() . "<br>";
 }
 
+// BYKManager test
 try {
     require_once 'includes/byk_manager_db.php';
     echo "✅ byk_manager_db.php include başarılı<br>";
-} catch (Exception $e) {
-    echo "❌ byk_manager_db.php include hatası: " . $e->getMessage() . "<br>";
-}
-
-// BYKManager test
-try {
+    
     $bykCategories = BYKManager::getBYKCategories();
     echo "✅ BYKManager::getBYKCategories() çalışıyor - " . count($bykCategories) . " kategori<br>";
+    
+    // BYK kategorilerini listele
+    foreach ($bykCategories as $byk) {
+        echo "&nbsp;&nbsp;• " . $byk['code'] . " - " . $byk['name'] . "<br>";
+    }
 } catch (Exception $e) {
     echo "❌ BYKManager hatası: " . $e->getMessage() . "<br>";
 }

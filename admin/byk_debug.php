@@ -1,21 +1,11 @@
 <?php
-// BYK Debug Sayfası - Basit versiyon
+// BYK Debug Sayfası - Session kontrolü YOK
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Dosya varlığını kontrol et
-if (!file_exists('includes/auth.php')) {
-    die('auth.php dosyası bulunamadı!');
-}
-
-require_once 'includes/auth.php';
-
-// Login kontrolü - GEÇİCİ OLARAK DEVRE DIŞI
-// SessionManager::requireRole(['superadmin', 'manager']);
-// $currentUser = SessionManager::getCurrentUser();
-
 // BYK kategorilerini al
 try {
+    require_once 'includes/database.php';
     require_once 'includes/byk_manager_db.php';
     $bykCategories = BYKManager::getBYKCategories();
 } catch (Exception $e) {
