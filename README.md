@@ -118,3 +118,10 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 ---
 
 **Not:** Bu sistem sürekli geliştirilmektedir. Yeni özellikler ve iyileştirmeler için GitHub'ı takip edin.
+
+## 🚀 Deployment Status
+
+- ✅ GitHub Actions aktif
+- ✅ FTP Secrets ayarlandı
+- ✅ Otomatik deployment hazır
+- 🔧 BYK sorunu debug ediliyor
