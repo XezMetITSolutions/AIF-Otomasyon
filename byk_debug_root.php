@@ -69,6 +69,11 @@ echo '</select><br><br>';
 echo '<button type="button" onclick="testBYK()">Test Kullanıcı Ekle</button>';
 echo '</form>';
 
+echo '<div style="margin-top: 20px;">';
+echo '<button type="button" onclick="checkUsers()" style="background: #28a745; color: white; padding: 10px; border: none; border-radius: 5px;">Kullanıcıları Kontrol Et</button>';
+echo '<button type="button" onclick="testPasswordChange()" style="background: #ffc107; color: black; padding: 10px; border: none; border-radius: 5px; margin-left: 10px;">Şifre Değiştirme Test</button>';
+echo '</div>';
+
 echo '<div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;"></div>';
 
 echo "<br><p>Test tamamlandı!</p>";
@@ -125,6 +130,79 @@ function testBYK() {
             if (data.debug) {
                 resultDiv.innerHTML += '<p style="color: orange;">🔍 Debug Error: BYK=' + data.debug.byk_input + ', ID=' + data.debug.byk_category_id + '</p>';
             }
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML += '<p style="color: red;">❌ Fetch hatası: ' + error.message + '</p>';
+    });
+}
+
+function checkUsers() {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<h3>Kullanıcılar Kontrol Ediliyor...</h3>';
+    
+    fetch('admin/get_user.php?action=list')
+        .then(response => response.json())
+        .then(data => {
+            resultDiv.innerHTML += '<h3>Kullanıcı Listesi:</h3>';
+            resultDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            
+            if (data.success && data.users) {
+                resultDiv.innerHTML += '<h4>BYK Bilgileri:</h4>';
+                data.users.forEach(user => {
+                    if (user.username === 'debug.test') {
+                        resultDiv.innerHTML += '<p><strong>Debug Test Kullanıcısı:</strong></p>';
+                        resultDiv.innerHTML += '<p>Username: ' + user.username + '</p>';
+                        resultDiv.innerHTML += '<p>BYK Category ID: ' + (user.byk_category_id || 'NULL') + '</p>';
+                        resultDiv.innerHTML += '<p>BYK Name: ' + (user.byk_name || 'NULL') + '</p>';
+                        resultDiv.innerHTML += '<p>BYK Code: ' + (user.byk_code || 'NULL') + '</p>';
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML += '<p style="color: red;">❌ Kullanıcı kontrolü hatası: ' + error.message + '</p>';
+        });
+}
+
+function testPasswordChange() {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<h3>Şifre Değiştirme Test Başladı...</h3>';
+    
+    const passwordData = {
+        username: 'debug.test',
+        password: 'Test123456'
+    };
+    
+    resultDiv.innerHTML += '<p>Test verisi: ' + JSON.stringify(passwordData, null, 2) + '</p>';
+    
+    fetch('admin/change_password.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(passwordData)
+    })
+    .then(response => {
+        resultDiv.innerHTML += '<p>Response status: ' + response.status + '</p>';
+        return response.text(); // JSON yerine text al
+    })
+    .then(data => {
+        resultDiv.innerHTML += '<h3>Response Data (Raw):</h3>';
+        resultDiv.innerHTML += '<pre>' + data + '</pre>';
+        
+        try {
+            const jsonData = JSON.parse(data);
+            resultDiv.innerHTML += '<h3>Response Data (Parsed):</h3>';
+            resultDiv.innerHTML += '<pre>' + JSON.stringify(jsonData, null, 2) + '</pre>';
+            
+            if (jsonData.success) {
+                resultDiv.innerHTML += '<p style="color: green;">✅ Şifre başarıyla değiştirildi!</p>';
+            } else {
+                resultDiv.innerHTML += '<p style="color: red;">❌ Hata: ' + jsonData.message + '</p>';
+            }
+        } catch (e) {
+            resultDiv.innerHTML += '<p style="color: red;">❌ JSON Parse Hatası: ' + e.message + '</p>';
         }
     })
     .catch(error => {
