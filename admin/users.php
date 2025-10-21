@@ -14,7 +14,6 @@ require_once 'includes/user_manager_db.php';
 // Veritabanından kullanıcıları çek
 try {
     $users = UserManager::getAllUsers();
-    $userStats = UserManager::getUserStats();
     
     // Debug bilgisi
     error_log("Users count: " . count($users));
@@ -76,70 +75,6 @@ try {
 
         <!-- Content Area -->
         <div class="content-area">
-            <!-- User Statistics -->
-            <div class="row mb-4">
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="page-card h-100">
-                        <div class="card-body text-center">
-                            <div class="d-flex align-items-center justify-content-center mb-3">
-                                <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                                    <i class="fas fa-users text-primary fs-4"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-primary mb-0"><?php echo $userStats['total']; ?></h3>
-                                    <p class="text-muted mb-0 small">Toplam Kullanıcı</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="page-card h-100">
-                        <div class="card-body text-center">
-                            <div class="d-flex align-items-center justify-content-center mb-3">
-                                <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
-                                    <i class="fas fa-user-check text-success fs-4"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-success mb-0"><?php echo $userStats['active']; ?></h3>
-                                    <p class="text-muted mb-0 small">Aktif Kullanıcı</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="page-card h-100">
-                        <div class="card-body text-center">
-                            <div class="d-flex align-items-center justify-content-center mb-3">
-                                <div class="bg-info bg-opacity-10 rounded-circle p-3 me-3">
-                                    <i class="fas fa-user-tie text-info fs-4"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-info mb-0"><?php echo isset($userStats['by_role']['manager']) ? $userStats['by_role']['manager'] : 0; ?></h3>
-                                    <p class="text-muted mb-0 small">Manager Kullanıcı</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="page-card h-100">
-                        <div class="card-body text-center">
-                            <div class="d-flex align-items-center justify-content-center mb-3">
-                                <div class="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
-                                    <i class="fas fa-user text-warning fs-4"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-warning mb-0"><?php echo isset($userStats['by_role']['member']) ? $userStats['by_role']['member'] : 0; ?></h3>
-                                    <p class="text-muted mb-0 small">Üye Kullanıcı</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- User Management -->
             <div class="page-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
