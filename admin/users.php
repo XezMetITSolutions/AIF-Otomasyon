@@ -177,6 +177,9 @@ try {
                                             <button class="btn btn-outline-primary btn-sm" onclick="editUser('<?php echo $user['username']; ?>')" title="Düzenle">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            <button class="btn btn-outline-warning btn-sm" onclick="changePassword('<?php echo $user['username']; ?>')" title="Şifre Değiştir">
+                                                <i class="fas fa-key"></i>
+                                            </button>
                                             <button class="btn btn-outline-danger btn-sm" onclick="deleteUser('<?php echo $user['username']; ?>')" title="Sil">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -356,6 +359,39 @@ try {
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="button" class="btn btn-primary" onclick="updateUser()">Güncelle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Şifre Değiştir</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label class="form-label">Kullanıcı</label>
+                            <input type="text" class="form-control" id="changePasswordUsername" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Yeni Şifre</label>
+                            <input type="password" class="form-control" id="newPassword" required minlength="6">
+                            <div class="form-text">En az 6 karakter olmalıdır</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Şifre Tekrar</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-warning" onclick="updatePassword()">Şifre Değiştir</button>
                 </div>
             </div>
         </div>
@@ -610,6 +646,57 @@ try {
                     showAlert('Bir hata oluştu!', 'danger');
                 });
             }
+        }
+        
+        // Şifre değiştirme fonksiyonları
+        function changePassword(username) {
+            document.getElementById('changePasswordUsername').value = username;
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            $('#changePasswordModal').modal('show');
+        }
+        
+        function updatePassword() {
+            const username = document.getElementById('changePasswordUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Şifre kontrolü
+            if (newPassword.length < 6) {
+                showAlert('Şifre en az 6 karakter olmalıdır!', 'warning');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('Şifreler eşleşmiyor!', 'warning');
+                return;
+            }
+            
+            const passwordData = {
+                username: username,
+                password: newPassword
+            };
+            
+            fetch('change_password.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(passwordData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Şifre başarıyla değiştirildi!', 'success');
+                    $('#changePasswordModal').modal('hide');
+                } else {
+                    showAlert(data.message || 'Bir hata oluştu!', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Bir hata oluştu!', 'danger');
+            });
         }
         
         // Modern JavaScript fonksiyonları
