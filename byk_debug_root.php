@@ -45,7 +45,7 @@ try {
 
 // Test formu
 echo "<h2>BYK Test Formu:</h2>";
-echo '<form method="POST" action="test_byk_add.php">';
+echo '<form id="bykTestForm">';
 echo '<input type="text" name="first_name" placeholder="Ad" value="Debug" required><br><br>';
 echo '<input type="text" name="last_name" placeholder="Soyad" value="Test" required><br><br>';
 echo '<input type="email" name="email" placeholder="E-posta" value="debug.test@aif.com" required><br><br>';
@@ -65,8 +65,62 @@ echo '<select name="status" required>';
 echo '<option value="active">Aktif</option>';
 echo '<option value="inactive">Pasif</option>';
 echo '</select><br><br>';
-echo '<button type="submit">Test Kullanıcı Ekle</button>';
+echo '<button type="button" onclick="testBYK()">Test Kullanıcı Ekle</button>';
 echo '</form>';
+
+echo '<div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;"></div>';
 
 echo "<br><p>Test tamamlandı!</p>";
 ?>
+
+<script>
+function testBYK() {
+    const form = document.getElementById('bykTestForm');
+    const formData = new FormData(form);
+    const userData = Object.fromEntries(formData);
+    
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<h3>Test Başladı...</h3>';
+    resultDiv.innerHTML += '<p>Form verisi: ' + JSON.stringify(userData, null, 2) + '</p>';
+    
+    // BYK alanını düzelt (users.php'deki gibi)
+    if (userData.byk_category) {
+        userData.byk = userData.byk_category;
+        delete userData.byk_category;
+    }
+    
+    resultDiv.innerHTML += '<p>Düzeltilmiş veri: ' + JSON.stringify(userData, null, 2) + '</p>';
+    
+    fetch('admin/add_user.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => {
+        resultDiv.innerHTML += '<p>Response status: ' + response.status + '</p>';
+        return response.json();
+    })
+    .then(data => {
+        resultDiv.innerHTML += '<h3>Response Data:</h3>';
+        resultDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        
+        if (data.success) {
+            resultDiv.innerHTML += '<p style="color: green;">✅ Kullanıcı başarıyla eklendi!</p>';
+            if (data.debug) {
+                resultDiv.innerHTML += '<p style="color: blue;">🔍 Debug Info: BYK=' + data.debug.byk_input + ', ID=' + data.debug.byk_category_id + '</p>';
+                resultDiv.innerHTML += '<p style="color: blue;">🔍 BYK Found: ' + data.debug.byk_category_found + '</p>';
+            }
+        } else {
+            resultDiv.innerHTML += '<p style="color: red;">❌ Hata: ' + data.message + '</p>';
+            if (data.debug) {
+                resultDiv.innerHTML += '<p style="color: orange;">🔍 Debug Error: BYK=' + data.debug.byk_input + ', ID=' + data.debug.byk_category_id + '</p>';
+            }
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML += '<p style="color: red;">❌ Fetch hatası: ' + error.message + '</p>';
+    });
+}
+</script>
