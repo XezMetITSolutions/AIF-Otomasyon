@@ -1,0 +1,57 @@
+# Logs
+*.log
+logs/
+error.log
+access.log
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+cache/
+tmp/
+temp/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Composer
+vendor/
+composer.lock
+
+# Test files
+test_*
+debug_*
+*_test.php
+*_debug.php
+
+# Backup files
+*.bak
+*.backup
+*_backup.*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Sensitive files
+config/database.php
+config/secrets.php

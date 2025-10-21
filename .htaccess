@@ -1,0 +1,35 @@
+# AIF Otomasyon - .htaccess
+# Yönlendirme kuralları
+
+# Ana sayfa yönlendirmesi - Hesap/login.php'ye yönlendirmeyi engelle
+RewriteEngine On
+
+# Eğer Hesap/login.php'ye yönlendirme varsa, index.php'ye yönlendir
+RewriteCond %{THE_REQUEST} \s/+Hesap/login\.php[\s?] [NC]
+RewriteRule ^.*$ /index.php [R=301,L]
+
+# Ana sayfa için index.php'yi varsayılan olarak ayarla
+DirectoryIndex index.php
+
+# Güvenlik ayarları
+Options -Indexes
+ServerSignature Off
+
+# Cache kontrolü
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+</IfModule>
+
+# PHP ayarları
+<IfModule mod_php.c>
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.use_strict_mode 1
+</IfModule>

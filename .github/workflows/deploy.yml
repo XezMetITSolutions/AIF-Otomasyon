@@ -1,0 +1,68 @@
+name: Deploy to FTP Server
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        
+    - name: Install dependencies
+      run: |
+        # PHP dependencies yoksa bu adımı atla
+        if [ -f composer.json ]; then
+          composer install --no-dev --optimize-autoloader
+        fi
+        
+    - name: Create deployment package
+      run: |
+        # Gereksiz dosyaları hariç tut
+        echo "node_modules/" >> .gitignore
+        echo ".git/" >> .gitignore
+        echo ".github/" >> .gitignore
+        echo "*.log" >> .gitignore
+        echo ".env" >> .gitignore
+        
+        # Deployment paketi oluştur
+        tar -czf deployment.tar.gz --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='*.log' --exclude='.env' .
+        
+    - name: Deploy to FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: /
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.github/**
+          **/*.log
+          **/.env
+          **/test_*
+          **/debug_*
+          
+    - name: Cleanup
+      run: |
+        rm -f deployment.tar.gz
+        
+    - name: Notify deployment
+      run: |
+        echo "🚀 Deployment completed successfully!"
+        echo "📁 Files deployed to: ${{ secrets.FTP_SERVER }}"
+        echo "⏰ Deployment time: $(date)"
