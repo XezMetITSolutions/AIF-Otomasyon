@@ -158,8 +158,10 @@ try {
                                     </td>
                                     <td><?php echo htmlspecialchars($user['email']); ?></td>
                                     <td>
-                                        <?php if (!empty($user['byk_category'])): ?>
-                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($user['byk_category']); ?></span>
+                                        <?php if (!empty($user['byk_code'])): ?>
+                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($user['byk_code']); ?></span>
+                                        <?php elseif (!empty($user['byk_name'])): ?>
+                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($user['byk_name']); ?></span>
                                         <?php else: ?>
                                         <span class="text-muted">-</span>
                                         <?php endif; ?>
