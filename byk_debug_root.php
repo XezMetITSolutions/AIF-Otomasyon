@@ -72,6 +72,7 @@ echo '</form>';
 echo '<div style="margin-top: 20px;">';
 echo '<button type="button" onclick="checkUsers()" style="background: #28a745; color: white; padding: 10px; border: none; border-radius: 5px;">Kullanıcıları Kontrol Et</button>';
 echo '<button type="button" onclick="testPasswordChange()" style="background: #ffc107; color: black; padding: 10px; border: none; border-radius: 5px; margin-left: 10px;">Şifre Değiştirme Test</button>';
+echo '<button type="button" onclick="testLogin()" style="background: #17a2b8; color: white; padding: 10px; border: none; border-radius: 5px; margin-left: 10px;">Giriş Test</button>';
 echo '</div>';
 
 echo '<div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;"></div>';
@@ -203,6 +204,47 @@ function testPasswordChange() {
             }
         } catch (e) {
             resultDiv.innerHTML += '<p style="color: red;">❌ JSON Parse Hatası: ' + e.message + '</p>';
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML += '<p style="color: red;">❌ Fetch hatası: ' + error.message + '</p>';
+    });
+}
+
+function testLogin() {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<h3>Giriş Test Başladı...</h3>';
+    
+    const loginData = {
+        username: 'debug.test',
+        password: 'Test123456'
+    };
+    
+    resultDiv.innerHTML += '<p>Test verisi: ' + JSON.stringify(loginData, null, 2) + '</p>';
+    
+    // Form data olarak gönder (index.php POST bekliyor)
+    const formData = new FormData();
+    formData.append('username', loginData.username);
+    formData.append('password', loginData.password);
+    
+    fetch('index.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        resultDiv.innerHTML += '<p>Response status: ' + response.status + '</p>';
+        resultDiv.innerHTML += '<p>Response URL: ' + response.url + '</p>';
+        
+        if (response.redirected) {
+            resultDiv.innerHTML += '<p style="color: green;">✅ Yönlendirme yapıldı: ' + response.url + '</p>';
+        } else {
+            return response.text();
+        }
+    })
+    .then(data => {
+        if (data) {
+            resultDiv.innerHTML += '<h3>Response Data:</h3>';
+            resultDiv.innerHTML += '<pre>' + data.substring(0, 500) + '...</pre>';
         }
     })
     .catch(error => {

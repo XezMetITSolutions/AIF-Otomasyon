@@ -164,7 +164,7 @@ class UserManager {
             return false;
         }
         
-        if (!self::verifyPassword($password, $user['password_hash'])) {
+        if (!self::verifyPassword($password, $user['password'])) {
             return false;
         }
         
