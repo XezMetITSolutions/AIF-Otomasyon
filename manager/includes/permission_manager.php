@@ -39,9 +39,14 @@ class PermissionManager {
             'description' => 'Takvim görüntüleme'
         ],
         'inventory' => [
-            'name' => 'Demirbaş Listesi',
+            'name' => 'Demirbaş Listesi (Üye)',
             'icon' => 'fas fa-boxes',
-            'description' => 'Demirbaş yönetimi'
+            'description' => 'Demirbaş görüntüleme'
+        ],
+        'inventory_admin' => [
+            'name' => 'Demirbaş Listesi (Yönetici)',
+            'icon' => 'fas fa-boxes',
+            'description' => 'Demirbaş yönetimi ve onay işlemleri'
         ],
         'meeting_reports' => [
             'name' => 'Toplantı Raporları',
@@ -49,14 +54,24 @@ class PermissionManager {
             'description' => 'Toplantı raporları'
         ],
         'reservations' => [
-            'name' => 'Rezervasyon',
+            'name' => 'Rezervasyonlar (Üye)',
             'icon' => 'fas fa-bookmark',
-            'description' => 'Rezervasyon yönetimi'
+            'description' => 'Rezervasyon oluşturma ve görüntüleme'
+        ],
+        'reservations_admin' => [
+            'name' => 'Rezervasyonlar (Yönetici)',
+            'icon' => 'fas fa-bookmark',
+            'description' => 'Rezervasyon onay/ret işlemleri'
         ],
         'expenses' => [
-            'name' => 'Para İadesi',
+            'name' => 'İade Talepleri (Üye)',
             'icon' => 'fas fa-undo',
-            'description' => 'İade talepleri'
+            'description' => 'İade talebi oluşturma ve görüntüleme'
+        ],
+        'expenses_admin' => [
+            'name' => 'İade Talepleri (Yönetici)',
+            'icon' => 'fas fa-undo',
+            'description' => 'İade talebi onay/ret işlemleri'
         ],
         'projects' => [
             'name' => 'Proje Takibi',

@@ -39,9 +39,14 @@ class PermissionManager {
             'description' => 'Takvim görüntüleme'
         ],
         'inventory' => [
-            'name' => 'Demirbaş Listesi',
+            'name' => 'Demirbaş Listesi (Üye)',
             'icon' => 'fas fa-boxes',
-            'description' => 'Demirbaş yönetimi'
+            'description' => 'Demirbaş görüntüleme'
+        ],
+        'inventory_admin' => [
+            'name' => 'Demirbaş Listesi (Yönetici)',
+            'icon' => 'fas fa-boxes',
+            'description' => 'Demirbaş yönetimi ve onay işlemleri'
         ],
         'meeting_reports' => [
             'name' => 'Toplantı Raporları',
@@ -49,14 +54,24 @@ class PermissionManager {
             'description' => 'Toplantı raporları'
         ],
         'reservations' => [
-            'name' => 'Rezervasyon',
+            'name' => 'Rezervasyonlar (Üye)',
             'icon' => 'fas fa-bookmark',
-            'description' => 'Rezervasyon yönetimi'
+            'description' => 'Rezervasyon oluşturma ve görüntüleme'
+        ],
+        'reservations_admin' => [
+            'name' => 'Rezervasyonlar (Yönetici)',
+            'icon' => 'fas fa-bookmark',
+            'description' => 'Rezervasyon onay/ret işlemleri'
         ],
         'expenses' => [
-            'name' => 'Para İadesi',
+            'name' => 'İade Talepleri (Üye)',
             'icon' => 'fas fa-undo',
-            'description' => 'İade talepleri'
+            'description' => 'İade talebi oluşturma ve görüntüleme'
+        ],
+        'expenses_admin' => [
+            'name' => 'İade Talepleri (Yönetici)',
+            'icon' => 'fas fa-undo',
+            'description' => 'İade talebi onay/ret işlemleri'
         ],
         'projects' => [
             'name' => 'Proje Takibi',
@@ -333,8 +348,9 @@ class PermissionManager {
                 'dashboard' => 'read',
                 'calendar' => 'read',
                 'meeting_reports' => 'read',
-                'reservations' => 'read',
-                'expenses' => 'read',
+                'reservations' => 'write',
+                'expenses' => 'write',
+                'inventory' => 'read',
                 'announcements' => 'read',
                 'events' => 'read'
             ],
@@ -344,11 +360,14 @@ class PermissionManager {
                 'permissions' => 'manager',
                 'calendar' => 'manager',
                 'meeting_reports' => 'manager',
-                'reservations' => 'manager',
-                'expenses' => 'manager',
+                'reservations' => 'read',
+                'reservations_admin' => 'manager',
+                'expenses' => 'read',
+                'expenses_admin' => 'manager',
+                'inventory' => 'read',
+                'inventory_admin' => 'manager',
                 'announcements' => 'manager',
                 'events' => 'manager',
-                'inventory' => 'manager',
                 'projects' => 'manager',
                 'reports' => 'manager',
                 'settings' => 'manager'
@@ -359,11 +378,14 @@ class PermissionManager {
                 'permissions' => 'manager',
                 'calendar' => 'manager',
                 'meeting_reports' => 'manager',
-                'reservations' => 'manager',
-                'expenses' => 'manager',
+                'reservations' => 'read',
+                'reservations_admin' => 'manager',
+                'expenses' => 'read',
+                'expenses_admin' => 'manager',
+                'inventory' => 'read',
+                'inventory_admin' => 'manager',
                 'announcements' => 'manager',
                 'events' => 'manager',
-                'inventory' => 'manager',
                 'projects' => 'manager',
                 'reports' => 'manager',
                 'settings' => 'manager'
