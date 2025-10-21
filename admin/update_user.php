@@ -74,6 +74,13 @@ try {
     }
     error_log('[update_user] Final byk_category_id: ' . ($bykCategoryId ?? 'NULL'));
     
+    // BYK debug için response'a ekle
+    $debugInfo = [
+        'byk_input' => $input['byk'] ?? 'NOT_PROVIDED',
+        'byk_category_id' => $bykCategoryId,
+        'byk_category_found' => $bykCategory ? true : false
+    ];
+    
     // Alt birim ID'sini al
     $subUnitId = null;
     if (!empty($input['sub_unit'])) {
@@ -139,10 +146,11 @@ try {
     if ($result) {
         echo json_encode([
             'success' => true, 
-            'message' => 'Kullanıcı başarıyla güncellendi'
+            'message' => 'Kullanıcı başarıyla güncellendi',
+            'debug' => $debugInfo
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Kullanıcı güncellenirken hata oluştu']);
+        echo json_encode(['success' => false, 'message' => 'Kullanıcı güncellenirken hata oluştu', 'debug' => $debugInfo]);
     }
     
 } catch (Exception $e) {

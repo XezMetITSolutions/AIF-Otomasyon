@@ -488,10 +488,18 @@ try {
             .then(data => {
                 if (data.success) {
                     showAlert('Kullanıcı başarıyla eklendi!', 'success');
+                    if (data.debug) {
+                        console.log('BYK Debug Info:', data.debug);
+                        showAlert('Debug: BYK=' + data.debug.byk_input + ', ID=' + data.debug.byk_category_id, 'info');
+                    }
                     $('#addUserModal').modal('hide');
                     location.reload();
                 } else {
                     showAlert(data.message || 'Bir hata oluştu!', 'danger');
+                    if (data.debug) {
+                        console.log('BYK Debug Error:', data.debug);
+                        showAlert('Debug Error: BYK=' + data.debug.byk_input + ', ID=' + data.debug.byk_category_id, 'warning');
+                    }
                 }
             })
             .catch(error => {
@@ -557,10 +565,18 @@ try {
             .then(data => {
                 if (data.success) {
                     showAlert('Kullanıcı başarıyla güncellendi!', 'success');
+                    if (data.debug) {
+                        console.log('BYK Debug Info:', data.debug);
+                        showAlert('Debug: BYK=' + data.debug.byk_input + ', ID=' + data.debug.byk_category_id, 'info');
+                    }
                     $('#editUserModal').modal('hide');
                     location.reload();
                 } else {
                     showAlert(data.message || 'Bir hata oluştu!', 'danger');
+                    if (data.debug) {
+                        console.log('BYK Debug Error:', data.debug);
+                        showAlert('Debug Error: BYK=' + data.debug.byk_input + ', ID=' + data.debug.byk_category_id, 'warning');
+                    }
                 }
             })
             .catch(error => {
