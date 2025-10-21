@@ -158,19 +158,33 @@ class UserManager {
      * Kullanıcı giriş yap
      */
     public static function login($username, $password) {
+        error_log("[LOGIN] Attempting login for username: " . $username);
+        
         $user = self::getUserByUsername($username);
         
         if (!$user) {
+            error_log("[LOGIN] User not found: " . $username);
             return false;
         }
         
+        error_log("[LOGIN] User found: " . json_encode([
+            'id' => $user['id'],
+            'username' => $user['username'],
+            'status' => $user['status'],
+            'password_hash' => substr($user['password'], 0, 20) . '...'
+        ]));
+        
         if (!self::verifyPassword($password, $user['password'])) {
+            error_log("[LOGIN] Password verification failed for: " . $username);
             return false;
         }
         
         if ($user['status'] !== 'active') {
+            error_log("[LOGIN] User status not active: " . $user['status']);
             return false;
         }
+        
+        error_log("[LOGIN] Login successful for: " . $username);
         
         // Son giriş zamanını güncelle
         self::updateLastLogin($user['id']);
