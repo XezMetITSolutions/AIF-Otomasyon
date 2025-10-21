@@ -111,10 +111,9 @@ class UserManager {
     public static function updateUser($id, $data) {
         $db = Database::getInstance();
         
-        // Şifre güncelleniyorsa hashle
+        // Şifre güncelleniyorsa hashle - password_hash yerine password kullan
         if (isset($data['password']) && !empty($data['password'])) {
-            $data['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
-            unset($data['password']);
+            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         }
 
         // Yalnızca tabloda mevcut olan kolonları güncelle

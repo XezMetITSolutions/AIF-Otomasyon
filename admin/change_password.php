@@ -54,12 +54,9 @@ try {
         exit;
     }
     
-    // Şifreyi hash'le
-    $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
-    
-    // Şifreyi güncelle
+    // Şifreyi güncelle - UserManager otomatik hash'leyecek
     $updateData = [
-        'password' => $hashedPassword,
+        'password' => $input['password'], // UserManager otomatik hash'leyecek
         'must_change_password' => 0, // Şifre değiştirildi, tekrar değiştirmek zorunda değil
         'updated_at' => date('Y-m-d H:i:s')
     ];
