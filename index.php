@@ -31,25 +31,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             require_once 'admin/includes/user_manager_db.php';
             
+            error_log("[INDEX] Login attempt for: " . $username);
+            
             $user = UserManager::login($username, $password);
             if ($user) {
+                error_log("[INDEX] Login successful for: " . $username . " role: " . $user['role']);
+                
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 
                 // Role göre yönlendirme
                 if ($user['role'] === 'superadmin') {
+                    error_log("[INDEX] Redirecting to superadmin dashboard");
                     header('Location: admin/dashboard_superadmin.php');
                 } elseif ($user['role'] === 'manager') {
+                    error_log("[INDEX] Redirecting to manager dashboard");
                     header('Location: manager/dashboard_manager.php');
                 } else {
+                    error_log("[INDEX] Redirecting to member dashboard");
                     header('Location: users/dashboard_member.php');
                 }
                 exit;
             } else {
+                error_log("[INDEX] Login failed for: " . $username);
                 $error = 'Kullanıcı adı veya şifre hatalı.';
             }
         } catch (Exception $e) {
+            error_log("[INDEX] Login exception: " . $e->getMessage());
             $error = 'Giriş yapılırken bir hata oluştu: ' . $e->getMessage();
         }
     }
