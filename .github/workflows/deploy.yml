@@ -27,18 +27,6 @@ jobs:
           composer install --no-dev --optimize-autoloader
         fi
         
-    - name: Create deployment package
-      run: |
-        # Gereksiz dosyaları hariç tut
-        echo "node_modules/" >> .gitignore
-        echo ".git/" >> .gitignore
-        echo ".github/" >> .gitignore
-        echo "*.log" >> .gitignore
-        echo ".env" >> .gitignore
-        
-        # Deployment paketi oluştur
-        tar -czf deployment.tar.gz --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='*.log' --exclude='.env' .
-        
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
@@ -57,10 +45,6 @@ jobs:
           **/test_*
           **/debug_*
           
-    - name: Cleanup
-      run: |
-        rm -f deployment.tar.gz
-        
     - name: Notify deployment
       run: |
         echo "🚀 Deployment completed successfully!"
