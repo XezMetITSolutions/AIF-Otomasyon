@@ -887,7 +887,7 @@ $events_2026 = [
     <div class="main-content">
         <!-- Calendar Header -->
         <div class="calendar-header">
-            <h1 class="calendar-title"><?php echo date('Y'); ?> Yılı Takvimi</h1>
+            <h1 class="calendar-title" id="calendarTitle">2026 Yılı Takvimi</h1>
             <div class="calendar-controls">
                 <button class="btn btn-calendar" onclick="previousMonth()">
                     <i class="fas fa-chevron-left"></i>
@@ -972,18 +972,61 @@ $events_2026 = [
         </div>
     </div>
 
+    <!-- Event Edit Modal -->
+    <div class="modal fade" id="eventEditModal" tabindex="-1" aria-labelledby="eventEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventEditModalLabel">Etkinlik Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="eventEditForm">
+                        <div class="mb-3">
+                            <label for="editEventTitle" class="form-label">Etkinlik Adı</label>
+                            <input type="text" class="form-control" id="editEventTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventDate" class="form-label">Tarih</label>
+                            <input type="date" class="form-control" id="editEventDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventBYK" class="form-label">BYK Kategorisi</label>
+                            <select class="form-select" id="editEventBYK" required>
+                                <option value="AT">AT - Ana Teşkilat</option>
+                                <option value="KT">KT - Kadınlar Teşkilatı</option>
+                                <option value="GT">GT - Gençlik Teşkilatı</option>
+                                <option value="KGT">KGT - Kadınlar Gençlik Teşkilatı</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventDescription" class="form-label">Açıklama (Opsiyonel)</label>
+                            <textarea class="form-control" id="editEventDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteEvent()">Sil</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEvent()">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         // Calendar data
-        const events = <?php echo json_encode($events_2026); ?>;
+        let events = <?php echo json_encode($events_2026); ?>;
         
         // Takvim bugünden başlasın
         const today = new Date();
         let currentMonth = today.getMonth(); // Mevcut ay
         let currentYear = today.getFullYear(); // Mevcut yıl
         let currentFilter = 'all'; // Current filter state
+        let selectedEvent = null; // Seçili etkinlik
         
         const monthNames = [
             'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -1086,6 +1129,9 @@ $events_2026 = [
             // Update month display
             document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
             
+            // Update calendar title
+            document.getElementById('calendarTitle').textContent = `${currentYear} Yılı Takvimi`;
+            
             // Update event list
             updateEventList();
             
@@ -1185,7 +1231,74 @@ $events_2026 = [
         }
         
         function showEventDetails(event) {
-            alert(`Etkinlik: ${event.title}\nTarih: ${event.date}\nBYK: ${event.byk}`);
+            selectedEvent = event;
+            
+            // Modal formunu doldur
+            document.getElementById('editEventTitle').value = event.title;
+            document.getElementById('editEventDate').value = event.date;
+            document.getElementById('editEventBYK').value = event.byk;
+            document.getElementById('editEventDescription').value = event.description || '';
+            
+            // Modal'ı göster
+            const modal = new bootstrap.Modal(document.getElementById('eventEditModal'));
+            modal.show();
+        }
+        
+        function saveEvent() {
+            if (!selectedEvent) return;
+            
+            // Form verilerini al
+            const title = document.getElementById('editEventTitle').value;
+            const date = document.getElementById('editEventDate').value;
+            const byk = document.getElementById('editEventBYK').value;
+            const description = document.getElementById('editEventDescription').value;
+            
+            if (!title || !date || !byk) {
+                alert('Lütfen tüm zorunlu alanları doldurun!');
+                return;
+            }
+            
+            // Etkinliği güncelle
+            const eventIndex = events.findIndex(e => e.date === selectedEvent.date && e.title === selectedEvent.title);
+            if (eventIndex !== -1) {
+                events[eventIndex] = {
+                    ...events[eventIndex],
+                    title: title,
+                    date: date,
+                    byk: byk,
+                    description: description
+                };
+                
+                // Takvimi yenile
+                generateCalendar();
+                
+                // Modal'ı kapat
+                const modal = bootstrap.Modal.getInstance(document.getElementById('eventEditModal'));
+                modal.hide();
+                
+                alert('Etkinlik başarıyla güncellendi!');
+            }
+        }
+        
+        function deleteEvent() {
+            if (!selectedEvent) return;
+            
+            if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
+                // Etkinliği sil
+                const eventIndex = events.findIndex(e => e.date === selectedEvent.date && e.title === selectedEvent.title);
+                if (eventIndex !== -1) {
+                    events.splice(eventIndex, 1);
+                    
+                    // Takvimi yenile
+                    generateCalendar();
+                    
+                    // Modal'ı kapat
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('eventEditModal'));
+                    modal.hide();
+                    
+                    alert('Etkinlik başarıyla silindi!');
+                }
+            }
         }
         
         function previousMonth() {
