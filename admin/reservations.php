@@ -313,25 +313,14 @@ $currentUser = SessionManager::getCurrentUser();
                                     <label for="region" class="form-label">Bölge *</label>
                                     <select class="form-select" id="region" required>
                                         <option value="">Bölge Seçin</option>
-                                        <option value="tirol">Tirol</option>
-                                        <option value="vorarlberg">Vorarlberg</option>
-                                        <option value="salzburg">Salzburg</option>
-                                        <option value="wien">Wien</option>
-                                        <option value="steyermark">Steyermark</option>
-                                        <option value="oberoesterreich">Oberösterreich</option>
-                                        <option value="niederoesterreich">Niederösterreich</option>
-                                        <option value="burgenland">Burgenland</option>
-                                        <option value="kaernten">Kärnten</option>
+                                        <!-- Dinamik olarak yüklenecek -->
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label for="unit" class="form-label">Birim *</label>
                                     <select class="form-select" id="unit" required>
                                         <option value="">Birim Seçin</option>
-                                        <option value="AT">AT - Ana Teşkilat</option>
-                                        <option value="KT">KT - Kadınlar Teşkilatı</option>
-                                        <option value="KGT">KGT - Kadınlar Gençlik Teşkilatı</option>
-                                        <option value="GT">GT - Gençlik Teşkilatı</option>
+                                        <!-- Dinamik olarak yüklenecek -->
                                     </select>
                                 </div>
                             </div>
@@ -444,10 +433,46 @@ $currentUser = SessionManager::getCurrentUser();
         async function loadData() {
             await Promise.all([
                 loadReservations(),
-                loadEvents()
+                loadEvents(),
+                loadFormData()
             ]);
             generateCalendar();
             updateStatistics();
+        }
+
+        // Load form data (regions and units)
+        async function loadFormData() {
+            try {
+                const response = await fetch('../api/reservations_api.php?action=get_form_data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Populate regions dropdown
+                    const regionSelect = document.getElementById('region');
+                    regionSelect.innerHTML = '<option value="">Bölge Seçin</option>';
+                    data.regions.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.value;
+                        option.textContent = region.label;
+                        regionSelect.appendChild(option);
+                    });
+                    
+                    // Populate units dropdown
+                    const unitSelect = document.getElementById('unit');
+                    unitSelect.innerHTML = '<option value="">Birim Seçin</option>';
+                    data.units.forEach(unit => {
+                        const option = document.createElement('option');
+                        option.value = unit.value;
+                        option.textContent = unit.label;
+                        option.title = unit.description; // Tooltip için açıklama
+                        unitSelect.appendChild(option);
+                    });
+                } else {
+                    console.error('Form verileri yüklenirken hata:', data.message);
+                }
+            } catch (error) {
+                console.error('Form verileri yüklenirken hata:', error);
+            }
         }
 
         // Load reservations from database

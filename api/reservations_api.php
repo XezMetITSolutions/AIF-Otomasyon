@@ -20,6 +20,67 @@ try {
                     'success' => true,
                     'reservations' => $reservations
                 ]);
+            } elseif ($action === 'get_form_data') {
+                // Form için gerekli verileri çek
+                
+                // Bölgeleri byk_categories'den çek
+                $regions = [];
+                try {
+                    $regionSql = "SELECT DISTINCT category FROM byk_categories WHERE category IS NOT NULL ORDER BY category";
+                    $regionResults = $db->fetchAll($regionSql);
+                    foreach ($regionResults as $row) {
+                        $regions[] = [
+                            'value' => strtolower(str_replace(' ', '_', $row['category'])),
+                            'label' => $row['category']
+                        ];
+                    }
+                } catch (Exception $e) {
+                    // Fallback: Manuel bölge listesi
+                    $regions = [
+                        ['value' => 'tirol', 'label' => 'Tirol'],
+                        ['value' => 'vorarlberg', 'label' => 'Vorarlberg'],
+                        ['value' => 'salzburg', 'label' => 'Salzburg'],
+                        ['value' => 'wien', 'label' => 'Wien'],
+                        ['value' => 'steyermark', 'label' => 'Steyermark'],
+                        ['value' => 'oberoesterreich', 'label' => 'Oberösterreich'],
+                        ['value' => 'niederoesterreich', 'label' => 'Niederösterreich'],
+                        ['value' => 'burgenland', 'label' => 'Burgenland'],
+                        ['value' => 'kaernten', 'label' => 'Kärnten']
+                    ];
+                }
+                
+                // Birimleri units tablosundan çek
+                $units = [];
+                try {
+                    $unitSql = "SELECT code, name, description FROM units WHERE is_active = 1 ORDER BY code";
+                    $unitResults = $db->fetchAll($unitSql);
+                    foreach ($unitResults as $row) {
+                        $units[] = [
+                            'value' => $row['code'],
+                            'label' => $row['code'] . ' - ' . $row['name'],
+                            'description' => $row['description']
+                        ];
+                    }
+                } catch (Exception $e) {
+                    // Fallback: Manuel birim listesi
+                    $units = [
+                        ['value' => 'GB', 'label' => 'GB - Genel Başkanlık', 'description' => 'Kuruluşun en üst düzey yönetim birimidir.'],
+                        ['value' => 'T', 'label' => 'T - Teşkilatlanma', 'description' => 'Üye ve şube yapılanmasını koordine eder.'],
+                        ['value' => 'E', 'label' => 'E - Eğitim', 'description' => 'Eğitim programları ve materyallerini hazırlar.'],
+                        ['value' => 'I', 'label' => 'I - İrşad', 'description' => 'Manevi rehberlik ve irşat faaliyetlerinden sorumludur.'],
+                        ['value' => 'KI', 'label' => 'KI - Kurumsal İletişim', 'description' => 'Kurumun dış paydaşlarla iletişimini sağlar.'],
+                        ['value' => 'SH', 'label' => 'SH - Sosyal Hizmetler', 'description' => 'Sosyal yardım ve hizmet faaliyetlerini yürütür.'],
+                        ['value' => 'KT', 'label' => 'KT - Kadınlar Teşkilatı', 'description' => 'Kadınlara yönelik faaliyetler ve organizasyonları düzenler.'],
+                        ['value' => 'KGT', 'label' => 'KGT - Kadınlar Gençlik Teşkilatı', 'description' => 'Kadın gençlere özel faaliyetler yürütür.'],
+                        ['value' => 'GT', 'label' => 'GT - Gençlik Teşkilatı', 'description' => 'Gençlere yönelik faaliyetler ve organizasyonları koordine eder.']
+                    ];
+                }
+                
+                echo json_encode([
+                    'success' => true,
+                    'regions' => $regions,
+                    'units' => $units
+                ]);
             }
             break;
             
