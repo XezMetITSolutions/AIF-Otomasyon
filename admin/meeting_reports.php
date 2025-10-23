@@ -859,20 +859,20 @@ $priorityColors = [
                                 
                                 <div class="meeting-stats-small d-flex justify-content-between mb-3">
                                     <div class="text-center">
-                                        <div class="fw-bold text-primary">${meeting.participant_count}</div>
+                                        <div class="fw-bold text-primary">${meeting.participant_count || 0}</div>
                                         <small class="text-muted">Katılımcı</small>
                                     </div>
                                     <div class="text-center">
-                                        <div class="fw-bold text-success">${meeting.agenda_count}</div>
+                                        <div class="fw-bold text-success">${meeting.agenda_count || 0}</div>
                                         <small class="text-muted">Gündem</small>
                                     </div>
                                     <div class="text-center">
-                                        <div class="fw-bold text-warning">${meeting.decision_count}</div>
+                                        <div class="fw-bold text-warning">${meeting.decision_count || 0}</div>
                                         <small class="text-muted">Karar</small>
                                     </div>
                                 </div>
                                 
-                                ${meeting.pending_decisions > 0 ? `
+                                ${(meeting.pending_decisions || 0) > 0 ? `
                                     <div class="alert alert-warning alert-sm mb-3">
                                         <i class="fas fa-exclamation-triangle me-1"></i>
                                         ${meeting.pending_decisions} bekleyen karar
@@ -944,7 +944,8 @@ $priorityColors = [
         function renderParticipants(participants) {
             const container = document.getElementById('detailParticipantsList');
             
-            if (participants.length === 0) {
+            // Array kontrolü
+            if (!Array.isArray(participants) || participants.length === 0) {
                 container.innerHTML = '<p class="text-muted">Katılımcı bulunmuyor.</p>';
                 return;
             }
@@ -986,7 +987,8 @@ $priorityColors = [
         function renderAgendaItems(agendaItems) {
             const container = document.getElementById('detailAgendaList');
             
-            if (agendaItems.length === 0) {
+            // Array kontrolü
+            if (!Array.isArray(agendaItems) || agendaItems.length === 0) {
                 container.innerHTML = '<p class="text-muted">Gündem maddesi bulunmuyor.</p>';
                 return;
             }
@@ -1031,7 +1033,8 @@ $priorityColors = [
         function renderDecisions(decisions) {
             const container = document.getElementById('detailDecisionsList');
             
-            if (decisions.length === 0) {
+            // Array kontrolü
+            if (!Array.isArray(decisions) || decisions.length === 0) {
                 container.innerHTML = '<p class="text-muted">Karar bulunmuyor.</p>';
                 return;
             }
@@ -1096,6 +1099,36 @@ $priorityColors = [
         function editMeeting(id) {
             // Bu fonksiyon daha sonra implement edilecek
             showAlert('Düzenleme özelliği yakında eklenecek!', 'info');
+        }
+        
+        // Toplantıyı başlat
+        function startMeeting(id) {
+            if (confirm('Bu toplantıyı başlatmak istediğinizden emin misiniz?')) {
+                fetch('api/meeting_api.php?action=update_meeting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        status: 'ongoing'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('Toplantı başlatıldı!', 'success');
+                        loadMeetings();
+                        loadMeetingStats();
+                    } else {
+                        showAlert('Hata: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Bir hata oluştu!', 'danger');
+                });
+            }
         }
         
         // Toplantı sil
