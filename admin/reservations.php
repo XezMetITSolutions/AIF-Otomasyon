@@ -310,13 +310,6 @@ $currentUser = SessionManager::getCurrentUser();
                             <div class="form-section">
                                 <h5><i class="fas fa-building"></i> Organizasyon Bilgileri</h5>
                                 <div class="mb-3">
-                                    <label for="region" class="form-label">Bölge *</label>
-                                    <select class="form-select" id="region" required>
-                                        <option value="">Bölge Seçin</option>
-                                        <!-- Dinamik olarak yüklenecek -->
-                                    </select>
-                                </div>
-                                <div class="mb-3">
                                     <label for="unit" class="form-label">Birim *</label>
                                     <select class="form-select" id="unit" required>
                                         <option value="">Birim Seçin</option>
@@ -447,16 +440,6 @@ $currentUser = SessionManager::getCurrentUser();
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Populate regions dropdown
-                    const regionSelect = document.getElementById('region');
-                    regionSelect.innerHTML = '<option value="">Bölge Seçin</option>';
-                    data.regions.forEach(region => {
-                        const option = document.createElement('option');
-                        option.value = region.value;
-                        option.textContent = region.label;
-                        regionSelect.appendChild(option);
-                    });
-                    
                     // Populate units dropdown
                     const unitSelect = document.getElementById('unit');
                     unitSelect.innerHTML = '<option value="">Birim Seçin</option>';
@@ -679,7 +662,6 @@ $currentUser = SessionManager::getCurrentUser();
                 applicant_name: document.getElementById('applicantName').value,
                 applicant_phone: document.getElementById('applicantPhone').value,
                 applicant_email: document.getElementById('applicantEmail').value,
-                region: document.getElementById('region').value,
                 unit: document.getElementById('unit').value,
                 event_name: document.getElementById('eventName').value,
                 event_description: document.getElementById('eventDescription').value,

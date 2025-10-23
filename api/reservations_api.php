@@ -23,32 +23,6 @@ try {
             } elseif ($action === 'get_form_data') {
                 // Form için gerekli verileri çek
                 
-                // Bölgeleri byk_categories'den çek
-                $regions = [];
-                try {
-                    $regionSql = "SELECT DISTINCT category FROM byk_categories WHERE category IS NOT NULL ORDER BY category";
-                    $regionResults = $db->fetchAll($regionSql);
-                    foreach ($regionResults as $row) {
-                        $regions[] = [
-                            'value' => strtolower(str_replace(' ', '_', $row['category'])),
-                            'label' => $row['category']
-                        ];
-                    }
-                } catch (Exception $e) {
-                    // Fallback: Manuel bölge listesi
-                    $regions = [
-                        ['value' => 'tirol', 'label' => 'Tirol'],
-                        ['value' => 'vorarlberg', 'label' => 'Vorarlberg'],
-                        ['value' => 'salzburg', 'label' => 'Salzburg'],
-                        ['value' => 'wien', 'label' => 'Wien'],
-                        ['value' => 'steyermark', 'label' => 'Steyermark'],
-                        ['value' => 'oberoesterreich', 'label' => 'Oberösterreich'],
-                        ['value' => 'niederoesterreich', 'label' => 'Niederösterreich'],
-                        ['value' => 'burgenland', 'label' => 'Burgenland'],
-                        ['value' => 'kaernten', 'label' => 'Kärnten']
-                    ];
-                }
-                
                 // Birimleri units tablosundan çek
                 $units = [];
                 try {
@@ -78,7 +52,6 @@ try {
                 
                 echo json_encode([
                     'success' => true,
-                    'regions' => $regions,
                     'units' => $units
                 ]);
             }
@@ -92,7 +65,6 @@ try {
                 $applicant_name = $input['applicant_name'] ?? '';
                 $applicant_phone = $input['applicant_phone'] ?? '';
                 $applicant_email = $input['applicant_email'] ?? '';
-                $region = $input['region'] ?? '';
                 $unit = $input['unit'] ?? '';
                 $event_name = $input['event_name'] ?? '';
                 $event_description = $input['event_description'] ?? '';
@@ -101,8 +73,8 @@ try {
                 $end_date = $input['end_date'] ?? $start_date;
                 $status = $input['status'] ?? 'pending';
                 
-                if (empty($applicant_name) || empty($applicant_phone) || empty($region) || 
-                    empty($unit) || empty($event_name) || empty($start_date)) {
+                if (empty($applicant_name) || empty($applicant_phone) || empty($unit) || 
+                    empty($event_name) || empty($start_date)) {
                     echo json_encode([
                         'success' => false,
                         'message' => 'Zorunlu alanlar doldurulmalıdır!'
@@ -134,7 +106,6 @@ try {
                     'applicant_name' => $applicant_name,
                     'applicant_phone' => $applicant_phone,
                     'applicant_email' => $applicant_email,
-                    'region' => $region,
                     'unit' => $unit,
                     'event_name' => $event_name,
                     'event_description' => $event_description,
