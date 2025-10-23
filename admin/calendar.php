@@ -958,19 +958,8 @@ $events_2026 = [
                 </div>
             </div>
 
-            <!-- Event Details -->
-            <div class="event-details">
-                <h4 class="mb-4">
-                    <i class="fas fa-list"></i>
-                    Bu Ayın Gelecek Etkinlikleri
-                    <span id="eventsCount" class="badge bg-primary ms-2">(0 gelecek etkinlik)</span>
-                </h4>
-                <div class="event-list" id="eventList">
-                    <!-- Events will be populated by JavaScript -->
                 </div>
             </div>
-        </div>
-    </div>
 
     <!-- Event Edit Modal -->
     <div class="modal fade" id="eventEditModal" tabindex="-1" aria-labelledby="eventEditModalLabel" aria-hidden="true">
@@ -1161,18 +1150,6 @@ $events_2026 = [
             return futureEvents;
         }
         
-        // Update events count display
-        function updateEventsCount() {
-            const futureEvents = getAllFutureEvents();
-            const countElement = document.getElementById('eventsCount');
-            
-            if (currentFilter === 'all') {
-                countElement.textContent = `(${futureEvents.length} gelecek etkinlik)`;
-            } else {
-                countElement.textContent = `(${futureEvents.length} ${currentFilter} gelecek etkinliği)`;
-            }
-        }
-        
         function generateCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
             const eventList = document.getElementById('eventList');
@@ -1222,9 +1199,6 @@ $events_2026 = [
             
             // Update event list
             updateEventList();
-            
-            // Update events count
-            updateEventsCount();
         }
         
         function createDayElement(day, isOtherMonth) {
@@ -1313,9 +1287,6 @@ $events_2026 = [
                 eventCard.onclick = () => showEventDetails(event);
                 eventList.appendChild(eventCard);
             });
-            
-            // Update events count
-            updateEventsCount();
         }
         
         function showEventDetails(event) {
