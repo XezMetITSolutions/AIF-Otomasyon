@@ -309,6 +309,8 @@ try {
             
         case 'get_meeting_stats':
             // Toplantı istatistikleri
+            error_log('Meeting API - Getting meeting stats');
+            
             $sql = "
                 SELECT 
                     COUNT(*) as total_meetings,
@@ -322,16 +324,22 @@ try {
             $stmt->execute();
             $stats = $stmt->fetch();
             
+            error_log('Meeting API - Meeting stats query result: ' . json_encode($stats));
+            
             // Bekleyen kararlar
             $sql = "SELECT COUNT(*) as pending_decisions FROM meeting_decisions WHERE status IN ('pending', 'in_progress')";
             $stmt = $pdo->prepare($sql);
             $stmt->execute();
             $pendingDecisions = $stmt->fetch()['pending_decisions'];
             
+            error_log('Meeting API - Pending decisions count: ' . $pendingDecisions);
+            
             $stats['pending_decisions'] = $pendingDecisions;
             
             $response['success'] = true;
             $response['data'] = $stats;
+            
+            error_log('Meeting API - Final stats response: ' . json_encode($response));
             break;
             
         case 'get_pending_decisions':

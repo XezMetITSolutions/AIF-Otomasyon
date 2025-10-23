@@ -663,6 +663,114 @@ $priorityColors = [
         </div>
     </div>
 
+    <!-- Karar/Görev Ekleme Modal -->
+    <div class="modal fade" id="decisionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-gavel me-2"></i>Karar & Görev Ekle
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="decisionForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="decisionText" class="form-label">
+                                        <i class="fas fa-file-text me-1"></i>Karar Metni
+                                    </label>
+                                    <textarea class="form-control" id="decisionText" rows="3" 
+                                              placeholder="Karar metnini detaylı olarak yazın..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="decisionNumber" class="form-label">
+                                        <i class="fas fa-hashtag me-1"></i>Karar No
+                                    </label>
+                                    <input type="number" class="form-control" id="decisionNumber" 
+                                           placeholder="Otomatik" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="responsiblePerson" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Sorumlu Kişi
+                                    </label>
+                                    <input type="text" class="form-control" id="responsiblePerson" 
+                                           placeholder="Sorumlu kişinin adını girin..." required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="deadlineDate" class="form-label">
+                                        <i class="fas fa-calendar-alt me-1"></i>Termin Tarihi
+                                    </label>
+                                    <input type="date" class="form-control" id="deadlineDate" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="priority" class="form-label">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Öncelik
+                                    </label>
+                                    <select class="form-select" id="priority">
+                                        <option value="low">Düşük</option>
+                                        <option value="medium" selected>Orta</option>
+                                        <option value="high">Yüksek</option>
+                                        <option value="urgent">Acil</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">
+                                        <i class="fas fa-check-circle me-1"></i>Durum
+                                    </label>
+                                    <select class="form-select" id="status">
+                                        <option value="pending" selected>Beklemede</option>
+                                        <option value="in_progress">Devam Ediyor</option>
+                                        <option value="completed">Tamamlandı</option>
+                                        <option value="cancelled">İptal Edildi</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Notlar
+                            </label>
+                            <textarea class="form-control" id="notes" rows="2" 
+                                      placeholder="Ek notlar, açıklamalar..."></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>İpucu:</strong> Termin tarihi belirleyerek görevlerin takibini kolaylaştırabilirsiniz.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>İptal
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveDecision()">
+                        <i class="fas fa-save me-1"></i>Karar Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toplantı Detay Modal -->
     <div class="modal fade" id="meetingDetailModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -806,14 +914,28 @@ $priorityColors = [
         
         // Toplantı istatistiklerini yükle
         function loadMeetingStats() {
+            console.log('Loading meeting stats...');
             fetch('api/meeting_api.php?action=get_meeting_stats')
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Stats response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Stats data received:', data);
                     if (data.success) {
                         document.getElementById('totalMeetings').textContent = data.data.total_meetings;
                         document.getElementById('completedMeetings').textContent = data.data.completed_meetings;
                         document.getElementById('ongoingMeetings').textContent = data.data.ongoing_meetings;
                         document.getElementById('pendingDecisions').textContent = data.data.pending_decisions;
+                        
+                        console.log('Stats updated:', {
+                            total: data.data.total_meetings,
+                            completed: data.data.completed_meetings,
+                            ongoing: data.data.ongoing_meetings,
+                            pending: data.data.pending_decisions
+                        });
+                    } else {
+                        console.error('Stats API error:', data.message);
                     }
                 })
                 .catch(error => {
@@ -1417,49 +1539,95 @@ $priorityColors = [
         }
         
         // Karar ekle
+        // Karar ekle - Modern modal ile
         function addDecision() {
             if (!currentMeetingId) {
                 showAlert('Önce bir toplantı seçin!', 'warning');
                 return;
             }
             
-            const decisionText = prompt('Karar metnini girin:');
-            if (decisionText) {
-                const responsible = prompt('Sorumlu kişiyi girin:');
-                const deadline = prompt('Termin tarihi (YYYY-MM-DD):');
-                const priority = prompt('Öncelik (low/medium/high/urgent):') || 'medium';
-                
-                const data = {
-                    meeting_id: currentMeetingId,
-                    decision_text: decisionText,
-                    responsible: responsible,
-                    deadline: deadline,
-                    priority: priority
-                };
-                
-                fetch('api/meeting_api.php?action=add_decision', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                })
+            // Modal'ı aç
+            const modal = new bootstrap.Modal(document.getElementById('decisionModal'));
+            
+            // Form'u temizle
+            document.getElementById('decisionForm').reset();
+            
+            // Karar numarasını otomatik ata
+            fetch('api/meeting_api.php?action=get_next_decision_number&meeting_id=' + currentMeetingId)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showAlert('Karar eklendi!', 'success');
-                        // Detay modal'ını yenile
-                        viewMeeting(currentMeetingId);
-                        loadMeetingStats();
-                    } else {
-                        showAlert('Hata: ' + data.message, 'danger');
+                        document.getElementById('decisionNumber').value = data.next_number;
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    showAlert('Bir hata oluştu!', 'danger');
+                    console.error('Error getting next decision number:', error);
                 });
+            
+            // Bugünün tarihini varsayılan olarak ayarla
+            const today = new Date();
+            const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+            document.getElementById('deadlineDate').value = nextWeek.toISOString().split('T')[0];
+            
+            modal.show();
+        }
+        
+        // Karar kaydet
+        function saveDecision() {
+            const form = document.getElementById('decisionForm');
+            const formData = new FormData(form);
+            
+            const decisionData = {
+                meeting_id: currentMeetingId,
+                decision_text: document.getElementById('decisionText').value,
+                responsible_person: document.getElementById('responsiblePerson').value,
+                deadline_date: document.getElementById('deadlineDate').value,
+                priority: document.getElementById('priority').value,
+                status: document.getElementById('status').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            // Validation
+            if (!decisionData.decision_text.trim()) {
+                showAlert('Karar metni gereklidir!', 'warning');
+                return;
             }
+            
+            if (!decisionData.responsible_person.trim()) {
+                showAlert('Sorumlu kişi gereklidir!', 'warning');
+                return;
+            }
+            
+            if (!decisionData.deadline_date) {
+                showAlert('Termin tarihi gereklidir!', 'warning');
+                return;
+            }
+            
+            // API'ye gönder
+            fetch('api/meeting_api.php?action=add_decision', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(decisionData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Karar başarıyla eklendi!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('decisionModal')).hide();
+                    
+                    // Detay modal'ını yenile
+                    viewMeeting(currentMeetingId);
+                    loadMeetingStats();
+                } else {
+                    showAlert('Hata: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Bir hata oluştu!', 'danger');
+            });
         }
         
         // Karar durumu güncelle
