@@ -987,8 +987,42 @@ $events_2026 = [
                             <input type="text" class="form-control" id="editEventTitle" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editEventDate" class="form-label">Tarih</label>
+                            <label for="editEventDate" class="form-label">Başlangıç Tarihi</label>
                             <input type="date" class="form-control" id="editEventDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventEndDate" class="form-label">Bitiş Tarihi (Opsiyonel)</label>
+                            <input type="date" class="form-control" id="editEventEndDate">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editEventRecurring" onchange="toggleRecurrenceOptions()">
+                                <label class="form-check-label" for="editEventRecurring">
+                                    Tekrarlayan Etkinlik
+                                </label>
+                            </div>
+                        </div>
+                        <div id="recurrenceOptions" style="display: none;">
+                            <div class="mb-3">
+                                <label for="editRecurrenceType" class="form-label">Tekrar Tipi</label>
+                                <select class="form-select" id="editRecurrenceType" onchange="updateRecurrencePattern()">
+                                    <option value="none">Tekrar Yok</option>
+                                    <option value="daily">Günlük</option>
+                                    <option value="weekly">Haftalık</option>
+                                    <option value="monthly">Aylık</option>
+                                    <option value="yearly">Yıllık</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="recurrencePatternDiv" style="display: none;">
+                                <label for="editRecurrencePattern" class="form-label">Tekrar Deseni</label>
+                                <select class="form-select" id="editRecurrencePattern">
+                                    <option value="">Seçin...</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editRecurrenceEndDate" class="form-label">Tekrar Bitiş Tarihi</label>
+                                <input type="date" class="form-control" id="editRecurrenceEndDate">
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="editEventBYK" class="form-label">BYK Kategorisi</label>
@@ -1018,8 +1052,8 @@ $events_2026 = [
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Calendar data
-        let events = <?php echo json_encode($events_2026); ?>;
+        // Calendar data - will be loaded from database
+        let events = [];
         
         // Takvim bugünden başlasın
         const today = new Date();
@@ -1034,6 +1068,36 @@ $events_2026 = [
         ];
         
         const dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+        
+        // Load events from database
+        async function loadEvents() {
+            try {
+                const response = await fetch(`api/calendar_api.php?action=list&year=${currentYear}&month=${currentMonth + 1}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    events = data.events.map(event => ({
+                        id: event.id,
+                        title: event.title,
+                        date: event.start_date,
+                        end_date: event.end_date,
+                        byk: event.byk_category,
+                        description: event.description || '',
+                        is_recurring: event.is_recurring,
+                        recurrence_type: event.recurrence_type,
+                        recurrence_pattern: event.recurrence_pattern,
+                        recurrence_end_date: event.recurrence_end_date
+                    }));
+                    
+                    // Generate calendar with loaded events
+                    generateCalendar();
+                } else {
+                    console.error('Etkinlikler yüklenirken hata:', data.message);
+                }
+            } catch (error) {
+                console.error('Etkinlikler yüklenirken hata:', error);
+            }
+        }
         
         // Filter events based on BYK category
         function filterEvents(bykCategory) {
@@ -1236,67 +1300,198 @@ $events_2026 = [
             // Modal formunu doldur
             document.getElementById('editEventTitle').value = event.title;
             document.getElementById('editEventDate').value = event.date;
+            document.getElementById('editEventEndDate').value = event.end_date || event.date;
             document.getElementById('editEventBYK').value = event.byk;
             document.getElementById('editEventDescription').value = event.description || '';
+            document.getElementById('editEventRecurring').checked = event.is_recurring || false;
+            document.getElementById('editRecurrenceType').value = event.recurrence_type || 'none';
+            document.getElementById('editRecurrencePattern').value = event.recurrence_pattern || '';
+            document.getElementById('editRecurrenceEndDate').value = event.recurrence_end_date || '';
+            
+            // Tekrar seçeneklerini göster/gizle
+            toggleRecurrenceOptions();
             
             // Modal'ı göster
             const modal = new bootstrap.Modal(document.getElementById('eventEditModal'));
             modal.show();
         }
         
-        function saveEvent() {
+        function toggleRecurrenceOptions() {
+            const isRecurring = document.getElementById('editEventRecurring').checked;
+            const recurrenceOptions = document.getElementById('recurrenceOptions');
+            const recurrencePatternDiv = document.getElementById('recurrencePatternDiv');
+            
+            if (isRecurring) {
+                recurrenceOptions.style.display = 'block';
+                updateRecurrencePattern();
+            } else {
+                recurrenceOptions.style.display = 'none';
+                recurrencePatternDiv.style.display = 'none';
+            }
+        }
+        
+        function updateRecurrencePattern() {
+            const recurrenceType = document.getElementById('editRecurrenceType').value;
+            const patternSelect = document.getElementById('editRecurrencePattern');
+            const patternDiv = document.getElementById('recurrencePatternDiv');
+            
+            patternSelect.innerHTML = '<option value="">Seçin...</option>';
+            
+            if (recurrenceType === 'weekly') {
+                patternDiv.style.display = 'block';
+                patternSelect.innerHTML = `
+                    <option value="1">Her Pazartesi</option>
+                    <option value="2">Her Salı</option>
+                    <option value="3">Her Çarşamba</option>
+                    <option value="4">Her Perşembe</option>
+                    <option value="5">Her Cuma</option>
+                    <option value="6">Her Cumartesi</option>
+                    <option value="7">Her Pazar</option>
+                `;
+            } else if (recurrenceType === 'monthly') {
+                patternDiv.style.display = 'block';
+                patternSelect.innerHTML = `
+                    <option value="1">Her ayın 1'i</option>
+                    <option value="2">Her ayın 2'si</option>
+                    <option value="3">Her ayın 3'ü</option>
+                    <option value="4">Her ayın 4'ü</option>
+                    <option value="5">Her ayın 5'i</option>
+                    <option value="10">Her ayın 10'u</option>
+                    <option value="15">Her ayın 15'i</option>
+                    <option value="20">Her ayın 20'si</option>
+                    <option value="25">Her ayın 25'i</option>
+                    <option value="last">Her ayın son günü</option>
+                    <option value="first_monday">Her ayın ilk Pazartesi</option>
+                    <option value="first_tuesday">Her ayın ilk Salı</option>
+                    <option value="first_wednesday">Her ayın ilk Çarşamba</option>
+                    <option value="first_thursday">Her ayın ilk Perşembe</option>
+                    <option value="first_friday">Her ayın ilk Cuma</option>
+                    <option value="first_saturday">Her ayın ilk Cumartesi</option>
+                    <option value="first_sunday">Her ayın ilk Pazar</option>
+                    <option value="last_monday">Her ayın son Pazartesi</option>
+                    <option value="last_tuesday">Her ayın son Salı</option>
+                    <option value="last_wednesday">Her ayın son Çarşamba</option>
+                    <option value="last_thursday">Her ayın son Perşembe</option>
+                    <option value="last_friday">Her ayın son Cuma</option>
+                    <option value="last_saturday">Her ayın son Cumartesi</option>
+                    <option value="last_sunday">Her ayın son Pazar</option>
+                `;
+            } else if (recurrenceType === 'yearly') {
+                patternDiv.style.display = 'block';
+                patternSelect.innerHTML = `
+                    <option value="1-1">Her yıl 1 Ocak</option>
+                    <option value="1-15">Her yıl 15 Ocak</option>
+                    <option value="2-14">Her yıl 14 Şubat</option>
+                    <option value="3-21">Her yıl 21 Mart</option>
+                    <option value="4-23">Her yıl 23 Nisan</option>
+                    <option value="5-1">Her yıl 1 Mayıs</option>
+                    <option value="5-19">Her yıl 19 Mayıs</option>
+                    <option value="6-1">Her yıl 1 Haziran</option>
+                    <option value="7-15">Her yıl 15 Temmuz</option>
+                    <option value="8-30">Her yıl 30 Ağustos</option>
+                    <option value="9-1">Her yıl 1 Eylül</option>
+                    <option value="10-29">Her yıl 29 Ekim</option>
+                    <option value="11-10">Her yıl 10 Kasım</option>
+                    <option value="12-31">Her yıl 31 Aralık</option>
+                `;
+            } else {
+                patternDiv.style.display = 'none';
+            }
+        }
+        
+        async function saveEvent() {
             if (!selectedEvent) return;
             
             // Form verilerini al
             const title = document.getElementById('editEventTitle').value;
-            const date = document.getElementById('editEventDate').value;
+            const startDate = document.getElementById('editEventDate').value;
+            const endDate = document.getElementById('editEventEndDate').value || startDate;
             const byk = document.getElementById('editEventBYK').value;
             const description = document.getElementById('editEventDescription').value;
+            const isRecurring = document.getElementById('editEventRecurring').checked;
+            const recurrenceType = document.getElementById('editRecurrenceType').value;
+            const recurrencePattern = document.getElementById('editRecurrencePattern').value;
+            const recurrenceEndDate = document.getElementById('editRecurrenceEndDate').value;
             
-            if (!title || !date || !byk) {
+            if (!title || !startDate || !byk) {
                 alert('Lütfen tüm zorunlu alanları doldurun!');
                 return;
             }
             
-            // Etkinliği güncelle
-            const eventIndex = events.findIndex(e => e.date === selectedEvent.date && e.title === selectedEvent.title);
-            if (eventIndex !== -1) {
-                events[eventIndex] = {
-                    ...events[eventIndex],
-                    title: title,
-                    date: date,
-                    byk: byk,
-                    description: description
-                };
+            try {
+                const response = await fetch('api/calendar_api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        id: selectedEvent.id,
+                        title: title,
+                        start_date: startDate,
+                        end_date: endDate,
+                        byk_category: byk,
+                        description: description,
+                        is_recurring: isRecurring ? 1 : 0,
+                        recurrence_type: recurrenceType,
+                        recurrence_pattern: recurrencePattern,
+                        recurrence_end_date: recurrenceEndDate
+                    })
+                });
                 
-                // Takvimi yenile
-                generateCalendar();
+                const data = await response.json();
                 
-                // Modal'ı kapat
-                const modal = bootstrap.Modal.getInstance(document.getElementById('eventEditModal'));
-                modal.hide();
-                
-                alert('Etkinlik başarıyla güncellendi!');
-            }
-        }
-        
-        function deleteEvent() {
-            if (!selectedEvent) return;
-            
-            if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
-                // Etkinliği sil
-                const eventIndex = events.findIndex(e => e.date === selectedEvent.date && e.title === selectedEvent.title);
-                if (eventIndex !== -1) {
-                    events.splice(eventIndex, 1);
-                    
-                    // Takvimi yenile
-                    generateCalendar();
-                    
+                if (data.success) {
                     // Modal'ı kapat
                     const modal = bootstrap.Modal.getInstance(document.getElementById('eventEditModal'));
                     modal.hide();
                     
-                    alert('Etkinlik başarıyla silindi!');
+                    // Etkinlikleri yeniden yükle
+                    await loadEvents();
+                    
+                    alert('Etkinlik başarıyla kaydedildi!');
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Kaydetme hatası:', error);
+                alert('Etkinlik kaydedilirken hata oluştu!');
+            }
+        }
+        
+        async function deleteEvent() {
+            if (!selectedEvent) return;
+            
+            if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
+                try {
+                    const response = await fetch('api/calendar_api.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id: selectedEvent.id
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Modal'ı kapat
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('eventEditModal'));
+                        modal.hide();
+                        
+                        // Etkinlikleri yeniden yükle
+                        await loadEvents();
+                        
+                        alert('Etkinlik başarıyla silindi!');
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Silme hatası:', error);
+                    alert('Etkinlik silinirken hata oluştu!');
                 }
             }
         }
@@ -1307,7 +1502,7 @@ $events_2026 = [
                 currentMonth = 11;
                 currentYear--;
             }
-            generateCalendar();
+            loadEvents();
         }
         
         function nextMonth() {
@@ -1316,14 +1511,12 @@ $events_2026 = [
                 currentMonth = 0;
                 currentYear++;
             }
-            generateCalendar();
+            loadEvents();
         }
         
         // Sayfa yüklendiğinde takvimi başlat
         document.addEventListener('DOMContentLoaded', function() {
-            generateCalendar();
-            updateEventList();
-            updateEventsCount();
+            loadEvents();
             
             // Bugünün tarihini vurgula
             highlightToday();
