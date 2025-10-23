@@ -1075,6 +1075,8 @@ $events_2026 = [
                 const response = await fetch(`../calendar_api.php?action=list&year=${currentYear}&month=${currentMonth + 1}`);
                 const data = await response.json();
                 
+                console.log('API Response:', data);
+                
                 if (data.success) {
                     events = data.events.map(event => ({
                         id: event.id,
@@ -1088,6 +1090,8 @@ $events_2026 = [
                         recurrence_pattern: event.recurrence_pattern,
                         recurrence_end_date: event.recurrence_end_date
                     }));
+                    
+                    console.log('Loaded events:', events.length, events);
                     
                     // Generate calendar with loaded events
                     generateCalendar();
@@ -1141,13 +1145,21 @@ $events_2026 = [
             const today = new Date();
             today.setHours(0, 0, 0, 0); // Bugünün başlangıcı
             
+            console.log('getAllFutureEvents - Total events:', events.length);
+            console.log('getAllFutureEvents - Today:', today);
+            
             let futureEvents = events.filter(event => {
                 const eventDate = new Date(event.date);
-                return eventDate >= today; // Bugün ve sonrasındaki tüm etkinlikler
+                const isFuture = eventDate >= today;
+                console.log(`Event: ${event.title} (${event.date}) - Future: ${isFuture}`);
+                return isFuture; // Bugün ve sonrasındaki tüm etkinlikler
             });
+            
+            console.log('getAllFutureEvents - Future events:', futureEvents.length);
             
             if (currentFilter !== 'all') {
                 futureEvents = futureEvents.filter(event => event.byk === currentFilter);
+                console.log('getAllFutureEvents - Filtered events:', futureEvents.length);
             }
             
             return futureEvents;
