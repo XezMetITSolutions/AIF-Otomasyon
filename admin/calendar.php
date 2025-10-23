@@ -1137,15 +1137,31 @@ $events_2026 = [
             return monthEvents;
         }
         
+        function getAllFutureEvents() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Bugünün başlangıcı
+            
+            let futureEvents = events.filter(event => {
+                const eventDate = new Date(event.date);
+                return eventDate >= today; // Bugün ve sonrasındaki tüm etkinlikler
+            });
+            
+            if (currentFilter !== 'all') {
+                futureEvents = futureEvents.filter(event => event.byk === currentFilter);
+            }
+            
+            return futureEvents;
+        }
+        
         // Update events count display
         function updateEventsCount() {
-            const filteredEvents = getFilteredEvents();
+            const futureEvents = getAllFutureEvents();
             const countElement = document.getElementById('eventsCount');
             
             if (currentFilter === 'all') {
-                countElement.textContent = `(${filteredEvents.length} gelecek etkinlik)`;
+                countElement.textContent = `(${futureEvents.length} gelecek etkinlik)`;
             } else {
-                countElement.textContent = `(${filteredEvents.length} ${currentFilter} gelecek etkinliği)`;
+                countElement.textContent = `(${futureEvents.length} ${currentFilter} gelecek etkinliği)`;
             }
         }
         
