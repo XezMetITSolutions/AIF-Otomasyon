@@ -17,7 +17,7 @@ try {
                 $year = $_GET['year'] ?? date('Y');
                 $month = $_GET['month'] ?? date('n');
                 
-                $sql = "SELECT * FROM events WHERE YEAR(start_date) = ? AND MONTH(start_date) = ? ORDER BY start_date";
+                $sql = "SELECT * FROM calendar_events WHERE YEAR(start_date) = ? AND MONTH(start_date) = ? ORDER BY start_date";
                 $events = $db->fetchAll($sql, [$year, $month]);
                 
                 echo json_encode([
@@ -53,7 +53,7 @@ try {
                 
                 if ($event_id) {
                     // Güncelle
-                    $sql = "UPDATE events SET title=?, start_date=?, end_date=?, byk_category=?, description=?, is_recurring=?, recurrence_type=?, recurrence_pattern=?, recurrence_end_date=? WHERE id=?";
+                    $sql = "UPDATE calendar_events SET title=?, start_date=?, end_date=?, byk_category=?, description=?, is_recurring=?, recurrence_type=?, recurrence_pattern=?, recurrence_end_date=? WHERE id=?";
                     $result = $db->query($sql, [
                         $title, $start_date, $end_date, $byk_category, $description,
                         $is_recurring, $recurrence_type, $recurrence_pattern, $recurrence_end_date, $event_id
@@ -73,7 +73,7 @@ try {
                     }
                 } else {
                     // Yeni ekle
-                    $sql = "INSERT INTO events (title, start_date, end_date, byk_category, description, is_recurring, recurrence_type, recurrence_pattern, recurrence_end_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $sql = "INSERT INTO calendar_events (title, start_date, end_date, byk_category, description, is_recurring, recurrence_type, recurrence_pattern, recurrence_end_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $result = $db->query($sql, [
                         $title, $start_date, $end_date, $byk_category, $description,
                         $is_recurring, $recurrence_type, $recurrence_pattern, $recurrence_end_date
@@ -106,7 +106,7 @@ try {
                     exit;
                 }
                 
-                $sql = "DELETE FROM events WHERE id = ?";
+                $sql = "DELETE FROM calendar_events WHERE id = ?";
                 $result = $db->query($sql, [$event_id]);
                 
                 if ($result) {
