@@ -1072,7 +1072,7 @@ $events_2026 = [
         // Load events from database
         async function loadEvents() {
             try {
-                const response = await fetch(`api/calendar_api.php?action=list&year=${currentYear}&month=${currentMonth + 1}`);
+                const response = await fetch(`../calendar_api.php?action=list&year=${currentYear}&month=${currentMonth + 1}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1419,7 +1419,7 @@ $events_2026 = [
             }
             
             try {
-                const response = await fetch('api/calendar_api.php', {
+                const response = await fetch('../calendar_api.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1464,7 +1464,7 @@ $events_2026 = [
             
             if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
                 try {
-                    const response = await fetch('api/calendar_api.php', {
+                    const response = await fetch('../calendar_api.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
