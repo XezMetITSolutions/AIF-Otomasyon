@@ -477,7 +477,7 @@ $priorityColors = [
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">BYK Türü <span class="text-danger">*</span></label>
-                                            <select class="form-select" name="byk" required>
+                                            <select class="form-select" name="byk" required onchange="loadParticipantsByBYK(this.value)">
                                                 <option value="">BYK Seçin</option>
                                                 <?php foreach ($bykUnits as $unit): ?>
                                                 <option value="<?php echo $unit['code']; ?>"><?php echo $unit['code']; ?> - <?php echo $unit['name']; ?></option>
@@ -486,17 +486,13 @@ $priorityColors = [
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-6 mb-3">
                                             <label class="form-label">Tarih <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" name="date" required>
                                         </div>
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-6 mb-3">
                                             <label class="form-label">Başlangıç Saati <span class="text-danger">*</span></label>
                                             <input type="time" class="form-control" name="time" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Bitiş Saati</label>
-                                            <input type="time" class="form-control" name="end_time">
                                         </div>
                                     </div>
                                     <div class="row">
@@ -535,10 +531,35 @@ $priorityColors = [
                                 <div class="p-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h6>Katılımcı Listesi</h6>
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="addParticipant()">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="toggleAddParticipantForm()">
                                             <i class="fas fa-plus"></i> Katılımcı Ekle
                                         </button>
                                     </div>
+                                    
+                                    <!-- Katılımcı Ekleme Formu -->
+                                    <div id="addParticipantForm" class="card mb-3" style="display: none;">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Yeni Katılımcı Ekle</h6>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <input type="text" class="form-control" id="participantName" placeholder="Katılımcı Adı">
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <select class="form-select" id="participantRole">
+                                                        <option value="member">Üye</option>
+                                                        <option value="chairman">Başkan</option>
+                                                        <option value="secretary">Sekreter</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2 mb-2">
+                                                    <button type="button" class="btn btn-success w-100" onclick="addParticipantFromForm()">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div id="participantsList">
                                         <!-- Katılımcılar buraya eklenecek -->
                                     </div>
@@ -550,10 +571,31 @@ $priorityColors = [
                                 <div class="p-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h6>Gündem Maddeleri</h6>
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="addAgendaItem()">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="toggleAddAgendaForm()">
                                             <i class="fas fa-plus"></i> Gündem Ekle
                                         </button>
                                     </div>
+                                    
+                                    <!-- Gündem Ekleme Formu -->
+                                    <div id="addAgendaForm" class="card mb-3" style="display: none;">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Yeni Gündem Maddesi Ekle</h6>
+                                            <div class="row">
+                                                <div class="col-md-8 mb-2">
+                                                    <input type="text" class="form-control" id="agendaTitle" placeholder="Gündem Maddesi Başlığı">
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <input type="text" class="form-control" id="agendaResponsible" placeholder="Sorumlu Kişi">
+                                                </div>
+                                                <div class="col-md-1 mb-2">
+                                                    <button type="button" class="btn btn-success w-100" onclick="addAgendaFromForm()">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div id="agendaItemsList">
                                         <!-- Gündem maddeleri buraya eklenecek -->
                                     </div>
@@ -1094,21 +1136,64 @@ $priorityColors = [
             new bootstrap.Modal(document.getElementById('addMeetingModal')).show();
         }
         
-        // Katılımcı ekle
-        function addParticipant() {
-            const name = prompt('Katılımcı adını girin:');
-            if (name) {
-                const role = prompt('Rolü girin (Başkan, Sekreter, Üye):') || 'member';
-                
-                const container = document.getElementById('participantsList');
+        // BYK seçildiğinde otomatik katılımcıları yükle
+        function loadParticipantsByBYK(bykCode) {
+            if (!bykCode) return;
+            
+            // BYK'ya göre örnek katılımcılar (gerçek sistemde API'den gelecek)
+            const participantsByBYK = {
+                'AT': [
+                    {name: 'Ahmet Yılmaz', role: 'Başkan'},
+                    {name: 'Mehmet Kaya', role: 'Sekreter'},
+                    {name: 'Ali Demir', role: 'Üye'},
+                    {name: 'Fatma Özkan', role: 'Üye'},
+                    {name: 'Hasan Yıldız', role: 'Üye'}
+                ],
+                'KT': [
+                    {name: 'Zeynep Kaya', role: 'Başkan'},
+                    {name: 'Elif Demir', role: 'Sekreter'},
+                    {name: 'Ayşe Yılmaz', role: 'Üye'},
+                    {name: 'Fatma Özkan', role: 'Üye'},
+                    {name: 'Hatice Korkmaz', role: 'Üye'}
+                ],
+                'KGT': [
+                    {name: 'Selin Yılmaz', role: 'Başkan'},
+                    {name: 'Büşra Demir', role: 'Sekreter'},
+                    {name: 'Merve Kaya', role: 'Üye'},
+                    {name: 'Esra Özkan', role: 'Üye'},
+                    {name: 'Gamze Yıldız', role: 'Üye'}
+                ],
+                'GT': [
+                    {name: 'Emre Yılmaz', role: 'Başkan'},
+                    {name: 'Can Demir', role: 'Sekreter'},
+                    {name: 'Burak Kaya', role: 'Üye'},
+                    {name: 'Oğuz Özkan', role: 'Üye'},
+                    {name: 'Serkan Yıldız', role: 'Üye'}
+                ]
+            };
+            
+            const participants = participantsByBYK[bykCode] || [];
+            const container = document.getElementById('participantsList');
+            
+            // Mevcut katılımcıları temizle
+            container.innerHTML = '';
+            
+            // Yeni katılımcıları ekle (hepsi geldi olarak işaretle)
+            participants.forEach(participant => {
                 const newParticipantHtml = `
                     <div class="d-flex align-items-center mb-2 p-2 border rounded">
                         <div class="participant-avatar me-3">
-                            ${name.charAt(0)}
+                            ${participant.name.charAt(0)}
                         </div>
                         <div class="flex-grow-1">
-                            <div class="fw-bold">${name}</div>
-                            <small class="text-muted">${role}</small>
+                            <div class="fw-bold">${participant.name}</div>
+                            <small class="text-muted">${participant.role}</small>
+                        </div>
+                        <div class="form-check me-2">
+                            <input class="form-check-input" type="checkbox" checked onchange="toggleParticipantAttendance(this)">
+                            <label class="form-check-label">
+                                <small>Geldi</small>
+                            </label>
                         </div>
                         <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeParticipant(this)">
                             <i class="fas fa-times"></i>
@@ -1116,6 +1201,73 @@ $priorityColors = [
                     </div>
                 `;
                 container.innerHTML += newParticipantHtml;
+            });
+            
+            showAlert(`${participants.length} katılımcı otomatik eklendi`, 'success');
+        }
+        
+        // Katılımcı ekleme formunu göster/gizle
+        function toggleAddParticipantForm() {
+            const form = document.getElementById('addParticipantForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            
+            if (form.style.display === 'block') {
+                document.getElementById('participantName').focus();
+            }
+        }
+        
+        // Formdan katılımcı ekle
+        function addParticipantFromForm() {
+            const name = document.getElementById('participantName').value.trim();
+            const role = document.getElementById('participantRole').value;
+            
+            if (!name) {
+                showAlert('Lütfen katılımcı adını girin!', 'warning');
+                return;
+            }
+            
+            const container = document.getElementById('participantsList');
+            const newParticipantHtml = `
+                <div class="d-flex align-items-center mb-2 p-2 border rounded">
+                    <div class="participant-avatar me-3">
+                        ${name.charAt(0)}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">${name}</div>
+                        <small class="text-muted">${role}</small>
+                    </div>
+                    <div class="form-check me-2">
+                        <input class="form-check-input" type="checkbox" checked onchange="toggleParticipantAttendance(this)">
+                        <label class="form-check-label">
+                            <small>Geldi</small>
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeParticipant(this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            container.innerHTML += newParticipantHtml;
+            
+            // Formu temizle ve gizle
+            document.getElementById('participantName').value = '';
+            document.getElementById('participantRole').value = 'member';
+            document.getElementById('addParticipantForm').style.display = 'none';
+            
+            showAlert('Katılımcı eklendi!', 'success');
+        }
+        
+        // Katılımcı katılım durumunu değiştir
+        function toggleParticipantAttendance(checkbox) {
+            const label = checkbox.nextElementSibling;
+            if (checkbox.checked) {
+                label.textContent = 'Geldi';
+                label.classList.remove('text-danger');
+                label.classList.add('text-success');
+            } else {
+                label.textContent = 'Gelmedi';
+                label.classList.remove('text-success');
+                label.classList.add('text-danger');
             }
         }
         
@@ -1124,35 +1276,51 @@ $priorityColors = [
             button.closest('.d-flex').remove();
         }
         
-        // Gündem maddesi ekle
-        function addAgendaItem() {
-            const title = prompt('Gündem maddesi başlığını girin:');
-            if (title) {
-                const description = prompt('Açıklama (opsiyonel):') || '';
-                const responsible = prompt('Sorumlu kişiyi girin:') || '';
-                const duration = prompt('Tahmini süre (dakika):') || '15';
-                
-                const container = document.getElementById('agendaItemsList');
-                const order = container.children.length + 1;
-                const newItemHtml = `
-                    <div class="agenda-item mb-3 p-3 border rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">${order}. ${title}</h6>
-                                <p class="text-muted mb-1">${description}</p>
-                                <small class="text-muted">
-                                    <strong>Sorumlu:</strong> ${responsible} | 
-                                    <strong>Süre:</strong> ${duration} dk
-                                </small>
-                            </div>
-                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeAgendaItem(this)">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += newItemHtml;
+        // Gündem ekleme formunu göster/gizle
+        function toggleAddAgendaForm() {
+            const form = document.getElementById('addAgendaForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            
+            if (form.style.display === 'block') {
+                document.getElementById('agendaTitle').focus();
             }
+        }
+        
+        // Formdan gündem maddesi ekle
+        function addAgendaFromForm() {
+            const title = document.getElementById('agendaTitle').value.trim();
+            const responsible = document.getElementById('agendaResponsible').value.trim();
+            
+            if (!title) {
+                showAlert('Lütfen gündem maddesi başlığını girin!', 'warning');
+                return;
+            }
+            
+            const container = document.getElementById('agendaItemsList');
+            const order = container.children.length + 1;
+            const newItemHtml = `
+                <div class="agenda-item mb-3 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${order}. ${title}</h6>
+                            <small class="text-muted">
+                                <strong>Sorumlu:</strong> ${responsible || '-'}
+                            </small>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeAgendaItem(this)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += newItemHtml;
+            
+            // Formu temizle ve gizle
+            document.getElementById('agendaTitle').value = '';
+            document.getElementById('agendaResponsible').value = '';
+            document.getElementById('addAgendaForm').style.display = 'none';
+            
+            showAlert('Gündem maddesi eklendi!', 'success');
         }
         
         // Gündem maddesi kaldır
