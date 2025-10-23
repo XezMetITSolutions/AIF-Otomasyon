@@ -549,14 +549,6 @@ $priorityColors = [
                                             <label class="form-label">Yer / Platform <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="location" required placeholder="AIF Genel Merkez veya Zoom linki">
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Toplantı Türü</label>
-                                            <select class="form-select" name="meeting_type">
-                                                <option value="regular">Normal Toplantı</option>
-                                                <option value="emergency">Acil Toplantı</option>
-                                                <option value="special">Özel Toplantı</option>
-                                            </select>
-                                        </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">

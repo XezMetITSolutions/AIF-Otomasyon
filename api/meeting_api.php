@@ -93,8 +93,8 @@ try {
             // Debug için log
             error_log('Meeting API - Received data: ' . json_encode($data));
             
-            $sql = "INSERT INTO meetings (byk_code, title, meeting_date, meeting_time, end_time, location, chairman, secretary, status, meeting_type, notes) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO meetings (byk_code, title, meeting_date, meeting_time, end_time, location, chairman, secretary, status, notes) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([
@@ -107,7 +107,6 @@ try {
                 $data['chairman'] ?? '',
                 $data['secretary'] ?? '',
                 $data['status'] ?? 'planned',
-                $data['meeting_type'] ?? 'regular',
                 $data['notes'] ?? ''
             ]);
             
