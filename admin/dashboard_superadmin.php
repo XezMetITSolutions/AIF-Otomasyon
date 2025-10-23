@@ -495,10 +495,6 @@ try {
                 </div>
                 <h3 class="stat-value"><?php echo $dashboardStats['total_users']; ?></h3>
                 <p class="stat-label">Toplam Kullanıcı</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+12% bu ay</span>
-                </div>
             </div>
 
             <div class="stat-card warning slide-in-left" data-aos="fade-up" data-aos-delay="200">
@@ -509,10 +505,6 @@ try {
                 </div>
                 <h3 class="stat-value"><?php echo $dashboardStats['total_events']; ?></h3>
                 <p class="stat-label">Aktif Etkinlik</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+8% bu hafta</span>
-                </div>
             </div>
 
             <div class="stat-card danger slide-in-right" data-aos="fade-up" data-aos-delay="300">
@@ -523,10 +515,6 @@ try {
                 </div>
                 <h3 class="stat-value"><?php echo $dashboardStats['pending_approvals']; ?></h3>
                 <p class="stat-label">Bekleyen Onay</p>
-                <div class="stat-change negative">
-                    <i class="fas fa-arrow-down"></i>
-                    <span>-3% dün</span>
-                </div>
             </div>
 
             <div class="stat-card slide-in-right" data-aos="fade-up" data-aos-delay="400">
@@ -537,10 +525,6 @@ try {
                 </div>
                 <h3 class="stat-value">₺<?php echo number_format($dashboardStats['monthly_revenue']); ?></h3>
                 <p class="stat-label">Aylık Gelir</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+<?php echo $dashboardStats['growth_rate']; ?>% bu ay</span>
-                </div>
             </div>
         </div>
 
@@ -1269,10 +1253,6 @@ $recentActivities = [
                 </div>
                 <h3 class="stat-value"><?php echo $dashboardStats['total_users']; ?></h3>
                 <p class="stat-label">Toplam Kullanıcı</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+12% bu ay</span>
-                </div>
             </div>
 
             <div class="stat-card warning slide-in-left" data-aos="fade-up" data-aos-delay="200">
@@ -1283,10 +1263,6 @@ $recentActivities = [
                 </div>
                 <h3 class="stat-value"><?php echo $dashboardStats['total_events']; ?></h3>
                 <p class="stat-label">Aktif Etkinlik</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+8% bu hafta</span>
-                </div>
             </div>
 
             <div class="stat-card danger slide-in-right" data-aos="fade-up" data-aos-delay="300">
@@ -1297,10 +1273,6 @@ $recentActivities = [
                 </div>
                 <h3 class="stat-value"><?php echo $dashboardStats['pending_approvals']; ?></h3>
                 <p class="stat-label">Bekleyen Onay</p>
-                <div class="stat-change negative">
-                    <i class="fas fa-arrow-down"></i>
-                    <span>-3% dün</span>
-                </div>
             </div>
 
             <div class="stat-card slide-in-right" data-aos="fade-up" data-aos-delay="400">
@@ -1311,10 +1283,6 @@ $recentActivities = [
                 </div>
                 <h3 class="stat-value">₺<?php echo number_format($dashboardStats['monthly_revenue']); ?></h3>
                 <p class="stat-label">Aylık Gelir</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+<?php echo $dashboardStats['growth_rate']; ?>% bu ay</span>
-                </div>
             </div>
         </div>
 
