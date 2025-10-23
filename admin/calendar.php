@@ -1072,11 +1072,8 @@ $events_2026 = [
         // Load events from database
         async function loadEvents() {
             try {
-                console.log(`Loading events for year: ${currentYear}, month: ${currentMonth + 1}`);
                 const response = await fetch(`../calendar_api.php?action=list&year=${currentYear}&month=${currentMonth + 1}`);
                 const data = await response.json();
-                
-                console.log('API Response:', data);
                 
                 if (data.success) {
                     events = data.events.map(event => ({
@@ -1091,9 +1088,6 @@ $events_2026 = [
                         recurrence_pattern: event.recurrence_pattern,
                         recurrence_end_date: event.recurrence_end_date
                     }));
-                    
-                    console.log('Loaded events:', events.length, events);
-                    console.log('Debug info:', data.debug);
                     
                     // Generate calendar with loaded events
                     generateCalendar();

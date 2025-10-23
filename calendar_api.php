@@ -16,26 +16,12 @@ try {
                 $year = $_GET['year'] ?? date('Y');
                 $month = $_GET['month'] ?? date('n');
                 
-                error_log("Calendar API - Loading events for year: $year, month: $month");
-                
                 $sql = "SELECT * FROM calendar_events WHERE YEAR(start_date) = ? AND MONTH(start_date) = ? ORDER BY start_date";
                 $events = $db->fetchAll($sql, [$year, $month]);
                 
-                error_log("Calendar API - Found events: " . count($events));
-                
-                // Tüm etkinlikleri de kontrol et
-                $allEventsSql = "SELECT COUNT(*) as total FROM calendar_events";
-                $totalEvents = $db->fetch($allEventsSql);
-                error_log("Calendar API - Total events in database: " . $totalEvents['total']);
-                
                 echo json_encode([
                     'success' => true,
-                    'events' => $events,
-                    'debug' => [
-                        'year' => $year,
-                        'month' => $month,
-                        'total_events' => $totalEvents['total']
-                    ]
+                    'events' => $events
                 ]);
             }
             break;
