@@ -1152,11 +1152,9 @@ $events_2026 = [
         
         function generateCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
-            const eventList = document.getElementById('eventList');
             
             // Clear previous content
             calendarGrid.innerHTML = '';
-            eventList.innerHTML = '';
             
             // Add day headers
             dayNames.forEach(day => {
@@ -1196,9 +1194,6 @@ $events_2026 = [
             
             // Update calendar title
             document.getElementById('calendarTitle').textContent = `${currentYear} Yılı Takvimi`;
-            
-            // Update event list
-            updateEventList();
         }
         
         function createDayElement(day, isOtherMonth) {
@@ -1245,48 +1240,6 @@ $events_2026 = [
             }
             
             return dayElement;
-        }
-        
-        function updateEventList() {
-            const eventList = document.getElementById('eventList');
-            const monthEvents = getFilteredEvents();
-            
-            // Event listesini temizle
-            eventList.innerHTML = '';
-            
-            if (monthEvents.length === 0) {
-                if (currentFilter === 'all') {
-                    eventList.innerHTML = '<p class="text-muted text-center">Bu ay için gelecek etkinlik bulunmuyor.</p>';
-                } else {
-                    eventList.innerHTML = `<p class="text-muted text-center">Bu ay için ${currentFilter} kategorisinde gelecek etkinlik bulunmuyor.</p>`;
-                }
-                return;
-            }
-            
-            // Sort events by date
-            monthEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            monthEvents.forEach(event => {
-                const eventCard = document.createElement('div');
-                const eventDate = new Date(event.date);
-                const isToday = eventDate.getTime() === today.getTime();
-                
-                eventCard.className = `event-card ${event.byk.toLowerCase()} ${isToday ? 'today-event' : ''}`;
-                
-                const dateStr = `${eventDate.getDate()} ${monthNames[eventDate.getMonth()]}${isToday ? ' (Bugün)' : ''}`;
-                
-                eventCard.innerHTML = `
-                    <div class="event-date">${dateStr}</div>
-                    <div class="event-title">${event.title}</div>
-                    <div class="event-byk">${event.byk}</div>
-                `;
-                
-                eventCard.onclick = () => showEventDetails(event);
-                eventList.appendChild(eventCard);
-            });
         }
         
         function showEventDetails(event) {
