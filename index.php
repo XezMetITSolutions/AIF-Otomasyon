@@ -260,19 +260,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
         </form>
 
-        <!-- Debug Info -->
-        <div class="debug-info">
-            <h6><i class="fas fa-bug me-2"></i>Debug Bilgileri</h6>
-            <p><strong>Test Kullanıcıları:</strong></p>
-            <ul>
-                <li><code>debug.test</code> / <code>Test123456</code> (Manager)</li>
-                <li><code>AIF-Admin</code> / <code>admin123</code> (Superadmin)</li>
-                <li><code>mete.burcak</code> / <code>mete123</code> (Manager)</li>
-            </ul>
-            <p><strong>Session:</strong> <?php echo isset($_SESSION['username']) ? $_SESSION['username'] : 'Yok'; ?></p>
-            <p><strong>Method:</strong> <?php echo $_SERVER['REQUEST_METHOD']; ?></p>
-            <p><strong>Time:</strong> <?php echo date('Y-m-d H:i:s'); ?></p>
-        </div>
 
         <!-- Footer -->
         <div class="login-footer">
