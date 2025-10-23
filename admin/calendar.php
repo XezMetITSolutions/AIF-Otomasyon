@@ -475,7 +475,7 @@ $events_2026 = [
 
         .event-item.at { background: var(--danger-color); }
         .event-item.kt { background: #6f42c1; }
-        .event-item.gt { background: var(--primary-color); }
+        .event-item.gt { background: #0d6efd; }
         .event-item.kgt { background: var(--success-color); }
 
         .event-details {
@@ -506,7 +506,7 @@ $events_2026 = [
 
         .event-card.at { border-left-color: var(--danger-color); }
         .event-card.kt { border-left-color: #6f42c1; }
-        .event-card.gt { border-left-color: var(--primary-color); }
+        .event-card.gt { border-left-color: #0d6efd; }
         .event-card.kgt { border-left-color: var(--success-color); }
 
         .event-date {
@@ -837,8 +837,8 @@ $events_2026 = [
         }
 
         .filter-btn.gt.active {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
+            background: #0d6efd;
+            border-color: #0d6efd;
         }
 
         .filter-btn.kgt.active {
@@ -862,7 +862,7 @@ $events_2026 = [
         }
 
         .filter-btn.gt .filter-dot {
-            background: var(--primary-color);
+            background: #0d6efd;
         }
 
         .filter-btn.kgt .filter-dot {
@@ -1625,3 +1625,4 @@ $events_2026 = [
     </script>
 </body>
 </html>
+</html></html>
