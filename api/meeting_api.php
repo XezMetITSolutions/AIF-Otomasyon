@@ -90,6 +90,9 @@ try {
             // Yeni toplantı ekle
             $data = json_decode(file_get_contents('php://input'), true);
             
+            // Debug için log
+            error_log('Meeting API - Received data: ' . json_encode($data));
+            
             $sql = "INSERT INTO meetings (byk_code, title, meeting_date, meeting_time, end_time, location, chairman, secretary, status, meeting_type, notes) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
@@ -113,6 +116,7 @@ try {
                 
                 // Katılımcıları ekle
                 if (!empty($data['participants'])) {
+                    error_log('Meeting API - Adding participants: ' . json_encode($data['participants']));
                     $sql = "INSERT INTO meeting_participants (meeting_id, participant_name, participant_role, attendance_status) VALUES (?, ?, ?, ?)";
                     $stmt = $pdo->prepare($sql);
                     
@@ -124,10 +128,13 @@ try {
                             $participant['status'] ?? 'invited'
                         ]);
                     }
+                } else {
+                    error_log('Meeting API - No participants to add');
                 }
                 
                 // Gündem maddelerini ekle
                 if (!empty($data['agenda'])) {
+                    error_log('Meeting API - Adding agenda: ' . json_encode($data['agenda']));
                     $sql = "INSERT INTO meeting_agenda (meeting_id, agenda_order, title, description, responsible_person, estimated_duration) VALUES (?, ?, ?, ?, ?, ?)";
                     $stmt = $pdo->prepare($sql);
                     
@@ -141,6 +148,8 @@ try {
                             $item['duration'] ?? 15
                         ]);
                     }
+                } else {
+                    error_log('Meeting API - No agenda to add');
                 }
                 
                 $response['success'] = true;

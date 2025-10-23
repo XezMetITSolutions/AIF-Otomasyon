@@ -210,18 +210,6 @@ $priorityColors = [
             margin-bottom: 2rem;
         }
         
-        .meeting-actions {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .meeting-card:hover .meeting-actions {
-            opacity: 1;
-        }
-        
         .progress-ring {
             width: 60px;
             height: 60px;
@@ -309,6 +297,67 @@ $priorityColors = [
             background: var(--primary-color);
             border: 3px solid white;
             box-shadow: 0 0 0 3px var(--primary-color);
+        }
+        
+        /* Tooltip Düzeltmeleri */
+        .meeting-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .meeting-card:hover .meeting-actions {
+            opacity: 1;
+        }
+        
+        .meeting-actions .btn {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            position: relative;
+        }
+        
+        .meeting-actions .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Bootstrap tooltip override */
+        .tooltip {
+            z-index: 9999 !important;
+        }
+        
+        .tooltip-inner {
+            background-color: #333;
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            max-width: 200px;
+        }
+        
+        .tooltip.bs-tooltip-top .tooltip-arrow::before {
+            border-top-color: #333;
+        }
+        
+        .tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+            border-bottom-color: #333;
+        }
+        
+        .tooltip.bs-tooltip-start .tooltip-arrow::before {
+            border-left-color: #333;
+        }
+        
+        .tooltip.bs-tooltip-end .tooltip-arrow::before {
+            border-right-color: #333;
         }
     </style>
 </head>
@@ -1560,27 +1609,35 @@ $priorityColors = [
             document.querySelectorAll('#participantsList .d-flex').forEach(item => {
                 const name = item.querySelector('.fw-bold').textContent;
                 const role = item.querySelector('.text-muted').textContent;
-                participants.push({name: name, role: role, status: 'invited'});
+                const isAttending = item.querySelector('.form-check-input').checked;
+                participants.push({
+                    name: name, 
+                    role: role, 
+                    status: isAttending ? 'attended' : 'absent'
+                });
             });
             
             // Gündem maddelerini topla
             const agenda = [];
             document.querySelectorAll('#agendaItemsList .agenda-item').forEach((item, index) => {
                 const title = item.querySelector('h6').textContent.replace(/^\d+\.\s*/, '');
-                const description = item.querySelector('.text-muted').textContent.split('|')[0].replace('Sorumlu: ', '').trim();
-                const responsible = item.querySelector('.text-muted').textContent.split('|')[1]?.replace('Sorumlu: ', '').trim() || '';
-                const duration = item.querySelector('.text-muted').textContent.split('|')[2]?.replace('Süre: ', '').replace(' dk', '').trim() || '15';
+                const responsible = item.querySelector('.text-muted').textContent.replace('Sorumlu: ', '').trim();
                 
                 agenda.push({
                     title: title,
-                    description: description,
+                    description: '',
                     responsible: responsible,
-                    duration: parseInt(duration)
+                    duration: 15
                 });
             });
             
             meetingData.participants = participants;
             meetingData.agenda = agenda;
+            
+            // Debug için console.log
+            console.log('Toplantı verisi:', meetingData);
+            console.log('Katılımcılar:', participants);
+            console.log('Gündem:', agenda);
             
             // API'ye gönder
             fetch('api/meeting_api.php?action=add_meeting', {
