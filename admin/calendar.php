@@ -1072,6 +1072,7 @@ $events_2026 = [
         // Load events from database
         async function loadEvents() {
             try {
+                console.log(`Loading events for year: ${currentYear}, month: ${currentMonth + 1}`);
                 const response = await fetch(`../calendar_api.php?action=list&year=${currentYear}&month=${currentMonth + 1}`);
                 const data = await response.json();
                 
@@ -1092,6 +1093,7 @@ $events_2026 = [
                     }));
                     
                     console.log('Loaded events:', events.length, events);
+                    console.log('Debug info:', data.debug);
                     
                     // Generate calendar with loaded events
                     generateCalendar();
