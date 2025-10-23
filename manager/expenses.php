@@ -1,11 +1,12 @@
 
 <?php
 require_once 'auth.php';
-require_once 'config/database.php';
+require_once 'includes/database.php';
 
 // Veritabanı bağlantısı
 try {
-    $pdo = createDatabaseAndTables();
+    $db = Database::getInstance();
+    $pdo = $db->getConnection();
 } catch (Exception $e) {
     // Hata sayfası göster
     ?>
