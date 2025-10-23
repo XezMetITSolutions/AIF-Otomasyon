@@ -81,7 +81,7 @@ $currentUser = SessionManager::getCurrentUser();
                     <div class="page-card admin-stats">
                         <div class="card-body text-center">
                             <i class="fas fa-users fa-2x mb-2"></i>
-                            <h3>156</h3>
+                            <h3 id="totalUsers">-</h3>
                             <p class="mb-0">Toplam Kullanıcı</p>
                         </div>
                     </div>
@@ -90,8 +90,8 @@ $currentUser = SessionManager::getCurrentUser();
                     <div class="page-card admin-stats">
                         <div class="card-body text-center">
                             <i class="fas fa-calendar-check fa-2x mb-2"></i>
-                            <h3>23</h3>
-                            <p class="mb-0">Bu Ay Toplantı</p>
+                            <h3 id="totalMeetings">-</h3>
+                            <p class="mb-0">Toplam Toplantı</p>
                         </div>
                     </div>
                 </div>
@@ -99,8 +99,8 @@ $currentUser = SessionManager::getCurrentUser();
                     <div class="page-card admin-stats">
                         <div class="card-body text-center">
                             <i class="fas fa-euro-sign fa-2x mb-2"></i>
-                            <h3>€2,450</h3>
-                            <p class="mb-0">Bu Ay Harcama</p>
+                            <h3 id="totalExpenses">-</h3>
+                            <p class="mb-0">Toplam Harcama</p>
                         </div>
                     </div>
                 </div>
@@ -108,8 +108,8 @@ $currentUser = SessionManager::getCurrentUser();
                     <div class="page-card admin-stats">
                         <div class="card-body text-center">
                             <i class="fas fa-chart-line fa-2x mb-2"></i>
-                            <h3>%87</h3>
-                            <p class="mb-0">Sistem Aktiflik</p>
+                            <h3 id="systemStatus">-</h3>
+                            <p class="mb-0">Sistem Durumu</p>
                         </div>
                     </div>
                 </div>
@@ -218,39 +218,9 @@ $currentUser = SessionManager::getCurrentUser();
                     <h5><i class="fas fa-history"></i> Son Aktiviteler</h5>
                 </div>
                 <div class="card-body">
-                    <div class="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-success"></div>
-                            <div class="timeline-content">
-                                <h6>Yeni kullanıcı eklendi</h6>
-                                <p class="text-muted mb-1">Ahmet Yılmaz sisteme eklendi</p>
-                                <small class="text-muted">2 saat önce</small>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-primary"></div>
-                            <div class="timeline-content">
-                                <h6>Toplantı oluşturuldu</h6>
-                                <p class="text-muted mb-1">AT BYK Mart Toplantısı planlandı</p>
-                                <small class="text-muted">4 saat önce</small>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-warning"></div>
-                            <div class="timeline-content">
-                                <h6>Harcama onaylandı</h6>
-                                <p class="text-muted mb-1">€150 ofis malzemeleri harcaması onaylandı</p>
-                                <small class="text-muted">6 saat önce</small>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-info"></div>
-                            <div class="timeline-content">
-                                <h6>Sistem güncellemesi</h6>
-                                <p class="text-muted mb-1">Code List yönetimi güncellendi</p>
-                                <small class="text-muted">1 gün önce</small>
-                            </div>
-                        </div>
+                    <div class="text-center py-4">
+                        <i class="fas fa-info-circle fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Henüz aktivite bulunmuyor. Sistem kullanıldıkça aktiviteler burada görünecek.</p>
                     </div>
                 </div>
             </div>
@@ -262,7 +232,8 @@ $currentUser = SessionManager::getCurrentUser();
     
     <script>
         function refreshDashboard() {
-            location.reload();
+            loadDashboardStats();
+            showAlert('Dashboard yenilendi!', 'success');
         }
         
         function quickAction(action) {
@@ -309,7 +280,59 @@ $currentUser = SessionManager::getCurrentUser();
         // Sayfa yüklendiğinde
         $(document).ready(function() {
             console.log('Yönetici Paneli yüklendi');
+            loadDashboardStats();
         });
+        
+        // Dashboard istatistiklerini yükle
+        function loadDashboardStats() {
+            // Kullanıcı sayısını yükle
+            fetch('api/users_api.php?action=get_user_count')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalUsers').textContent = data.count || 0;
+                    } else {
+                        document.getElementById('totalUsers').textContent = '0';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user count:', error);
+                    document.getElementById('totalUsers').textContent = '0';
+                });
+            
+            // Toplantı sayısını yükle
+            fetch('api/meeting_api.php?action=get_meeting_stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalMeetings').textContent = data.data.total_meetings || 0;
+                    } else {
+                        document.getElementById('totalMeetings').textContent = '0';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading meeting stats:', error);
+                    document.getElementById('totalMeetings').textContent = '0';
+                });
+            
+            // Harcama bilgilerini yükle
+            fetch('api/expenses_api.php?action=get_expense_stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalExpenses').textContent = '€' + (data.data.total_amount || 0);
+                    } else {
+                        document.getElementById('totalExpenses').textContent = '€0';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading expense stats:', error);
+                    document.getElementById('totalExpenses').textContent = '€0';
+                });
+            
+            // Sistem durumu
+            document.getElementById('systemStatus').textContent = 'Aktif';
+        }
     </script>
     
     <style>
