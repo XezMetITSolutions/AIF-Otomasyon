@@ -2,7 +2,7 @@
 require_once 'auth.php';
 require_once 'config.php';
 
-// Login kontrolü kaldırıldı - direkt erişim
+// Login kontrolü
 $currentUser = SessionManager::getCurrentUser();
 
 // Veritabanı bağlantısı
@@ -17,50 +17,20 @@ try {
     $pdo = null;
 }
 
-// BYK kategorileri
-$bykCategories = [
-    'AT' => 'Ana Teşkilat',
-    'KT' => 'Kadınlar Teşkilatı', 
-    'KGT' => 'Kadınlar Gençlik Teşkilatı',
-    'GT' => 'Gençlik Teşkilatı'
-];
-
-// Veritabanından toplantıları çek
-$meetings = [];
+// BYK birimlerini çek
+$bykUnits = [];
 if ($pdo) {
     try {
-        $sql = "
-            SELECT m.*, 
-                   COUNT(DISTINCT mp.id) as participants,
-                   COUNT(DISTINCT ma.id) as agenda_count,
-                   COUNT(DISTINCT md.id) as decisions_count
-            FROM meetings m
-            LEFT JOIN meeting_participants mp ON m.id = mp.meeting_id
-            LEFT JOIN meeting_agenda ma ON m.id = ma.meeting_id
-            LEFT JOIN meeting_decisions md ON m.id = md.meeting_id
-            GROUP BY m.id
-            ORDER BY m.meeting_date DESC, m.meeting_time DESC
-        ";
+        $sql = "SELECT * FROM byk_units WHERE is_active = 1 ORDER BY code";
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
-        $meetings = $stmt->fetchAll();
-        
-        // Alan adlarını düzenle
-        foreach ($meetings as &$meeting) {
-            $meeting['byk'] = $meeting['byk_code'];
-            $meeting['date'] = $meeting['meeting_date'];
-            $meeting['time'] = $meeting['meeting_time'];
-        }
+        $bykUnits = $stmt->fetchAll();
     } catch (Exception $e) {
-        // Hata durumunda boş array
-        $meetings = [];
+        $bykUnits = [];
     }
-} else {
-    // Veritabanı bağlantısı yoksa boş array
-    $meetings = [];
 }
 
-// Durum metinleri
+// Durum metinleri ve renkleri
 $statusTexts = [
     'planned' => 'Planlandı',
     'ongoing' => 'Devam Ediyor',
@@ -68,12 +38,25 @@ $statusTexts = [
     'cancelled' => 'İptal Edildi'
 ];
 
-// Durum renkleri
 $statusColors = [
     'planned' => 'warning',
     'ongoing' => 'info',
     'completed' => 'success',
     'cancelled' => 'danger'
+];
+
+$priorityTexts = [
+    'low' => 'Düşük',
+    'medium' => 'Orta',
+    'high' => 'Yüksek',
+    'urgent' => 'Acil'
+];
+
+$priorityColors = [
+    'low' => 'secondary',
+    'medium' => 'primary',
+    'high' => 'warning',
+    'urgent' => 'danger'
 ];
 ?>
 <!DOCTYPE html>
@@ -97,17 +80,19 @@ $statusColors = [
         .meeting-card {
             transition: all 0.3s ease;
             border-left: 4px solid var(--primary-color);
+            position: relative;
         }
         
         .meeting-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
         .byk-badge {
             font-size: 0.8rem;
             padding: 0.4rem 0.8rem;
             border-radius: 20px;
+            font-weight: 600;
         }
         
         .byk-at { background-color: #e3f2fd; color: #1976d2; }
@@ -121,48 +106,54 @@ $statusColors = [
             border-radius: 20px;
         }
         
+        .priority-badge {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 15px;
+        }
+        
         .meeting-stats {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
             border-radius: 1rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meeting-stats::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
         }
         
         .meeting-stats h3 {
             font-size: 2.5rem;
             font-weight: bold;
             margin: 0;
+            position: relative;
+            z-index: 1;
         }
         
         .meeting-stats p {
             margin: 0;
             opacity: 0.9;
+            position: relative;
+            z-index: 1;
         }
         
-        .tab-content {
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .nav-tabs .nav-link {
-            color: #6c757d;
-            border: none;
-            border-bottom: 3px solid transparent;
-            padding: 1rem 1.5rem;
-        }
-        
-        .nav-tabs .nav-link.active {
-            color: var(--primary-color);
-            background: none;
-            border-bottom-color: var(--primary-color);
-        }
-        
-        .agenda-item {
-            border-left: 3px solid var(--primary-color);
-            padding-left: 1rem;
-            margin-bottom: 1rem;
+        .stats-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 3rem;
+            opacity: 0.3;
         }
         
         .decision-item {
@@ -171,6 +162,32 @@ $statusColors = [
             padding: 1rem;
             margin-bottom: 1rem;
             border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .decision-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .decision-item.completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .decision-item.urgent {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .agenda-item {
+            border-left: 3px solid var(--primary-color);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .participant-avatar {
@@ -184,6 +201,115 @@ $statusColors = [
             justify-content: center;
             font-weight: bold;
         }
+        
+        .filter-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .meeting-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .meeting-card:hover .meeting-actions {
+            opacity: 1;
+        }
+        
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 4;
+        }
+        
+        .progress-ring-progress {
+            fill: none;
+            stroke: var(--primary-color);
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.3s ease;
+        }
+        
+        .tab-content {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: none;
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .meeting-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .meeting-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary-color);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -195,12 +321,15 @@ $statusColors = [
         <header class="header">
             <div class="header-content">
                 <div class="header-title">
-                    <h1>Toplantı Yönetimi</h1>
+                    <h1><i class="fas fa-calendar-alt me-2"></i>Toplantı Yönetimi</h1>
                     <p>BYK toplantılarını planlayın, yürütün ve kararları takip edin</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMeetingModal">
+                    <button class="btn btn-primary" onclick="openAddMeetingModal()">
                         <i class="fas fa-plus"></i> Yeni Toplantı
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="exportMeetings()">
+                        <i class="fas fa-download"></i> Dışa Aktar
                     </button>
                 </div>
             </div>
@@ -209,157 +338,101 @@ $statusColors = [
         <!-- Content Area -->
         <div class="content-area">
             <!-- İstatistikler -->
-            <div class="row mb-4">
+            <div class="row mb-4" id="meetingStats">
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="meeting-stats">
-                        <h3><?php echo count($meetings); ?></h3>
+                        <i class="fas fa-calendar-check stats-icon"></i>
+                        <h3 id="totalMeetings">0</h3>
                         <p>Toplam Toplantı</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="meeting-stats" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <h3><?php echo count(array_filter($meetings, function($m) { return $m['status'] === 'completed'; })); ?></h3>
+                        <i class="fas fa-check-circle stats-icon"></i>
+                        <h3 id="completedMeetings">0</h3>
                         <p>Tamamlanan</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="meeting-stats" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                        <h3><?php echo count(array_filter($meetings, function($m) { return $m['status'] === 'ongoing'; })); ?></h3>
+                        <i class="fas fa-play-circle stats-icon"></i>
+                        <h3 id="ongoingMeetings">0</h3>
                         <p>Devam Eden</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="meeting-stats" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                        <h3><?php echo count(array_filter($meetings, function($m) { return $m['status'] === 'planned'; })); ?></h3>
-                        <p>Planlanan</p>
+                        <i class="fas fa-exclamation-triangle stats-icon"></i>
+                        <h3 id="pendingDecisions">0</h3>
+                        <p>Bekleyen Karar</p>
                     </div>
                 </div>
             </div>
 
             <!-- Filtreler -->
-            <div class="page-card mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">BYK Seçin</label>
-                            <select class="form-select" id="bykFilter">
-                                <option value="">Tüm BYK'lar</option>
-                                <?php foreach ($bykCategories as $code => $name): ?>
-                                <option value="<?php echo $code; ?>"><?php echo $code; ?> - <?php echo $name; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Durum</label>
-                            <select class="form-select" id="statusFilter">
-                                <option value="">Tüm Durumlar</option>
-                                <?php foreach ($statusTexts as $key => $text): ?>
-                                <option value="<?php echo $key; ?>"><?php echo $text; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Tarih Başlangıç</label>
-                            <input type="date" class="form-control" id="dateFrom">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Tarih Bitiş</label>
-                            <input type="date" class="form-control" id="dateTo">
-                        </div>
+            <div class="filter-card">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label"><i class="fas fa-filter me-1"></i>BYK Seçin</label>
+                        <select class="form-select" id="bykFilter">
+                            <option value="">Tüm BYK'lar</option>
+                            <?php foreach ($bykUnits as $unit): ?>
+                            <option value="<?php echo $unit['code']; ?>"><?php echo $unit['code']; ?> - <?php echo $unit['name']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <button class="btn btn-primary" onclick="applyFilters()">
-                                <i class="fas fa-filter"></i> Filtrele
-                            </button>
-                            <button class="btn btn-outline-primary" onclick="exportMeetings()">
-                                <i class="fas fa-download"></i> Dışa Aktar
-                            </button>
-                        </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label"><i class="fas fa-flag me-1"></i>Durum</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Tüm Durumlar</option>
+                            <?php foreach ($statusTexts as $key => $text): ?>
+                            <option value="<?php echo $key; ?>"><?php echo $text; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label"><i class="fas fa-calendar me-1"></i>Tarih Başlangıç</label>
+                        <input type="date" class="form-control" id="dateFrom">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label"><i class="fas fa-calendar me-1"></i>Tarih Bitiş</label>
+                        <input type="date" class="form-control" id="dateTo">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i> Filtrele
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Temizle
+                        </button>
+                        <button class="btn btn-outline-info" onclick="showPendingDecisions()">
+                            <i class="fas fa-tasks"></i> Bekleyen Kararlar
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Toplantı Listesi -->
             <div class="page-card">
-                <div class="card-header">
-                    <h5><i class="fas fa-calendar-alt"></i> Toplantı Listesi</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list me-2"></i>Toplantı Listesi</h5>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadMeetings()">
+                            <i class="fas fa-sync"></i> Yenile
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <?php if (empty($meetings)): ?>
+                    <div id="meetingsContainer">
                         <div class="text-center py-5">
-                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">Henüz toplantı bulunmuyor</h4>
-                            <p class="text-muted">İlk toplantınızı planlamak için yukarıdaki butonu kullanın.</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="row">
-                            <?php foreach ($meetings as $meeting): ?>
-                            <div class="col-lg-6 col-xl-4 mb-4">
-                                <div class="card meeting-card h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
-                                            <div>
-                                                <h6 class="card-title mb-1"><?php echo htmlspecialchars($meeting['title']); ?></h6>
-                                                <span class="byk-badge byk-<?php echo strtolower($meeting['byk']); ?>">
-                                                    <?php echo $meeting['byk']; ?>
-                                                </span>
-                                            </div>
-                                            <span class="status-badge badge bg-<?php echo $statusColors[$meeting['status']]; ?>">
-                                                <?php echo $statusTexts[$meeting['status']]; ?>
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="meeting-info mb-3">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-calendar text-primary me-2"></i>
-                                                <span><?php echo date('d.m.Y', strtotime($meeting['date'])); ?> - <?php echo $meeting['time']; ?></span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                                <span><?php echo htmlspecialchars($meeting['location']); ?></span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-user-tie text-primary me-2"></i>
-                                                <span><?php echo htmlspecialchars($meeting['chairman']); ?></span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="meeting-stats-small d-flex justify-content-between mb-3">
-                                            <div class="text-center">
-                                                <div class="fw-bold text-primary"><?php echo $meeting['participants']; ?></div>
-                                                <small class="text-muted">Katılımcı</small>
-                                            </div>
-                                            <div class="text-center">
-                                                <div class="fw-bold text-success"><?php echo $meeting['agenda_count']; ?></div>
-                                                <small class="text-muted">Gündem</small>
-                                            </div>
-                                            <div class="text-center">
-                                                <div class="fw-bold text-warning"><?php echo $meeting['decisions_count']; ?></div>
-                                                <small class="text-muted">Karar</small>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="d-flex gap-1">
-                                            <button class="btn btn-outline-primary btn-sm" onclick="viewMeeting(<?php echo $meeting['id']; ?>)" title="Görüntüle">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="btn btn-outline-success btn-sm" onclick="startMeeting(<?php echo $meeting['id']; ?>)" title="Toplantıyı Başlat">
-                                                <i class="fas fa-play"></i>
-                                            </button>
-                                            <button class="btn btn-outline-warning btn-sm" onclick="editMeeting(<?php echo $meeting['id']; ?>)" title="Düzenle">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteMeeting(<?php echo $meeting['id']; ?>)" title="Sil">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
                             </div>
-                            <?php endforeach; ?>
+                            <p class="mt-3 text-muted">Toplantılar yükleniyor...</p>
                         </div>
-                    <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -367,190 +440,134 @@ $statusColors = [
 
     <!-- Yeni Toplantı Modal -->
     <div class="modal fade" id="addMeetingModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Yeni Toplantı Ekle</h5>
+                    <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Yeni Toplantı Ekle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="addMeetingForm">
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Toplantı Başlığı</label>
-                                <input type="text" class="form-control" name="title" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">BYK</label>
-                                <select class="form-select" name="byk" required>
-                                    <option value="">BYK Seçin</option>
-                                    <?php foreach ($bykCategories as $code => $name): ?>
-                                    <option value="<?php echo $code; ?>"><?php echo $code; ?> - <?php echo $name; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Tarih</label>
-                                <input type="date" class="form-control" name="date" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Saat</label>
-                                <input type="time" class="form-control" name="time" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Yer / Platform</label>
-                                <input type="text" class="form-control" name="location" placeholder="AIF Genel Merkez veya Zoom linki" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Durum</label>
-                                <select class="form-select" name="status">
-                                    <option value="planned">Planlandı</option>
-                                    <option value="ongoing">Devam Ediyor</option>
-                                    <option value="completed">Tamamlandı</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Birim</label>
-                            <input type="text" class="form-control" name="unit" placeholder="Toplantı birimi" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Toplantı Gündemleri</label>
-                            <textarea class="form-control" name="agenda" rows="4" placeholder="Toplantı gündem maddelerini yazın"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                        <button type="submit" class="btn btn-primary">Toplantı Oluştur</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toplantıyı Başlat Modal -->
-    <div class="modal fade" id="startMeetingModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-play me-2"></i>Toplantıyı Başlat
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <!-- Toplantı Bilgileri -->
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h6 class="mb-0">Toplantı Bilgileri</h6>
-                                </div>
-                                <div class="card-body">
+                        <ul class="nav nav-tabs" id="meetingTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button">
+                                    <i class="fas fa-info-circle me-2"></i>Genel Bilgi
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants" type="button">
+                                    <i class="fas fa-users me-2"></i>Katılımcılar
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="agenda-tab" data-bs-toggle="tab" data-bs-target="#agenda" type="button">
+                                    <i class="fas fa-list me-2"></i>Gündem Maddeleri
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="meetingTabContent">
+                            <!-- Genel Bilgi -->
+                            <div class="tab-pane fade show active" id="general">
+                                <div class="p-4">
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <p><strong>Başlık:</strong> <span id="startMeetingTitle">-</span></p>
-                                            <p><strong>BYK:</strong> <span id="startMeetingByk">-</span></p>
-                                            <p><strong>Tarih:</strong> <span id="startMeetingDate">-</span></p>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Toplantı Başlığı <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="title" required placeholder="Örn: AT BYK Nisan Toplantısı">
                                         </div>
-                                        <div class="col-md-6">
-                                            <p><strong>Saat:</strong> <span id="startMeetingTime">-</span></p>
-                                            <p><strong>Yer:</strong> <span id="startMeetingLocation">-</span></p>
-                                            <p><strong>Başkan:</strong> <span id="startMeetingChairman">-</span></p>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">BYK Türü <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="byk" required>
+                                                <option value="">BYK Seçin</option>
+                                                <?php foreach ($bykUnits as $unit): ?>
+                                                <option value="<?php echo $unit['code']; ?>"><?php echo $unit['code']; ?> - <?php echo $unit['name']; ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
                                         </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Tarih <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control" name="date" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Başlangıç Saati <span class="text-danger">*</span></label>
+                                            <input type="time" class="form-control" name="time" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Bitiş Saati</label>
+                                            <input type="time" class="form-control" name="end_time">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Yer / Platform <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="location" required placeholder="AIF Genel Merkez veya Zoom linki">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Toplantı Türü</label>
+                                            <select class="form-select" name="meeting_type">
+                                                <option value="regular">Normal Toplantı</option>
+                                                <option value="emergency">Acil Toplantı</option>
+                                                <option value="special">Özel Toplantı</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Başkan <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="chairman" required placeholder="Toplantıyı yöneten kişi">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Sekreter</label>
+                                            <input type="text" class="form-control" name="secretary" placeholder="Tutanak sorumlusu">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Notlar</label>
+                                        <textarea class="form-control" name="notes" rows="3" placeholder="Toplantı hakkında özel notlar..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Katılımcılar -->
+                            <div class="tab-pane fade" id="participants">
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6>Katılımcı Listesi</h6>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addParticipant()">
+                                            <i class="fas fa-plus"></i> Katılımcı Ekle
+                                        </button>
+                                    </div>
+                                    <div id="participantsList">
+                                        <!-- Katılımcılar buraya eklenecek -->
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Gündem Maddeleri -->
-                            <div class="card mb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">Gündem Maddeleri</h6>
-                                    <button class="btn btn-primary btn-sm" onclick="addAgendaItem()">
-                                        <i class="fas fa-plus"></i> Gündem Ekle
-                                    </button>
-                                </div>
-                                <div class="card-body">
+                            <div class="tab-pane fade" id="agenda">
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6>Gündem Maddeleri</h6>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addAgendaItem()">
+                                            <i class="fas fa-plus"></i> Gündem Ekle
+                                        </button>
+                                    </div>
                                     <div id="agendaItemsList">
-                                        <!-- Gündem maddeleri buraya yüklenecek -->
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Kararlar -->
-                            <div class="card mb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">Alınan Kararlar</h6>
-                                    <button class="btn btn-success btn-sm" onclick="addDecision()">
-                                        <i class="fas fa-plus"></i> Karar Ekle
-                                    </button>
-                                </div>
-                                <div class="card-body">
-                                    <div id="decisionsList">
-                                        <!-- Kararlar buraya yüklenecek -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <!-- Katılımcılar -->
-                            <div class="card mb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">Katılımcılar</h6>
-                                    <button class="btn btn-info btn-sm" onclick="addParticipant()">
-                                        <i class="fas fa-plus"></i> Ekle
-                                    </button>
-                                </div>
-                                <div class="card-body">
-                                    <div id="participantsList">
-                                        <!-- Katılımcılar buraya yüklenecek -->
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Toplantı Notları -->
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h6 class="mb-0">Toplantı Notları</h6>
-                                </div>
-                                <div class="card-body">
-                                    <textarea class="form-control" id="meetingNotes" rows="8" placeholder="Toplantı sırasında alınan notlar..."></textarea>
-                                </div>
-                            </div>
-                            
-                            <!-- Toplantı Kontrolleri -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0">Toplantı Kontrolleri</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-success" onclick="pauseMeeting()">
-                                            <i class="fas fa-pause"></i> Toplantıyı Duraklat
-                                        </button>
-                                        <button class="btn btn-warning" onclick="resumeMeeting()">
-                                            <i class="fas fa-play"></i> Toplantıyı Devam Ettir
-                                        </button>
-                                        <button class="btn btn-danger" onclick="endMeeting()">
-                                            <i class="fas fa-stop"></i> Toplantıyı Bitir
-                                </button>
+                                        <!-- Gündem maddeleri buraya eklenecek -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                    <button type="button" class="btn btn-primary" onclick="saveMeetingProgress()">
-                        <i class="fas fa-save"></i> İlerlemeyi Kaydet
-                    </button>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Toplantı Oluştur
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -560,116 +577,88 @@ $statusColors = [
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Toplantı Detayları</h5>
+                    <h5 class="modal-title"><i class="fas fa-calendar-alt me-2"></i>Toplantı Detayları</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <ul class="nav nav-tabs" id="meetingTabs" role="tablist">
+                    <ul class="nav nav-tabs" id="detailTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button">
+                            <button class="nav-link active" id="detail-general-tab" data-bs-toggle="tab" data-bs-target="#detail-general" type="button">
                                 <i class="fas fa-info-circle me-2"></i>Genel Bilgi
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="agenda-tab" data-bs-toggle="tab" data-bs-target="#agenda" type="button">
+                            <button class="nav-link" id="detail-agenda-tab" data-bs-toggle="tab" data-bs-target="#detail-agenda" type="button">
                                 <i class="fas fa-list me-2"></i>Gündem Maddeleri
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="decisions-tab" data-bs-toggle="tab" data-bs-target="#decisions" type="button">
+                            <button class="nav-link" id="detail-decisions-tab" data-bs-toggle="tab" data-bs-target="#detail-decisions" type="button">
                                 <i class="fas fa-gavel me-2"></i>Kararlar & Görevler
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants" type="button">
+                            <button class="nav-link" id="detail-participants-tab" data-bs-toggle="tab" data-bs-target="#detail-participants" type="button">
                                 <i class="fas fa-users me-2"></i>Katılımcılar
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button">
-                                <i class="fas fa-paperclip me-2"></i>Dosyalar
                             </button>
                         </li>
                     </ul>
                     
-                    <div class="tab-content" id="meetingTabContent">
+                    <div class="tab-content" id="detailTabContent">
                         <!-- Genel Bilgi -->
-                        <div class="tab-pane fade show active" id="general">
+                        <div class="tab-pane fade show active" id="detail-general">
                             <div class="p-4">
-                                <h5>Toplantı Bilgileri</h5>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <p><strong>Başlık:</strong> <span id="meetingTitle">-</span></p>
-                                        <p><strong>BYK:</strong> <span id="meetingByk">-</span></p>
-                                        <p><strong>Tarih:</strong> <span id="meetingDate">-</span></p>
-                                        <p><strong>Saat:</strong> <span id="meetingTime">-</span></p>
+                                        <h6>Toplantı Bilgileri</h6>
+                                        <p><strong>Başlık:</strong> <span id="detailTitle">-</span></p>
+                                        <p><strong>BYK:</strong> <span id="detailByk">-</span></p>
+                                        <p><strong>Tarih:</strong> <span id="detailDate">-</span></p>
+                                        <p><strong>Saat:</strong> <span id="detailTime">-</span></p>
                                     </div>
                                     <div class="col-md-6">
-                                        <p><strong>Yer:</strong> <span id="meetingLocation">-</span></p>
-                                        <p><strong>Başkan:</strong> <span id="meetingChairman">-</span></p>
-                                        <p><strong>Sekreter:</strong> <span id="meetingSecretary">-</span></p>
-                                        <p><strong>Durum:</strong> <span id="meetingStatus">-</span></p>
+                                        <p><strong>Yer:</strong> <span id="detailLocation">-</span></p>
+                                        <p><strong>Başkan:</strong> <span id="detailChairman">-</span></p>
+                                        <p><strong>Sekreter:</strong> <span id="detailSecretary">-</span></p>
+                                        <p><strong>Durum:</strong> <span id="detailStatus">-</span></p>
                                     </div>
+                                </div>
+                                <div class="mt-3">
+                                    <h6>Notlar</h6>
+                                    <p id="detailNotes">-</p>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Gündem Maddeleri -->
-                        <div class="tab-pane fade" id="agenda">
+                        <div class="tab-pane fade" id="detail-agenda">
                             <div class="p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5>Gündem Maddeleri</h5>
-                                    <button class="btn btn-primary btn-sm" onclick="addAgendaItem()">
-                                        <i class="fas fa-plus"></i> Gündem Ekle
-                                    </button>
-                                </div>
-                                <div id="agendaList">
+                                <div id="detailAgendaList">
                                     <!-- Gündem maddeleri buraya yüklenecek -->
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Kararlar & Görevler -->
-                        <div class="tab-pane fade" id="decisions">
+                        <div class="tab-pane fade" id="detail-decisions">
                             <div class="p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5>Kararlar & Görevler</h5>
+                                    <h6>Kararlar & Görevler</h6>
                                     <button class="btn btn-primary btn-sm" onclick="addDecision()">
                                         <i class="fas fa-plus"></i> Karar Ekle
                                     </button>
                                 </div>
-                                <div id="decisionsList">
+                                <div id="detailDecisionsList">
                                     <!-- Kararlar buraya yüklenecek -->
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Katılımcılar -->
-                        <div class="tab-pane fade" id="participants">
+                        <div class="tab-pane fade" id="detail-participants">
                             <div class="p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5>Katılımcı Listesi</h5>
-                                    <button class="btn btn-primary btn-sm" onclick="addParticipant()">
-                                        <i class="fas fa-plus"></i> Katılımcı Ekle
-                                    </button>
-                                </div>
-                                <div id="participantsList">
+                                <div id="detailParticipantsList">
                                     <!-- Katılımcılar buraya yüklenecek -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Dosyalar -->
-                        <div class="tab-pane fade" id="files">
-                            <div class="p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5>Toplantı Dosyaları</h5>
-                                    <button class="btn btn-primary btn-sm" onclick="uploadFile()">
-                                        <i class="fas fa-upload"></i> Dosya Yükle
-                                        </button>
-                                </div>
-                                <div id="filesList">
-                                    <!-- Dosyalar buraya yüklenecek -->
                                 </div>
                             </div>
                         </div>
@@ -677,9 +666,29 @@ $statusColors = [
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                    <button type="button" class="btn btn-primary" onclick="generateReport()">
+                    <button type="button" class="btn btn-primary" onclick="generateMeetingReport()">
                         <i class="fas fa-file-pdf"></i> Rapor Oluştur
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bekleyen Kararlar Modal -->
+    <div class="modal fade" id="pendingDecisionsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-tasks me-2"></i>Bekleyen Kararlar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pendingDecisionsList">
+                        <!-- Bekleyen kararlar buraya yüklenecek -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
                 </div>
             </div>
         </div>
@@ -689,127 +698,367 @@ $statusColors = [
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Veritabanından gelen toplantı verileri
-        const bykCategories = <?php echo json_encode($bykCategories); ?>;
-        const statusTexts = <?php echo json_encode($statusTexts); ?>;
+        // Global değişkenler
+        let meetings = [];
+        let bykUnits = <?php echo json_encode($bykUnits); ?>;
+        let statusTexts = <?php echo json_encode($statusTexts); ?>;
+        let statusColors = <?php echo json_encode($statusColors); ?>;
+        let priorityTexts = <?php echo json_encode($priorityTexts); ?>;
+        let priorityColors = <?php echo json_encode($priorityColors); ?>;
+        let currentMeetingId = null;
         
-        function addMeeting() {
-            console.log('addMeeting fonksiyonu çağrıldı');
-            console.log('Modal element:', document.getElementById('addMeetingModal'));
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMeetingStats();
+            loadMeetings();
+        });
+        
+        // Toplantı istatistiklerini yükle
+        function loadMeetingStats() {
+            fetch('api/meeting_api.php?action=get_meeting_stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalMeetings').textContent = data.data.total_meetings;
+                        document.getElementById('completedMeetings').textContent = data.data.completed_meetings;
+                        document.getElementById('ongoingMeetings').textContent = data.data.ongoing_meetings;
+                        document.getElementById('pendingDecisions').textContent = data.data.pending_decisions;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                });
+        }
+        
+        // Toplantıları yükle
+        function loadMeetings() {
+            fetch('api/meeting_api.php?action=get_meetings')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        meetings = data.data;
+                        renderMeetings(meetings);
+                    } else {
+                        showAlert('Toplantılar yüklenemedi: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading meetings:', error);
+                    showAlert('Toplantılar yüklenirken hata oluştu', 'danger');
+                });
+        }
+        
+        // Toplantıları render et
+        function renderMeetings(meetings) {
+            const container = document.getElementById('meetingsContainer');
             
-            // Modal'ı göster
-            const modal = new bootstrap.Modal(document.getElementById('addMeetingModal'));
-            console.log('Modal instance:', modal);
-            modal.show();
+            if (meetings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">Henüz toplantı bulunmuyor</h4>
+                        <p class="text-muted">İlk toplantınızı planlamak için yukarıdaki butonu kullanın.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="row">';
+            
+            meetings.forEach(meeting => {
+                const bykUnit = bykUnits.find(u => u.code === meeting.byk_code);
+                const bykName = bykUnit ? bykUnit.name : meeting.byk_code;
+                const bykColor = bykUnit ? bykUnit.color : '#007bff';
+                
+                html += `
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card meeting-card h-100">
+                            <div class="meeting-actions">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="viewMeeting(${meeting.id})" title="Görüntüle">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-warning" onclick="editMeeting(${meeting.id})" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteMeeting(${meeting.id})" title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6 class="card-title mb-1">${meeting.title}</h6>
+                                        <span class="byk-badge byk-${meeting.byk_code.toLowerCase()}" style="background-color: ${bykColor}20; color: ${bykColor};">
+                                            ${meeting.byk_code}
+                                        </span>
+                                    </div>
+                                    <span class="status-badge badge bg-${statusColors[meeting.status]}">
+                                        ${statusTexts[meeting.status]}
+                                    </span>
+                                </div>
+                                
+                                <div class="meeting-info mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-calendar text-primary me-2"></i>
+                                        <span>${formatDate(meeting.meeting_date)} - ${meeting.meeting_time}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                        <span>${meeting.location}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-user-tie text-primary me-2"></i>
+                                        <span>${meeting.chairman}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="meeting-stats-small d-flex justify-content-between mb-3">
+                                    <div class="text-center">
+                                        <div class="fw-bold text-primary">${meeting.participant_count}</div>
+                                        <small class="text-muted">Katılımcı</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="fw-bold text-success">${meeting.agenda_count}</div>
+                                        <small class="text-muted">Gündem</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="fw-bold text-warning">${meeting.decision_count}</div>
+                                        <small class="text-muted">Karar</small>
+                                    </div>
+                                </div>
+                                
+                                ${meeting.pending_decisions > 0 ? `
+                                    <div class="alert alert-warning alert-sm mb-3">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        ${meeting.pending_decisions} bekleyen karar
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-primary btn-sm flex-fill" onclick="viewMeeting(${meeting.id})">
+                                        <i class="fas fa-eye me-1"></i>Detay
+                                    </button>
+                                    ${meeting.status === 'planned' ? `
+                                        <button class="btn btn-success btn-sm" onclick="startMeeting(${meeting.id})">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
         }
         
+        // Toplantı detayını görüntüle
         function viewMeeting(id) {
-            // API'den toplantı detaylarını çek
             fetch(`api/meeting_api.php?action=get_meeting&id=${id}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const meeting = data.data;
-                    // Modal'ı doldur
-                    document.getElementById('meetingTitle').textContent = meeting.title;
-                    document.getElementById('meetingByk').textContent = meeting.byk_code + ' - ' + bykCategories[meeting.byk_code];
-                    document.getElementById('meetingDate').textContent = new Date(meeting.meeting_date).toLocaleDateString('tr-TR');
-                    document.getElementById('meetingTime').textContent = meeting.meeting_time;
-                    document.getElementById('meetingLocation').textContent = meeting.location;
-                    document.getElementById('meetingChairman').textContent = meeting.unit || 'Belirtilmemiş';
-                    document.getElementById('meetingSecretary').textContent = 'Belirtilmemiş';
-                    document.getElementById('meetingStatus').textContent = statusTexts[meeting.status];
-                    
-                    // Modal'ı göster
-                    new bootstrap.Modal(document.getElementById('meetingDetailModal')).show();
-                } else {
-                    showAlert('Toplantı bulunamadı!', 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Bir hata oluştu!', 'danger');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const meeting = data.data;
+                        currentMeetingId = id;
+                        
+                        // Genel bilgileri doldur
+                        document.getElementById('detailTitle').textContent = meeting.title;
+                        document.getElementById('detailByk').textContent = meeting.byk_code + ' - ' + (bykUnits.find(u => u.code === meeting.byk_code)?.name || meeting.byk_code);
+                        document.getElementById('detailDate').textContent = formatDate(meeting.meeting_date);
+                        document.getElementById('detailTime').textContent = meeting.meeting_time;
+                        document.getElementById('detailLocation').textContent = meeting.location;
+                        document.getElementById('detailChairman').textContent = meeting.chairman;
+                        document.getElementById('detailSecretary').textContent = meeting.secretary || 'Belirtilmemiş';
+                        document.getElementById('detailStatus').textContent = statusTexts[meeting.status];
+                        document.getElementById('detailNotes').textContent = meeting.notes || 'Not bulunmuyor';
+                        
+                        // Katılımcıları render et
+                        renderParticipants(meeting.participants || []);
+                        
+                        // Gündem maddelerini render et
+                        renderAgendaItems(meeting.agenda || []);
+                        
+                        // Kararları render et
+                        renderDecisions(meeting.decisions || []);
+                        
+                        // Modal'ı aç
+                        new bootstrap.Modal(document.getElementById('meetingDetailModal')).show();
+                    } else {
+                        showAlert('Toplantı bulunamadı!', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Bir hata oluştu!', 'danger');
+                });
         }
         
-        function startMeeting(id) {
-            // API'den toplantı detaylarını çek
-            fetch(`api/meeting_api.php?action=get_meeting&id=${id}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const meeting = data.data;
-                    // Toplantı bilgilerini doldur
-                    document.getElementById('startMeetingTitle').textContent = meeting.title;
-                    document.getElementById('startMeetingByk').textContent = meeting.byk_code + ' - ' + bykCategories[meeting.byk_code];
-                    document.getElementById('startMeetingDate').textContent = new Date(meeting.meeting_date).toLocaleDateString('tr-TR');
-                    document.getElementById('startMeetingTime').textContent = meeting.meeting_time;
-                    document.getElementById('startMeetingLocation').textContent = meeting.location;
-                    document.getElementById('startMeetingChairman').textContent = meeting.unit || 'Belirtilmemiş';
-                    
-                    // Gündem maddeleri ve katılımcılar veritabanından yüklenecek
-                    
-                    // Modal'ı göster
-                    new bootstrap.Modal(document.getElementById('startMeetingModal')).show();
-                    
-                    // Toplantı durumunu güncelle
-                    fetch('api/meeting_api.php?action=update_meeting', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            id: id,
-                            status: 'ongoing'
-                        })
-                    });
-                    showAlert('Toplantı başlatıldı!', 'success');
-                } else {
-                    showAlert('Toplantı bulunamadı!', 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Bir hata oluştu!', 'danger');
+        // Katılımcıları render et
+        function renderParticipants(participants) {
+            const container = document.getElementById('detailParticipantsList');
+            
+            if (participants.length === 0) {
+                container.innerHTML = '<p class="text-muted">Katılımcı bulunmuyor.</p>';
+                return;
+            }
+            
+            let html = '';
+            participants.forEach(participant => {
+                const statusClass = {
+                    'attended': 'success',
+                    'absent': 'danger',
+                    'excused': 'warning',
+                    'invited': 'secondary'
+                }[participant.attendance_status] || 'secondary';
+                
+                const statusText = {
+                    'attended': 'Katıldı',
+                    'absent': 'Katılmadı',
+                    'excused': 'Mazeretli',
+                    'invited': 'Davetli'
+                }[participant.attendance_status] || 'Bilinmiyor';
+                
+                html += `
+                    <div class="d-flex align-items-center mb-2 p-2 border rounded">
+                        <div class="participant-avatar me-3">
+                            ${participant.participant_name.charAt(0)}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">${participant.participant_name}</div>
+                            <small class="text-muted">${participant.participant_role}</small>
+                        </div>
+                        <span class="badge bg-${statusClass}">${statusText}</span>
+                    </div>
+                `;
             });
+            
+            container.innerHTML = html;
         }
         
+        // Gündem maddelerini render et
+        function renderAgendaItems(agendaItems) {
+            const container = document.getElementById('detailAgendaList');
+            
+            if (agendaItems.length === 0) {
+                container.innerHTML = '<p class="text-muted">Gündem maddesi bulunmuyor.</p>';
+                return;
+            }
+            
+            let html = '';
+            agendaItems.forEach(item => {
+                const statusClass = {
+                    'pending': 'warning',
+                    'discussed': 'info',
+                    'completed': 'success',
+                    'postponed': 'secondary'
+                }[item.status] || 'secondary';
+                
+                const statusText = {
+                    'pending': 'Bekliyor',
+                    'discussed': 'Tartışıldı',
+                    'completed': 'Tamamlandı',
+                    'postponed': 'Ertelendi'
+                }[item.status] || 'Bilinmiyor';
+                
+                html += `
+                    <div class="agenda-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${item.agenda_order}. ${item.title}</h6>
+                                <p class="text-muted mb-1">${item.description || ''}</p>
+                                <small class="text-muted">
+                                    <strong>Sorumlu:</strong> ${item.responsible_person || '-'} | 
+                                    <strong>Süre:</strong> ${item.estimated_duration} dk
+                                </small>
+                            </div>
+                            <span class="badge bg-${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Kararları render et
+        function renderDecisions(decisions) {
+            const container = document.getElementById('detailDecisionsList');
+            
+            if (decisions.length === 0) {
+                container.innerHTML = '<p class="text-muted">Karar bulunmuyor.</p>';
+                return;
+            }
+            
+            let html = '';
+            decisions.forEach(decision => {
+                const statusClass = {
+                    'pending': 'warning',
+                    'in_progress': 'info',
+                    'completed': 'success',
+                    'cancelled': 'danger'
+                }[decision.status] || 'secondary';
+                
+                const statusText = {
+                    'pending': 'Bekliyor',
+                    'in_progress': 'Devam Ediyor',
+                    'completed': 'Tamamlandı',
+                    'cancelled': 'İptal Edildi'
+                }[decision.status] || 'Bilinmiyor';
+                
+                const priorityClass = priorityColors[decision.priority] || 'secondary';
+                const priorityText = priorityTexts[decision.priority] || 'Bilinmiyor';
+                
+                const isOverdue = decision.deadline && new Date(decision.deadline) < new Date() && decision.status !== 'completed';
+                
+                html += `
+                    <div class="decision-item ${decision.status === 'completed' ? 'completed' : ''} ${decision.priority === 'urgent' ? 'urgent' : ''}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${decision.decision_number}</h6>
+                                <p class="mb-1">${decision.decision_text}</p>
+                                <small class="text-muted">
+                                    <strong>Sorumlu:</strong> ${decision.responsible_person} | 
+                                    <strong>Termin:</strong> ${decision.deadline ? formatDate(decision.deadline) : '-'}
+                                    ${isOverdue ? ' <span class="text-danger">(Gecikmiş)</span>' : ''}
+                                </small>
+                                ${decision.progress_notes ? `<p class="mt-2 text-muted"><em>${decision.progress_notes}</em></p>` : ''}
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-${priorityClass} mb-1">${priorityText}</span><br>
+                                <span class="badge bg-${statusClass}">${statusText}</span>
+                                ${decision.status !== 'completed' ? `
+                                    <div class="mt-2">
+                                        <button class="btn btn-success btn-sm" onclick="updateDecisionStatus(${decision.id}, 'completed')" title="Tamamlandı">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="updateDecisionStatus(${decision.id}, 'in_progress')" title="Devam Ediyor">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Toplantı düzenle
         function editMeeting(id) {
-            // Toplantı detaylarını API'den çek
-            fetch(`api/meeting_api.php?action=get_meeting&id=${id}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const meeting = data.data;
-                    
-                    // Form alanlarını doldur
-                    document.querySelector('#addMeetingForm input[name="title"]').value = meeting.title;
-                    document.querySelector('#addMeetingForm select[name="byk"]').value = meeting.byk_code;
-                    document.querySelector('#addMeetingForm input[name="date"]').value = meeting.meeting_date;
-                    document.querySelector('#addMeetingForm input[name="time"]').value = meeting.meeting_time;
-                    document.querySelector('#addMeetingForm input[name="location"]').value = meeting.location;
-                    document.querySelector('#addMeetingForm select[name="status"]').value = meeting.status;
-                    document.querySelector('#addMeetingForm input[name="unit"]').value = meeting.unit;
-                    document.querySelector('#addMeetingForm textarea[name="agenda"]').value = meeting.agenda || '';
-                    
-                    // Form'a güncelleme modunu işaretle
-                    document.getElementById('addMeetingForm').setAttribute('data-edit-id', id);
-                    
-                    // Modal'ı göster
-                    new bootstrap.Modal(document.getElementById('addMeetingModal')).show();
-                } else {
-                    showAlert('Toplantı bilgileri alınamadı!', 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Bir hata oluştu!', 'danger');
-            });
+            // Bu fonksiyon daha sonra implement edilecek
+            showAlert('Düzenleme özelliği yakında eklenecek!', 'info');
         }
         
+        // Toplantı sil
         function deleteMeeting(id) {
             if (confirm('Bu toplantıyı silmek istediğinizden emin misiniz?')) {
-                // API'ye silme isteği gönder
                 fetch('api/meeting_api.php?action=delete_meeting', {
                     method: 'POST',
                     headers: {
@@ -820,34 +1069,9 @@ $statusColors = [
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Toplantı kartını DOM'dan kaldır
-                        const meetingCards = document.querySelectorAll('.meeting-card');
-                        meetingCards.forEach(card => {
-                            const deleteBtn = card.querySelector(`button[onclick="deleteMeeting(${id})"]`);
-                            if (deleteBtn) {
-                                card.closest('.col-lg-6, .col-xl-4').remove();
-                            }
-                        });
-                        
-                        // Başarı mesajı
                         showAlert('Toplantı başarıyla silindi!', 'success');
-                        
-                        // Eğer hiç toplantı kalmadıysa boş mesaj göster
-                        setTimeout(() => {
-                            const remainingCards = document.querySelectorAll('.meeting-card');
-                            if (remainingCards.length === 0) {
-                                const container = document.querySelector('.row');
-                                container.innerHTML = `
-                                    <div class="col-12">
-                                        <div class="text-center py-5">
-                                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                                            <h4 class="text-muted">Henüz toplantı bulunmuyor</h4>
-                                            <p class="text-muted">İlk toplantınızı planlamak için yukarıdaki butonu kullanın.</p>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                        }, 500);
+                        loadMeetings();
+                        loadMeetingStats();
                     } else {
                         showAlert('Hata: ' + data.message, 'danger');
                     }
@@ -859,94 +1083,22 @@ $statusColors = [
             }
         }
         
-        function applyFilters() {
-            const byk = document.getElementById('bykFilter').value;
-            const status = document.getElementById('statusFilter').value;
-            const dateFrom = document.getElementById('dateFrom').value;
-            const dateTo = document.getElementById('dateTo').value;
+        // Yeni toplantı modal'ını aç
+        function openAddMeetingModal() {
+            // Formu temizle
+            document.getElementById('addMeetingForm').reset();
+            document.getElementById('participantsList').innerHTML = '';
+            document.getElementById('agendaItemsList').innerHTML = '';
             
-            console.log('Applying filters:', { byk, status, dateFrom, dateTo });
-            showAlert('Filtreler uygulandı!', 'success');
+            // Modal'ı aç
+            new bootstrap.Modal(document.getElementById('addMeetingModal')).show();
         }
         
-        function exportMeetings() {
-            showAlert('Toplantılar dışa aktarılıyor...', 'info');
-            console.log('Exporting meetings...');
-        }
-        
-        // loadDemoAgendaItems fonksiyonu kaldırıldı - veritabanından yüklenecek
-        
-        // loadDemoParticipants fonksiyonu kaldırıldı - veritabanından yüklenecek
-        
-        function addAgendaItem() {
-            const title = prompt('Gündem maddesi başlığını girin:');
-            if (title) {
-                const responsible = prompt('Sorumlu kişiyi girin:');
-                const notes = prompt('Notlar (opsiyonel):');
-                
-                const container = document.getElementById('agendaItemsList');
-                const newItemHtml = `
-                    <div class="agenda-item mb-3 p-3 border rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">${container.children.length + 1}. ${title}</h6>
-                                <p class="text-muted mb-1"><strong>Sorumlu:</strong> ${responsible || '-'}</p>
-                                <p class="text-muted mb-0">${notes || '-'}</p>
-                </div>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-success" onclick="markAgendaCompleted(this)" title="Tamamlandı">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="btn btn-outline-primary" onclick="editAgendaItem(this)" title="Düzenle">
-                                    <i class="fas fa-edit"></i>
-                    </button>
-                </div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += newItemHtml;
-                showAlert('Gündem maddesi eklendi!', 'success');
-            }
-        }
-        
-        function addDecision() {
-            const decision = prompt('Karar metnini girin:');
-            if (decision) {
-                const responsible = prompt('Sorumlu kişiyi girin:');
-                const deadline = prompt('Termin tarihi (YYYY-MM-DD):');
-                
-                const container = document.getElementById('decisionsList');
-                const newDecisionHtml = `
-                    <div class="decision-item mb-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">Karar #${container.children.length + 1}</h6>
-                                <p class="mb-1">${decision}</p>
-                                <small class="text-muted">
-                                    <strong>Sorumlu:</strong> ${responsible || '-'} | 
-                                    <strong>Termin:</strong> ${deadline || '-'}
-                                </small>
-                            </div>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-success" onclick="markDecisionCompleted(this)" title="Tamamlandı">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="btn btn-outline-primary" onclick="editDecision(this)" title="Düzenle">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += newDecisionHtml;
-                showAlert('Karar eklendi!', 'success');
-            }
-        }
-        
+        // Katılımcı ekle
         function addParticipant() {
             const name = prompt('Katılımcı adını girin:');
             if (name) {
-                const role = prompt('Rolü girin (Başkan, Sekreter, Üye):');
+                const role = prompt('Rolü girin (Başkan, Sekreter, Üye):') || 'member';
                 
                 const container = document.getElementById('participantsList');
                 const newParticipantHtml = `
@@ -956,87 +1108,244 @@ $statusColors = [
                         </div>
                         <div class="flex-grow-1">
                             <div class="fw-bold">${name}</div>
-                            <small class="text-muted">${role || 'Üye'}</small>
+                            <small class="text-muted">${role}</small>
                         </div>
-                        <span class="badge bg-success">Katıldı</span>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeParticipant(this)">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 `;
                 container.innerHTML += newParticipantHtml;
-                showAlert('Katılımcı eklendi!', 'success');
             }
         }
         
-        function pauseMeeting() {
-            showAlert('Toplantı duraklatıldı!', 'warning');
+        // Katılımcı kaldır
+        function removeParticipant(button) {
+            button.closest('.d-flex').remove();
         }
         
-        function resumeMeeting() {
-            showAlert('Toplantı devam ediyor!', 'info');
-        }
-        
-        function endMeeting() {
-            if (confirm('Toplantıyı bitirmek istediğinizden emin misiniz?')) {
-                showAlert('Toplantı tamamlandı!', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('startMeetingModal')).hide();
+        // Gündem maddesi ekle
+        function addAgendaItem() {
+            const title = prompt('Gündem maddesi başlığını girin:');
+            if (title) {
+                const description = prompt('Açıklama (opsiyonel):') || '';
+                const responsible = prompt('Sorumlu kişiyi girin:') || '';
+                const duration = prompt('Tahmini süre (dakika):') || '15';
+                
+                const container = document.getElementById('agendaItemsList');
+                const order = container.children.length + 1;
+                const newItemHtml = `
+                    <div class="agenda-item mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${order}. ${title}</h6>
+                                <p class="text-muted mb-1">${description}</p>
+                                <small class="text-muted">
+                                    <strong>Sorumlu:</strong> ${responsible} | 
+                                    <strong>Süre:</strong> ${duration} dk
+                                </small>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeAgendaItem(this)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += newItemHtml;
             }
         }
         
-        function saveMeetingProgress() {
-            showAlert('Toplantı ilerlemesi kaydedildi!', 'success');
+        // Gündem maddesi kaldır
+        function removeAgendaItem(button) {
+            button.closest('.agenda-item').remove();
+            // Sıra numaralarını yeniden düzenle
+            const items = document.querySelectorAll('#agendaItemsList .agenda-item');
+            items.forEach((item, index) => {
+                const title = item.querySelector('h6');
+                title.textContent = title.textContent.replace(/^\d+\./, `${index + 1}.`);
+            });
         }
         
-        function markAgendaCompleted(element) {
-            element.closest('.agenda-item').classList.add('bg-light', 'border-success');
-            element.innerHTML = '<i class="fas fa-check-circle"></i>';
-            element.classList.remove('btn-outline-success');
-            element.classList.add('btn-success');
-            showAlert('Gündem maddesi tamamlandı!', 'success');
-        }
-        
-        function markDecisionCompleted(element) {
-            element.closest('.decision-item').classList.add('bg-light', 'border-success');
-            element.innerHTML = '<i class="fas fa-check-circle"></i>';
-            element.classList.remove('btn-outline-success');
-            element.classList.add('btn-success');
-            showAlert('Karar tamamlandı!', 'success');
-        }
-        
-        function uploadFile() {
-            showAlert('Dosya yükleme özelliği aktif!', 'success');
-        }
-        
-        function generateReport() {
-            showAlert('Toplantı raporu oluşturuluyor...', 'info');
-            console.log('Generating meeting report...');
-        }
-        
-        function showAlert(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
+        // Karar ekle
+        function addDecision() {
+            if (!currentMeetingId) {
+                showAlert('Önce bir toplantı seçin!', 'warning');
+                return;
+            }
             
-            document.body.appendChild(alertDiv);
+            const decisionText = prompt('Karar metnini girin:');
+            if (decisionText) {
+                const responsible = prompt('Sorumlu kişiyi girin:');
+                const deadline = prompt('Termin tarihi (YYYY-MM-DD):');
+                const priority = prompt('Öncelik (low/medium/high/urgent):') || 'medium';
+                
+                const data = {
+                    meeting_id: currentMeetingId,
+                    decision_text: decisionText,
+                    responsible: responsible,
+                    deadline: deadline,
+                    priority: priority
+                };
+                
+                fetch('api/meeting_api.php?action=add_decision', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('Karar eklendi!', 'success');
+                        // Detay modal'ını yenile
+                        viewMeeting(currentMeetingId);
+                        loadMeetingStats();
+                    } else {
+                        showAlert('Hata: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Bir hata oluştu!', 'danger');
+                });
+            }
+        }
+        
+        // Karar durumu güncelle
+        function updateDecisionStatus(decisionId, status) {
+            const progressNotes = prompt('İlerleme notları (opsiyonel):') || '';
             
-            // Auto remove after 3 seconds
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.parentNode.removeChild(alertDiv);
+            fetch('api/meeting_api.php?action=update_decision_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: decisionId,
+                    status: status,
+                    progress_notes: progressNotes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Karar durumu güncellendi!', 'success');
+                    // Detay modal'ını yenile
+                    viewMeeting(currentMeetingId);
+                    loadMeetingStats();
+                } else {
+                    showAlert('Hata: ' + data.message, 'danger');
                 }
-            }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Bir hata oluştu!', 'danger');
+            });
         }
         
-        function logout() {
-            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
-                window.location.href = '../logout.php';
+        // Bekleyen kararları göster
+        function showPendingDecisions() {
+            fetch('api/meeting_api.php?action=get_pending_decisions')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const container = document.getElementById('pendingDecisionsList');
+                        
+                        if (data.data.length === 0) {
+                            container.innerHTML = '<p class="text-muted text-center py-4">Bekleyen karar bulunmuyor.</p>';
+                        } else {
+                            let html = '';
+                            data.data.forEach(decision => {
+                                const isOverdue = decision.deadline && new Date(decision.deadline) < new Date();
+                                const priorityClass = priorityColors[decision.priority] || 'secondary';
+                                const priorityText = priorityTexts[decision.priority] || 'Bilinmiyor';
+                                
+                                html += `
+                                    <div class="decision-item ${decision.priority === 'urgent' ? 'urgent' : ''}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">${decision.decision_number}</h6>
+                                                <p class="mb-1">${decision.decision_text}</p>
+                                                <small class="text-muted">
+                                                    <strong>Toplantı:</strong> ${decision.meeting_title} (${formatDate(decision.meeting_date)})<br>
+                                                    <strong>Sorumlu:</strong> ${decision.responsible_person} | 
+                                                    <strong>Termin:</strong> ${decision.deadline ? formatDate(decision.deadline) : '-'}
+                                                    ${isOverdue ? ' <span class="text-danger">(Gecikmiş)</span>' : ''}
+                                                </small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge bg-${priorityClass} mb-1">${priorityText}</span><br>
+                                                <span class="badge bg-${bykUnits.find(u => u.code === decision.byk_name)?.color || '#007bff'}">${decision.byk_name}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            container.innerHTML = html;
+                        }
+                        
+                        // Modal'ı aç
+                        new bootstrap.Modal(document.getElementById('pendingDecisionsModal')).show();
+                    } else {
+                        showAlert('Bekleyen kararlar yüklenemedi: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Bir hata oluştu!', 'danger');
+                });
+        }
+        
+        // Filtreleri uygula
+        function applyFilters() {
+            const byk = document.getElementById('bykFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            
+            let filteredMeetings = meetings;
+            
+            if (byk) {
+                filteredMeetings = filteredMeetings.filter(m => m.byk_code === byk);
             }
+            
+            if (status) {
+                filteredMeetings = filteredMeetings.filter(m => m.status === status);
+            }
+            
+            if (dateFrom) {
+                filteredMeetings = filteredMeetings.filter(m => m.meeting_date >= dateFrom);
+            }
+            
+            if (dateTo) {
+                filteredMeetings = filteredMeetings.filter(m => m.meeting_date <= dateTo);
+            }
+            
+            renderMeetings(filteredMeetings);
+            showAlert(`${filteredMeetings.length} toplantı bulundu`, 'info');
         }
         
-        // Demo veriler için global meetings array
-        let meetings = <?php echo json_encode($meetings); ?>;
+        // Filtreleri temizle
+        function clearFilters() {
+            document.getElementById('bykFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            
+            renderMeetings(meetings);
+            showAlert('Filtreler temizlendi', 'info');
+        }
+        
+        // Toplantı raporu oluştur
+        function generateMeetingReport() {
+            showAlert('Rapor oluşturma özelliği yakında eklenecek!', 'info');
+        }
+        
+        // Dışa aktar
+        function exportMeetings() {
+            showAlert('Dışa aktarma özelliği yakında eklenecek!', 'info');
+        }
         
         // Form gönderimi
         document.getElementById('addMeetingForm').addEventListener('submit', function(e) {
@@ -1045,71 +1354,84 @@ $statusColors = [
             const formData = new FormData(this);
             const meetingData = Object.fromEntries(formData);
             
-            // Güncelleme modu kontrolü
-            const editId = this.getAttribute('data-edit-id');
+            // Katılımcıları topla
+            const participants = [];
+            document.querySelectorAll('#participantsList .d-flex').forEach(item => {
+                const name = item.querySelector('.fw-bold').textContent;
+                const role = item.querySelector('.text-muted').textContent;
+                participants.push({name: name, role: role, status: 'invited'});
+            });
             
-            if (editId) {
-                // API'ye güncelleme isteği gönder
-                meetingData.id = editId;
-                fetch('api/meeting_api.php?action=update_meeting', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(meetingData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert('Toplantı başarıyla güncellendi!', 'success');
-                        // Sayfayı yenile
-                        location.reload();
-                    } else {
-                        showAlert('Hata: ' + data.message, 'danger');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showAlert('Bir hata oluştu!', 'danger');
+            // Gündem maddelerini topla
+            const agenda = [];
+            document.querySelectorAll('#agendaItemsList .agenda-item').forEach((item, index) => {
+                const title = item.querySelector('h6').textContent.replace(/^\d+\.\s*/, '');
+                const description = item.querySelector('.text-muted').textContent.split('|')[0].replace('Sorumlu: ', '').trim();
+                const responsible = item.querySelector('.text-muted').textContent.split('|')[1]?.replace('Sorumlu: ', '').trim() || '';
+                const duration = item.querySelector('.text-muted').textContent.split('|')[2]?.replace('Süre: ', '').replace(' dk', '').trim() || '15';
+                
+                agenda.push({
+                    title: title,
+                    description: description,
+                    responsible: responsible,
+                    duration: parseInt(duration)
                 });
-            } else {
-                // API'ye yeni toplantı ekleme isteği gönder
-                fetch('api/meeting_api.php?action=add_meeting', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(meetingData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert('Toplantı başarıyla oluşturuldu!', 'success');
-                        // Sayfayı yenile
-                        location.reload();
-                    } else {
-                        showAlert('Hata: ' + data.message, 'danger');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showAlert('Bir hata oluştu!', 'danger');
-                });
-            }
+            });
             
-            // Modal'ı kapat
-            bootstrap.Modal.getInstance(document.getElementById('addMeetingModal')).hide();
+            meetingData.participants = participants;
+            meetingData.agenda = agenda;
             
-            // Formu temizle ve edit modunu kaldır
-            this.reset();
-            this.removeAttribute('data-edit-id');
-            
-            // Sayfayı yenile
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
+            // API'ye gönder
+            fetch('api/meeting_api.php?action=add_meeting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(meetingData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Toplantı başarıyla oluşturuldu!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addMeetingModal')).hide();
+                    loadMeetings();
+                    loadMeetingStats();
+                } else {
+                    showAlert('Hata: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Bir hata oluştu!', 'danger');
+            });
         });
+        
+        // Yardımcı fonksiyonlar
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR');
+        }
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                      type === 'warning' ? 'exclamation-triangle' : 
+                                      type === 'danger' ? 'times-circle' : 'info-circle'}"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
     </script>
 </body>
-</body></html>
-
+</html>
