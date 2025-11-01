@@ -1,13 +1,10 @@
 <?php
 require_once 'auth.php';
-require_once 'includes/byk_manager.php';
 
-// Session kontrolü - sadece superadmin giriş yapabilir
-SessionManager::requireRole('superadmin');
-
+// Login kontrolü kaldırıldı - direkt erişim
 $currentUser = SessionManager::getCurrentUser();
 
-// 2026 Yılı Program Listesi
+// 2026 Yılı Program Listesi - Backup'tan alınan tam veri
 $events_2026 = [
     // OCAK 2026
     ['date' => '2026-01-02', 'title' => 'Kış Tatil Kursu (Kızlar)', 'byk' => 'KT', 'color' => '#6f42c1'],
@@ -318,76 +315,570 @@ $events_2026 = [
     ['date' => '2026-12-25', 'title' => 'ISV Kültür Gezisi GT', 'byk' => 'GT', 'color' => '#0d6efd'],
     ['date' => '2026-12-31', 'title' => 'GT AKH Bitişi', 'byk' => 'GT', 'color' => '#0d6efd']
 ];
-
-// FullCalendar için etkinlikleri hazırla
-$calendar_events = [];
-foreach ($events_2026 as $event) {
-    $calendar_events[] = [
-        'title' => $event['title'],
-        'start' => $event['date'],
-        'color' => $event['color'],
-        'extendedProps' => [
-            'byk' => $event['byk'],
-            'description' => $event['title'] . ' - ' . $event['byk']
-        ]
-    ];
-}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AIF Otomasyon - Takvim</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     
     <style>
         <?php include 'includes/styles.php'; ?>
         
+        /* Calendar specific styles */
+        :root {
+            --primary-color: #009872;
+            --primary-dark: #007a5e;
+            --primary-light: #00b085;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #0dcaf0;
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+            --shadow-light: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Calendar Styles */
+        .calendar-header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .calendar-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-calendar {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-calendar:hover {
+            background: #0b5ed7;
+            transform: translateY(-2px);
+        }
+
+        .main-calendar-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .calendar-container {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            padding: 1.5rem;
-            margin-top: 1rem;
+            padding: 30px;
+            box-shadow: var(--shadow-light);
         }
-        
-        .fc-event {
-            border-radius: 5px !important;
-            border: none !important;
-            font-size: 0.85rem !important;
-            padding: 2px 4px !important;
+
+        .event-details {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow-light);
         }
-        
-        .fc-daygrid-event {
-            margin: 1px 0 !important;
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #dee2e6;
+            border-radius: 10px;
+            overflow: hidden;
         }
-        
-        .byk-legend {
+
+        .calendar-day-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .calendar-day {
+            background: white;
+            padding: 20px 15px;
+            min-height: 140px;
+            border: none;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            background: #f8f9fa;
+        }
+
+        .calendar-day.other-month {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .calendar-day.today {
+            background: #e3f2fd;
+            border: 2px solid var(--primary-color);
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .event-item {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 6px;
+            margin: 1px 0;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .event-item:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            position: relative;
+        }
+
+        .event-item.at { background: var(--danger-color); }
+        .event-item.kt { background: #6f42c1; }
+        .event-item.gt { background: #0d6efd; }
+        .event-item.kgt { background: var(--success-color); }
+
+        .event-details {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .event-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .event-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .event-card.at { border-left-color: var(--danger-color); }
+        .event-card.kt { border-left-color: #6f42c1; }
+        .event-card.gt { border-left-color: #0d6efd; }
+        .event-card.kgt { border-left-color: var(--success-color); }
+
+        .event-date {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        .event-title {
+            font-weight: 500;
+            margin: 5px 0;
+        }
+
+        .event-byk {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        /* Bugünün etkinlikleri için özel stil */
+        .today-event {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;
+            border-left: 4px solid #2196f3 !important;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+            transform: scale(1.02);
+        }
+
+        .today-event:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
+        }
+
+        /* Mobil Responsive Tasarım */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+
+            .calendar-header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .calendar-title {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+
+            .calendar-controls {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .btn-calendar {
+                padding: 12px 16px;
+                font-size: 1.1rem;
+                min-width: 50px;
+                min-height: 50px;
+            }
+
+            #currentMonth {
+                font-size: 1.2rem;
+                font-weight: 600;
+            }
+
+            .main-calendar-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .calendar-container {
+                padding: 15px;
+            }
+
+            .event-details {
+                padding: 15px;
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 1px;
+            }
+
+            .calendar-day-header {
+                padding: 8px 4px;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            .calendar-day {
+                padding: 8px 4px;
+                min-height: 80px;
+                font-size: 0.8rem;
+            }
+
+            .day-number {
+                font-size: 0.9rem;
+                margin-bottom: 3px;
+            }
+
+            .event-item {
+                padding: 1px 4px;
+                margin: 1px 0;
+                font-size: 0.7rem;
+                border-radius: 2px;
+            }
+
+            .event-details {
+                padding: 15px;
+            }
+
+            .event-details h4 {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+
+            .event-card {
+                padding: 12px 15px;
+                margin-bottom: 8px;
+            }
+
+            .event-date {
+                font-size: 0.9rem;
+                min-width: 50px;
+            }
+
+            .event-title {
+                font-size: 0.9rem;
+                margin: 3px 0;
+            }
+
+            .event-byk {
+                font-size: 0.7rem;
+                padding: 2px 6px;
+            }
+
+            .filter-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .filter-title {
+                font-size: 1rem;
+                margin-bottom: 10px;
+            }
+
+            .filter-buttons {
+                gap: 8px;
+            }
+
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                border-radius: 15px;
+            }
+
+            .legend {
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .legend-item {
+                font-size: 0.8rem;
+            }
+
+            .legend-color {
+                width: 16px;
+                height: 16px;
+                margin-right: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 5px;
+            }
+
+            .calendar-header {
+                padding: 10px;
+            }
+
+            .calendar-title {
+                font-size: 1.3rem;
+            }
+
+            .calendar-day {
+                padding: 6px 2px;
+                min-height: 70px;
+                font-size: 0.7rem;
+            }
+
+            .calendar-day-header {
+                padding: 6px 2px;
+                font-size: 0.7rem;
+            }
+
+            .day-number {
+                font-size: 0.8rem;
+            }
+
+            .event-item {
+                padding: 1px 3px;
+                font-size: 0.6rem;
+            }
+
+            .event-card {
+                padding: 10px 12px;
+                margin-bottom: 6px;
+            }
+
+            .event-date {
+                font-size: 0.8rem;
+                min-width: 45px;
+            }
+
+            .event-title {
+                font-size: 0.8rem;
+            }
+
+            .event-byk {
+                font-size: 0.6rem;
+                padding: 1px 4px;
+            }
+
+            .filter-btn {
+                padding: 5px 10px;
+                font-size: 0.7rem;
+            }
+
+            .btn-calendar {
+                padding: 10px 14px;
+                font-size: 1rem;
+                min-width: 45px;
+                min-height: 45px;
+            }
+
+            .calendar-container {
+                padding: 10px;
+            }
+
+            .event-details {
+                padding: 10px;
+            }
+        }
+
+        .legend {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 20px;
+            margin-top: 20px;
             flex-wrap: wrap;
         }
-        
-        .byk-legend-item {
+
+        .legend-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
-        
-        .byk-legend-color {
+
+        .legend-color {
             width: 20px;
             height: 20px;
             border-radius: 4px;
+        }
+
+        /* Filter Styles */
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .filter-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .filter-btn.at.active {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .filter-btn.kt.active {
+            background: #6f42c1;
+            border-color: #6f42c1;
+        }
+
+        .filter-btn.gt.active {
+            background: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .filter-btn.kgt.active {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .filter-btn .filter-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .filter-btn.at .filter-dot {
+            background: var(--danger-color);
+        }
+
+        .filter-btn.kt .filter-dot {
+            background: #6f42c1;
+        }
+
+        .filter-btn.gt .filter-dot {
+            background: #0d6efd;
+        }
+
+        .filter-btn.kgt .filter-dot {
+            background: var(--success-color);
+        }
+
+        .filter-btn.active .filter-dot {
+            background: white;
+        }
+
+        .events-count {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-left: auto;
         }
     </style>
 </head>
@@ -396,95 +887,153 @@ foreach ($events_2026 as $event) {
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="header-title">
-                    <h1>Takvim</h1>
+        <!-- Calendar Header -->
+        <div class="calendar-header">
+            <h1 class="calendar-title" id="calendarTitle">2026 Yılı Takvimi</h1>
+            <div class="calendar-controls">
+                <button class="btn btn-calendar" onclick="previousMonth()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="currentMonth" class="fw-bold fs-5">Ocak 2026</span>
+                <button class="btn btn-calendar" onclick="nextMonth()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-filter"></i>
+                BYK Kategorilerine Göre Filtrele
+                <span class="events-count" id="eventsCount"></span>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn all active" onclick="filterEvents('all')">
+                    <div class="filter-dot"></div>
+                    Tümü
+                </button>
+                <button class="filter-btn at" onclick="filterEvents('AT')">
+                    <div class="filter-dot"></div>
+                    AT - Ana Teşkilat
+                </button>
+                <button class="filter-btn kt" onclick="filterEvents('KT')">
+                    <div class="filter-dot"></div>
+                    KT - Kadınlar Teşkilatı
+                </button>
+                <button class="filter-btn gt" onclick="filterEvents('GT')">
+                    <div class="filter-dot"></div>
+                    GT - Gençlik Teşkilatı
+                </button>
+                <button class="filter-btn kgt" onclick="filterEvents('KGT')">
+                    <div class="filter-dot"></div>
+                    KGT - Kadınlar Gençlik Teşkilatı
+                </button>
+            </div>
+        </div>
+        
+        <!-- Ana Container - Desktop'ta yan yana, mobilde alt alta -->
+        <div class="main-calendar-container">
+            <div class="calendar-container">
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar will be generated by JavaScript -->
                 </div>
-                <div class="header-actions">
-                    <div class="d-flex gap-2">
-                        <select class="form-select" id="bykFilter" style="width: 200px;">
-                            <option value="">Tüm BYK'lar</option>
-                            <?php foreach (BYKManager::getBYKCategories() as $code => $name): ?>
-                            <option value="<?php echo $code; ?>" data-color="<?php echo BYKManager::getBYKPrimaryColor($code); ?>">
-                                <?php echo $code; ?> - <?php echo $name; ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
-                            <i class="fas fa-plus"></i> Etkinlik Ekle
-                        </button>
+                
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color at"></div>
+                        <span>AT - Ana Teşkilat</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color kt"></div>
+                        <span>KT - Kadınlar Teşkilatı</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color gt"></div>
+                        <span>GT - Gençlik Teşkilatı</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color kgt"></div>
+                        <span>KGT - Kadınlar Gençlik Teşkilatı</span>
                     </div>
                 </div>
             </div>
-        </header>
 
-        <!-- Content Area -->
-        <div class="content-area">
-            <!-- BYK Legend -->
-            <div class="byk-legend">
-                <div class="byk-legend-item">
-                    <div class="byk-legend-color" style="background-color: #dc3545;"></div>
-                    <span><strong>AT</strong> - Ana Teşkilat (<?php echo count(array_filter($calendar_events, function($e) { return $e['extendedProps']['byk'] === 'AT'; })); ?> etkinlik)</span>
-                </div>
-                <div class="byk-legend-item">
-                    <div class="byk-legend-color" style="background-color: #6f42c1;"></div>
-                    <span><strong>KT</strong> - Kadınlar Teşkilatı (<?php echo count(array_filter($calendar_events, function($e) { return $e['extendedProps']['byk'] === 'KT'; })); ?> etkinlik)</span>
-                </div>
-                <div class="byk-legend-item">
-                    <div class="byk-legend-color" style="background-color: #198754;"></div>
-                    <span><strong>KGT</strong> - Kadınlar Gençlik Teşkilatı (<?php echo count(array_filter($calendar_events, function($e) { return $e['extendedProps']['byk'] === 'KGT'; })); ?> etkinlik)</span>
-                </div>
-                <div class="byk-legend-item">
-                    <div class="byk-legend-color" style="background-color: #0d6efd;"></div>
-                    <span><strong>GT</strong> - Gençlik Teşkilatı (<?php echo count(array_filter($calendar_events, function($e) { return $e['extendedProps']['byk'] === 'GT'; })); ?> etkinlik)</span>
                 </div>
             </div>
 
-            <!-- Calendar -->
-            <div class="calendar-container">
-                <div id="calendar"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Event Modal -->
-    <div class="modal fade" id="addEventModal" tabindex="-1">
+    <!-- Event Edit Modal -->
+    <div class="modal fade" id="eventEditModal" tabindex="-1" aria-labelledby="eventEditModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Yeni Etkinlik Ekle</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="eventEditModalLabel">Etkinlik Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addEventForm">
+                    <form id="eventEditForm">
                         <div class="mb-3">
-                            <label for="eventTitle" class="form-label">Etkinlik Adı</label>
-                            <input type="text" class="form-control" id="eventTitle" required>
+                            <label for="editEventTitle" class="form-label">Etkinlik Adı</label>
+                            <input type="text" class="form-control" id="editEventTitle" required>
                         </div>
                         <div class="mb-3">
-                            <label for="eventDate" class="form-label">Tarih</label>
-                            <input type="date" class="form-control" id="eventDate" required>
+                            <label for="editEventDate" class="form-label">Başlangıç Tarihi</label>
+                            <input type="date" class="form-control" id="editEventDate" required>
                         </div>
                         <div class="mb-3">
-                            <label for="eventBYK" class="form-label">BYK</label>
-                            <select class="form-select" id="eventBYK" required>
-                                <option value="">BYK Seçin</option>
-                                <?php foreach (BYKManager::getBYKCategories() as $code => $name): ?>
-                                <option value="<?php echo $code; ?>"><?php echo $code; ?> - <?php echo $name; ?></option>
-                                <?php endforeach; ?>
+                            <label for="editEventEndDate" class="form-label">Bitiş Tarihi (Opsiyonel)</label>
+                            <input type="date" class="form-control" id="editEventEndDate">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editEventRecurring" onchange="toggleRecurrenceOptions()">
+                                <label class="form-check-label" for="editEventRecurring">
+                                    Tekrarlayan Etkinlik
+                                </label>
+                            </div>
+                        </div>
+                        <div id="recurrenceOptions" style="display: none;">
+                            <div class="mb-3">
+                                <label for="editRecurrenceType" class="form-label">Tekrar Tipi</label>
+                                <select class="form-select" id="editRecurrenceType" onchange="updateRecurrencePattern()">
+                                    <option value="none">Tekrar Yok</option>
+                                    <option value="daily">Günlük</option>
+                                    <option value="weekly">Haftalık</option>
+                                    <option value="monthly">Aylık</option>
+                                    <option value="yearly">Yıllık</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="recurrencePatternDiv" style="display: none;">
+                                <label for="editRecurrencePattern" class="form-label">Tekrar Deseni</label>
+                                <select class="form-select" id="editRecurrencePattern">
+                                    <option value="">Seçin...</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editRecurrenceEndDate" class="form-label">Tekrar Bitiş Tarihi</label>
+                                <input type="date" class="form-control" id="editRecurrenceEndDate">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventBYK" class="form-label">BYK Kategorisi</label>
+                            <select class="form-select" id="editEventBYK" required>
+                                <option value="AT">AT - Ana Teşkilat</option>
+                                <option value="KT">KT - Kadınlar Teşkilatı</option>
+                                <option value="GT">GT - Gençlik Teşkilatı</option>
+                                <option value="KGT">KGT - Kadınlar Gençlik Teşkilatı</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="eventDescription" class="form-label">Açıklama</label>
-                            <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+                            <label for="editEventDescription" class="form-label">Açıklama (Opsiyonel)</label>
+                            <textarea class="form-control" id="editEventDescription" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-primary" onclick="addEvent()">Etkinlik Ekle</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteEvent()">Sil</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEvent()">Kaydet</button>
                 </div>
             </div>
         </div>
@@ -492,89 +1041,510 @@ foreach ($events_2026 as $event) {
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- FullCalendar JS -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
-            
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'tr',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,listWeek'
-                },
-                events: <?php echo json_encode($calendar_events); ?>,
-                eventClick: function(info) {
-                    alert('Etkinlik: ' + info.event.title + '\nBYK: ' + info.event.extendedProps.byk + '\nTarih: ' + info.event.start.toLocaleDateString('tr-TR'));
-                },
-                eventDidMount: function(info) {
-                    // Tooltip ekle
-                    info.el.title = info.event.title + ' - ' + info.event.extendedProps.byk;
-                }
-            });
-            
-            calendar.render();
-            
-            // BYK Filter
-            $('#bykFilter').on('change', function() {
-                const selectedBYK = $(this).val();
-                if (selectedBYK === '') {
-                    calendar.removeAllEventSources();
-                    calendar.addEventSource(<?php echo json_encode($calendar_events); ?>);
-                } else {
-                    const filteredEvents = <?php echo json_encode($calendar_events); ?>.filter(event => 
-                        event.extendedProps.byk === selectedBYK
-                    );
-                    calendar.removeAllEventSources();
-                    calendar.addEventSource(filteredEvents);
-                }
-            });
-        });
+        // Calendar data - will be loaded from database
+        let events = [];
         
-        function addEvent() {
-            const title = document.getElementById('eventTitle').value;
-            const date = document.getElementById('eventDate').value;
-            const byk = document.getElementById('eventBYK').value;
-            const description = document.getElementById('eventDescription').value;
+        // Takvim bugünden başlasın
+        const today = new Date();
+        let currentMonth = today.getMonth(); // Mevcut ay
+        let currentYear = today.getFullYear(); // Mevcut yıl
+        let currentFilter = 'all'; // Current filter state
+        let selectedEvent = null; // Seçili etkinlik
+        
+        const monthNames = [
+            'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+        ];
+        
+        const dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+        
+        // Load events from database
+        async function loadEvents() {
+            try {
+                const response = await fetch(`../calendar_api.php?action=list&year=${currentYear}&month=${currentMonth + 1}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    events = data.events.map(event => ({
+                        id: event.id,
+                        title: event.title,
+                        date: event.start_date,
+                        end_date: event.end_date,
+                        byk: event.byk_category,
+                        description: event.description || '',
+                        is_recurring: event.is_recurring,
+                        recurrence_type: event.recurrence_type,
+                        recurrence_pattern: event.recurrence_pattern,
+                        recurrence_end_date: event.recurrence_end_date
+                    }));
+                    
+                    // Generate calendar with loaded events
+                    generateCalendar();
+                } else {
+                    console.error('Etkinlikler yüklenirken hata:', data.message);
+                }
+            } catch (error) {
+                console.error('Etkinlikler yüklenirken hata:', error);
+            }
+        }
+        
+        // Filter events based on BYK category
+        function filterEvents(bykCategory) {
+            currentFilter = bykCategory;
             
-            if (!title || !date || !byk) {
-                alert('Lütfen tüm zorunlu alanları doldurun.');
+            // Update filter button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (bykCategory === 'all') {
+                document.querySelector('.filter-btn.all').classList.add('active');
+            } else {
+                document.querySelector(`.filter-btn.${bykCategory.toLowerCase()}`).classList.add('active');
+            }
+            
+            // Regenerate calendar with filtered events
+            generateCalendar();
+        }
+        
+        // Get filtered events for current month
+        function getFilteredEvents() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Bugünün başlangıcı
+            
+            let monthEvents = events.filter(event => {
+                const eventDate = new Date(event.date);
+                return eventDate.getMonth() === currentMonth && 
+                       eventDate.getFullYear() === currentYear &&
+                       eventDate >= today; // Sadece bugün ve sonrasındaki etkinlikler
+            });
+            
+            if (currentFilter !== 'all') {
+                monthEvents = monthEvents.filter(event => event.byk === currentFilter);
+            }
+            
+            return monthEvents;
+        }
+        
+        function getAllFutureEvents() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Bugünün başlangıcı
+            
+            console.log('getAllFutureEvents - Total events:', events.length);
+            console.log('getAllFutureEvents - Today:', today);
+            
+            let futureEvents = events.filter(event => {
+                const eventDate = new Date(event.date);
+                const isFuture = eventDate >= today;
+                console.log(`Event: ${event.title} (${event.date}) - Future: ${isFuture}`);
+                return isFuture; // Bugün ve sonrasındaki tüm etkinlikler
+            });
+            
+            console.log('getAllFutureEvents - Future events:', futureEvents.length);
+            
+            if (currentFilter !== 'all') {
+                futureEvents = futureEvents.filter(event => event.byk === currentFilter);
+                console.log('getAllFutureEvents - Filtered events:', futureEvents.length);
+            }
+            
+            return futureEvents;
+        }
+        
+        function generateCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            
+            // Clear previous content
+            calendarGrid.innerHTML = '';
+            
+            // Add day headers
+            dayNames.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+            
+            // Previous month days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const dayElement = createDayElement(daysInPrevMonth - i, true);
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = createDayElement(day, false);
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // Next month days
+            const totalCells = calendarGrid.children.length - 7; // Subtract day headers
+            const remainingCells = 42 - totalCells; // 6 weeks * 7 days
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayElement = createDayElement(day, true);
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // Update month display
+            document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            // Update calendar title
+            document.getElementById('calendarTitle').textContent = `${currentYear} Yılı Takvimi`;
+        }
+        
+        function createDayElement(day, isOtherMonth) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            
+            if (isOtherMonth) {
+                dayElement.classList.add('other-month');
+            }
+            
+            // Check if today
+            const today = new Date();
+            if (!isOtherMonth && 
+                day === today.getDate() && 
+                currentMonth === today.getMonth() && 
+                currentYear === today.getFullYear()) {
+                dayElement.classList.add('today');
+            }
+            
+            // Day number
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            dayElement.appendChild(dayNumber);
+            
+            // Add events for this day
+            if (!isOtherMonth) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                let dayEvents = events.filter(event => event.date === dateStr);
+                
+                // Apply current filter
+                if (currentFilter !== 'all') {
+                    dayEvents = dayEvents.filter(event => event.byk === currentFilter);
+                }
+                
+                dayEvents.forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = `event-item ${event.byk.toLowerCase()}`;
+                    eventElement.textContent = event.title;
+                    eventElement.title = event.title;
+                    eventElement.onclick = () => showEventDetails(event);
+                    dayElement.appendChild(eventElement);
+                });
+            }
+            
+            return dayElement;
+        }
+        
+        function showEventDetails(event) {
+            selectedEvent = event;
+            
+            // Modal formunu doldur
+            document.getElementById('editEventTitle').value = event.title;
+            document.getElementById('editEventDate').value = event.date;
+            document.getElementById('editEventEndDate').value = event.end_date || event.date;
+            document.getElementById('editEventBYK').value = event.byk;
+            document.getElementById('editEventDescription').value = event.description || '';
+            document.getElementById('editEventRecurring').checked = event.is_recurring || false;
+            document.getElementById('editRecurrenceType').value = event.recurrence_type || 'none';
+            document.getElementById('editRecurrencePattern').value = event.recurrence_pattern || '';
+            document.getElementById('editRecurrenceEndDate').value = event.recurrence_end_date || '';
+            
+            // Tekrar seçeneklerini göster/gizle
+            toggleRecurrenceOptions();
+            
+            // Modal'ı göster
+            const modal = new bootstrap.Modal(document.getElementById('eventEditModal'));
+            modal.show();
+        }
+        
+        function toggleRecurrenceOptions() {
+            const isRecurring = document.getElementById('editEventRecurring').checked;
+            const recurrenceOptions = document.getElementById('recurrenceOptions');
+            const recurrencePatternDiv = document.getElementById('recurrencePatternDiv');
+            
+            if (isRecurring) {
+                recurrenceOptions.style.display = 'block';
+                updateRecurrencePattern();
+            } else {
+                recurrenceOptions.style.display = 'none';
+                recurrencePatternDiv.style.display = 'none';
+            }
+        }
+        
+        function updateRecurrencePattern() {
+            const recurrenceType = document.getElementById('editRecurrenceType').value;
+            const patternSelect = document.getElementById('editRecurrencePattern');
+            const patternDiv = document.getElementById('recurrencePatternDiv');
+            
+            patternSelect.innerHTML = '<option value="">Seçin...</option>';
+            
+            if (recurrenceType === 'weekly') {
+                patternDiv.style.display = 'block';
+                patternSelect.innerHTML = `
+                    <option value="1">Her Pazartesi</option>
+                    <option value="2">Her Salı</option>
+                    <option value="3">Her Çarşamba</option>
+                    <option value="4">Her Perşembe</option>
+                    <option value="5">Her Cuma</option>
+                    <option value="6">Her Cumartesi</option>
+                    <option value="7">Her Pazar</option>
+                `;
+            } else if (recurrenceType === 'monthly') {
+                patternDiv.style.display = 'block';
+                patternSelect.innerHTML = `
+                    <option value="1">Her ayın 1'i</option>
+                    <option value="2">Her ayın 2'si</option>
+                    <option value="3">Her ayın 3'ü</option>
+                    <option value="4">Her ayın 4'ü</option>
+                    <option value="5">Her ayın 5'i</option>
+                    <option value="10">Her ayın 10'u</option>
+                    <option value="15">Her ayın 15'i</option>
+                    <option value="20">Her ayın 20'si</option>
+                    <option value="25">Her ayın 25'i</option>
+                    <option value="last">Her ayın son günü</option>
+                    <option value="first_monday">Her ayın ilk Pazartesi</option>
+                    <option value="first_tuesday">Her ayın ilk Salı</option>
+                    <option value="first_wednesday">Her ayın ilk Çarşamba</option>
+                    <option value="first_thursday">Her ayın ilk Perşembe</option>
+                    <option value="first_friday">Her ayın ilk Cuma</option>
+                    <option value="first_saturday">Her ayın ilk Cumartesi</option>
+                    <option value="first_sunday">Her ayın ilk Pazar</option>
+                    <option value="last_monday">Her ayın son Pazartesi</option>
+                    <option value="last_tuesday">Her ayın son Salı</option>
+                    <option value="last_wednesday">Her ayın son Çarşamba</option>
+                    <option value="last_thursday">Her ayın son Perşembe</option>
+                    <option value="last_friday">Her ayın son Cuma</option>
+                    <option value="last_saturday">Her ayın son Cumartesi</option>
+                    <option value="last_sunday">Her ayın son Pazar</option>
+                `;
+            } else if (recurrenceType === 'yearly') {
+                patternDiv.style.display = 'block';
+                patternSelect.innerHTML = `
+                    <option value="1-1">Her yıl 1 Ocak</option>
+                    <option value="1-15">Her yıl 15 Ocak</option>
+                    <option value="2-14">Her yıl 14 Şubat</option>
+                    <option value="3-21">Her yıl 21 Mart</option>
+                    <option value="4-23">Her yıl 23 Nisan</option>
+                    <option value="5-1">Her yıl 1 Mayıs</option>
+                    <option value="5-19">Her yıl 19 Mayıs</option>
+                    <option value="6-1">Her yıl 1 Haziran</option>
+                    <option value="7-15">Her yıl 15 Temmuz</option>
+                    <option value="8-30">Her yıl 30 Ağustos</option>
+                    <option value="9-1">Her yıl 1 Eylül</option>
+                    <option value="10-29">Her yıl 29 Ekim</option>
+                    <option value="11-10">Her yıl 10 Kasım</option>
+                    <option value="12-31">Her yıl 31 Aralık</option>
+                `;
+            } else {
+                patternDiv.style.display = 'none';
+            }
+        }
+        
+        async function saveEvent() {
+            if (!selectedEvent) return;
+            
+            // Form verilerini al
+            const title = document.getElementById('editEventTitle').value;
+            const startDate = document.getElementById('editEventDate').value;
+            const endDate = document.getElementById('editEventEndDate').value || startDate;
+            const byk = document.getElementById('editEventBYK').value;
+            const description = document.getElementById('editEventDescription').value;
+            const isRecurring = document.getElementById('editEventRecurring').checked;
+            const recurrenceType = document.getElementById('editRecurrenceType').value;
+            const recurrencePattern = document.getElementById('editRecurrencePattern').value;
+            const recurrenceEndDate = document.getElementById('editRecurrenceEndDate').value;
+            
+            if (!title || !startDate || !byk) {
+                alert('Lütfen tüm zorunlu alanları doldurun!');
                 return;
             }
             
-            // BYK (Bölge Yönetim Kurulu) renklerini al
-            const bykColors = {
-                'AT': '#dc3545',
-                'KT': '#6f42c1',
-                'KGT': '#198754',
-                'GT': '#0d6efd'
-            };
-            
-            const newEvent = {
-                title: title,
-                start: date,
-                color: bykColors[byk],
-                extendedProps: {
-                    byk: byk,
-                    description: description
+            try {
+                const response = await fetch('../calendar_api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        id: selectedEvent.id,
+                        title: title,
+                        start_date: startDate,
+                        end_date: endDate,
+                        byk_category: byk,
+                        description: description,
+                        is_recurring: isRecurring ? 1 : 0,
+                        recurrence_type: recurrenceType,
+                        recurrence_pattern: recurrencePattern,
+                        recurrence_end_date: recurrenceEndDate
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Modal'ı kapat
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('eventEditModal'));
+                    modal.hide();
+                    
+                    // Etkinlikleri yeniden yükle
+                    await loadEvents();
+                    
+                    alert('Etkinlik başarıyla kaydedildi!');
+                } else {
+                    alert('Hata: ' + data.message);
                 }
-            };
-            
-            // Etkinliği takvime ekle
-            const calendar = FullCalendar.getApi();
-            calendar.addEvent(newEvent);
-            
-            // Modal'ı kapat ve formu temizle
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
-            modal.hide();
-            document.getElementById('addEventForm').reset();
-            
-            alert('Etkinlik başarıyla eklendi!');
+            } catch (error) {
+                console.error('Kaydetme hatası:', error);
+                alert('Etkinlik kaydedilirken hata oluştu!');
+            }
         }
+        
+        async function deleteEvent() {
+            if (!selectedEvent) return;
+            
+            if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
+                try {
+                    const response = await fetch('../calendar_api.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id: selectedEvent.id
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Modal'ı kapat
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('eventEditModal'));
+                        modal.hide();
+                        
+                        // Etkinlikleri yeniden yükle
+                        await loadEvents();
+                        
+                        alert('Etkinlik başarıyla silindi!');
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Silme hatası:', error);
+                    alert('Etkinlik silinirken hata oluştu!');
+                }
+            }
+        }
+        
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            loadEvents();
+        }
+        
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            loadEvents();
+        }
+        
+        // Sayfa yüklendiğinde takvimi başlat
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEvents();
+            
+            // Bugünün tarihini vurgula
+            highlightToday();
+            
+            // Mobil cihazlar için dokunma olayları
+            addTouchEvents();
+        });
+
+        // Mobil cihazlar için dokunma olayları
+        function addTouchEvents() {
+            // Takvim günlerine dokunma olayı
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            calendarDays.forEach(day => {
+                day.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                day.addEventListener('touchend', function(e) {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Filtre butonlarına dokunma olayı
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                btn.addEventListener('touchend', function(e) {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Takvim navigasyon butonlarına dokunma olayı
+            const navButtons = document.querySelectorAll('.btn-calendar');
+            navButtons.forEach(btn => {
+                btn.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                btn.addEventListener('touchend', function(e) {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        }
+        
+        // Bugünün tarihini vurgulama fonksiyonu
+        function highlightToday() {
+            const today = new Date();
+            const todayString = today.getDate().toString();
+            
+            // Bugünün gününü bul ve vurgula
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            calendarDays.forEach(day => {
+                const dayNumber = day.querySelector('.day-number');
+                if (dayNumber && dayNumber.textContent === todayString) {
+                    // Bugünün ayında mı kontrol et
+                    const dayDate = new Date(currentYear, currentMonth, parseInt(todayString));
+                    if (dayDate.getMonth() === today.getMonth() && dayDate.getFullYear() === today.getFullYear()) {
+                        day.style.backgroundColor = '#e3f2fd';
+                        day.style.border = '2px solid #2196f3';
+                        day.style.borderRadius = '8px';
+                        
+                        // Bugün yazısı ekle
+                        const todayLabel = document.createElement('div');
+                        todayLabel.textContent = 'Bugün';
+                        todayLabel.style.fontSize = '0.7rem';
+                        todayLabel.style.color = '#2196f3';
+                        todayLabel.style.fontWeight = 'bold';
+                        todayLabel.style.marginTop = '5px';
+                        day.appendChild(todayLabel);
+                    }
+                }
+            });
+        }
+        
     </script>
 </body>
 </html>
+</html></html>
