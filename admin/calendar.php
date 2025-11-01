@@ -389,8 +389,10 @@ $events_2026 = [
 
         .main-calendar-container {
             display: grid;
-            grid-template-columns: 1fr 0.3fr;
+            grid-template-columns: 1fr;
             gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .calendar-container {
@@ -419,16 +421,16 @@ $events_2026 = [
         .calendar-day-header {
             background: var(--primary-color);
             color: white;
-            padding: 15px 10px;
+            padding: 20px 15px;
             text-align: center;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         .calendar-day {
             background: white;
-            padding: 15px 10px;
-            min-height: 120px;
+            padding: 20px 15px;
+            min-height: 140px;
             border: none;
             position: relative;
             transition: all 0.3s ease;
