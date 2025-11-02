@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors[] = 'Şifre en az 6 karakter olmalıdır.';
                 } else {
                     $sifre_hash = password_hash($sifre, PASSWORD_DEFAULT);
-                    $db->execute("
+                    $db->query("
                         UPDATE kullanicilar 
                         SET ad = ?, soyad = ?, email = ?, sifre = ?, rol_id = ?, byk_id = ?, aktif = ?
                         WHERE kullanici_id = ?
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             } else {
                 // Şifre değiştirilmedi
-                $db->execute("
+                $db->query("
                     UPDATE kullanicilar 
                     SET ad = ?, soyad = ?, email = ?, rol_id = ?, byk_id = ?, aktif = ?
                     WHERE kullanici_id = ?
