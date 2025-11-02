@@ -18,9 +18,16 @@ $db = Database::getInstance();
 $pageTitle = 'Kontrol Paneli';
 
 // İstatistikleri al
+// BYK sayısı - önce byk_categories'i kontrol et
+try {
+    $toplamByk = $db->fetch("SELECT COUNT(*) as count FROM byk_categories")['count'];
+} catch (Exception $e) {
+    $toplamByk = $db->fetch("SELECT COUNT(*) as count FROM byk WHERE aktif = 1")['count'];
+}
+
 $stats = [
     'toplam_kullanici' => $db->fetch("SELECT COUNT(*) as count FROM kullanicilar WHERE aktif = 1")['count'],
-    'toplam_byk' => $db->fetch("SELECT COUNT(*) as count FROM byk WHERE aktif = 1")['count'],
+    'toplam_byk' => $toplamByk,
     'toplam_etkinlik' => $db->fetch("SELECT COUNT(*) as count FROM etkinlikler WHERE baslangic_tarihi >= CURDATE()")['count'],
     'toplam_toplanti' => $db->fetch("SELECT COUNT(*) as count FROM toplantilar WHERE durum = 'planlandi'")['count'],
     'bekleyen_izin' => $db->fetch("SELECT COUNT(*) as count FROM izin_talepleri WHERE durum = 'beklemede'")['count'],
@@ -41,15 +48,29 @@ $son_aktiviteler = $db->fetchAll("
 ");
 
 // BYK bazlı kullanıcı dağılımı (Chart.js için)
-$byk_kullanicilar = $db->fetchAll("
-    SELECT b.byk_adi, COUNT(k.kullanici_id) as kullanici_sayisi
-    FROM byk b
-    LEFT JOIN kullanicilar k ON b.byk_id = k.byk_id AND k.aktif = 1
-    WHERE b.aktif = 1
-    GROUP BY b.byk_id, b.byk_adi
-    ORDER BY kullanici_sayisi DESC
-    LIMIT 10
-");
+try {
+    $byk_kullanicilar = $db->fetchAll("
+        SELECT bc.name as byk_adi, 
+               COUNT(DISTINCT k.kullanici_id) as kullanici_sayisi
+        FROM byk_categories bc
+        LEFT JOIN users u ON u.byk_category_id = bc.id AND u.status = 'active'
+        LEFT JOIN kullanicilar k ON k.byk_id = (SELECT byk_id FROM byk WHERE byk_kodu = bc.code) AND k.aktif = 1
+        GROUP BY bc.id, bc.name
+        ORDER BY kullanici_sayisi DESC
+        LIMIT 10
+    ");
+} catch (Exception $e) {
+    // byk_categories yoksa eski byk tablosunu kullan
+    $byk_kullanicilar = $db->fetchAll("
+        SELECT b.byk_adi, COUNT(k.kullanici_id) as kullanici_sayisi
+        FROM byk b
+        LEFT JOIN kullanicilar k ON b.byk_id = k.byk_id AND k.aktif = 1
+        WHERE b.aktif = 1
+        GROUP BY b.byk_id, b.byk_adi
+        ORDER BY kullanici_sayisi DESC
+        LIMIT 10
+    ");
+}
 
 include __DIR__ . '/../includes/header.php';
 ?>

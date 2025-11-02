@@ -15,13 +15,27 @@ $db = Database::getInstance();
 
 $pageTitle = 'Alt Birimler Yönetimi';
 
-// Alt birimler
-$altBirimler = $db->fetchAll("
-    SELECT ab.*, b.byk_adi
-    FROM alt_birimler ab
-    INNER JOIN byk b ON ab.byk_id = b.byk_id
-    ORDER BY b.byk_adi, ab.alt_birim_adi
-");
+// Alt birimler (byk_sub_units tablosundan)
+try {
+    // Önce byk_sub_units tablosunu kontrol et
+    $altBirimler = $db->fetchAll("
+        SELECT bsu.*, 
+               bc.name as byk_adi,
+               bc.code as byk_kodu,
+               bc.color as byk_renk
+        FROM byk_sub_units bsu
+        INNER JOIN byk_categories bc ON bsu.byk_category_id = bc.id
+        ORDER BY bc.code, bsu.name
+    ");
+} catch (Exception $e) {
+    // byk_sub_units yoksa eski alt_birimler tablosunu kullan
+    $altBirimler = $db->fetchAll("
+        SELECT ab.*, b.byk_adi
+        FROM alt_birimler ab
+        INNER JOIN byk b ON ab.byk_id = b.byk_id
+        ORDER BY b.byk_adi, ab.alt_birim_adi
+    ");
+}
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -64,18 +78,28 @@ include __DIR__ . '/../includes/header.php';
                                 <?php else: ?>
                                     <?php foreach ($altBirimler as $altBirim): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($altBirim['byk_adi']); ?></td>
-                                            <td><?php echo htmlspecialchars($altBirim['alt_birim_adi']); ?></td>
-                                            <td><code><?php echo htmlspecialchars($altBirim['alt_birim_kodu'] ?? '-'); ?></code></td>
                                             <td>
-                                                <span class="badge bg-<?php echo $altBirim['aktif'] ? 'success' : 'secondary'; ?>">
-                                                    <?php echo $altBirim['aktif'] ? 'Aktif' : 'Pasif'; ?>
+                                                <span class="badge" style="background-color: <?php echo htmlspecialchars($altBirim['byk_renk'] ?? '#007bff'); ?>;">
+                                                    <?php echo htmlspecialchars($altBirim['byk_adi'] ?? $altBirim['byk_adi'] ?? ''); ?>
+                                                </span>
+                                                <small class="text-muted ms-1">(<?php echo htmlspecialchars($altBirim['byk_kodu'] ?? ''); ?>)</small>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($altBirim['name'] ?? $altBirim['alt_birim_adi'] ?? ''); ?></td>
+                                            <td><code><?php echo htmlspecialchars($altBirim['code'] ?? $altBirim['alt_birim_kodu'] ?? '-'); ?></code></td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    Aktif
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="/admin/alt-birim-duzenle.php?id=<?php echo $altBirim['alt_birim_id']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
+                                                <div class="btn-group" role="group">
+                                                    <a href="/admin/alt-birim-duzenle.php?id=<?php echo $altBirim['id'] ?? $altBirim['alt_birim_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" data-id="<?php echo $altBirim['id'] ?? $altBirim['alt_birim_id']; ?>" data-type="alt_birim" data-name="<?php echo htmlspecialchars($altBirim['name'] ?? $altBirim['alt_birim_adi'] ?? ''); ?>" title="Sil">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

@@ -15,14 +15,28 @@ $db = Database::getInstance();
 
 $pageTitle = 'BYK Yönetimi';
 
-// BYK'lar
-$bykList = $db->fetchAll("
-    SELECT b.*, COUNT(k.kullanici_id) as kullanici_sayisi
-    FROM byk b
-    LEFT JOIN kullanicilar k ON b.byk_id = k.byk_id AND k.aktif = 1
-    GROUP BY b.byk_id
-    ORDER BY b.olusturma_tarihi DESC
-");
+// BYK Kategorileri (byk_categories tablosundan)
+try {
+    // Önce byk_categories tablosunu kontrol et
+    $bykList = $db->fetchAll("
+        SELECT bc.*, 
+               COUNT(DISTINCT COALESCE(u.id, k.kullanici_id)) as kullanici_sayisi
+        FROM byk_categories bc
+        LEFT JOIN users u ON u.byk_category_id = bc.id AND u.status = 'active'
+        LEFT JOIN kullanicilar k ON k.byk_id = (SELECT byk_id FROM byk WHERE byk_kodu = bc.code LIMIT 1) AND k.aktif = 1
+        GROUP BY bc.id
+        ORDER BY bc.code
+    ");
+} catch (Exception $e) {
+    // byk_categories yoksa eski byk tablosunu kullan
+    $bykList = $db->fetchAll("
+        SELECT b.*, COUNT(k.kullanici_id) as kullanici_sayisi
+        FROM byk b
+        LEFT JOIN kullanicilar k ON b.byk_id = k.byk_id AND k.aktif = 1
+        GROUP BY b.byk_id
+        ORDER BY b.olusturma_tarihi DESC
+    ");
+}
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -67,24 +81,29 @@ include __DIR__ . '/../includes/header.php';
                                 <?php else: ?>
                                     <?php foreach ($bykList as $byk): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($byk['byk_adi']); ?></td>
-                                            <td><code><?php echo htmlspecialchars($byk['byk_kodu']); ?></code></td>
-                                            <td><?php echo $byk['kullanici_sayisi']; ?></td>
+                                            <td><?php echo htmlspecialchars($byk['name'] ?? $byk['byk_adi'] ?? ''); ?></td>
+                                            <td><code><?php echo htmlspecialchars($byk['code'] ?? $byk['byk_kodu'] ?? ''); ?></code></td>
+                                            <td><?php echo $byk['kullanici_sayisi'] ?? 0; ?></td>
                                             <td>
-                                                <span class="badge" style="background-color: <?php echo htmlspecialchars($byk['renk_kodu']); ?>;">
-                                                    <?php echo htmlspecialchars($byk['renk_kodu']); ?>
+                                                <span class="badge" style="background-color: <?php echo htmlspecialchars($byk['color'] ?? $byk['renk_kodu'] ?? '#007bff'); ?>;">
+                                                    <?php echo htmlspecialchars($byk['color'] ?? $byk['renk_kodu'] ?? '#007bff'); ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <span class="badge bg-<?php echo $byk['aktif'] ? 'success' : 'secondary'; ?>">
-                                                    <?php echo $byk['aktif'] ? 'Aktif' : 'Pasif'; ?>
+                                                <span class="badge bg-success">
+                                                    Aktif
                                                 </span>
                                             </td>
-                                            <td><?php echo date('d.m.Y', strtotime($byk['olusturma_tarihi'])); ?></td>
+                                            <td><?php echo isset($byk['created_at']) ? date('d.m.Y', strtotime($byk['created_at'])) : (isset($byk['olusturma_tarihi']) ? date('d.m.Y', strtotime($byk['olusturma_tarihi'])) : '-'); ?></td>
                                             <td>
-                                                <a href="/admin/byk-duzenle.php?id=<?php echo $byk['byk_id']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
+                                                <div class="btn-group" role="group">
+                                                    <a href="/admin/byk-duzenle.php?id=<?php echo $byk['id'] ?? $byk['byk_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" data-id="<?php echo $byk['id'] ?? $byk['byk_id']; ?>" data-type="byk" data-name="<?php echo htmlspecialchars($byk['name'] ?? $byk['byk_adi'] ?? ''); ?>" title="Sil">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
