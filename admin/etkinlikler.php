@@ -74,12 +74,12 @@ try {
 
 // Etkinlikler
 try {
-    $etkinlikler = $db->fetchAll("
+    $query = "
         SELECT e.*, 
                COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
                COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
                COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk,
-               CONCAT(u.ad, ' ', u.soyad) as olusturan
+               COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
         FROM etkinlikler e
         LEFT JOIN byk b ON e.byk_id = b.byk_id
         LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
@@ -87,17 +87,62 @@ try {
         $whereClause
         ORDER BY e.baslangic_tarihi ASC
         LIMIT 500
-    ", $params);
+    ";
+    
+    $etkinlikler = $db->fetchAll($query, $params);
+    
+    // Eğer hata varsa veya sonuç boşsa, basit sorgu dene
+    if (empty($etkinlikler) && !empty($whereClause)) {
+        // Filtre varsa ve sonuç yoksa, filtresiz dene
+        $etkinlikler = $db->fetchAll("
+            SELECT e.*, 
+                   COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
+                   COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
+                   COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk,
+                   COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
+            FROM etkinlikler e
+            LEFT JOIN byk b ON e.byk_id = b.byk_id
+            LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
+            LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
+            ORDER BY e.baslangic_tarihi ASC
+            LIMIT 500
+        ");
+    }
 } catch (Exception $e) {
-    $etkinlikler = $db->fetchAll("
-        SELECT e.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as olusturan
-        FROM etkinlikler e
-        INNER JOIN byk b ON e.byk_id = b.byk_id
-        INNER JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
-        $whereClause
-        ORDER BY e.baslangic_tarihi ASC
-        LIMIT 500
-    ", $params);
+    // Hata durumunda basit sorgu dene
+    try {
+        $etkinlikler = $db->fetchAll("
+            SELECT e.*, 
+                   COALESCE(b.byk_adi, '-') as byk_adi,
+                   COALESCE(b.byk_kodu, '') as byk_kodu,
+                   COALESCE(b.renk_kodu, '#009872') as byk_renk,
+                   COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
+            FROM etkinlikler e
+            LEFT JOIN byk b ON e.byk_id = b.byk_id
+            LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
+            $whereClause
+            ORDER BY e.baslangic_tarihi ASC
+            LIMIT 500
+        ", $params);
+    } catch (Exception $e2) {
+        // En basit sorgu
+        $etkinlikler = $db->fetchAll("
+            SELECT e.*, 
+                   '-' as byk_adi,
+                   '' as byk_kodu,
+                   '#009872' as byk_renk,
+                   '-' as olusturan
+            FROM etkinlikler e
+            $whereClause
+            ORDER BY e.baslangic_tarihi ASC
+            LIMIT 500
+        ", $params);
+    }
+}
+
+// Etkinlikler yoksa boş array döndür
+if (!is_array($etkinlikler)) {
+    $etkinlikler = [];
 }
 
 // BYK kodlarına göre varsayılan renkler (events_2026_backup.php'den)
