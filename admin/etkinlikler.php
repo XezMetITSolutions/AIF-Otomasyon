@@ -323,6 +323,128 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </main>
 
+<!-- Etkinlik Detay Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">Etkinlik Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="eventModalBody">
+                <!-- İçerik JavaScript ile doldurulacak -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <a href="#" id="eventEditBtn" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i>Düzenle
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Görünüm değiştirme
+    const calendarViewBtn = document.getElementById('calendarViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const calendarView = document.getElementById('calendarView');
+    const listView = document.getElementById('listView');
+    
+    calendarViewBtn.addEventListener('click', function() {
+        calendarViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+        calendarView.classList.remove('d-none');
+        listView.classList.add('d-none');
+    });
+    
+    listViewBtn.addEventListener('click', function() {
+        listViewBtn.classList.add('active');
+        calendarViewBtn.classList.remove('active');
+        listView.classList.remove('d-none');
+        calendarView.classList.add('d-none');
+    });
+    
+    // Takvim etkinlikleri
+    const calendarEvents = <?php echo json_encode($calendarEvents, JSON_UNESCAPED_UNICODE); ?>;
+    
+    // FullCalendar başlat
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'tr',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        events: calendarEvents,
+        eventClick: function(info) {
+            const event = info.event;
+            const extendedProps = event.extendedProps;
+            
+            // Modal içeriğini doldur
+            const modalBody = document.getElementById('eventModalBody');
+            const modalTitle = document.getElementById('eventModalLabel');
+            const editBtn = document.getElementById('eventEditBtn');
+            
+            modalTitle.textContent = event.title;
+            editBtn.href = '/admin/etkinlik-duzenle.php?id=' + event.id;
+            
+            let html = '<div class="mb-3">';
+            html += '<strong>Başlık:</strong> ' + event.title;
+            html += '</div>';
+            
+            if (extendedProps.byk) {
+                html += '<div class="mb-3">';
+                html += '<strong>BYK:</strong> <span class="badge" style="background-color: ' + event.backgroundColor + '; color: white;">' + extendedProps.byk + '</span>';
+                html += '</div>';
+            }
+            
+            html += '<div class="mb-3">';
+            html += '<strong>Başlangıç:</strong> ' + event.start.toLocaleString('tr-TR');
+            html += '</div>';
+            
+            html += '<div class="mb-3">';
+            html += '<strong>Bitiş:</strong> ' + event.end.toLocaleString('tr-TR');
+            html += '</div>';
+            
+            if (extendedProps.konum) {
+                html += '<div class="mb-3">';
+                html += '<strong>Konum:</strong> ' + extendedProps.konum;
+                html += '</div>';
+            }
+            
+            if (extendedProps.aciklama) {
+                html += '<div class="mb-3">';
+                html += '<strong>Açıklama:</strong><br>' + extendedProps.aciklama;
+                html += '</div>';
+            }
+            
+            if (extendedProps.olusturan) {
+                html += '<div class="mb-3">';
+                html += '<strong>Oluşturan:</strong> ' + extendedProps.olusturan;
+                html += '</div>';
+            }
+            
+            modalBody.innerHTML = html;
+            
+            // Modal'ı göster
+            const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+            modal.show();
+            
+            info.jsEvent.preventDefault();
+        },
+        eventDisplay: 'block',
+        height: 'auto',
+        contentHeight: 'auto'
+    });
+    
+    calendar.render();
+});
+</script>
+
 <?php
 include __DIR__ . '/../includes/footer.php';
 ?>
