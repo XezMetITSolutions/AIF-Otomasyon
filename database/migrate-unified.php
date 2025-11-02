@@ -152,7 +152,7 @@ try {
                 
                 // BYK ID'yi bul
                 $byk_id = null;
-                if ($event['byk_category_id']) {
+                if (!empty($event['byk_category_id'])) {
                     try {
                         $bykCategory = $db->fetch("SELECT code FROM byk_categories WHERE id = ?", [$event['byk_category_id']]);
                         if ($bykCategory) {
@@ -162,12 +162,25 @@ try {
                             }
                         }
                     } catch (Exception $e) {
-                        // BYK bulunamazsa varsayılan 1 kullanılabilir
+                        // BYK bulunamazsa devam et
                     }
                 }
                 
+                // Eğer BYK bulunamadıysa varsayılan BYK'yi kontrol et
                 if (!$byk_id) {
-                    $byk_id = 1; // Varsayılan BYK
+                    $defaultByk = $db->fetch("SELECT byk_id FROM byk WHERE byk_id = 1");
+                    if ($defaultByk) {
+                        $byk_id = 1;
+                    } else {
+                        $firstByk = $db->fetch("SELECT byk_id FROM byk ORDER BY byk_id LIMIT 1");
+                        if ($firstByk) {
+                            $byk_id = $firstByk['byk_id'];
+                        } else {
+                            echo "   ⚠ Etkinlik atlandı: {$event['title']} - BYK bulunamadı\n";
+                            $skipped++;
+                            continue;
+                        }
+                    }
                 }
                 
                 // Oluşturan ID'yi bul
@@ -319,11 +332,45 @@ try {
                 }
                 
                 // BYK ID'yi bul
-                $byk_id = 1; // Varsayılan
-                if ($meeting['byk_code']) {
+                $byk_id = null;
+                if (!empty($meeting['byk_code'])) {
                     $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ?", [$meeting['byk_code']]);
                     if ($byk) {
                         $byk_id = $byk['byk_id'];
+                    }
+                }
+                
+                // Eğer byk_code yoksa veya bulunamadıysa, byk_category_id'den dene
+                if (!$byk_id && !empty($meeting['byk_category_id'])) {
+                    try {
+                        $bykCategory = $db->fetch("SELECT code FROM byk_categories WHERE id = ?", [$meeting['byk_category_id']]);
+                        if ($bykCategory) {
+                            $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ?", [$bykCategory['code']]);
+                            if ($byk) {
+                                $byk_id = $byk['byk_id'];
+                            }
+                        }
+                    } catch (Exception $e) {
+                        // BYK category bulunamazsa devam et
+                    }
+                }
+                
+                // Hala bulunamadıysa varsayılan BYK'yi kontrol et
+                if (!$byk_id) {
+                    // Varsayılan BYK var mı kontrol et (ID = 1)
+                    $defaultByk = $db->fetch("SELECT byk_id FROM byk WHERE byk_id = 1");
+                    if ($defaultByk) {
+                        $byk_id = 1;
+                    } else {
+                        // Hiç BYK yoksa ilk BYK'yi al
+                        $firstByk = $db->fetch("SELECT byk_id FROM byk ORDER BY byk_id LIMIT 1");
+                        if ($firstByk) {
+                            $byk_id = $firstByk['byk_id'];
+                        } else {
+                            echo "   ⚠ Toplantı atlandı: {$meeting['title']} - BYK bulunamadı\n";
+                            $skipped++;
+                            continue;
+                        }
                     }
                 }
                 
@@ -357,29 +404,34 @@ try {
                 $toplanti_turu = $toplanti_turu_map[$meeting['meeting_type']] ?? 'normal';
                 
                 // Toplantıyı ekle
-                $db->query("
-                    INSERT INTO toplantilar (
-                        byk_id, baslik, aciklama, toplanti_tarihi, konum, gundem,
-                        toplanti_turu, olusturan_id, durum, olusturma_tarihi
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ", [
-                    $byk_id,
-                    $meeting['title'],
-                    $meeting['notes'] ?? null,
-                    $meeting['meeting_date'],
-                    $meeting['location'] ?? null,
-                    $meeting['agenda'] ?? null,
-                    $toplanti_turu,
-                    $olusturan_id,
-                    $durum,
-                    $meeting['created_at'] ?? date('Y-m-d H:i:s')
-                ]);
-                
-                $migrated++;
-                echo "   ✓ Toplantı eklendi: {$meeting['title']}\n";
+                try {
+                    $db->query("
+                        INSERT INTO toplantilar (
+                            byk_id, baslik, aciklama, toplanti_tarihi, konum, gundem,
+                            toplanti_turu, olusturan_id, durum, olusturma_tarihi
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ", [
+                        $byk_id,
+                        $meeting['title'],
+                        $meeting['notes'] ?? null,
+                        $meeting['meeting_date'],
+                        $meeting['location'] ?? null,
+                        is_string($meeting['agenda']) ? $meeting['agenda'] : null,
+                        $toplanti_turu,
+                        $olusturan_id,
+                        $durum,
+                        $meeting['created_at'] ?? date('Y-m-d H:i:s')
+                    ]);
+                    
+                    $migrated++;
+                    echo "   ✓ Toplantı eklendi: {$meeting['title']}\n";
+                } catch (Exception $e) {
+                    echo "   ❌ Toplantı eklenemedi: {$meeting['title']} - " . $e->getMessage() . "\n";
+                    $skipped++;
+                }
             }
             
-            echo "   Toplam: {$migrated} toplantı eklendi, {$skipped} toplantı atlandı (zaten var)\n";
+            echo "   Toplam: {$migrated} toplantı eklendi, {$skipped} toplantı atlandı/hata aldı\n";
         } else {
             echo "   ⚠ meetings tablosu bulunamadı, atlanıyor.\n";
         }
@@ -403,6 +455,7 @@ try {
             
             $migrated = 0;
             $skipped = 0;
+            $errors = 0;
             
             foreach ($expenses as $expense) {
                 // Kullanıcı ID'yi bul
@@ -418,11 +471,28 @@ try {
                 }
                 
                 // BYK ID'yi bul
-                $byk_id = 1; // Varsayılan
-                if ($expense['byk_code']) {
+                $byk_id = null;
+                if (!empty($expense['byk_code'])) {
                     $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ?", [$expense['byk_code']]);
                     if ($byk) {
                         $byk_id = $byk['byk_id'];
+                    }
+                }
+                
+                // Eğer BYK bulunamadıysa varsayılan BYK'yi kontrol et
+                if (!$byk_id) {
+                    $defaultByk = $db->fetch("SELECT byk_id FROM byk WHERE byk_id = 1");
+                    if ($defaultByk) {
+                        $byk_id = 1;
+                    } else {
+                        $firstByk = $db->fetch("SELECT byk_id FROM byk ORDER BY byk_id LIMIT 1");
+                        if ($firstByk) {
+                            $byk_id = $firstByk['byk_id'];
+                        } else {
+                            echo "   ⚠ Harcama talebi atlandı: #{$expense['id']} - BYK bulunamadı\n";
+                            $skipped++;
+                            continue;
+                        }
                     }
                 }
                 
@@ -438,25 +508,33 @@ try {
                 $baslik = "Harcama Talebi #{$expense['id']}";
                 $aciklama = "İsim: {$expense['isim']} {$expense['soyisim']}, IBAN: {$expense['iban']}";
                 
-                $db->query("
-                    INSERT INTO harcama_talepleri (
-                        kullanici_id, byk_id, baslik, aciklama, tutar, durum, olusturma_tarihi
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                ", [
-                    $kullanici_id,
-                    $byk_id,
-                    $baslik,
-                    $aciklama,
-                    $expense['total'],
-                    $durum,
-                    $expense['created_at'] ?? date('Y-m-d H:i:s')
-                ]);
-                
-                $migrated++;
-                echo "   ✓ Harcama talebi eklendi: #{$expense['id']}\n";
+                try {
+                    $db->query("
+                        INSERT INTO harcama_talepleri (
+                            kullanici_id, byk_id, baslik, aciklama, tutar, durum, olusturma_tarihi
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ", [
+                        $kullanici_id,
+                        $byk_id,
+                        $baslik,
+                        $aciklama,
+                        $expense['total'],
+                        $durum,
+                        $expense['created_at'] ?? date('Y-m-d H:i:s')
+                    ]);
+                    
+                    $migrated++;
+                    echo "   ✓ Harcama talebi eklendi: #{$expense['id']}\n";
+                } catch (Exception $e) {
+                    $errors++;
+                    echo "   ❌ Harcama talebi eklenemedi: #{$expense['id']} - " . $e->getMessage() . "\n";
+                }
             }
             
-            echo "   Toplam: {$migrated} harcama talebi eklendi\n";
+            echo "   Toplam: {$migrated} harcama talebi eklendi";
+            if ($skipped > 0) echo ", {$skipped} atlandı";
+            if ($errors > 0) echo ", {$errors} hata";
+            echo "\n";
         } else {
             echo "   ⚠ expenses tablosu bulunamadı, atlanıyor.\n";
         }
