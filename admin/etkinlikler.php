@@ -264,7 +264,15 @@ if (!empty($etkinlikler) && is_array($etkinlikler)) {
             ]
         ];
     }
+    
+    // Debug: Oluşturulan event sayısını kontrol et
+    error_log("Calendar Events oluşturuldu: " . count($calendarEvents));
+} else {
+    error_log("Etkinlikler array'i boş veya geçersiz! Count: " . (is_array($etkinlikler) ? count($etkinlikler) : 'N/A'));
 }
+
+// Debug: Final calendarEvents count
+error_log("Final Calendar Events Count: " . count($calendarEvents));
 
 $pageSpecificCSS = [
     'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css'
