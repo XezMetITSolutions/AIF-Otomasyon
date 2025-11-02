@@ -139,8 +139,18 @@ include __DIR__ . '/../includes/header.php';
                                         <td>
                                             <?php 
                                                 $sorumlu = $altBirim['sorumlu'] ?? null;
+                                                $sorumluId = $altBirim['sorumlu_id'] ?? null;
+                                                
                                                 if (!empty($sorumlu)) {
-                                                    echo '<span class="text-primary"><i class="fas fa-user me-1"></i>' . htmlspecialchars($sorumlu) . '</span>';
+                                                    if ($sorumluId) {
+                                                        // Profil linki ile göster
+                                                        echo '<a href="/admin/kullanici-duzenle.php?id=' . $sorumluId . '" class="text-primary text-decoration-none">';
+                                                        echo '<i class="fas fa-user me-1"></i>' . htmlspecialchars($sorumlu);
+                                                        echo '</a>';
+                                                    } else {
+                                                        // Profil linki olmadan göster
+                                                        echo '<span class="text-primary"><i class="fas fa-user me-1"></i>' . htmlspecialchars($sorumlu) . '</span>';
+                                                    }
                                                 } else {
                                                     echo '<span class="text-muted">-</span>';
                                                 }

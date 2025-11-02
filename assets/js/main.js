@@ -105,6 +105,10 @@ $(document).ready(function() {
             case 'byk':
                 deleteUrl = '/admin/byk-sil.php';
                 break;
+            case 'alt_birim':
+            case 'alt-birim':
+                deleteUrl = '/admin/alt-birim-sil.php';
+                break;
             case 'etkinlik':
                 deleteUrl = '/admin/etkinlik-sil.php';
                 break;
