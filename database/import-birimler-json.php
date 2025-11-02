@@ -59,7 +59,16 @@ foreach ($bykCategories as $code => $id) {
 echo "</div><hr>";
 
 foreach ($jsonFiles as $filename => $bykCode) {
+    // Önce proje kök dizininde ara, sonra database dizininde
     $filepath = __DIR__ . '/../' . $filename;
+    if (!file_exists($filepath)) {
+        // Proje kök dizininde bulunamazsa, script'in bulunduğu dizinde ara
+        $filepath = __DIR__ . '/' . $filename;
+    }
+    if (!file_exists($filepath)) {
+        // Veya absolute path ile dene
+        $filepath = dirname(__DIR__) . '/' . $filename;
+    }
     
     echo "<h5><i class='fas fa-file-code'></i> {$filename} İşleniyor...</h5>";
     
