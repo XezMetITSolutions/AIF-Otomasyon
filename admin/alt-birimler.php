@@ -98,7 +98,6 @@ include __DIR__ . '/../includes/header.php';
                             <tr>
                                 <th>BYK</th>
                                 <th>Alt Birim Adı</th>
-                                <th>Açıklama</th>
                                 <th>Oluşturma Tarihi</th>
                                 <th>İşlemler</th>
                             </tr>
@@ -106,7 +105,7 @@ include __DIR__ . '/../includes/header.php';
                         <tbody>
                             <?php if (empty($altBirimler)): ?>
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">Henüz alt birim eklenmemiş.</td>
+                                    <td colspan="4" class="text-center text-muted">Henüz alt birim eklenmemiş.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($altBirimler as $altBirim): ?>
@@ -115,13 +114,9 @@ include __DIR__ . '/../includes/header.php';
                                             <span class="badge" style="background-color: <?php echo htmlspecialchars($altBirim['byk_renk'] ?? '#009872'); ?>; color: white;">
                                                 <?php echo htmlspecialchars($altBirim['byk_adi'] ?? ''); ?>
                                             </span>
-                                            <small class="text-muted d-block mt-1"><?php echo htmlspecialchars($altBirim['byk_kodu'] ?? ''); ?></small>
                                         </td>
                                         <td>
                                             <strong><?php echo htmlspecialchars($altBirim['name'] ?? $altBirim['alt_birim_adi'] ?? ''); ?></strong>
-                                        </td>
-                                        <td>
-                                            <small class="text-muted"><?php echo htmlspecialchars($altBirim['description'] ?? $altBirim['aciklama'] ?? '-'); ?></small>
                                         </td>
                                         <td>
                                             <?php 
