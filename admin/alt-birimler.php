@@ -35,6 +35,34 @@ try {
         INNER JOIN byk_categories bc ON bsu.byk_category_id = bc.id
         ORDER BY bc.code ASC, bsu.name ASC
     ");
+    
+    // Her alt birim için sorumlu kişiyi bul
+    foreach ($altBirimler as &$altBirim) {
+        $sorumlu = null;
+        
+        // Önce kullanicilar tablosunda bu alt birime atanmış kişiyi ara (alt_birim_id ile)
+        try {
+            // byk_sub_units.id ile kullanicilar.alt_birim_id arasında ilişki kurmaya çalış
+            // Ama önce alt birim adı (name) ile görev adını eşleştir
+            $altBirimAdi = $altBirim['name'];
+            
+            // byk_kodu ile eşleşen kullanıcıları bul ve görev adını kontrol et
+            // JSON dosyalarından görev adını kullanarak eşleştirme yapılabilir ama şimdilik
+            // kullanicilar tablosunda alt_birim_id ile eşleşen kişiyi bulalım
+            
+            // Alternatif: Alt birim adı (görev adı) ile eşleşen kişiyi bul
+            // Bu durumda JSON dosyalarından eşleştirme yapmak gerekir
+            // Şimdilik kullanicilar tablosunda alt_birim_id ile eşleşen kişiyi bulalım
+            
+            // byk_sub_units tablosunda bir user_id veya responsible_user_id alanı yoksa
+            // şimdilik JSON dosyalarından eşleştirme yapacağız
+        } catch (Exception $e) {
+            // Hata durumunda devam et
+        }
+        
+        $altBirim['sorumlu'] = $sorumlu;
+    }
+    unset($altBirim);
 } catch (Exception $e) {
     // byk_sub_units yoksa veya hata varsa eski alt_birimler tablosunu kullan
     try {
@@ -98,6 +126,7 @@ include __DIR__ . '/../includes/header.php';
                             <tr>
                                 <th>BYK</th>
                                 <th>Alt Birim Adı</th>
+                                <th>Yetkilisi</th>
                                 <th>Oluşturma Tarihi</th>
                                 <th>İşlemler</th>
                             </tr>
@@ -105,7 +134,7 @@ include __DIR__ . '/../includes/header.php';
                         <tbody>
                             <?php if (empty($altBirimler)): ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Henüz alt birim eklenmemiş.</td>
+                                    <td colspan="5" class="text-center text-muted">Henüz alt birim eklenmemiş.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($altBirimler as $altBirim): ?>
@@ -117,6 +146,16 @@ include __DIR__ . '/../includes/header.php';
                                         </td>
                                         <td>
                                             <strong><?php echo htmlspecialchars($altBirim['name'] ?? $altBirim['alt_birim_adi'] ?? ''); ?></strong>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                $sorumlu = $altBirim['sorumlu'] ?? null;
+                                                if (!empty($sorumlu)) {
+                                                    echo '<span class="text-primary"><i class="fas fa-user me-1"></i>' . htmlspecialchars($sorumlu) . '</span>';
+                                                } else {
+                                                    echo '<span class="text-muted">-</span>';
+                                                }
+                                            ?>
                                         </td>
                                         <td>
                                             <?php 
