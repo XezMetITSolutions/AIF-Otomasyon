@@ -15,6 +15,33 @@ $db = Database::getInstance();
 
 $pageTitle = 'Alt Birimler Yönetimi';
 
+// Filtreleme
+$search = $_GET['search'] ?? '';
+$bykFilter = $_GET['byk'] ?? '';
+
+$where = [];
+$params = [];
+
+if ($search) {
+    $where[] = "(bsu.name LIKE ? OR bsu.description LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+}
+
+if ($bykFilter) {
+    $where[] = "bsu.byk_category_id = ?";
+    $params[] = $bykFilter;
+}
+
+$whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+// BYK listesi (filtre için)
+try {
+    $bykList = $db->fetchAll("SELECT id, code, name, color FROM byk_categories ORDER BY code");
+} catch (Exception $e) {
+    $bykList = [];
+}
+
 // Alt birimler (byk_sub_units tablosundan)
 $altBirimler = [];
 
@@ -33,8 +60,9 @@ try {
             bc.color as byk_renk
         FROM byk_sub_units bsu
         INNER JOIN byk_categories bc ON bsu.byk_category_id = bc.id
+        $whereClause
         ORDER BY bc.code ASC, bsu.name ASC
-    ");
+    ", $params);
     
     // Her alt birim için description'dan sorumlu bilgisini çıkar ve kullanıcı ID'sini bul
     foreach ($altBirimler as &$altBirim) {
@@ -124,6 +152,39 @@ include __DIR__ . '/../includes/header.php';
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
+        
+        <!-- Filtreler -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Arama</label>
+                        <input type="text" class="form-control" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Alt birim adı, açıklama...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">BYK</label>
+                        <select class="form-select" name="byk">
+                            <option value="">Tüm BYK'lar</option>
+                            <?php foreach ($bykList as $byk): ?>
+                                <option value="<?php echo $byk['id']; ?>" <?php echo $bykFilter == $byk['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($byk['name']); ?> (<?php echo htmlspecialchars($byk['code']); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Filtrele
+                        </button>
+                        <?php if ($search || $bykFilter): ?>
+                            <a href="/admin/alt-birimler.php" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Temizle
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+            </div>
+        </div>
         
         <div class="card">
             <div class="card-header">
