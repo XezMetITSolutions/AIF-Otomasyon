@@ -37,7 +37,7 @@ $currentPath = $_SERVER['PHP_SELF'];
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
             
             <a href="/admin/etkinlikler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-calendar me-2"></i>Etkinlik Yönetimi
+                <i class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi
             </a>
             <a href="/admin/toplantilar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'toplantilar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-users-cog me-2"></i>Toplantı Yönetimi
