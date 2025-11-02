@@ -44,7 +44,7 @@ $isUye = $user && $user['role'] === 'uye';
 <body>
     <?php if ($user): ?>
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1030; width: 100%;">
             <div class="container-fluid">
                 <a class="navbar-brand" href="/<?php echo $user['role'] === 'super_admin' ? 'admin' : ($user['role'] === 'baskan' ? 'baskan' : 'uye'); ?>/dashboard.php">
                     <i class="fas fa-home me-2"></i><?php echo $appConfig['app_name']; ?>

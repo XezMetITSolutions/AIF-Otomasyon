@@ -21,15 +21,17 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-top: 56px; /* Navbar yüksekliği için */
 }
 
 main {
     flex: 1;
+    margin-top: 56px; /* Navbar için ekstra margin */
 }
 
 /* Sidebar Stilleri */
 .sidebar {
-    width: 250px !important;
+    width: 250px;
     min-width: 250px;
     max-width: 250px;
     min-height: calc(100vh - 56px);
@@ -92,10 +94,10 @@ main {
 
 /* Ana içerik alanı için margin (sidebar için alan bırak) */
 .content-wrapper {
-    margin-left: 250px !important;
+    margin-left: 250px;
     padding: 0 20px;
     width: calc(100% - 250px);
-    max-width: calc(100% - 250px);
+    min-width: calc(100% - 250px);
 }
 
 main.container-fluid {
@@ -103,6 +105,8 @@ main.container-fluid {
     padding-right: 0;
     margin-left: 0;
     margin-right: 0;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Responsive - mobil için */
