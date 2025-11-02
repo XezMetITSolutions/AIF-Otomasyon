@@ -16,18 +16,26 @@ $db = Database::getInstance();
 $pageTitle = 'BYK Yönetimi';
 
 // BYK Kategorileri (byk_categories tablosundan)
+// Tablo var mı kontrol et
+$tableExists = false;
 try {
-    // Önce byk_categories tablosunu kontrol et
+    $result = $db->fetch("SHOW TABLES LIKE 'byk_categories'");
+    $tableExists = !empty($result);
+} catch (Exception $e) {
+    $tableExists = false;
+}
+
+if ($tableExists) {
+    // byk_categories tablosunu kullan
     $bykList = $db->fetchAll("
         SELECT bc.*, 
-               COUNT(DISTINCT COALESCE(u.id, k.kullanici_id)) as kullanici_sayisi
+               (SELECT COUNT(*) FROM users u WHERE u.byk_category_id = bc.id AND u.status = 'active') +
+               (SELECT COUNT(*) FROM kullanicilar k 
+                WHERE k.byk_id IN (SELECT byk_id FROM byk WHERE byk_kodu = bc.code) AND k.aktif = 1) as kullanici_sayisi
         FROM byk_categories bc
-        LEFT JOIN users u ON u.byk_category_id = bc.id AND u.status = 'active'
-        LEFT JOIN kullanicilar k ON k.byk_id = (SELECT byk_id FROM byk WHERE byk_kodu = bc.code LIMIT 1) AND k.aktif = 1
-        GROUP BY bc.id
         ORDER BY bc.code
     ");
-} catch (Exception $e) {
+} else {
     // byk_categories yoksa eski byk tablosunu kullan
     $bykList = $db->fetchAll("
         SELECT b.*, COUNT(k.kullanici_id) as kullanici_sayisi
@@ -112,7 +120,7 @@ include __DIR__ . '/../includes/header.php';
                         </table>
                     </div>
                 </div>
-            </div>
+        </div>
     </div>
 </main>
 
