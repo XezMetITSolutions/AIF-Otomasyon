@@ -33,7 +33,7 @@ if (!$id) {
 }
 
 try {
-    // Alt birim var mı kontrol et
+    // Alt birim var mı kontrol et (byk_sub_units tablosunda)
     $altBirim = $db->fetch("SELECT * FROM byk_sub_units WHERE id = ?", [$id]);
     if (!$altBirim) {
         $response['message'] = 'Alt birim bulunamadı.';
@@ -41,15 +41,47 @@ try {
         exit;
     }
     
-    // Bu alt birime bağlı kullanıcı var mı kontrol et
-    $usersCount = $db->fetch("SELECT COUNT(*) as count FROM kullanicilar WHERE alt_birim_id = ?", [$id])['count'] ?? 0;
+    // alt_birimler tablosunda karşılık gelen kaydı bul (alt_birim_adi ile eşleştir)
+    $altBirimAdi = $altBirim['name'];
+    $bykCategoryId = $altBirim['byk_category_id'];
+    
+    // BYK kodu bul
+    $bykCategory = $db->fetch("SELECT code FROM byk_categories WHERE id = ?", [$bykCategoryId]);
+    $bykCode = $bykCategory['code'] ?? null;
+    
+    // byk_id bul
+    $bykId = null;
+    if ($bykCode) {
+        $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ? LIMIT 1", [$bykCode]);
+        if ($byk) {
+            $bykId = $byk['byk_id'];
+        }
+    }
+    
+    // alt_birimler tablosunda kayıt bul
+    $altBirimlerRecord = null;
+    if ($bykId) {
+        $altBirimlerRecord = $db->fetch("SELECT alt_birim_id FROM alt_birimler WHERE byk_id = ? AND alt_birim_adi = ? LIMIT 1", [$bykId, $altBirimAdi]);
+    }
+    
+    // Bu alt birime bağlı kullanıcı var mı kontrol et (alt_birimler.alt_birim_id ile)
+    $usersCount = 0;
+    if ($altBirimlerRecord) {
+        $usersCount = $db->fetch("SELECT COUNT(*) as count FROM kullanicilar WHERE alt_birim_id = ?", [$altBirimlerRecord['alt_birim_id']])['count'] ?? 0;
+    }
+    
     if ($usersCount > 0) {
         $response['message'] = "Bu alt birime bağlı {$usersCount} kullanıcı bulunmaktadır. Önce kullanıcıları başka bir alt birime taşıyın.";
         echo json_encode($response);
         exit;
     }
     
-    // Alt birimi sil
+    // Alt birimi sil - önce alt_birimler tablosundan, sonra byk_sub_units tablosundan
+    if ($altBirimlerRecord) {
+        $db->query("DELETE FROM alt_birimler WHERE alt_birim_id = ?", [$altBirimlerRecord['alt_birim_id']]);
+    }
+    
+    // byk_sub_units tablosundan sil
     $db->query("DELETE FROM byk_sub_units WHERE id = ?", [$id]);
     
     $response['success'] = true;
