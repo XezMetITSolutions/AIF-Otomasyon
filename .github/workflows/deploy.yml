@@ -1,0 +1,123 @@
+name: 🚀 FTP Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:  # Manuel tetikleme için
+
+jobs:
+  deploy:
+    name: 📦 Deploy to FTP Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Tüm commit geçmişini çek
+        
+      - name: 📋 List Files Before Deployment
+        run: |
+          echo "📂 Deployment öncesi dosya listesi:"
+          echo "=========================================="
+          find . -type f -not -path './.git/*' -not -path './node_modules/*' | head -20
+          echo "..."
+          echo "=========================================="
+          echo "📊 Toplam dosya sayısı:"
+          find . -type f -not -path './.git/*' -not -path './node_modules/*' | wc -l
+      
+      - name: 🔐 Setup FTP Secrets
+        run: |
+          echo "✅ FTP secrets kontrol ediliyor..."
+          if [ -z "${{ secrets.FTP_SERVER }}" ]; then
+            echo "⚠️  FTP_SERVER secret tanımlı değil!"
+          else
+            echo "✅ FTP_SERVER: ${{ secrets.FTP_SERVER }}"
+          fi
+          if [ -z "${{ secrets.FTP_USERNAME }}" ]; then
+            echo "⚠️  FTP_USERNAME secret tanımlı değil!"
+          else
+            echo "✅ FTP_USERNAME tanımlı"
+          fi
+          if [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
+            echo "⚠️  FTP_PASSWORD secret tanımlı değil!"
+          else
+            echo "✅ FTP_PASSWORD tanımlı"
+          fi
+      
+      - name: 📤 Deploy to FTP Server
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: /
+          protocol: ftp
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/.vscode/**
+            **/.idea/**
+            **/node_modules/**
+            **/.env
+            **/.env.*
+            **/README.md
+            **/README*.md
+            **/composer.json
+            **/composer.lock
+            **/package.json
+            **/package-lock.json
+            **/.gitignore
+            **/.gitattributes
+            **/.htpasswd
+            **/database/schema.sql
+            **/database/*.sql
+            **/database/*.sql.gz
+            **/database/*.sql.bak
+            **/backups/**
+            **/logs/**
+            **/*.log
+            **/KONTROL_LISTESI.md
+            **/.DS_Store
+            **/Thumbs.db
+            **/*.tmp
+            **/*.temp
+            **/.cache/**
+            **/vendor/**
+            **/tests/**
+            **/test/**
+            **/*_test.php
+            **/*.test.php
+            **/.phpunit.xml
+            **/phpunit.xml.dist
+            **/.editorconfig
+            **/.eslintrc*
+            **/.prettierrc*
+            **/docker-compose.yml
+            **/Dockerfile
+            **/.dockerignore
+            **/config/database.local.php
+            **/config/app.local.php
+            **/.env.example
+        
+      - name: ✅ Deployment Success
+        if: success()
+        run: |
+          echo "🎉 Deployment başarıyla tamamlandı!"
+          echo "🌐 FTP Server: ${{ secrets.FTP_SERVER }}"
+          echo "📅 Deployment Tarihi: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "🔄 Commit: ${{ github.sha }}"
+          echo "👤 Deployed by: ${{ github.actor }}"
+        
+      - name: ❌ Deployment Failed
+        if: failure()
+        run: |
+          echo "❌ Deployment başarısız oldu!"
+          echo "🔍 Lütfen workflow loglarını kontrol edin."
+          exit 1
+

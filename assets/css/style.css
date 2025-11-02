@@ -1,0 +1,281 @@
+/**
+ * AIF Otomasyon Sistemi - Ana Stil Dosyası
+ * Bootstrap 5.3.0 ile uyumlu
+ */
+
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+}
+
+/* Genel Stiller */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Sidebar Stilleri */
+.sidebar {
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar .list-group-item {
+    border: none;
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.sidebar .list-group-item:hover {
+    background-color: #e9ecef;
+    border-left-color: var(--primary-color);
+}
+
+.sidebar .list-group-item.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-left-color: var(--dark-color);
+}
+
+.sidebar .list-group-item.active i {
+    color: white;
+}
+
+/* Kart Stilleri */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+}
+
+/* İstatistik Kartları */
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.stat-card.success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.stat-card.warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stat-card.info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.stat-card .stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.stat-card .stat-icon {
+    font-size: 3rem;
+    opacity: 0.8;
+}
+
+/* Tablo Stilleri */
+.table {
+    background-color: white;
+}
+
+.table thead {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badge Stilleri */
+.badge {
+    padding: 0.4em 0.6em;
+    font-weight: 500;
+}
+
+/* Buton Stilleri */
+.btn {
+    border-radius: 5px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Form Stilleri */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Alert Stilleri */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+/* Navbar Stilleri */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* Footer Stilleri */
+footer {
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
+}
+
+/* Responsive Düzenlemeler */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100% !important;
+        position: relative !important;
+        min-height: auto !important;
+    }
+    
+    .stat-card .stat-value {
+        font-size: 2rem;
+    }
+    
+    .stat-card .stat-icon {
+        font-size: 2rem;
+    }
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Durum Badge Renkleri */
+.badge-status-beklemede {
+    background-color: var(--warning-color);
+    color: #000;
+}
+
+.badge-status-onaylandi {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-status-reddedildi {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.badge-status-aktif {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-status-pasif {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Animasyonlar */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Scrollbar Stilleri (Webkit tarayıcılar için) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Print Stilleri */
+@media print {
+    .navbar,
+    .sidebar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+}
+

@@ -1,0 +1,19 @@
+<?php
+/**
+ * Veritabanı Bağlantı Yapılandırması
+ * AIF Otomasyon Sistemi
+ */
+
+return [
+    'host' => 'localhost',
+    'dbname' => 'aif_otomasyon',
+    'username' => 'root',
+    'password' => '',
+    'charset' => 'utf8mb4',
+    'options' => [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]
+];
+
