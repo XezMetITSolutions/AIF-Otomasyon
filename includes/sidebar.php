@@ -19,7 +19,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">YÖNETİM</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">YÖNETİM</div>
             
             <a href="/admin/kullanicilar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'kullanicilar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-users me-2"></i>Kullanıcı Yönetimi
@@ -81,7 +81,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">YÖNETİM</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">YÖNETİM</div>
             
             <a href="/baskan/uyeler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'uyeler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-users me-2"></i>Üye Yönetimi
