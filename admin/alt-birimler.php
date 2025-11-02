@@ -36,28 +36,17 @@ try {
         ORDER BY bc.code ASC, bsu.name ASC
     ");
     
-    // Her alt birim için sorumlu kişiyi bul
+    // Her alt birim için description'dan sorumlu bilgisini çıkar
     foreach ($altBirimler as &$altBirim) {
         $sorumlu = null;
+        $description = $altBirim['description'] ?? '';
         
-        // Önce kullanicilar tablosunda bu alt birime atanmış kişiyi ara (alt_birim_id ile)
-        try {
-            // byk_sub_units.id ile kullanicilar.alt_birim_id arasında ilişki kurmaya çalış
-            // Ama önce alt birim adı (name) ile görev adını eşleştir
-            $altBirimAdi = $altBirim['name'];
-            
-            // byk_kodu ile eşleşen kullanıcıları bul ve görev adını kontrol et
-            // JSON dosyalarından görev adını kullanarak eşleştirme yapılabilir ama şimdilik
-            // kullanicilar tablosunda alt_birim_id ile eşleşen kişiyi bulalım
-            
-            // Alternatif: Alt birim adı (görev adı) ile eşleşen kişiyi bul
-            // Bu durumda JSON dosyalarından eşleştirme yapmak gerekir
-            // Şimdilik kullanicilar tablosunda alt_birim_id ile eşleşen kişiyi bulalım
-            
-            // byk_sub_units tablosunda bir user_id veya responsible_user_id alanı yoksa
-            // şimdilik JSON dosyalarından eşleştirme yapacağız
-        } catch (Exception $e) {
-            // Hata durumunda devam et
+        // Description formatı: "BYК_CODE - Alt Birim Adı | Sorumlu: Ad Soyad"
+        if (strpos($description, '| Sorumlu:') !== false) {
+            $parts = explode('| Sorumlu:', $description);
+            if (isset($parts[1])) {
+                $sorumlu = trim($parts[1]);
+            }
         }
         
         $altBirim['sorumlu'] = $sorumlu;
