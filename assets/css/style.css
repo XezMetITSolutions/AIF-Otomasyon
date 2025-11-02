@@ -29,7 +29,9 @@ main {
 
 /* Sidebar Stilleri */
 .sidebar {
-    width: 250px;
+    width: 250px !important;
+    min-width: 250px;
+    max-width: 250px;
     min-height: calc(100vh - 56px);
     height: calc(100vh - 56px);
     position: fixed;
@@ -39,6 +41,7 @@ main {
     z-index: 1000;
     overflow-y: auto;
     overflow-x: hidden;
+    background-color: #f8f9fa;
 }
 
 .sidebar-scroll {
@@ -88,10 +91,18 @@ main {
 }
 
 /* Ana içerik alanı için margin (sidebar için alan bırak) */
+.content-wrapper {
+    margin-left: 250px !important;
+    padding: 0 20px;
+    width: calc(100% - 250px);
+    max-width: calc(100% - 250px);
+}
+
 main.container-fluid {
-    margin-left: 250px;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 /* Responsive - mobil için */
@@ -107,13 +118,24 @@ main.container-fluid {
         left: 0;
     }
     
-    main.container-fluid {
+    .content-wrapper {
         margin-left: 0;
     }
     
     /* Sidebar toggle button (mobil için) */
     .sidebar-toggle {
         display: block;
+    }
+}
+
+/* Büyük ekranlarda sidebar genişliği kontrolü */
+@media (min-width: 992px) {
+    .sidebar {
+        width: 250px;
+    }
+    
+    .content-wrapper {
+        margin-left: 250px;
     }
 }
 
