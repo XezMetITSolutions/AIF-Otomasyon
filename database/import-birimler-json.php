@@ -138,17 +138,20 @@ foreach ($jsonFiles as $filename => $bykCode) {
                         // byk tablosu yoksa devam et
                     }
                     
-                    // Kullanıcıyı güncelle
+                    // Kullanıcıyı güncelle (şifreyi de güncelle - AIF571#)
+                    $defaultPassword = password_hash('AIF571#', PASSWORD_DEFAULT);
                     $db->query("
                         UPDATE kullanicilar 
                         SET ad = ?, 
                             soyad = ?, 
                             telefon = ?,
-                            byk_id = ?
+                            byk_id = ?,
+                            sifre = ?,
+                            ilk_giris_zorunlu = 1
                         WHERE email = ?
-                    ", [$ad, $soyad, $telefon, $bykId, $mail]);
+                    ", [$ad, $soyad, $telefon, $bykId, $defaultPassword, $mail]);
                     
-                    echo "<div class='alert alert-success small'><i class='fas fa-sync'></i> <strong>Güncellendi:</strong> {$mail} - {$kisiAdiSoyadi} ({$gorevAdi})</div>";
+                    echo "<div class='alert alert-success small'><i class='fas fa-sync'></i> <strong>Güncellendi:</strong> {$mail} - {$kisiAdiSoyadi} ({$gorevAdi}) - Şifre: AIF571#</div>";
                     $fileImported++;
                 } else {
                     // Yeni kullanıcı ekle
