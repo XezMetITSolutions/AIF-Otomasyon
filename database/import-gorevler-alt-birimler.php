@@ -27,159 +27,159 @@ echo "<!DOCTYPE html>
             <div class='card-body'>
 ";
 
-// Görev listesi JSON verisi (kullanıcıdan gelen)
-$gorevlerJSON = '{
-  "KGT": [
-    "Abla Kardeş Sorumlusu",
-    "BYK Üyesi",
-    "Başkan Danışmanı",
-    "Bölge Kadınlar Gençlik Teşkilatı Başkanı",
-    "Eğitim Başkan Yrd.",
-    "Eğitim Başkanı",
-    "Genel Merkez Üyelik Başkan Yrd.",
-    "Hilal Kursu Sorumlusu",
-    "Komisyon Üyesi",
-    "Kurumsal İletişim Başkan Yrd.",
-    "Kurumsal İletişim Başkanı",
-    "Muhasebe ve Gençlik Organize Başkanı",
-    "Ortaöğretim Başkan Yrd.",
-    "Ortaöğretim Başkanı",
-    "Sekreter Yardımcısı",
-    "Tanıtım Kültür Hizmetleri Başkan Yrd.",
-    "Tanıtım Kültür Hizmetleri Başkanı",
-    "Teftiş Başkan Yrd.",
-    "Teftiş Başkanı",
-    "Teşkilatlanma Başkan Yrd.",
-    "Teşkilatlanma Başkanı",
-    "Teşkilatlanma Bşk. Yrd. ve Sekreterya ",
-    "Üniversiteliler Başkan Yrd.",
-    "Üniversiteliler Başkanı",
-    "İnsani Yardım ve  Sosyal Hizmetler Başkanı",
-    "İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.",
-    "İrfan Evleri Sorumlusu",
-    "İrşad Başkan Yrd.",
-    "İrşad Başkanı"
-  ],
-  "GT": [
-    "Abi Kardeş Sorumlusu",
-    "BYK Üyesi",
-    "Başkan Danışmanı",
-    "Bölge Gençlik Teskilatı Başkanı",
-    "Gençlik Organize ve Spor Gezi Başkan Yrd.",
-    "Gençlik Organize ve Spor Gezi Başkanı",
-    "Komisyon Üyesi",
-    "Kurumsal İletişim Başkan Yrd.",
-    "Kurumsal İletişim Başkanı",
-    "Muhasebe Başkan Yrd.",
-    "Muhasebe Başkanı",
-    "Ortaöğretim Başkan Yrd.",
-    "Ortaöğretim Başkanı",
-    "Teftiş Başkan Yrd.",
-    "Teftiş Başkanı",
-    "Teşkilatlanma Başkan Yrd.",
-    "Teşkilatlanma Başkanı",
-    "Teşkilatlanma Bşk. Yrd. ve Sekreterya ",
-    "Yıldız Müdürü",
-    "Üniversiteliler Başkan Yrd.",
-    "Üniversiteliler Başkanı",
-    "İnsani Yardım ve  Sosyal Hizmetler Başkanı",
-    "İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.",
-    "İrfan Evleri Sorumlusu",
-    "İrşad Eğitim Başkan Yrd.",
-    "İrşad Eğitim Başkanı"
-  ],
-  "KT": [
-    "Aile Eğitim Sorumlusu",
-    "Ana Sınıf Sorumlusu",
-    "BYK Üyesi",
-    "Basın Yayın Başkan Yrd.",
-    "Başkan Danışmanı",
-    "Bölge Kadınlar Teşkilatı Başkanı",
-    "Cenaze Hizmetleri Başkan Yrd.",
-    "Cenaze Hizmetleri Başkanı",
-    "Eğitim Başkan Yrd.",
-    "Eğitim Başkanı",
-    "Genel Merkez Üyelik Başkan Yrd.",
-    "Genel Merkez Üyelik Başkanı",
-    "Hac-Umre Sey. İşleri Başkan Yrd.",
-    "Hac-Umre Sey. İşleri Başkanı",
-    "Komisyon Üyesi",
-    "Kurumsal İletişim Başkan Yrd.",
-    "Kurumsal İletişim Başkanı",
-    "Muhasebe Başkan Yrd.",
-    "Muhasebe Başkanı",
-    "Sekreter",
-    "Sekreter Yardımcısı",
-    "Tanıtım Kültür Hizmetleri Başkan Yrd.",
-    "Tanıtım Kültür Hizmetleri Başkanı",
-    "Teftiş Başkan Yrd.",
-    "Teftiş Başkanı",
-    "Teşkilatlanma Başkan Yrd.",
-    "Teşkilatlanma Başkanı",
-    "Teşkilatlanma Bşk. Yrd. ve Sekreterya ",
-    "Yetiskinler Egitim Kursu Sorumlusu",
-    "Çocuk Kulübü Sorumlusu",
-    "İdari İşler Başkan Yrd.",
-    "İdari İşler Başkanı",
-    "İdari İşler ve Organize Başkan Yrd.",
-    "İdari İşler ve Organize Başkanı",
-    "İhsan Sohbetleri Başkan Yrd.",
-    "İhsan Sohbetleri Başkanı",
-    "İnsani Yardım ve  Sosyal Hizmetler Başkanı",
-    "İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.",
-    "İrşad Başkan Yrd.",
-    "İrşad Başkanı",
-    "İslami İlimler Sorumlusu"
-  ],
-  "AT": [
-    "Aile Eğitim Sorumlusu",
-    "Ana Sınıf Sorumlusu",
-    "BYK Üyesi",
-    "Basın Yayın Başkan Yrd.",
-    "Basın Yayın Başkanı",
-    "Başkan Danışmanı",
-    "Bölge Başkanı",
-    "Bölge Gençlik Teskilatı Başkanı",
-    "Bölge Kadınlar Gençlik Teşkilatı Başkanı",
-    "Bölge Kadınlar Teşkilatı Başkanı",
-    "Cenaze Hizmetleri Başkan Yrd.",
-    "Cenaze Hizmetleri Başkanı",
-    "Emlak Başkan Yrd.",
-    "Emlak Başkanı",
-    "Eğitim Başkan Yrd.",
-    "Eğitim Başkanı",
-    "Genel Merkez Üyelik Başkan Yrd.",
-    "Genel Merkez Üyelik Başkanı",
-    "Hac-Umre Sey. İşleri Başkan Yrd.",
-    "Hac-Umre Sey. İşleri Başkanı",
-    "Halkla İlişkiler Başkan Yrd.",
-    "Halkla İlişkiler Başkanı",
-    "Komisyon Üyesi",
-    "Kurumsal İletişim Başkan Yrd.",
-    "Kurumsal İletişim Başkanı",
-    "Muhasebe Başkan Yrd.",
-    "Muhasebe Başkanı",
-    "Sekreter",
-    "Sekreter Yardımcısı",
-    "Tanıtım Kültür Hizmetleri Başkan Yrd.",
-    "Tanıtım Kültür Hizmetleri Başkanı",
-    "Teftiş Başkan Yrd.",
-    "Teftiş Başkanı",
-    "Teşkilatlanma Başkan Yrd.",
-    "Teşkilatlanma Başkanı",
-    "Yetiskinler Egitim Kursu Sorumlusu",
-    "Çocuk Kulübü Sorumlusu",
-    "İdari İşler Başkan Yrd.",
-    "İdari İşler Başkanı",
-    "İhsan Sohbetleri Başkan Yrd.",
-    "İhsan Sohbetleri Başkanı",
-    "İnsani Yardım ve  Sosyal Hizmetler Başkanı",
-    "İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.",
-    "İrşad Başkan Yrd.",
-    "İrşad Başkanı",
-    "İslami İlimler Sorumlusu"
-  ]
-}';
+// Görev listesi (doğrudan PHP array olarak tanımlandı)
+$gorevler = [
+    'KGT' => [
+        'Abla Kardeş Sorumlusu',
+        'BYK Üyesi',
+        'Başkan Danışmanı',
+        'Bölge Kadınlar Gençlik Teşkilatı Başkanı',
+        'Eğitim Başkan Yrd.',
+        'Eğitim Başkanı',
+        'Genel Merkez Üyelik Başkan Yrd.',
+        'Hilal Kursu Sorumlusu',
+        'Komisyon Üyesi',
+        'Kurumsal İletişim Başkan Yrd.',
+        'Kurumsal İletişim Başkanı',
+        'Muhasebe ve Gençlik Organize Başkanı',
+        'Ortaöğretim Başkan Yrd.',
+        'Ortaöğretim Başkanı',
+        'Sekreter Yardımcısı',
+        'Tanıtım Kültür Hizmetleri Başkan Yrd.',
+        'Tanıtım Kültür Hizmetleri Başkanı',
+        'Teftiş Başkan Yrd.',
+        'Teftiş Başkanı',
+        'Teşkilatlanma Başkan Yrd.',
+        'Teşkilatlanma Başkanı',
+        'Teşkilatlanma Bşk. Yrd. ve Sekreterya ',
+        'Üniversiteliler Başkan Yrd.',
+        'Üniversiteliler Başkanı',
+        'İnsani Yardım ve  Sosyal Hizmetler Başkanı',
+        'İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.',
+        'İrfan Evleri Sorumlusu',
+        'İrşad Başkan Yrd.',
+        'İrşad Başkanı'
+    ],
+    'GT' => [
+        'Abi Kardeş Sorumlusu',
+        'BYK Üyesi',
+        'Başkan Danışmanı',
+        'Bölge Gençlik Teskilatı Başkanı',
+        'Gençlik Organize ve Spor Gezi Başkan Yrd.',
+        'Gençlik Organize ve Spor Gezi Başkanı',
+        'Komisyon Üyesi',
+        'Kurumsal İletişim Başkan Yrd.',
+        'Kurumsal İletişim Başkanı',
+        'Muhasebe Başkan Yrd.',
+        'Muhasebe Başkanı',
+        'Ortaöğretim Başkan Yrd.',
+        'Ortaöğretim Başkanı',
+        'Teftiş Başkan Yrd.',
+        'Teftiş Başkanı',
+        'Teşkilatlanma Başkan Yrd.',
+        'Teşkilatlanma Başkanı',
+        'Teşkilatlanma Bşk. Yrd. ve Sekreterya ',
+        'Yıldız Müdürü',
+        'Üniversiteliler Başkan Yrd.',
+        'Üniversiteliler Başkanı',
+        'İnsani Yardım ve  Sosyal Hizmetler Başkanı',
+        'İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.',
+        'İrfan Evleri Sorumlusu',
+        'İrşad Eğitim Başkan Yrd.',
+        'İrşad Eğitim Başkanı'
+    ],
+    'KT' => [
+        'Aile Eğitim Sorumlusu',
+        'Ana Sınıf Sorumlusu',
+        'BYK Üyesi',
+        'Basın Yayın Başkan Yrd.',
+        'Başkan Danışmanı',
+        'Bölge Kadınlar Teşkilatı Başkanı',
+        'Cenaze Hizmetleri Başkan Yrd.',
+        'Cenaze Hizmetleri Başkanı',
+        'Eğitim Başkan Yrd.',
+        'Eğitim Başkanı',
+        'Genel Merkez Üyelik Başkan Yrd.',
+        'Genel Merkez Üyelik Başkanı',
+        'Hac-Umre Sey. İşleri Başkan Yrd.',
+        'Hac-Umre Sey. İşleri Başkanı',
+        'Komisyon Üyesi',
+        'Kurumsal İletişim Başkan Yrd.',
+        'Kurumsal İletişim Başkanı',
+        'Muhasebe Başkan Yrd.',
+        'Muhasebe Başkanı',
+        'Sekreter',
+        'Sekreter Yardımcısı',
+        'Tanıtım Kültür Hizmetleri Başkan Yrd.',
+        'Tanıtım Kültür Hizmetleri Başkanı',
+        'Teftiş Başkan Yrd.',
+        'Teftiş Başkanı',
+        'Teşkilatlanma Başkan Yrd.',
+        'Teşkilatlanma Başkanı',
+        'Teşkilatlanma Bşk. Yrd. ve Sekreterya ',
+        'Yetiskinler Egitim Kursu Sorumlusu',
+        'Çocuk Kulübü Sorumlusu',
+        'İdari İşler Başkan Yrd.',
+        'İdari İşler Başkanı',
+        'İdari İşler ve Organize Başkan Yrd.',
+        'İdari İşler ve Organize Başkanı',
+        'İhsan Sohbetleri Başkan Yrd.',
+        'İhsan Sohbetleri Başkanı',
+        'İnsani Yardım ve  Sosyal Hizmetler Başkanı',
+        'İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.',
+        'İrşad Başkan Yrd.',
+        'İrşad Başkanı',
+        'İslami İlimler Sorumlusu'
+    ],
+    'AT' => [
+        'Aile Eğitim Sorumlusu',
+        'Ana Sınıf Sorumlusu',
+        'BYK Üyesi',
+        'Basın Yayın Başkan Yrd.',
+        'Basın Yayın Başkanı',
+        'Başkan Danışmanı',
+        'Bölge Başkanı',
+        'Bölge Gençlik Teskilatı Başkanı',
+        'Bölge Kadınlar Gençlik Teşkilatı Başkanı',
+        'Bölge Kadınlar Teşkilatı Başkanı',
+        'Cenaze Hizmetleri Başkan Yrd.',
+        'Cenaze Hizmetleri Başkanı',
+        'Emlak Başkan Yrd.',
+        'Emlak Başkanı',
+        'Eğitim Başkan Yrd.',
+        'Eğitim Başkanı',
+        'Genel Merkez Üyelik Başkan Yrd.',
+        'Genel Merkez Üyelik Başkanı',
+        'Hac-Umre Sey. İşleri Başkan Yrd.',
+        'Hac-Umre Sey. İşleri Başkanı',
+        'Halkla İlişkiler Başkan Yrd.',
+        'Halkla İlişkiler Başkanı',
+        'Komisyon Üyesi',
+        'Kurumsal İletişim Başkan Yrd.',
+        'Kurumsal İletişim Başkanı',
+        'Muhasebe Başkan Yrd.',
+        'Muhasebe Başkanı',
+        'Sekreter',
+        'Sekreter Yardımcısı',
+        'Tanıtım Kültür Hizmetleri Başkan Yrd.',
+        'Tanıtım Kültür Hizmetleri Başkanı',
+        'Teftiş Başkan Yrd.',
+        'Teftiş Başkanı',
+        'Teşkilatlanma Başkan Yrd.',
+        'Teşkilatlanma Başkanı',
+        'Yetiskinler Egitim Kursu Sorumlusu',
+        'Çocuk Kulübü Sorumlusu',
+        'İdari İşler Başkan Yrd.',
+        'İdari İşler Başkanı',
+        'İhsan Sohbetleri Başkan Yrd.',
+        'İhsan Sohbetleri Başkanı',
+        'İnsani Yardım ve  Sosyal Hizmetler Başkanı',
+        'İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.',
+        'İrşad Başkan Yrd.',
+        'İrşad Başkanı',
+        'İslami İlimler Sorumlusu'
+    ]
+];
 
 // Önce byk_categories tablosundan BYK ID'lerini al
 $bykCategories = [];
@@ -200,14 +200,6 @@ foreach ($bykCategories as $code => $cat) {
 }
 echo "</div>";
 
-// JSON verisini parse et
-$gorevler = json_decode($gorevlerJSON, true);
-if ($gorevler === null) {
-    echo "<div class='alert alert-danger'><i class='fas fa-times'></i> JSON parse hatası!</div>";
-    echo "</div></div></div></body></html>";
-    exit;
-}
-
 echo "<hr>";
 
 // Her BYK için görevleri alt birim olarak ekle
@@ -223,7 +215,10 @@ foreach ($gorevler as $bykCode => $gorevListesi) {
         continue;
     }
     
-    echo "<h5 class='mt-4'><i class='fas fa-building'></i> <span class='badge' style='background-color: {$bykCategory['color'] ?? '#009872'}; color: white;'>{$bykCategory['name']}</span> ({$bykCode}) Görevleri İşleniyor...</h5>";
+    $bykColor = isset($bykCategory['color']) ? $bykCategory['color'] : '#009872';
+    $bykName = isset($bykCategory['name']) ? $bykCategory['name'] : $bykCode;
+    
+    echo "<h5 class='mt-4'><i class='fas fa-building'></i> <span class='badge' style='background-color: {$bykColor}; color: white;'>{$bykName}</span> ({$bykCode}) Görevleri İşleniyor...</h5>";
     echo "<p><strong>Toplam Görev:</strong> " . count($gorevListesi) . "</p>";
     
     $fileImported = 0;
@@ -250,20 +245,17 @@ foreach ($gorevler as $bykCode => $gorevListesi) {
             }
             
             // Yeni alt birim ekle
-            $description = (isset($bykCategory['name']) ? $bykCategory['name'] : $bykCode) . " - {$gorevAdi} görevi";
+            $description = $bykName . " - {$gorevAdi} görevi";
             $db->query("
                 INSERT INTO byk_sub_units (byk_category_id, name, description, created_at, updated_at)
                 VALUES (?, ?, ?, NOW(), NOW())
             ", [$bykCategory['id'], $gorevAdi, $description]);
             
-            $bykName = $bykCategory['name'] ?? $bykCode;
-            $bykColor = $bykCategory['color'] ?? '#009872';
             echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Alt birim eklendi:</strong> <span class='badge' style='background-color: {$bykColor}; color: white;'>{$bykName}</span> - {$gorevAdi}</div>";
             $fileImported++;
             
         } catch (Exception $e) {
-            $bykNameForError = $bykCategory['name'] ?? $bykCode;
-            $errorMsg = "{$gorevAdi} - {$bykNameForError}: " . $e->getMessage();
+            $errorMsg = "{$gorevAdi} - {$bykName}: " . $e->getMessage();
             echo "<div class='alert alert-danger small'><i class='fas fa-times'></i> <strong>Hata:</strong> {$errorMsg}</div>";
             $errors[] = $errorMsg;
             $fileErrors++;
@@ -323,4 +315,3 @@ echo "
 </body>
 </html>";
 ?>
-
