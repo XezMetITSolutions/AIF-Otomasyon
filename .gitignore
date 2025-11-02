@@ -4,14 +4,41 @@
 .env.production
 
 # Debug files
+**/debug*.php
+**/test*.php
 admin/debug_login.php
 admin/test_database.php
 admin/install.php
 
+# Temporary files
+temp_scripts.php
+*.tmp
+*.temp
+
+# Backup files
+**/*_backup.*
+**/*_old.*
+**/users_backup.php
+**/events_2026_backup.*
+
 # SQL files
+**/*.sql
 admin/update_password.sql
 admin/webhosting_*.sql
 admin/database_*.sql
+admin/add_aif_admin.sql
+admin/meeting_reports_schema.sql
+
+# Webhook (alternatif deployment)
+webhook.php
+
+# Setup scripts
+setup_github.sh
+
+# Root'ta gereksiz dosyalar
+dashboard_superadmin.php
+users.php
+debug.php
 
 # Logs
 logs/
