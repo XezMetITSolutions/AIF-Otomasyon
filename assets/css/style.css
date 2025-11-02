@@ -571,10 +571,28 @@ main.container-fluid {
     color: white;
 }
 
+/* Başlık Stilleri - Modern */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--gray-800);
+    letter-spacing: -0.5px;
+}
+
+h1 {
+    font-size: 2rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
 /* Footer Stilleri */
 footer {
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--glass-border);
     margin-top: auto;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 /* Responsive Düzenlemeler */
