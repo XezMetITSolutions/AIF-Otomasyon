@@ -78,11 +78,11 @@ try {
         SELECT e.*, 
                COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
                COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
-               COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk,
+               COALESCE(bc.color, b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
                COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
         FROM etkinlikler e
         LEFT JOIN byk b ON e.byk_id = b.byk_id
-        LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
+        LEFT JOIN byk_categories bc ON b.byk_kodu COLLATE utf8mb4_unicode_ci = bc.code COLLATE utf8mb4_unicode_ci
         LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
         $whereClause
         ORDER BY e.baslangic_tarihi ASC
@@ -98,24 +98,25 @@ try {
             SELECT e.*, 
                    COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
                    COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
-                   COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk,
+                   COALESCE(bc.color, b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
                    COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
             FROM etkinlikler e
             LEFT JOIN byk b ON e.byk_id = b.byk_id
-            LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
+            LEFT JOIN byk_categories bc ON b.byk_kodu COLLATE utf8mb4_unicode_ci = bc.code COLLATE utf8mb4_unicode_ci
             LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
             ORDER BY e.baslangic_tarihi ASC
             LIMIT 500
         ");
     }
 } catch (Exception $e) {
-    // Hata durumunda basit sorgu dene
+    // Hata durumunda basit sorgu dene (collation hatası varsa)
     try {
+        // Önce byk_id üzerinden BYK bilgisini al, sonra byk_categories'e bak
         $etkinlikler = $db->fetchAll("
             SELECT e.*, 
                    COALESCE(b.byk_adi, '-') as byk_adi,
                    COALESCE(b.byk_kodu, '') as byk_kodu,
-                   COALESCE(b.renk_kodu, '#009872') as byk_renk,
+                   COALESCE(b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
                    COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
             FROM etkinlikler e
             LEFT JOIN byk b ON e.byk_id = b.byk_id
@@ -124,19 +125,46 @@ try {
             ORDER BY e.baslangic_tarihi ASC
             LIMIT 500
         ", $params);
+        
+        // Şimdi her etkinlik için byk_categories'den renk bilgisini al
+        if (!empty($etkinlikler)) {
+            try {
+                $bykColorMap = [];
+                $bykColors = $db->fetchAll("SELECT code, color FROM byk_categories WHERE color IS NOT NULL AND color != ''");
+                foreach ($bykColors as $bykColor) {
+                    $bykColorMap[$bykColor['code']] = $bykColor['color'];
+                }
+                
+                // BYK kodlarına göre renkleri güncelle
+                foreach ($etkinlikler as &$etkinlik) {
+                    $bykKodu = $etkinlik['byk_kodu'] ?? '';
+                    if (!empty($bykKodu) && isset($bykColorMap[$bykKodu])) {
+                        $etkinlik['byk_renk'] = $bykColorMap[$bykKodu];
+                    }
+                }
+                unset($etkinlik);
+            } catch (Exception $e3) {
+                // byk_categories hatası - devam et
+            }
+        }
     } catch (Exception $e2) {
-        // En basit sorgu
-        $etkinlikler = $db->fetchAll("
-            SELECT e.*, 
-                   '-' as byk_adi,
-                   '' as byk_kodu,
-                   '#009872' as byk_renk,
-                   '-' as olusturan
-            FROM etkinlikler e
-            $whereClause
-            ORDER BY e.baslangic_tarihi ASC
-            LIMIT 500
-        ", $params);
+        // En basit sorgu - sadece etkinlikler tablosu
+        try {
+            $etkinlikler = $db->fetchAll("
+                SELECT e.*, 
+                       '-' as byk_adi,
+                       '' as byk_kodu,
+                       COALESCE(e.renk_kodu, '#009872') as byk_renk,
+                       '-' as olusturan
+                FROM etkinlikler e
+                $whereClause
+                ORDER BY e.baslangic_tarihi ASC
+                LIMIT 500
+            ", $params);
+        } catch (Exception $e3) {
+            // Son çare - boş array
+            $etkinlikler = [];
+        }
     }
 }
 
@@ -158,6 +186,19 @@ try {
     }
 } catch (Exception $e) {
     // byk_categories tablosu yoksa varsayılan renkleri kullan
+}
+
+// Eğer etkinliklerden renk bilgisi gelmediyse, byk_id üzerinden bul
+if (!empty($etkinlikler)) {
+    foreach ($etkinlikler as &$etkinlik) {
+        // Eğer byk_renk hala varsayılan veya boşsa, etkinlik tablosundaki renk_kodu'nu kullan
+        if (empty($etkinlik['byk_renk']) || $etkinlik['byk_renk'] == '#009872') {
+            if (!empty($etkinlik['renk_kodu'])) {
+                $etkinlik['byk_renk'] = $etkinlik['renk_kodu'];
+            }
+        }
+    }
+    unset($etkinlik);
 }
 
 // Varsayılan renkler (byk_categories'de yoksa)
