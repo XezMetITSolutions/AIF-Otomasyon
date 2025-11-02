@@ -89,19 +89,51 @@ echo "<div class='debug-section'>
     <h5>4. BYK JOIN Kontrolü</h5>";
 
 try {
+    // Collation hatası nedeniyle önce basit JOIN yapıyoruz
     $etkinliklerWithBYK = $db->fetchAll("
         SELECT e.*, 
-               COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
-               COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
-               COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk,
+               COALESCE(b.byk_adi, '-') as byk_adi,
+               COALESCE(b.byk_kodu, '') as byk_kodu,
+               COALESCE(b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
                COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
         FROM etkinlikler e
         LEFT JOIN byk b ON e.byk_id = b.byk_id
-        LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
         LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
         ORDER BY e.baslangic_tarihi ASC
         LIMIT 5
     ");
+    
+    // Şimdi byk_categories'den bilgileri PHP'de ekliyoruz
+    if (!empty($etkinliklerWithBYK)) {
+        try {
+            $bykCategories = $db->fetchAll("SELECT code, name, color FROM byk_categories");
+            $bykCategoryMap = [];
+            foreach ($bykCategories as $cat) {
+                $bykCategoryMap[$cat['code']] = [
+                    'name' => $cat['name'],
+                    'color' => $cat['color']
+                ];
+            }
+            
+            foreach ($etkinliklerWithBYK as &$etkinlik) {
+                $bykKodu = $etkinlik['byk_kodu'] ?? '';
+                if (!empty($bykKodu) && isset($bykCategoryMap[$bykKodu])) {
+                    $etkinlik['byk_adi'] = $bykCategoryMap[$bykKodu]['name'];
+                    if (!empty($bykCategoryMap[$bykKodu]['color'])) {
+                        $etkinlik['byk_renk'] = $bykCategoryMap[$bykKodu]['color'];
+                    }
+                }
+                if (empty($etkinlik['byk_renk']) || $etkinlik['byk_renk'] == '#009872') {
+                    if (!empty($etkinlik['renk_kodu'])) {
+                        $etkinlik['byk_renk'] = $etkinlik['renk_kodu'];
+                    }
+                }
+            }
+            unset($etkinlik);
+        } catch (Exception $e2) {
+            // byk_categories hatası - devam et
+        }
+    }
     
     if (empty($etkinliklerWithBYK)) {
         echo "<div class='alert alert-warning'><i class='fas fa-exclamation-triangle'></i> JOIN sorgusu sonuç döndürmedi.</div>";
@@ -120,19 +152,51 @@ echo "<div class='debug-section'>
 
 try {
     $calendarEvents = [];
+    // Collation hatası nedeniyle basit JOIN kullanıyoruz
     $etkinlikler = $db->fetchAll("
         SELECT e.*, 
-               COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
-               COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
-               COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk,
+               COALESCE(b.byk_adi, '-') as byk_adi,
+               COALESCE(b.byk_kodu, '') as byk_kodu,
+               COALESCE(b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
                COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
         FROM etkinlikler e
         LEFT JOIN byk b ON e.byk_id = b.byk_id
-        LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
         LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
         ORDER BY e.baslangic_tarihi ASC
         LIMIT 10
     ");
+    
+    // byk_categories'den bilgileri PHP'de ekliyoruz
+    if (!empty($etkinlikler)) {
+        try {
+            $bykCategories = $db->fetchAll("SELECT code, name, color FROM byk_categories");
+            $bykCategoryMap = [];
+            foreach ($bykCategories as $cat) {
+                $bykCategoryMap[$cat['code']] = [
+                    'name' => $cat['name'],
+                    'color' => $cat['color']
+                ];
+            }
+            
+            foreach ($etkinlikler as &$etkinlik) {
+                $bykKodu = $etkinlik['byk_kodu'] ?? '';
+                if (!empty($bykKodu) && isset($bykCategoryMap[$bykKodu])) {
+                    $etkinlik['byk_adi'] = $bykCategoryMap[$bykKodu]['name'];
+                    if (!empty($bykCategoryMap[$bykKodu]['color'])) {
+                        $etkinlik['byk_renk'] = $bykCategoryMap[$bykKodu]['color'];
+                    }
+                }
+                if (empty($etkinlik['byk_renk']) || $etkinlik['byk_renk'] == '#009872') {
+                    if (!empty($etkinlik['renk_kodu'])) {
+                        $etkinlik['byk_renk'] = $etkinlik['renk_kodu'];
+                    }
+                }
+            }
+            unset($etkinlik);
+        } catch (Exception $e2) {
+            // byk_categories hatası - devam et
+        }
+    }
     
     if (!empty($etkinlikler) && is_array($etkinlikler)) {
         foreach ($etkinlikler as $etkinlik) {

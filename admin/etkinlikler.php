@@ -73,98 +73,83 @@ try {
 }
 
 // Etkinlikler
+// Önce basit sorgu ile etkinlikleri al (collation hatasını önlemek için byk_categories JOIN'i yapmıyoruz)
 try {
-    $query = "
+    $etkinlikler = $db->fetchAll("
         SELECT e.*, 
-               COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
-               COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
-               COALESCE(bc.color, b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
+               COALESCE(b.byk_adi, '-') as byk_adi,
+               COALESCE(b.byk_kodu, '') as byk_kodu,
+               COALESCE(b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
                COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
         FROM etkinlikler e
         LEFT JOIN byk b ON e.byk_id = b.byk_id
-        LEFT JOIN byk_categories bc ON b.byk_kodu COLLATE utf8mb4_unicode_ci = bc.code COLLATE utf8mb4_unicode_ci
         LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
         $whereClause
         ORDER BY e.baslangic_tarihi ASC
         LIMIT 500
-    ";
+    ", $params);
     
-    $etkinlikler = $db->fetchAll($query, $params);
-    
-    // Eğer hata varsa veya sonuç boşsa, basit sorgu dene
-    if (empty($etkinlikler) && !empty($whereClause)) {
-        // Filtre varsa ve sonuç yoksa, filtresiz dene
-        $etkinlikler = $db->fetchAll("
-            SELECT e.*, 
-                   COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
-                   COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
-                   COALESCE(bc.color, b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
-                   COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
-            FROM etkinlikler e
-            LEFT JOIN byk b ON e.byk_id = b.byk_id
-            LEFT JOIN byk_categories bc ON b.byk_kodu COLLATE utf8mb4_unicode_ci = bc.code COLLATE utf8mb4_unicode_ci
-            LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
-            ORDER BY e.baslangic_tarihi ASC
-            LIMIT 500
-        ");
+    // Şimdi her etkinlik için byk_categories'den renk ve isim bilgisini al (collation hatasını önlemek için PHP'de)
+    if (!empty($etkinlikler)) {
+        try {
+            // byk_categories'den tüm BYK bilgilerini al
+            $bykCategories = $db->fetchAll("SELECT code, name, color FROM byk_categories");
+            $bykCategoryMap = [];
+            foreach ($bykCategories as $cat) {
+                $bykCategoryMap[$cat['code']] = [
+                    'name' => $cat['name'],
+                    'color' => $cat['color']
+                ];
+            }
+            
+            // Etkinliklerdeki BYK kodlarına göre bilgileri güncelle
+            foreach ($etkinlikler as &$etkinlik) {
+                $bykKodu = $etkinlik['byk_kodu'] ?? '';
+                if (!empty($bykKodu) && isset($bykCategoryMap[$bykKodu])) {
+                    // byk_categories'den gelen bilgileri kullan
+                    $etkinlik['byk_adi'] = $bykCategoryMap[$bykKodu]['name'];
+                    if (!empty($bykCategoryMap[$bykKodu]['color'])) {
+                        $etkinlik['byk_renk'] = $bykCategoryMap[$bykKodu]['color'];
+                    }
+                }
+                
+                // Eğer renk hala boş veya varsayılan ise, etkinlik tablosundaki renk_kodu'nu kullan
+                if (empty($etkinlik['byk_renk']) || $etkinlik['byk_renk'] == '#009872') {
+                    if (!empty($etkinlik['renk_kodu'])) {
+                        $etkinlik['byk_renk'] = $etkinlik['renk_kodu'];
+                    }
+                }
+            }
+            unset($etkinlik);
+        } catch (Exception $e3) {
+            // byk_categories hatası - etkinliklerdeki renk_kodu'nu kullan
+            foreach ($etkinlikler as &$etkinlik) {
+                if (empty($etkinlik['byk_renk']) || $etkinlik['byk_renk'] == '#009872') {
+                    if (!empty($etkinlik['renk_kodu'])) {
+                        $etkinlik['byk_renk'] = $etkinlik['renk_kodu'];
+                    }
+                }
+            }
+            unset($etkinlik);
+        }
     }
 } catch (Exception $e) {
-    // Hata durumunda basit sorgu dene (collation hatası varsa)
+    // En basit sorgu - sadece etkinlikler tablosu
     try {
-        // Önce byk_id üzerinden BYK bilgisini al, sonra byk_categories'e bak
         $etkinlikler = $db->fetchAll("
             SELECT e.*, 
-                   COALESCE(b.byk_adi, '-') as byk_adi,
-                   COALESCE(b.byk_kodu, '') as byk_kodu,
-                   COALESCE(b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
-                   COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
+                   '-' as byk_adi,
+                   '' as byk_kodu,
+                   COALESCE(e.renk_kodu, '#009872') as byk_renk,
+                   '-' as olusturan
             FROM etkinlikler e
-            LEFT JOIN byk b ON e.byk_id = b.byk_id
-            LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
             $whereClause
             ORDER BY e.baslangic_tarihi ASC
             LIMIT 500
         ", $params);
-        
-        // Şimdi her etkinlik için byk_categories'den renk bilgisini al
-        if (!empty($etkinlikler)) {
-            try {
-                $bykColorMap = [];
-                $bykColors = $db->fetchAll("SELECT code, color FROM byk_categories WHERE color IS NOT NULL AND color != ''");
-                foreach ($bykColors as $bykColor) {
-                    $bykColorMap[$bykColor['code']] = $bykColor['color'];
-                }
-                
-                // BYK kodlarına göre renkleri güncelle
-                foreach ($etkinlikler as &$etkinlik) {
-                    $bykKodu = $etkinlik['byk_kodu'] ?? '';
-                    if (!empty($bykKodu) && isset($bykColorMap[$bykKodu])) {
-                        $etkinlik['byk_renk'] = $bykColorMap[$bykKodu];
-                    }
-                }
-                unset($etkinlik);
-            } catch (Exception $e3) {
-                // byk_categories hatası - devam et
-            }
-        }
     } catch (Exception $e2) {
-        // En basit sorgu - sadece etkinlikler tablosu
-        try {
-            $etkinlikler = $db->fetchAll("
-                SELECT e.*, 
-                       '-' as byk_adi,
-                       '' as byk_kodu,
-                       COALESCE(e.renk_kodu, '#009872') as byk_renk,
-                       '-' as olusturan
-                FROM etkinlikler e
-                $whereClause
-                ORDER BY e.baslangic_tarihi ASC
-                LIMIT 500
-            ", $params);
-        } catch (Exception $e3) {
-            // Son çare - boş array
-            $etkinlikler = [];
-        }
+        // Son çare - boş array
+        $etkinlikler = [];
     }
 }
 
