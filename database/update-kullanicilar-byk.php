@@ -38,12 +38,32 @@ $jsonFiles = [
 $bykMapping = [];
 try {
     // Önce byk_categories'den kodları al
-    $categories = $db->fetchAll("SELECT id, code FROM byk_categories");
+    $categories = $db->fetchAll("SELECT id, code, name FROM byk_categories");
     foreach ($categories as $cat) {
-        // Sonra byk tablosundan byk_id'yi bul
-        $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ?", [$cat['code']]);
+        // Sonra byk tablosundan byk_id'yi bul (byk_kodu ile eşleştir)
+        $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ? LIMIT 1", [$cat['code']]);
         if ($byk) {
             $bykMapping[$cat['code']] = $byk['byk_id'];
+        } else {
+            // byk tablosunda bulunamazsa, byk_id oluştur veya byk_categories.id'yi kullan
+            // Önce byk tablosunda bu kodu içeren başka bir kayıt var mı kontrol et
+            $bykAlt = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu LIKE ? OR byk_adi LIKE ? LIMIT 1", ["%{$cat['code']}%", "%{$cat['name']}%"]);
+            if ($bykAlt) {
+                $bykMapping[$cat['code']] = $bykAlt['byk_id'];
+            } else {
+                // Yeni byk kaydı oluştur
+                try {
+                    $db->query("
+                        INSERT INTO byk (byk_adi, byk_kodu, renk_kodu, aktif, olusturma_tarihi)
+                        VALUES (?, ?, '#009872', 1, NOW())
+                    ", [$cat['name'], $cat['code']]);
+                    $newBykId = $db->lastInsertId();
+                    $bykMapping[$cat['code']] = $newBykId;
+                    echo "<div class='alert alert-info small'><i class='fas fa-plus'></i> Yeni BYK kaydı oluşturuldu: {$cat['code']} (ID: {$newBykId})</div>";
+                } catch (Exception $e2) {
+                    echo "<div class='alert alert-warning small'><i class='fas fa-exclamation-triangle'></i> BYK kaydı oluşturulamadı: {$cat['code']} - " . $e2->getMessage() . "</div>";
+                }
+            }
         }
     }
 } catch (Exception $e) {
