@@ -4,9 +4,9 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
--- Veritabanı oluştur
-CREATE DATABASE IF NOT EXISTS `aif_otomasyon` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `aif_otomasyon`;
+-- NOT: Bu dosya 'd0451622' veritabanına import edilmelidir
+-- Veritabanı zaten oluşturulmuş olmalı (cPanel veya hosting panelinden)
+-- phpMyAdmin'de önce 'd0451622' veritabanını seçin, sonra bu dosyayı import edin
 
 -- Tabloları oluştur
 
