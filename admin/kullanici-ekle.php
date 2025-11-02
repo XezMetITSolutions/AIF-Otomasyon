@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sifre_hash = password_hash($sifre, PASSWORD_DEFAULT);
         
         try {
-            $db->execute("
+            $db->query("
                 INSERT INTO kullanicilar (rol_id, byk_id, email, sifre, ad, soyad, aktif, ilk_giris_zorunlu, olusturma_tarihi)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())
             ", [$rol_id, $byk_id, $email, $sifre_hash, $ad, $soyad, $aktif]);

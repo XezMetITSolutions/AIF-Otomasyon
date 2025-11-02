@@ -40,7 +40,7 @@ if ($id == $currentUser['id']) {
 
 try {
     // Soft delete - aktif = 0 yap
-    $db->execute("UPDATE kullanicilar SET aktif = 0 WHERE kullanici_id = ?", [$id]);
+    $db->query("UPDATE kullanicilar SET aktif = 0 WHERE kullanici_id = ?", [$id]);
     $response['success'] = true;
     $response['message'] = 'Kullanıcı başarıyla silindi.';
 } catch (Exception $e) {
