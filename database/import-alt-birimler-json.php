@@ -107,7 +107,7 @@ foreach ($jsonFiles as $filename => $bykCode) {
     }
     
     $bykCategory = $bykCategories[$bykCode] ?? null;
-    if (!$bykCategory) {
+    if (!$bykCategory || !isset($bykCategory['id'])) {
         echo "<div class='alert alert-warning'><i class='fas fa-exclamation-triangle'></i> BYK kategorisi bulunamadı: {$bykCode}</div>";
         continue;
     }
@@ -149,12 +149,15 @@ foreach ($jsonFiles as $filename => $bykCode) {
             }
             
             // Yeni alt birim ekle
+            $description = (isset($bykCategory['name']) ? $bykCategory['name'] : $bykCode) . " - {$bolge} bölgesi";
             $db->query("
                 INSERT INTO byk_sub_units (byk_category_id, name, description, created_at, updated_at)
                 VALUES (?, ?, ?, NOW(), NOW())
-            ", [$bykCategory['id'], $bolge, "{$bykCategory['name']} - {$bolge} bölgesi"]);
+            ", [$bykCategory['id'], $bolge, $description]);
             
-            echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Alt birim eklendi:</strong> <span class='badge' style='background-color: {$bykCategory['color'] ?? '#009872'}; color: white;'>{$bykCategory['name']}</span> - {$bolge}</div>";
+            $bykName = $bykCategory['name'] ?? $bykCode;
+            $bykColor = $bykCategory['color'] ?? '#009872';
+            echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Alt birim eklendi:</strong> <span class='badge' style='background-color: {$bykColor}; color: white;'>{$bykName}</span> - {$bolge}</div>";
             $fileImported++;
             
         } catch (Exception $e) {
