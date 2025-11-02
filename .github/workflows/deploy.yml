@@ -33,16 +33,19 @@ jobs:
           echo "✅ FTP secrets kontrol ediliyor..."
           if [ -z "${{ secrets.FTP_SERVER }}" ]; then
             echo "⚠️  FTP_SERVER secret tanımlı değil!"
+            exit 1
           else
             echo "✅ FTP_SERVER: ${{ secrets.FTP_SERVER }}"
           fi
           if [ -z "${{ secrets.FTP_USERNAME }}" ]; then
             echo "⚠️  FTP_USERNAME secret tanımlı değil!"
+            exit 1
           else
             echo "✅ FTP_USERNAME tanımlı"
           fi
           if [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
             echo "⚠️  FTP_PASSWORD secret tanımlı değil!"
+            exit 1
           else
             echo "✅ FTP_PASSWORD tanımlı"
           fi
@@ -120,4 +123,3 @@ jobs:
           echo "❌ Deployment başarısız oldu!"
           echo "🔍 Lütfen workflow loglarını kontrol edin."
           exit 1
-
