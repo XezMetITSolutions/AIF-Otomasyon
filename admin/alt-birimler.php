@@ -36,9 +36,10 @@ try {
         ORDER BY bc.code ASC, bsu.name ASC
     ");
     
-    // Her alt birim için description'dan sorumlu bilgisini çıkar
+    // Her alt birim için description'dan sorumlu bilgisini çıkar ve kullanıcı ID'sini bul
     foreach ($altBirimler as &$altBirim) {
         $sorumlu = null;
+        $sorumluId = null;
         $description = $altBirim['description'] ?? '';
         
         // Description formatı: "BYК_CODE - Alt Birim Adı | Sorumlu: Ad Soyad"
@@ -46,10 +47,30 @@ try {
             $parts = explode('| Sorumlu:', $description);
             if (isset($parts[1])) {
                 $sorumlu = trim($parts[1]);
+                
+                // Sorumlu ad-soyad ile kullanıcıyı bul
+                try {
+                    $nameParts = explode(' ', $sorumlu, 2);
+                    if (count($nameParts) == 2) {
+                        $kullanici = $db->fetch("
+                            SELECT kullanici_id 
+                            FROM kullanicilar 
+                            WHERE ad = ? AND soyad = ? AND aktif = 1
+                            LIMIT 1
+                        ", [$nameParts[0], $nameParts[1]]);
+                        
+                        if ($kullanici) {
+                            $sorumluId = $kullanici['kullanici_id'];
+                        }
+                    }
+                } catch (Exception $e) {
+                    // Hata durumunda devam et
+                }
             }
         }
         
         $altBirim['sorumlu'] = $sorumlu;
+        $altBirim['sorumlu_id'] = $sorumluId;
     }
     unset($altBirim);
 } catch (Exception $e) {
