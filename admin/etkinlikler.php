@@ -181,55 +181,56 @@ if (!empty($etkinlikler) && is_array($etkinlikler)) {
             // Geçersiz tarih formatı - atla
             continue;
         }
-    
-    // BYK rengini belirle - önce veritabanından gelen rengi kullan
-    $bykRenk = $etkinlik['byk_renk'] ?? null;
-    $bykKodu = $etkinlik['byk_kodu'] ?? '';
-    
-    // Eğer renk boş veya geçersiz ise, bykColorMap'ten dene
-    if (empty($bykRenk) || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
-        if (!empty($bykKodu) && isset($bykColorMap[$bykKodu])) {
-            $bykRenk = $bykColorMap[$bykKodu];
-        } elseif (!empty($bykKodu) && isset($bykDefaultColors[$bykKodu])) {
-            $bykRenk = $bykDefaultColors[$bykKodu];
-        } else {
-            $bykRenk = '#009872'; // Varsayılan renk
+        
+        // BYK rengini belirle - önce veritabanından gelen rengi kullan
+        $bykRenk = $etkinlik['byk_renk'] ?? null;
+        $bykKodu = $etkinlik['byk_kodu'] ?? '';
+        
+        // Eğer renk boş veya geçersiz ise, bykColorMap'ten dene
+        if (empty($bykRenk) || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
+            if (!empty($bykKodu) && isset($bykColorMap[$bykKodu])) {
+                $bykRenk = $bykColorMap[$bykKodu];
+            } elseif (!empty($bykKodu) && isset($bykDefaultColors[$bykKodu])) {
+                $bykRenk = $bykDefaultColors[$bykKodu];
+            } else {
+                $bykRenk = '#009872'; // Varsayılan renk
+            }
         }
-    }
-    
-    // Renk formatını düzelt (# olmadan gelirse ekle)
-    if (!empty($bykRenk) && substr($bykRenk, 0, 1) !== '#') {
-        $bykRenk = '#' . $bykRenk;
-    }
-    
-    // Geçersiz renk formatını kontrol et ve düzelt
-    if (!preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
-        if (!empty($bykKodu)) {
-            $bykRenk = $bykColorMap[$bykKodu] ?? $bykDefaultColors[$bykKodu] ?? '#009872';
-        } else {
-            $bykRenk = '#009872';
+        
+        // Renk formatını düzelt (# olmadan gelirse ekle)
+        if (!empty($bykRenk) && substr($bykRenk, 0, 1) !== '#') {
+            $bykRenk = '#' . $bykRenk;
         }
+        
+        // Geçersiz renk formatını kontrol et ve düzelt
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
+            if (!empty($bykKodu)) {
+                $bykRenk = $bykColorMap[$bykKodu] ?? $bykDefaultColors[$bykKodu] ?? '#009872';
+            } else {
+                $bykRenk = '#009872';
+            }
+        }
+        
+        $calendarEvents[] = [
+            'id' => $etkinlik['etkinlik_id'],
+            'title' => $etkinlik['baslik'],
+            'start' => $baslangic->format('Y-m-d\TH:i:s'),
+            'end' => $bitis->format('Y-m-d\TH:i:s'),
+            'allDay' => (date('H:i:s', strtotime($etkinlik['baslangic_tarihi'])) == '00:00:00' && 
+                         date('H:i:s', strtotime($etkinlik['bitis_tarihi'])) == '23:59:59'),
+            'backgroundColor' => $bykRenk,
+            'borderColor' => $bykRenk,
+            'textColor' => '#ffffff',
+            'extendedProps' => [
+                'byk' => $etkinlik['byk_adi'] ?? '',
+                'byk_kodu' => $bykKodu,
+                'byk_renk' => $bykRenk,
+                'konum' => $etkinlik['konum'] ?? '',
+                'aciklama' => $etkinlik['aciklama'] ?? '',
+                'olusturan' => $etkinlik['olusturan'] ?? ''
+            ]
+        ];
     }
-    
-    $calendarEvents[] = [
-        'id' => $etkinlik['etkinlik_id'],
-        'title' => $etkinlik['baslik'],
-        'start' => $baslangic->format('Y-m-d\TH:i:s'),
-        'end' => $bitis->format('Y-m-d\TH:i:s'),
-        'allDay' => (date('H:i:s', strtotime($etkinlik['baslangic_tarihi'])) == '00:00:00' && 
-                     date('H:i:s', strtotime($etkinlik['bitis_tarihi'])) == '23:59:59'),
-        'backgroundColor' => $bykRenk,
-        'borderColor' => $bykRenk,
-        'textColor' => '#ffffff',
-        'extendedProps' => [
-            'byk' => $etkinlik['byk_adi'] ?? '',
-            'byk_kodu' => $bykKodu,
-            'byk_renk' => $bykRenk,
-            'konum' => $etkinlik['konum'] ?? '',
-            'aciklama' => $etkinlik['aciklama'] ?? '',
-            'olusturan' => $etkinlik['olusturan'] ?? ''
-        ]
-    ];
 }
 
 $pageSpecificCSS = [
