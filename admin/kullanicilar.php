@@ -41,8 +41,29 @@ if ($roleFilter) {
 }
 
 if ($bykFilter) {
-    $where[] = "k.byk_id = ?";
-    $params[] = $bykFilter;
+    // bykFilter byk_categories.id ise, önce byk_kodu bul sonra byk_id'yi bul
+    try {
+        $bykCategory = $db->fetch("SELECT code FROM byk_categories WHERE id = ?", [$bykFilter]);
+        if ($bykCategory) {
+            $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ?", [$bykCategory['code']]);
+            if ($byk) {
+                $where[] = "k.byk_id = ?";
+                $params[] = $byk['byk_id'];
+            } else {
+                // byk tablosunda bulunamazsa, byk_id'yi direkt kullan (eski sistem uyumluluğu)
+                $where[] = "k.byk_id = ?";
+                $params[] = $bykFilter;
+            }
+        } else {
+            // byk_categories'de bulunamazsa, direkt byk_id kullan
+            $where[] = "k.byk_id = ?";
+            $params[] = $bykFilter;
+        }
+    } catch (Exception $e) {
+        // Hata durumunda direkt byk_id kullan
+        $where[] = "k.byk_id = ?";
+        $params[] = $bykFilter;
+    }
 }
 
 $whereClause = implode(' AND ', $where);
@@ -56,17 +77,36 @@ $total = $db->fetch(
     $params
 )['count'];
 
-// Kullanıcılar
-$kullanicilar = $db->fetchAll(
-    "SELECT k.*, r.rol_adi, b.byk_adi
-     FROM kullanicilar k
-     INNER JOIN roller r ON k.rol_id = r.rol_id
-     LEFT JOIN byk b ON k.byk_id = b.byk_id
-     WHERE $whereClause
-     ORDER BY k.olusturma_tarihi DESC
-     LIMIT ? OFFSET ?",
-    array_merge($params, [$perPage, $offset])
-);
+// Kullanıcılar - BYK bilgisini byk_categories'den al
+try {
+    // Önce byk_categories tablosunu kullanarak kullanıcıları çek
+    $kullanicilar = $db->fetchAll("
+        SELECT k.*, 
+               r.rol_adi,
+               COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
+               COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
+               COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk
+        FROM kullanicilar k
+        INNER JOIN roller r ON k.rol_id = r.rol_id
+        LEFT JOIN byk b ON k.byk_id = b.byk_id
+        LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
+        WHERE $whereClause
+        ORDER BY k.olusturma_tarihi DESC
+        LIMIT ? OFFSET ?
+    ", array_merge($params, [$perPage, $offset]));
+} catch (Exception $e) {
+    // byk_categories yoksa eski sorguyu kullan
+    $kullanicilar = $db->fetchAll(
+        "SELECT k.*, r.rol_adi, b.byk_adi
+         FROM kullanicilar k
+         INNER JOIN roller r ON k.rol_id = r.rol_id
+         LEFT JOIN byk b ON k.byk_id = b.byk_id
+         WHERE $whereClause
+         ORDER BY k.olusturma_tarihi DESC
+         LIMIT ? OFFSET ?",
+        array_merge($params, [$perPage, $offset])
+    );
+}
 
 // Roller (filtre için)
 $roller = $db->fetchAll("SELECT * FROM roller ORDER BY rol_yetki_seviyesi DESC");
@@ -196,7 +236,18 @@ include __DIR__ . '/../includes/header.php';
                                                     <?php echo htmlspecialchars($kullanici['rol_adi']); ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo htmlspecialchars($kullanici['byk_adi'] ?? '-'); ?></td>
+                                            <td>
+                                                <?php if (!empty($kullanici['byk_adi']) && $kullanici['byk_adi'] !== '-'): ?>
+                                                    <span class="badge" style="background-color: <?php echo htmlspecialchars($kullanici['byk_renk'] ?? '#009872'); ?>; color: white;">
+                                                        <?php echo htmlspecialchars($kullanici['byk_adi']); ?>
+                                                    </span>
+                                                    <?php if (!empty($kullanici['byk_kodu'])): ?>
+                                                        <small class="text-muted ms-1">(<?php echo htmlspecialchars($kullanici['byk_kodu']); ?>)</small>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <span class="text-muted">-</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td>
                                                 <span class="badge bg-<?php echo $kullanici['aktif'] ? 'success' : 'secondary'; ?>">
                                                     <?php echo $kullanici['aktif'] ? 'Aktif' : 'Pasif'; ?>
