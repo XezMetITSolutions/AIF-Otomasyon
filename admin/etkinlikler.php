@@ -263,6 +263,9 @@ include __DIR__ . '/../includes/header.php';
                     <a href="/database/import-events-2026.php" class="btn btn-success">
                         <i class="fas fa-file-import me-2"></i>2026 Etkinliklerini Import Et
                     </a>
+                    <a href="/admin/etkinlikler-debug.php" class="btn btn-warning">
+                        <i class="fas fa-bug me-2"></i>Debug
+                    </a>
                 </div>
             </div>
             
