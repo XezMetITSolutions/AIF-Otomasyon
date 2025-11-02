@@ -69,7 +69,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-chart-bar me-2"></i>Raporlar & Analiz
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">AYARLAR</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">AYARLAR</div>
             
             <a href="/admin/ayarlar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'ayarlar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-cog me-2"></i>Sistem Ayarları
