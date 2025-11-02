@@ -59,23 +59,34 @@ foreach ($bykCategories as $code => $id) {
 echo "</div><hr>";
 
 foreach ($jsonFiles as $filename => $bykCode) {
-    // Önce proje kök dizininde ara, sonra database dizininde
+    // Dosya yolunu bul - önce proje kök dizininde ara
     $filepath = __DIR__ . '/../' . $filename;
     if (!file_exists($filepath)) {
-        // Proje kök dizininde bulunamazsa, script'in bulunduğu dizinde ara
-        $filepath = __DIR__ . '/' . $filename;
+        // Absolute path ile dene
+        $filepath = dirname(__DIR__) . '/' . $filename;
     }
     if (!file_exists($filepath)) {
-        // Veya absolute path ile dene
-        $filepath = dirname(__DIR__) . '/' . $filename;
+        // Script'in bulunduğu dizinde ara
+        $filepath = __DIR__ . '/' . $filename;
     }
     
     echo "<h5><i class='fas fa-file-code'></i> {$filename} İşleniyor...</h5>";
     
     if (!file_exists($filepath)) {
-        echo "<div class='alert alert-warning'><i class='fas fa-exclamation-triangle'></i> Dosya bulunamadı: {$filename}</div>";
+        $baseDir = dirname(__DIR__);
+        $scriptDir = __DIR__;
+        echo "<div class='alert alert-danger'>";
+        echo "<i class='fas fa-exclamation-triangle'></i> <strong>Dosya bulunamadı:</strong> {$filename}<br>";
+        echo "<small>Aranan konumlar:<br>";
+        echo "1. {$baseDir}/{$filename}<br>";
+        echo "2. {$scriptDir}/{$filename}<br>";
+        echo "Script dizini: {$scriptDir}<br>";
+        echo "Proje kök dizini: {$baseDir}</small>";
+        echo "</div>";
         continue;
     }
+    
+    echo "<div class='alert alert-info small'><i class='fas fa-check'></i> Dosya bulundu: {$filepath}</div>";
     
     $jsonContent = file_get_contents($filepath);
     if ($jsonContent === false) {
