@@ -42,13 +42,11 @@ $izinTalepleri = $db->fetchAll("
 include __DIR__ . '/../includes/header.php';
 ?>
 
+<!-- Sidebar -->
+<?php include __DIR__ . '/../includes/sidebar.php'; ?>
+
 <main class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-md-2 p-0">
-            <?php include __DIR__ . '/../includes/sidebar.php'; ?>
-        </div>
-        
-        <div class="col-md-10">
+    <div class="content-wrapper">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0">
                     <i class="fas fa-calendar-check me-2"></i>İzin Talepleri
@@ -110,7 +108,6 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 </main>
 

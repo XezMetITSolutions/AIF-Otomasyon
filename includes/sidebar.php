@@ -11,8 +11,8 @@ $isBaskan = $user['role'] === 'baskan';
 $currentPath = $_SERVER['PHP_SELF'];
 ?>
 
-<div class="sidebar bg-light border-end" style="width: 250px; min-height: calc(100vh - 56px); position: sticky; top: 56px;">
-    <div class="list-group list-group-flush">
+<div class="sidebar bg-light border-end">
+    <div class="list-group list-group-flush sidebar-scroll">
         <?php if ($isSuperAdmin): ?>
             <!-- Ana Yönetici Menüsü -->
             <a href="/admin/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
