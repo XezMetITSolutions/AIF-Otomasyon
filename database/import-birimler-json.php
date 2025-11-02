@@ -134,7 +134,33 @@ foreach ($jsonFiles as $filename => $bykCode) {
         $mailler = !empty($mail) ? array_map('trim', explode(',', $mail)) : [''];
         $telefonlar = !empty($telefonNumarasi) ? array_map('trim', explode(',', $telefonNumarasi)) : [''];
         
-        // Her bir kişi için kullanıcı oluştur
+        // Görev adına göre alt birim ID'sini bul veya oluştur (byk_sub_units tablosunda)
+        $altBirimId = null;
+        try {
+            // Önce mevcut alt birimi bul
+            $existingAltBirim = $db->fetch("
+                SELECT id 
+                FROM byk_sub_units 
+                WHERE byk_category_id = ? AND name = ?
+                LIMIT 1
+            ", [$bykCategoryId, $gorevAdi]);
+            
+            if ($existingAltBirim) {
+                $altBirimId = $existingAltBirim['id'];
+            } else {
+                // Alt birim yoksa oluştur
+                $description = "{$bykCode} - {$gorevAdi}";
+                $db->query("
+                    INSERT INTO byk_sub_units (byk_category_id, name, description, created_at, updated_at)
+                    VALUES (?, ?, ?, NOW(), NOW())
+                ", [$bykCategoryId, $gorevAdi, $description]);
+                $altBirimId = $db->lastInsertId();
+            }
+        } catch (Exception $e) {
+            // Alt birim tablosu yoksa veya hata varsa devam et
+        }
+        
+        // Her bir mail için ayrı kullanıcı oluştur (aynı görev/alt birime atanacak)
         $maxCount = max(count($kisiler), count($mailler));
         for ($i = 0; $i < $maxCount; $i++) {
             $kisiAdi = $kisiler[$i] ?? '';
@@ -182,10 +208,11 @@ foreach ($jsonFiles as $filename => $bykCode) {
                             soyad = ?, 
                             telefon = ?,
                             byk_id = ?,
+                            alt_birim_id = ?,
                             sifre = ?,
                             ilk_giris_zorunlu = 1
                         WHERE email = ?
-                    ", [$ad, $soyad, $telefon, $bykId, $defaultPassword, $kisiMail]);
+                    ", [$ad, $soyad, $telefon, $bykId, $altBirimId, $defaultPassword, $kisiMail]);
                     
                     echo "<div class='alert alert-success small'><i class='fas fa-sync'></i> <strong>Güncellendi:</strong> {$kisiMail} - {$kisiAdi} ({$gorevAdi}) - Şifre: AIF571#</div>";
                     $fileImported++;
@@ -221,12 +248,12 @@ foreach ($jsonFiles as $filename => $bykCode) {
                         // byk tablosu yoksa devam et
                     }
                     
-                    // Yeni kullanıcı ekle
+                    // Yeni kullanıcı ekle (aynı görev/alt birime atanacak)
                     $db->query("
                         INSERT INTO kullanicilar (
-                            rol_id, byk_id, email, sifre, ad, soyad, telefon, aktif, ilk_giris_zorunlu, olusturma_tarihi
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, NOW())
-                    ", [$rolId, $bykId, $kisiMail, $defaultPassword, $ad, $soyad, $telefon]);
+                            rol_id, byk_id, alt_birim_id, email, sifre, ad, soyad, telefon, aktif, ilk_giris_zorunlu, olusturma_tarihi
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 1, NOW())
+                    ", [$rolId, $bykId, $altBirimId, $kisiMail, $defaultPassword, $ad, $soyad, $telefon]);
                     
                     echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Eklendi:</strong> {$kisiMail} - {$kisiAdi} ({$gorevAdi}) - Şifre: AIF571#</div>";
                     $fileImported++;
