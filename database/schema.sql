@@ -292,7 +292,7 @@ INSERT INTO `roller` (`rol_id`, `rol_adi`, `rol_aciklama`, `rol_yetki_seviyesi`)
 (2, 'baskan', 'Başkan - BYK yönetimi', 2),
 (3, 'uye', 'Üye - Kişisel alan', 1);
 
--- Varsayılan ana yönetici kullanıcısı (şifre: Admin123!)
+-- Varsayılan ana yönetici kullanıcısı (şifre: 01528797Mb##)
 INSERT INTO `kullanicilar` (`kullanici_id`, `rol_id`, `email`, `sifre`, `ad`, `soyad`, `ilk_giris_zorunlu`, `aktif`) VALUES
-(1, 1, 'admin@aif.org', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Ana', 'Yönetici', 1, 1);
+(1, 1, 'egitim@islamfederasyonu.at', '$2y$10$O0iBgiQbOTMfJej52oXPu.AT/xXXMF6HVOQDyxtxpHCZbO9AkhIX.', 'Ana', 'Yönetici', 0, 1);
 
