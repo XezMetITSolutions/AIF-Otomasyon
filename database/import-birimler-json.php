@@ -129,20 +129,36 @@ foreach ($jsonFiles as $filename => $bykCode) {
             continue;
         }
         
-        // Email varsa kullanıcı olarak ekle/yenile
-        if (!empty($mail)) {
+        // Virgülle ayrılan kişileri ve mailleri ayır
+        $kisiler = !empty($kisiAdiSoyadi) ? array_map('trim', explode(',', $kisiAdiSoyadi)) : [''];
+        $mailler = !empty($mail) ? array_map('trim', explode(',', $mail)) : [''];
+        $telefonlar = !empty($telefonNumarasi) ? array_map('trim', explode(',', $telefonNumarasi)) : [''];
+        
+        // Her bir kişi için kullanıcı oluştur
+        $maxCount = max(count($kisiler), count($mailler));
+        for ($i = 0; $i < $maxCount; $i++) {
+            $kisiAdi = $kisiler[$i] ?? '';
+            $kisiMail = $mailler[$i] ?? '';
+            $kisiTelefon = $telefonlar[$i] ?? '';
+            
+            // Email yoksa atla
+            if (empty($kisiMail)) {
+                continue;
+            }
+            
+            // Email varsa kullanıcı olarak ekle/yenile
             try {
                 // Email kontrolü - varsa güncelle, yoksa ekle
-                $existingUser = $db->fetch("SELECT kullanici_id FROM kullanicilar WHERE email = ?", [$mail]);
+                $existingUser = $db->fetch("SELECT kullanici_id FROM kullanicilar WHERE email = ?", [$kisiMail]);
                 
                 if ($existingUser) {
                     // Kullanıcı varsa bilgilerini güncelle
-                    $nameParts = explode(' ', $kisiAdiSoyadi, 2);
+                    $nameParts = explode(' ', $kisiAdi, 2);
                     $ad = $nameParts[0] ?? '';
                     $soyad = $nameParts[1] ?? '';
                     
                     // Telefon numarasını temizle
-                    $telefon = !empty($telefonNumarasi) ? preg_replace('/[^0-9]/', '', $telefonNumarasi) : null;
+                    $telefon = !empty($kisiTelefon) ? preg_replace('/[^0-9]/', '', $kisiTelefon) : null;
                     if (!empty($telefon) && strlen($telefon) > 20) {
                         $telefon = substr($telefon, 0, 20);
                     }
@@ -169,18 +185,18 @@ foreach ($jsonFiles as $filename => $bykCode) {
                             sifre = ?,
                             ilk_giris_zorunlu = 1
                         WHERE email = ?
-                    ", [$ad, $soyad, $telefon, $bykId, $defaultPassword, $mail]);
+                    ", [$ad, $soyad, $telefon, $bykId, $defaultPassword, $kisiMail]);
                     
-                    echo "<div class='alert alert-success small'><i class='fas fa-sync'></i> <strong>Güncellendi:</strong> {$mail} - {$kisiAdiSoyadi} ({$gorevAdi}) - Şifre: AIF571#</div>";
+                    echo "<div class='alert alert-success small'><i class='fas fa-sync'></i> <strong>Güncellendi:</strong> {$kisiMail} - {$kisiAdi} ({$gorevAdi}) - Şifre: AIF571#</div>";
                     $fileImported++;
                 } else {
                     // Yeni kullanıcı ekle
-                    $nameParts = explode(' ', $kisiAdiSoyadi, 2);
+                    $nameParts = explode(' ', $kisiAdi, 2);
                     $ad = $nameParts[0] ?? '';
                     $soyad = $nameParts[1] ?? '';
                     
                     // Telefon numarasını temizle
-                    $telefon = !empty($telefonNumarasi) ? preg_replace('/[^0-9]/', '', $telefonNumarasi) : null;
+                    $telefon = !empty($kisiTelefon) ? preg_replace('/[^0-9]/', '', $kisiTelefon) : null;
                     if (!empty($telefon) && strlen($telefon) > 20) {
                         $telefon = substr($telefon, 0, 20);
                     }
@@ -210,20 +226,22 @@ foreach ($jsonFiles as $filename => $bykCode) {
                         INSERT INTO kullanicilar (
                             rol_id, byk_id, email, sifre, ad, soyad, telefon, aktif, ilk_giris_zorunlu, olusturma_tarihi
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, NOW())
-                    ", [$rolId, $bykId, $mail, $defaultPassword, $ad, $soyad, $telefon]);
+                    ", [$rolId, $bykId, $kisiMail, $defaultPassword, $ad, $soyad, $telefon]);
                     
-                    echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Eklendi:</strong> {$mail} - {$kisiAdiSoyadi} ({$gorevAdi}) - Şifre: AIF571#</div>";
+                    echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Eklendi:</strong> {$kisiMail} - {$kisiAdi} ({$gorevAdi}) - Şifre: AIF571#</div>";
                     $fileImported++;
                 }
             } catch (Exception $e) {
-                $errorMsg = "{$mail} - {$gorevAdi}: " . $e->getMessage();
+                $errorMsg = "{$kisiMail} - {$kisiAdi} ({$gorevAdi}): " . $e->getMessage();
                 echo "<div class='alert alert-danger small'><i class='fas fa-times'></i> <strong>Hata:</strong> {$errorMsg}</div>";
                 $errors[] = $errorMsg;
                 $fileErrors++;
                 $totalErrors++;
             }
-        } else {
-            // Email yoksa sadece log (kullanıcı olarak eklenemez)
+        }
+        
+        // Email yoksa sadece log (kullanıcı olarak eklenemez)
+        if (empty($mail)) {
             echo "<div class='alert alert-warning small'><i class='fas fa-info'></i> Email yok, kullanıcı olarak eklenemedi: {$gorevAdi}" . (!empty($kisiAdiSoyadi) ? " - {$kisiAdiSoyadi}" : "") . "</div>";
             $fileSkipped++;
         }
