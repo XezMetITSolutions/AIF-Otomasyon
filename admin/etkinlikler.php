@@ -100,6 +100,40 @@ try {
     ", $params);
 }
 
+// Etkinlikleri JSON formatına çevir (takvim için)
+$calendarEvents = [];
+foreach ($etkinlikler as $etkinlik) {
+    $baslangic = new DateTime($etkinlik['baslangic_tarihi']);
+    $bitis = new DateTime($etkinlik['bitis_tarihi']);
+    
+    $calendarEvents[] = [
+        'id' => $etkinlik['etkinlik_id'],
+        'title' => $etkinlik['baslik'],
+        'start' => $baslangic->format('Y-m-d\TH:i:s'),
+        'end' => $bitis->format('Y-m-d\TH:i:s'),
+        'allDay' => (date('H:i:s', strtotime($etkinlik['baslangic_tarihi'])) == '00:00:00' && 
+                     date('H:i:s', strtotime($etkinlik['bitis_tarihi'])) == '23:59:59'),
+        'backgroundColor' => $etkinlik['byk_renk'] ?? '#009872',
+        'borderColor' => $etkinlik['byk_renk'] ?? '#009872',
+        'textColor' => '#ffffff',
+        'extendedProps' => [
+            'byk' => $etkinlik['byk_adi'] ?? '',
+            'byk_kodu' => $etkinlik['byk_kodu'] ?? '',
+            'konum' => $etkinlik['konum'] ?? '',
+            'aciklama' => $etkinlik['aciklama'] ?? '',
+            'olusturan' => $etkinlik['olusturan'] ?? ''
+        ]
+    ];
+}
+
+$pageSpecificCSS = [
+    'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css'
+];
+
+$pageSpecificJS = [
+    'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'
+];
+
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -177,7 +211,34 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
             
-            <div class="card">
+            <!-- Görünüm Seçici -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-info me-2">Toplam: <strong><?php echo count($etkinlikler); ?></strong> etkinlik</span>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary active" id="calendarViewBtn">
+                                <i class="fas fa-calendar-alt me-1"></i>Takvim
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="listViewBtn">
+                                <i class="fas fa-list me-1"></i>Liste
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Takvim Görünümü -->
+            <div class="card" id="calendarView">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+            
+            <!-- Liste Görünümü -->
+            <div class="card d-none" id="listView">
                 <div class="card-header">
                     Toplam: <strong><?php echo count($etkinlikler); ?></strong> etkinlik
                 </div>
