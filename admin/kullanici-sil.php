@@ -31,7 +31,8 @@ if (!$id) {
 }
 
 // Kendi hesabını silmeyi engelle
-if ($id == $auth->getUser()['id']) {
+$currentUser = $auth->getUser();
+if ($id == $currentUser['id']) {
     $response['message'] = 'Kendi hesabınızı silemezsiniz.';
     echo json_encode($response);
     exit;

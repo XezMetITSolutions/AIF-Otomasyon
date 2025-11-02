@@ -93,6 +93,27 @@ include __DIR__ . '/../includes/header.php';
                 </a>
             </div>
             
+            <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>İşlem başarıyla tamamlandı.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['error'])): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <?php 
+                        $errorMessages = [
+                            'notfound' => 'Kullanıcı bulunamadı.',
+                            'permission' => 'Bu işlem için yetkiniz bulunmamaktadır.'
+                        ];
+                        echo $errorMessages[$_GET['error']] ?? 'Bir hata oluştu.';
+                    ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+            
             <!-- Filtreler -->
             <div class="card mb-4">
                 <div class="card-body">
