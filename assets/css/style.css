@@ -15,6 +15,12 @@
 }
 
 /* Genel Stiller */
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f5f5f5;
@@ -26,17 +32,17 @@ body {
 
 main {
     flex: 1;
-    margin-top: 56px; /* Navbar için ekstra margin */
+    margin-top: 0; /* Navbar zaten fixed, margin gerekmez */
 }
 
 /* Sidebar Stilleri */
 .sidebar {
-    width: 250px;
-    min-width: 250px;
-    max-width: 250px;
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 250px !important;
     min-height: calc(100vh - 56px);
     height: calc(100vh - 56px);
-    position: fixed;
+    position: fixed !important;
     top: 56px;
     left: 0;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
@@ -44,6 +50,12 @@ main {
     overflow-y: auto;
     overflow-x: hidden;
     background-color: #f8f9fa;
+    box-sizing: border-box;
+}
+
+.sidebar * {
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .sidebar-scroll {
@@ -75,6 +87,16 @@ main {
     border-left: 3px solid transparent;
     transition: all 0.3s ease;
     padding: 0.75rem 1rem;
+    width: 100%;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar .list-group {
+    width: 100%;
+    max-width: 250px;
 }
 
 .sidebar .list-group-item:hover {
