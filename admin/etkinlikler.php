@@ -167,9 +167,20 @@ $bykDefaultColors = [
 
 // Etkinlikleri JSON formatına çevir (takvim için)
 $calendarEvents = [];
-foreach ($etkinlikler as $etkinlik) {
-    $baslangic = new DateTime($etkinlik['baslangic_tarihi']);
-    $bitis = new DateTime($etkinlik['bitis_tarihi']);
+if (!empty($etkinlikler) && is_array($etkinlikler)) {
+    foreach ($etkinlikler as $etkinlik) {
+        // Gerekli alanların varlığını kontrol et
+        if (empty($etkinlik['baslangic_tarihi']) || empty($etkinlik['bitis_tarihi']) || empty($etkinlik['baslik'])) {
+            continue; // Geçersiz etkinlik atlanır
+        }
+        
+        try {
+            $baslangic = new DateTime($etkinlik['baslangic_tarihi']);
+            $bitis = new DateTime($etkinlik['bitis_tarihi']);
+        } catch (Exception $e) {
+            // Geçersiz tarih formatı - atla
+            continue;
+        }
     
     // BYK rengini belirle - önce veritabanından gelen rengi kullan
     $bykRenk = $etkinlik['byk_renk'] ?? null;
