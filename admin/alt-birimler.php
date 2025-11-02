@@ -47,7 +47,7 @@ $altBirimler = [];
 
 try {
     // Doğrudan byk_sub_units tablosunu kullan
-    $altBirimler = $db->fetchAll("
+    $query = "
         SELECT 
             bsu.id,
             bsu.byk_category_id,
@@ -62,7 +62,9 @@ try {
         INNER JOIN byk_categories bc ON bsu.byk_category_id = bc.id
         $whereClause
         ORDER BY bc.code ASC, bsu.name ASC
-    ", $params);
+    ";
+    
+    $altBirimler = $db->fetchAll($query, $params);
     
     // Her alt birim için description'dan sorumlu bilgisini çıkar ve kullanıcı ID'sini bul
     foreach ($altBirimler as &$altBirim) {
