@@ -101,6 +101,18 @@ try {
 }
 
 // BYK kodlarına göre varsayılan renkler (events_2026_backup.php'den)
+// Önce byk_categories tablosundan tüm renkleri al
+$bykColorMap = [];
+try {
+    $bykColors = $db->fetchAll("SELECT code, color FROM byk_categories WHERE color IS NOT NULL AND color != ''");
+    foreach ($bykColors as $bykColor) {
+        $bykColorMap[$bykColor['code']] = $bykColor['color'];
+    }
+} catch (Exception $e) {
+    // byk_categories tablosu yoksa varsayılan renkleri kullan
+}
+
+// Varsayılan renkler (byk_categories'de yoksa)
 $bykDefaultColors = [
     'AT' => '#dc3545',  // Kırmızı
     'KT' => '#6f42c1',  // Mor
@@ -114,14 +126,18 @@ foreach ($etkinlikler as $etkinlik) {
     $baslangic = new DateTime($etkinlik['baslangic_tarihi']);
     $bitis = new DateTime($etkinlik['bitis_tarihi']);
     
-    // BYK rengini belirle
-    $bykRenk = $etkinlik['byk_renk'] ?? '#009872';
+    // BYK rengini belirle - önce veritabanından gelen rengi kullan
+    $bykRenk = $etkinlik['byk_renk'] ?? null;
     $bykKodu = $etkinlik['byk_kodu'] ?? '';
     
-    // Eğer renk boş, geçersiz veya varsayılan ise, BYK koduna göre renk ata
-    if (empty($bykRenk) || $bykRenk == '#009872' || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
-        if (!empty($bykKodu) && isset($bykDefaultColors[$bykKodu])) {
+    // Eğer renk boş veya geçersiz ise, bykColorMap'ten dene
+    if (empty($bykRenk) || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
+        if (!empty($bykKodu) && isset($bykColorMap[$bykKodu])) {
+            $bykRenk = $bykColorMap[$bykKodu];
+        } elseif (!empty($bykKodu) && isset($bykDefaultColors[$bykKodu])) {
             $bykRenk = $bykDefaultColors[$bykKodu];
+        } else {
+            $bykRenk = '#009872'; // Varsayılan renk
         }
     }
     
@@ -132,7 +148,11 @@ foreach ($etkinlikler as $etkinlik) {
     
     // Geçersiz renk formatını kontrol et ve düzelt
     if (!preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
-        $bykRenk = $bykDefaultColors[$bykKodu] ?? '#009872';
+        if (!empty($bykKodu)) {
+            $bykRenk = $bykColorMap[$bykKodu] ?? $bykDefaultColors[$bykKodu] ?? '#009872';
+        } else {
+            $bykRenk = '#009872';
+        }
     }
     
     $calendarEvents[] = [
