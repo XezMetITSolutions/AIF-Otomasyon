@@ -100,11 +100,40 @@ try {
     ", $params);
 }
 
+// BYK kodlarına göre varsayılan renkler (events_2026_backup.php'den)
+$bykDefaultColors = [
+    'AT' => '#dc3545',  // Kırmızı
+    'KT' => '#6f42c1',  // Mor
+    'KGT' => '#198754', // Yeşil
+    'GT' => '#0d6efd'   // Mavi
+];
+
 // Etkinlikleri JSON formatına çevir (takvim için)
 $calendarEvents = [];
 foreach ($etkinlikler as $etkinlik) {
     $baslangic = new DateTime($etkinlik['baslangic_tarihi']);
     $bitis = new DateTime($etkinlik['bitis_tarihi']);
+    
+    // BYK rengini belirle
+    $bykRenk = $etkinlik['byk_renk'] ?? '#009872';
+    $bykKodu = $etkinlik['byk_kodu'] ?? '';
+    
+    // Eğer renk boş, geçersiz veya varsayılan ise, BYK koduna göre renk ata
+    if (empty($bykRenk) || $bykRenk == '#009872' || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
+        if (!empty($bykKodu) && isset($bykDefaultColors[$bykKodu])) {
+            $bykRenk = $bykDefaultColors[$bykKodu];
+        }
+    }
+    
+    // Renk formatını düzelt (# olmadan gelirse ekle)
+    if (!empty($bykRenk) && !str_starts_with($bykRenk, '#')) {
+        $bykRenk = '#' . $bykRenk;
+    }
+    
+    // Geçersiz renk formatını kontrol et ve düzelt
+    if (!preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
+        $bykRenk = $bykDefaultColors[$bykKodu] ?? '#009872';
+    }
     
     $calendarEvents[] = [
         'id' => $etkinlik['etkinlik_id'],
@@ -113,12 +142,13 @@ foreach ($etkinlikler as $etkinlik) {
         'end' => $bitis->format('Y-m-d\TH:i:s'),
         'allDay' => (date('H:i:s', strtotime($etkinlik['baslangic_tarihi'])) == '00:00:00' && 
                      date('H:i:s', strtotime($etkinlik['bitis_tarihi'])) == '23:59:59'),
-        'backgroundColor' => $etkinlik['byk_renk'] ?? '#009872',
-        'borderColor' => $etkinlik['byk_renk'] ?? '#009872',
+        'backgroundColor' => $bykRenk,
+        'borderColor' => $bykRenk,
         'textColor' => '#ffffff',
         'extendedProps' => [
             'byk' => $etkinlik['byk_adi'] ?? '',
-            'byk_kodu' => $etkinlik['byk_kodu'] ?? '',
+            'byk_kodu' => $bykKodu,
+            'byk_renk' => $bykRenk,
             'konum' => $etkinlik['konum'] ?? '',
             'aciklama' => $etkinlik['aciklama'] ?? '',
             'olusturan' => $etkinlik['olusturan'] ?? ''
