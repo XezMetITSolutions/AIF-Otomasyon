@@ -197,9 +197,13 @@ $bykDefaultColors = [
 // Etkinlikleri JSON formatına çevir (takvim için)
 $calendarEvents = [];
 if (!empty($etkinlikler) && is_array($etkinlikler)) {
+    // Debug: Etkinlik sayısını kontrol et
+    error_log("Etkinlik sayısı: " . count($etkinlikler));
+    
     foreach ($etkinlikler as $etkinlik) {
         // Gerekli alanların varlığını kontrol et
         if (empty($etkinlik['baslangic_tarihi']) || empty($etkinlik['bitis_tarihi']) || empty($etkinlik['baslik'])) {
+            error_log("Geçersiz etkinlik atlandı: " . print_r($etkinlik, true));
             continue; // Geçersiz etkinlik atlanır
         }
         
@@ -508,8 +512,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Takvim etkinlikleri
     const calendarEvents = <?php echo json_encode($calendarEvents, JSON_UNESCAPED_UNICODE); ?>;
     
+    // Debug: Console'a yazdır
+    console.log('Calendar Events:', calendarEvents);
+    console.log('Calendar Events Count:', calendarEvents ? calendarEvents.length : 0);
+    
     // FullCalendar başlat
     const calendarEl = document.getElementById('calendar');
+    
+    if (!calendarEl) {
+        console.error('Calendar element not found!');
+        return;
+    }
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'tr',
