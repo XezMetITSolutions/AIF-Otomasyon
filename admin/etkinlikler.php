@@ -126,7 +126,7 @@ foreach ($etkinlikler as $etkinlik) {
     }
     
     // Renk formatını düzelt (# olmadan gelirse ekle)
-    if (!empty($bykRenk) && !str_starts_with($bykRenk, '#')) {
+    if (!empty($bykRenk) && substr($bykRenk, 0, 1) !== '#') {
         $bykRenk = '#' . $bykRenk;
     }
     
