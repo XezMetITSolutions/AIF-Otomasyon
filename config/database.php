@@ -6,9 +6,9 @@
 
 return [
     'host' => 'localhost',
-    'dbname' => 'aif_otomasyon',
-    'username' => 'root',
-    'password' => '',
+    'dbname' => 'd0451622',
+    'username' => 'd0451622',
+    'password' => '01528797Mb##',
     'charset' => 'utf8mb4',
     'options' => [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -16,4 +16,3 @@ return [
         PDO::ATTR_EMULATE_PREPARES => false,
     ]
 ];
-
