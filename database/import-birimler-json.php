@@ -134,30 +134,73 @@ foreach ($jsonFiles as $filename => $bykCode) {
         $mailler = !empty($mail) ? array_map('trim', explode(',', $mail)) : [''];
         $telefonlar = !empty($telefonNumarasi) ? array_map('trim', explode(',', $telefonNumarasi)) : [''];
         
-        // Görev adına göre alt birim ID'sini bul veya oluştur (byk_sub_units tablosunda)
+        // Görev adına göre alt birim ID'sini bul veya oluştur
+        // Önce byk_sub_units'te oluştur, sonra alt_birimler'de de oluştur (foreign key için)
         $altBirimId = null;
         try {
-            // Önce mevcut alt birimi bul
-            $existingAltBirim = $db->fetch("
+            // 1. Önce byk_sub_units'te mevcut alt birimi bul
+            $existingSubUnit = $db->fetch("
                 SELECT id 
                 FROM byk_sub_units 
                 WHERE byk_category_id = ? AND name = ?
                 LIMIT 1
             ", [$bykCategoryId, $gorevAdi]);
             
-            if ($existingAltBirim) {
-                $altBirimId = $existingAltBirim['id'];
+            $subUnitId = null;
+            if ($existingSubUnit) {
+                $subUnitId = $existingSubUnit['id'];
             } else {
-                // Alt birim yoksa oluştur
+                // Alt birim yoksa byk_sub_units'te oluştur
                 $description = "{$bykCode} - {$gorevAdi}";
                 $db->query("
                     INSERT INTO byk_sub_units (byk_category_id, name, description, created_at, updated_at)
                     VALUES (?, ?, ?, NOW(), NOW())
                 ", [$bykCategoryId, $gorevAdi, $description]);
-                $altBirimId = $db->lastInsertId();
+                $subUnitId = $db->lastInsertId();
+            }
+            
+            // 2. Şimdi alt_birimler tablosunda da kayıt olmalı (foreign key için)
+            // Önce byk_id'yi bul
+            $bykIdForAltBirim = null;
+            try {
+                $byk = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ? LIMIT 1", [$bykCode]);
+                if ($byk) {
+                    $bykIdForAltBirim = $byk['byk_id'];
+                } else {
+                    // byk tablosunda yoksa oluştur
+                    $db->query("
+                        INSERT INTO byk (byk_adi, byk_kodu, renk_kodu, aktif, olusturma_tarihi)
+                        VALUES (?, ?, '#009872', 1, NOW())
+                    ", [$bykCode . ' - ' . ($bykCategories[$bykCode] ?? $bykCode), $bykCode]);
+                    $bykIdForAltBirim = $db->lastInsertId();
+                }
+            } catch (Exception $e) {
+                // byk tablosu yoksa devam et
+            }
+            
+            // 3. alt_birimler tablosunda kayıt ara veya oluştur
+            if ($bykIdForAltBirim) {
+                $existingAltBirim = $db->fetch("
+                    SELECT alt_birim_id 
+                    FROM alt_birimler 
+                    WHERE byk_id = ? AND alt_birim_adi = ?
+                    LIMIT 1
+                ", [$bykIdForAltBirim, $gorevAdi]);
+                
+                if ($existingAltBirim) {
+                    $altBirimId = $existingAltBirim['alt_birim_id'];
+                } else {
+                    // alt_birimler tablosunda oluştur
+                    $db->query("
+                        INSERT INTO alt_birimler (byk_id, alt_birim_adi, aktif, olusturma_tarihi)
+                        VALUES (?, ?, 1, NOW())
+                    ", [$bykIdForAltBirim, $gorevAdi]);
+                    $altBirimId = $db->lastInsertId();
+                }
             }
         } catch (Exception $e) {
             // Alt birim tablosu yoksa veya hata varsa devam et
+            // alt_birim_id null kalacak, bu durumda foreign key hatası verebilir
         }
         
         // Her bir mail için ayrı kullanıcı oluştur (aynı görev/alt birime atanacak)
