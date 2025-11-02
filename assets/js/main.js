@@ -116,7 +116,10 @@ $(document).ready(function() {
                 deleteUrl = '/admin/duyuru-sil.php';
                 break;
             default:
-                deleteUrl = '/admin/kayit-sil.php';
+                // Bilinmeyen tür için hata mesajı göster
+                showAlert('warning', 'Bu kayıt türü için silme işlemi tanımlanmamış.');
+                button.prop('disabled', false).html(originalHtml);
+                return false;
         }
         
         $.ajax({
