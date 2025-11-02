@@ -38,7 +38,7 @@ $jsonFiles = [
 // Önce byk_categories tablosundan BYK ID'lerini al
 $bykCategories = [];
 try {
-    $categories = $db->fetchAll("SELECT id, code, name FROM byk_categories");
+    $categories = $db->fetchAll("SELECT id, code, name, color FROM byk_categories");
     foreach ($categories as $cat) {
         $bykCategories[$cat['code']] = $cat;
     }
@@ -161,7 +161,8 @@ foreach ($jsonFiles as $filename => $bykCode) {
             $fileImported++;
             
         } catch (Exception $e) {
-            $errorMsg = "{$bolge} - {$bykCategory['name']}: " . $e->getMessage();
+            $bykNameForError = $bykCategory['name'] ?? $bykCode;
+            $errorMsg = "{$bolge} - {$bykNameForError}: " . $e->getMessage();
             echo "<div class='alert alert-danger small'><i class='fas fa-times'></i> <strong>Hata:</strong> {$errorMsg}</div>";
             $errors[] = $errorMsg;
             $fileErrors++;
