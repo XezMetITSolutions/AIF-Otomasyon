@@ -75,12 +75,69 @@ $(document).ready(function() {
         });
     }, 5000);
     
-    // Confirm dialog'ları
-    $('.confirm-delete').on('click', function(e) {
-        if (!confirm('Bu işlemi gerçekleştirmek istediğinizden emin misiniz?')) {
-            e.preventDefault();
+    // Confirm dialog'ları ve Silme işlemleri
+    $(document).on('click', '.confirm-delete', function(e) {
+        e.preventDefault();
+        
+        const button = $(this);
+        const id = button.data('id');
+        const type = button.data('type') || 'kayit';
+        const name = button.data('name') || '';
+        
+        const confirmMessage = name 
+            ? `${name} adlı ${type === 'kullanici' ? 'kullanıcıyı' : 'kaydı'} silmek istediğinizden emin misiniz?`
+            : 'Bu işlemi gerçekleştirmek istediğinizden emin misiniz?';
+        
+        if (!confirm(confirmMessage)) {
             return false;
         }
+        
+        // Loading durumu
+        const originalHtml = button.html();
+        button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        
+        // Silme endpoint'i
+        let deleteUrl = '';
+        switch(type) {
+            case 'kullanici':
+                deleteUrl = '/admin/kullanici-sil.php';
+                break;
+            case 'byk':
+                deleteUrl = '/admin/byk-sil.php';
+                break;
+            case 'etkinlik':
+                deleteUrl = '/admin/etkinlik-sil.php';
+                break;
+            case 'duyuru':
+                deleteUrl = '/admin/duyuru-sil.php';
+                break;
+            default:
+                deleteUrl = '/admin/kayit-sil.php';
+        }
+        
+        $.ajax({
+            url: deleteUrl,
+            method: 'POST',
+            data: { id: id },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    showAlert('success', response.message);
+                    // Sayfayı yenile veya satırı kaldır
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showAlert('danger', response.message || 'Silme işlemi başarısız oldu.');
+                    button.prop('disabled', false).html(originalHtml);
+                }
+            },
+            error: function(xhr) {
+                showAlert('danger', 'Sunucu hatası. Lütfen tekrar deneyin.');
+                button.prop('disabled', false).html(originalHtml);
+                console.error('Delete Error:', xhr);
+            }
+        });
     });
     
     // Data tablosu için özel işlevler (eğer DataTables kullanılıyorsa)

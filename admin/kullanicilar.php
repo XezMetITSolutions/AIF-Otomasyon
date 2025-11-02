@@ -178,9 +178,14 @@ include __DIR__ . '/../includes/header.php';
                                             </td>
                                             <td><?php echo $kullanici['son_giris'] ? date('d.m.Y H:i', strtotime($kullanici['son_giris'])) : '-'; ?></td>
                                             <td>
-                                                <a href="/admin/kullanici-duzenle.php?id=<?php echo $kullanici['kullanici_id']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
+                                                <div class="btn-group" role="group">
+                                                    <a href="/admin/kullanici-duzenle.php?id=<?php echo $kullanici['kullanici_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" data-id="<?php echo $kullanici['kullanici_id']; ?>" data-type="kullanici" data-name="<?php echo htmlspecialchars($kullanici['ad'] . ' ' . $kullanici['soyad']); ?>" title="Sil">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
