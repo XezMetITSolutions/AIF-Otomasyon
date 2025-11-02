@@ -145,6 +145,9 @@ if (!is_array($etkinlikler)) {
     $etkinlikler = [];
 }
 
+// DEBUG: Etkinlik sayısını kontrol et
+// var_dump("Etkinlik Sayısı: " . count($etkinlikler));
+
 // BYK kodlarına göre varsayılan renkler (events_2026_backup.php'den)
 // Önce byk_categories tablosundan tüm renkleri al
 $bykColorMap = [];
