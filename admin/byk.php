@@ -16,58 +16,69 @@ $db = Database::getInstance();
 $pageTitle = 'BYK Yönetimi';
 
 // BYK Kategorileri (byk_categories tablosundan)
-// Doğrudan byk_categories tablosunu kullan
+// Doğrudan byk_categories tablosunu kullan - basit sorgu
 $bykList = [];
 
 try {
-    // Önce basit bir sorgu ile tablo var mı kontrol et
-    $test = $db->fetch("SELECT COUNT(*) as cnt FROM byk_categories LIMIT 1");
+    // En basit sorgu - sadece byk_categories tablosunu kullan
+    $bykList = $db->fetchAll("
+        SELECT 
+            id,
+            code,
+            name,
+            color,
+            description,
+            created_at,
+            updated_at,
+            0 as kullanici_sayisi
+        FROM byk_categories
+        ORDER BY code ASC
+    ");
     
-    if ($test !== false) {
-        // byk_categories tablosu var, kullan
-        $bykList = $db->fetchAll("
-            SELECT 
-                bc.id,
-                bc.code,
-                bc.name,
-                bc.color,
-                bc.description,
-                bc.created_at,
-                bc.updated_at,
-                COALESCE(
-                    (SELECT COUNT(*) FROM users WHERE byk_category_id = bc.id AND status = 'active'),
-                    0
-                ) +
-                COALESCE(
-                    (SELECT COUNT(*) FROM kullanicilar 
-                     WHERE byk_id IN (SELECT byk_id FROM byk WHERE byk_kodu = bc.code) AND aktif = 1),
-                    0
-                ) as kullanici_sayisi
-            FROM byk_categories bc
-            ORDER BY bc.code ASC
-        ");
+    // Her BYK için kullanıcı sayısını ayrı ayrı hesapla
+    foreach ($bykList as &$byk) {
+        $kullaniciSayisi = 0;
+        
+        // users tablosundan say
+        try {
+            $usersCount = $db->fetch("SELECT COUNT(*) as cnt FROM users WHERE byk_category_id = ? AND status = 'active'", [$byk['id']]);
+            if ($usersCount) {
+                $kullaniciSayisi += (int)$usersCount['cnt'];
+            }
+        } catch (Exception $e) {
+            // users tablosu yoksa devam et
+        }
+        
+        // kullanicilar tablosundan say (byk_kodu ile eşleştir)
+        try {
+            $kullanicilarCount = $db->fetch("
+                SELECT COUNT(*) as cnt 
+                FROM kullanicilar k
+                INNER JOIN byk b ON k.byk_id = b.byk_id
+                WHERE b.byk_kodu = ? AND k.aktif = 1
+            ", [$byk['code']]);
+            if ($kullanicilarCount) {
+                $kullaniciSayisi += (int)$kullanicilarCount['cnt'];
+            }
+        } catch (Exception $e) {
+            // byk tablosu yoksa veya hata varsa devam et
+        }
+        
+        $byk['kullanici_sayisi'] = $kullaniciSayisi;
     }
+    unset($byk);
+    
 } catch (Exception $e) {
-    // Hata durumunda boş liste döndür
-    $bykList = [];
-    error_log("BYK listesi alınırken hata: " . $e->getMessage());
-}
-
-// Eğer byk_categories boşsa ve eski byk tablosu varsa onu kullan
-if (empty($bykList)) {
+    // byk_categories tablosu yoksa veya hata varsa eski byk tablosunu dene
     try {
-        $oldBykList = $db->fetchAll("
+        $bykList = $db->fetchAll("
             SELECT b.*, COUNT(k.kullanici_id) as kullanici_sayisi
             FROM byk b
             LEFT JOIN kullanicilar k ON b.byk_id = k.byk_id AND k.aktif = 1
             GROUP BY b.byk_id
             ORDER BY b.olusturma_tarihi DESC
         ");
-        if (!empty($oldBykList)) {
-            $bykList = $oldBykList;
-        }
     } catch (Exception $e2) {
-        // İkinci sorgu da başarısız, boş liste
         $bykList = [];
     }
 }
