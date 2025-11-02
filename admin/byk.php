@@ -16,34 +16,58 @@ $db = Database::getInstance();
 $pageTitle = 'BYK Yönetimi';
 
 // BYK Kategorileri (byk_categories tablosundan)
-// Önce byk_categories tablosunu deneyelim
+// Doğrudan byk_categories tablosunu kullan
+$bykList = [];
+
 try {
-    $bykList = $db->fetchAll("
-        SELECT bc.*, 
-               COALESCE(
-                   (SELECT COUNT(*) FROM users u WHERE u.byk_category_id = bc.id AND u.status = 'active'),
-                   0
-               ) +
-               COALESCE(
-                   (SELECT COUNT(*) FROM kullanicilar k 
-                    WHERE EXISTS (SELECT 1 FROM byk b WHERE b.byk_id = k.byk_id AND b.byk_kodu = bc.code) 
-                    AND k.aktif = 1),
-                   0
-               ) as kullanici_sayisi
-        FROM byk_categories bc
-        ORDER BY bc.code
-    ");
-} catch (Exception $e) {
-    // byk_categories yoksa veya hata varsa eski byk tablosunu kullan
-    try {
+    // Önce basit bir sorgu ile tablo var mı kontrol et
+    $test = $db->fetch("SELECT COUNT(*) as cnt FROM byk_categories LIMIT 1");
+    
+    if ($test !== false) {
+        // byk_categories tablosu var, kullan
         $bykList = $db->fetchAll("
+            SELECT 
+                bc.id,
+                bc.code,
+                bc.name,
+                bc.color,
+                bc.description,
+                bc.created_at,
+                bc.updated_at,
+                COALESCE(
+                    (SELECT COUNT(*) FROM users WHERE byk_category_id = bc.id AND status = 'active'),
+                    0
+                ) +
+                COALESCE(
+                    (SELECT COUNT(*) FROM kullanicilar 
+                     WHERE byk_id IN (SELECT byk_id FROM byk WHERE byk_kodu = bc.code) AND aktif = 1),
+                    0
+                ) as kullanici_sayisi
+            FROM byk_categories bc
+            ORDER BY bc.code ASC
+        ");
+    }
+} catch (Exception $e) {
+    // Hata durumunda boş liste döndür
+    $bykList = [];
+    error_log("BYK listesi alınırken hata: " . $e->getMessage());
+}
+
+// Eğer byk_categories boşsa ve eski byk tablosu varsa onu kullan
+if (empty($bykList)) {
+    try {
+        $oldBykList = $db->fetchAll("
             SELECT b.*, COUNT(k.kullanici_id) as kullanici_sayisi
             FROM byk b
             LEFT JOIN kullanicilar k ON b.byk_id = k.byk_id AND k.aktif = 1
             GROUP BY b.byk_id
             ORDER BY b.olusturma_tarihi DESC
         ");
+        if (!empty($oldBykList)) {
+            $bykList = $oldBykList;
+        }
     } catch (Exception $e2) {
+        // İkinci sorgu da başarısız, boş liste
         $bykList = [];
     }
 }
