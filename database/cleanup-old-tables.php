@@ -79,15 +79,21 @@ try {
     
     foreach ($tablesToDelete as $table) {
         try {
-            // Tablo var mı kontrol et
-            $exists = $db->fetch("SHOW TABLES LIKE ?", [$table]);
+            // Tablo var mı kontrol et (tablo adı için placeholder kullanılamaz, doğrudan sorgu)
+            $tableName = $db->getConnection()->quote($table);
+            $exists = $db->fetch("SHOW TABLES LIKE {$tableName}");
             
             if ($exists) {
-                // Önce tablo içindeki kayıt sayısını göster
-                $count = $db->fetch("SELECT COUNT(*) as count FROM `{$table}`")['count'] ?? 0;
+                // Önce tablo içindeki kayıt sayısını göster (güvenli sorgulama)
+                try {
+                    $countResult = $db->fetch("SELECT COUNT(*) as count FROM `" . str_replace('`', '``', $table) . "`");
+                    $count = $countResult['count'] ?? 0;
+                } catch (Exception $e) {
+                    $count = 0;
+                }
                 
-                // Tabloyu sil
-                $db->query("DROP TABLE IF EXISTS `{$table}`");
+                // Tabloyu sil (güvenli tablo adı kullanımı)
+                $db->query("DROP TABLE IF EXISTS `" . str_replace('`', '``', $table) . "`");
                 $deleted++;
                 echo "   ✓ Tablo silindi: {$table}";
                 if ($count > 0) {
@@ -111,11 +117,18 @@ try {
     
     foreach ($tablesToCheck as $table) {
         try {
-            $exists = $db->fetch("SHOW TABLES LIKE ?", [$table]);
+            // Tablo var mı kontrol et
+            $tableName = $db->getConnection()->quote($table);
+            $exists = $db->fetch("SHOW TABLES LIKE {$tableName}");
             
             if ($exists) {
-                $count = $db->fetch("SELECT COUNT(*) as count FROM `{$table}`")['count'] ?? 0;
-                echo "   ⚠ {$table} - {$count} kayıt var (Manuel kontrol gerekli)\n";
+                try {
+                    $countResult = $db->fetch("SELECT COUNT(*) as count FROM `" . str_replace('`', '``', $table) . "`");
+                    $count = $countResult['count'] ?? 0;
+                    echo "   ⚠ {$table} - {$count} kayıt var (Manuel kontrol gerekli)\n";
+                } catch (Exception $e) {
+                    echo "   ⚠ {$table} - Tablo mevcut (kayıt sayısı alınamadı)\n";
+                }
             } else {
                 echo "   - {$table} - Bulunamadı\n";
             }
@@ -129,11 +142,18 @@ try {
     
     foreach ($tablesToKeep as $table) {
         try {
-            $exists = $db->fetch("SHOW TABLES LIKE ?", [$table]);
+            // Tablo var mı kontrol et
+            $tableName = $db->getConnection()->quote($table);
+            $exists = $db->fetch("SHOW TABLES LIKE {$tableName}");
             
             if ($exists) {
-                $count = $db->fetch("SELECT COUNT(*) as count FROM `{$table}`")['count'] ?? 0;
-                echo "   ✅ {$table} - {$count} kayıt (SİLİNMEDİ - Sistem gerekli)\n";
+                try {
+                    $countResult = $db->fetch("SELECT COUNT(*) as count FROM `" . str_replace('`', '``', $table) . "`");
+                    $count = $countResult['count'] ?? 0;
+                    echo "   ✅ {$table} - {$count} kayıt (SİLİNMEDİ - Sistem gerekli)\n";
+                } catch (Exception $e) {
+                    echo "   ✅ {$table} - Tablo mevcut (SİLİNMEDİ - Sistem gerekli)\n";
+                }
             } else {
                 echo "   - {$table} - Bulunamadı\n";
             }
