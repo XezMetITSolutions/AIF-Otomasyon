@@ -404,10 +404,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'tr',
+        firstDay: 1, // Haftanın ilk günü Pazartesi
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        buttonText: {
+            today: 'Bugün',
+            month: 'Ay',
+            week: 'Hafta',
+            day: 'Gün',
+            list: 'Liste'
         },
         events: calendarEvents,
         eventClick: function(info) {
