@@ -34,7 +34,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-user-shield me-2"></i>Rol & Yetki Yönetimi
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">İÇERİK</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
             
             <a href="/admin/etkinlikler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-calendar me-2"></i>Etkinlik Yönetimi
@@ -49,7 +49,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-bullhorn me-2"></i>Duyurular
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">İŞLEMLER</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
             
             <a href="/admin/izin-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-check me-2"></i>İzin Talepleri
@@ -63,7 +63,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-box me-2"></i>Demirbaş Yönetimi
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">RAPORLAR</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">RAPORLAR</div>
             
             <a href="/admin/raporlar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'raporlar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-chart-bar me-2"></i>Raporlar & Analiz
@@ -87,7 +87,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-users me-2"></i>Üye Yönetimi
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">İÇERİK</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
             
             <a href="/baskan/etkinlikler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-calendar me-2"></i>Etkinlikler
@@ -99,7 +99,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-bullhorn me-2"></i>Duyurular
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">İŞLEMLER</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
             
             <a href="/baskan/izin-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-check me-2"></i>İzin Talepleri
@@ -110,7 +110,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <span class="badge bg-warning float-end" id="pendingHarcamaCount">0</span>
             </a>
             
-            <div class="list-group-item fw-bold text-muted small">RAPORLAR</div>
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">RAPORLAR</div>
             
             <a href="/baskan/raporlar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'raporlar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-chart-bar me-2"></i>Raporlar
