@@ -91,7 +91,7 @@ try {
                 $aktif = ($user['status'] === 'active') ? 1 : 0;
                 
                 // Kullanıcıyı ekle
-                $db->execute("
+                $db->query("
                     INSERT INTO kullanicilar (
                         rol_id, byk_id, alt_birim_id, email, sifre, ad, soyad, 
                         telefon, aktif, ilk_giris_zorunlu, son_giris, olusturma_tarihi
@@ -183,7 +183,7 @@ try {
                 }
                 
                 // Etkinliği ekle
-                $db->execute("
+                $db->query("
                     INSERT INTO etkinlikler (
                         byk_id, baslik, aciklama, baslangic_tarihi, bitis_tarihi,
                         konum, olusturan_id, olusturma_tarihi
@@ -270,7 +270,7 @@ try {
                 $aktif = ($announcement['status'] === 'active') ? 1 : 0;
                 
                 // Duyuruyu ekle
-                $db->execute("
+                $db->query("
                     INSERT INTO duyurular (
                         byk_id, baslik, icerik, olusturan_id, aktif, olusturma_tarihi
                     ) VALUES (?, ?, ?, ?, ?, ?)
@@ -357,7 +357,7 @@ try {
                 $toplanti_turu = $toplanti_turu_map[$meeting['meeting_type']] ?? 'normal';
                 
                 // Toplantıyı ekle
-                $db->execute("
+                $db->query("
                     INSERT INTO toplantilar (
                         byk_id, baslik, aciklama, toplanti_tarihi, konum, gundem,
                         toplanti_turu, olusturan_id, durum, olusturma_tarihi
@@ -438,7 +438,7 @@ try {
                 $baslik = "Harcama Talebi #{$expense['id']}";
                 $aciklama = "İsim: {$expense['isim']} {$expense['soyisim']}, IBAN: {$expense['iban']}";
                 
-                $db->execute("
+                $db->query("
                     INSERT INTO harcama_talepleri (
                         kullanici_id, byk_id, baslik, aciklama, tutar, durum, olusturma_tarihi
                     ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -484,7 +484,7 @@ try {
                 $durum = $durum_map[$item['status']] ?? 'kullanimda';
                 
                 // Demirbaşı ekle
-                $db->execute("
+                $db->query("
                     INSERT INTO demirbaslar (
                         demirbas_adi, kategori, seri_no, durum, aciklama, olusturma_tarihi
                     ) VALUES (?, ?, ?, ?, ?, ?)
@@ -574,7 +574,7 @@ try {
                 $durum = $durum_map[$project['status']] ?? 'planlama';
                 
                 // Projeyi ekle
-                $db->execute("
+                $db->query("
                     INSERT INTO projeler (
                         byk_id, baslik, aciklama, baslangic_tarihi, bitis_tarihi,
                         durum, olusturan_id, olusturma_tarihi

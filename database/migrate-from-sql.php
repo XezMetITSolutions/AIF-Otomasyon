@@ -25,15 +25,15 @@ try {
     $existingRoleNames = array_column($existingRoles, 'rol_adi');
     
     if (!in_array('super_admin', $existingRoleNames)) {
-        $db->execute("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('super_admin', 'Ana Yönetici', 3)");
+        $db->query("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('super_admin', 'Ana Yönetici', 3)");
         echo "   ✓ super_admin rolü eklendi\n";
     }
     if (!in_array('baskan', $existingRoleNames)) {
-        $db->execute("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('baskan', 'Başkan', 2)");
+        $db->query("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('baskan', 'Başkan', 2)");
         echo "   ✓ baskan rolü eklendi\n";
     }
     if (!in_array('uye', $existingRoleNames)) {
-        $db->execute("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('uye', 'Üye', 1)");
+        $db->query("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('uye', 'Üye', 1)");
         echo "   ✓ uye rolü eklendi\n";
     }
     
@@ -49,7 +49,7 @@ try {
                 $rol_id = 2; // baskan için
             }
             
-            $db->execute("
+            $db->query("
                 INSERT INTO byk (byk_adi, byk_kodu, renk_kodu, aciklama, aktif) 
                 VALUES (?, ?, ?, ?, 1)
             ", [$category['name'], $category['code'], $category['color'], $category['description']]);
@@ -106,7 +106,7 @@ try {
         }
         
         // Kullanıcıyı ekle
-        $db->execute("
+        $db->query("
             INSERT INTO kullanicilar (
                 rol_id, byk_id, alt_birim_id, email, sifre, ad, soyad, telefon, 
                 aktif, ilk_giris_zorunlu, son_giris, olusturma_tarihi
@@ -170,7 +170,7 @@ try {
             continue; // BYK bulunamadıysa atla
         }
         
-        $db->execute("
+        $db->query("
             INSERT INTO etkinlikler (
                 byk_id, baslik, aciklama, baslangic_tarihi, bitis_tarihi, 
                 konum, olusturan_id, durum, olusturma_tarihi
@@ -226,7 +226,7 @@ try {
             }
         }
         
-        $db->execute("
+        $db->query("
             INSERT INTO duyurular (
                 byk_id, baslik, icerik, olusturan_id, aktif, olusturma_tarihi
             ) VALUES (?, ?, ?, ?, ?, ?)
@@ -274,7 +274,7 @@ try {
             }
         }
         
-        $db->execute("
+        $db->query("
             INSERT INTO toplantilar (
                 byk_id, baslik, aciklama, toplanti_tarihi, konum, gundem, 
                 toplanti_turu, olusturan_id, durum, olusturma_tarihi
@@ -340,7 +340,7 @@ try {
         ];
         $durum = $durum_map[$expense['status']] ?? 'beklemede';
         
-        $db->execute("
+        $db->query("
             INSERT INTO harcama_talepleri (
                 kullanici_id, byk_id, baslik, aciklama, tutar, durum, olusturma_tarihi
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -387,7 +387,7 @@ try {
         ];
         $durum = $durum_map[$item['status']] ?? 'kullanimda';
         
-            $db->execute("
+            $db->query("
             INSERT INTO demirbaslar (
                 demirbas_adi, kategori, seri_no, durum, aciklama, olusturma_tarihi
             ) VALUES (?, ?, ?, ?, ?, ?)
@@ -449,7 +449,7 @@ try {
         ];
         $durum = $durum_map[$project['status']] ?? 'planlama';
         
-        $db->execute("
+        $db->query("
             INSERT INTO projeler (
                 byk_id, baslik, aciklama, baslangic_tarihi, bitis_tarihi, 
                 durum, olusturan_id, olusturma_tarihi
