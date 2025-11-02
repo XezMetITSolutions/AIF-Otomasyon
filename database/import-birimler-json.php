@@ -162,8 +162,8 @@ foreach ($jsonFiles as $filename => $bykCode) {
                         $telefon = substr($telefon, 0, 20);
                     }
                     
-                    // Varsayılan şifre oluştur
-                    $defaultPassword = password_hash('TempPass123!', PASSWORD_DEFAULT);
+                    // Varsayılan şifre (AIF571#)
+                    $defaultPassword = password_hash('AIF571#', PASSWORD_DEFAULT);
                     
                     // Rol belirleme (varsayılan: üye)
                     $rolId = 3; // Üye
@@ -189,7 +189,7 @@ foreach ($jsonFiles as $filename => $bykCode) {
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, NOW())
                     ", [$rolId, $bykId, $mail, $defaultPassword, $ad, $soyad, $telefon]);
                     
-                    echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Eklendi:</strong> {$mail} - {$kisiAdiSoyadi} ({$gorevAdi})</div>";
+                    echo "<div class='alert alert-success small'><i class='fas fa-plus'></i> <strong>Eklendi:</strong> {$mail} - {$kisiAdiSoyadi} ({$gorevAdi}) - Şifre: AIF571#</div>";
                     $fileImported++;
                 }
             } catch (Exception $e) {
@@ -200,8 +200,8 @@ foreach ($jsonFiles as $filename => $bykCode) {
                 $totalErrors++;
             }
         } else {
-            // Email yoksa sadece log
-            echo "<div class='alert alert-warning small'><i class='fas fa-info'></i> Email yok, atlandı: {$gorevAdi}" . (!empty($kisiAdiSoyadi) ? " - {$kisiAdiSoyadi}" : "") . "</div>";
+            // Email yoksa sadece log (kullanıcı olarak eklenemez)
+            echo "<div class='alert alert-warning small'><i class='fas fa-info'></i> Email yok, kullanıcı olarak eklenemedi: {$gorevAdi}" . (!empty($kisiAdiSoyadi) ? " - {$kisiAdiSoyadi}" : "") . "</div>";
             $fileSkipped++;
         }
     }
