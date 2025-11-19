@@ -215,7 +215,7 @@ include __DIR__ . '/../includes/header.php';
                                 <input type="text" name="baslik" class="form-control" required placeholder="Örn. Eğitim Malzemesi Alımı" value="<?php echo htmlspecialchars($formData['baslik']); ?>">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Kategori</label>
+                                <label class="form-label">Harcama Kategorisi</label>
                                 <select name="kategori" id="kategoriSelect" class="form-select" required>
                                     <?php foreach ($kategoriListesi as $key => $label): ?>
                                         <option value="<?php echo $key; ?>" <?php echo $formData['kategori'] === $key ? 'selected' : ''; ?>>
@@ -223,6 +223,9 @@ include __DIR__ . '/../includes/header.php';
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <div class="form-text">
+                                    Seyahat seçtiğinizde güzergâh, tarih ve otel seçenekleri açılır.
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Tutar (EUR)</label>
@@ -276,6 +279,13 @@ include __DIR__ . '/../includes/header.php';
                         <div class="card-body">
                             <?php [$detayAciklama, $detayMeta] = splitHarcamaAciklamaVeMeta($seciliTalep['aciklama']); ?>
                             <div class="row g-3">
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">Kategori</small>
+                                    <?php $seciliKategori = $kategoriListesi[$detayMeta['kategori'] ?? 'genel'] ?? 'Genel'; ?>
+                                    <span class="badge bg-<?php echo ($detayMeta['kategori'] ?? 'genel') === 'seyahat' ? 'info' : 'secondary'; ?>">
+                                        <?php echo htmlspecialchars($seciliKategori); ?>
+                                    </span>
+                                </div>
                                 <div class="col-md-4">
                                     <small class="text-muted d-block">Tutar</small>
                                     <strong><?php echo number_format($seciliTalep['tutar'], 2, ',', '.'); ?> €</strong>
