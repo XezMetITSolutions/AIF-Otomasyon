@@ -214,18 +214,7 @@ include __DIR__ . '/../includes/header.php';
         </div>
 
         <div id="iade-form-wrapper">
-            <!-- Şifre Modalı -->
-            <div id="passwordModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
-                <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px; width: 90%;">
-                    <h2 style="margin: 0 0 10px; text-align: center; color: #009872;">🔐 Giriş Gerekli</h2>
-                    <p style="text-align: center; color: #6b7280; margin-bottom: 20px; font-size: 14px;">Bu forma erişmek için şifre giriniz</p>
-                    <input type="password" id="passwordInput" placeholder="Şifre" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 16px; margin-bottom: 15px; outline: none;" onkeypress="if(event.key==='Enter') checkPassword()">
-                    <button onclick="checkPassword()" style="width: 100%; padding: 12px; background: #009872; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">Giriş Yap</button>
-                    <div id="passwordError" style="color: #dc2626; text-align: center; margin-top: 10px; font-size: 14px; display: none;">❌ Hatalı şifre!</div>
-                </div>
-            </div>
-
-            <div class="container" id="mainContent" style="display: none;">
+            <div class="container" id="mainContent">
                 <h2>AİF Gider Formu</h2>
                 <div class="subtitle">Gider kalemlerinizi ekleyin, belgeleri yükleyin ve gönderin.</div>
                 <form id="expenseForm" onsubmit="handleSubmit(event)">
@@ -269,85 +258,12 @@ include __DIR__ . '/../includes/header.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script>
     const HESAPLAMA_BASE = '<?php echo $formBasePath; ?>';
-    window.addEventListener('DOMContentLoaded', async function() {
-        await checkSession();
+    window.addEventListener('DOMContentLoaded', function () {
+        const wrapper = document.getElementById('mainContent');
+        if (wrapper) {
+            wrapper.style.display = 'block';
+        }
     });
-
-    async function checkSession() {
-        try {
-            const response = await fetch(`${HESAPLAMA_BASE}/verify_session.php`);
-            const data = await response.json();
-
-            if (data.authenticated) {
-                showForm();
-            } else {
-                showPasswordModal();
-            }
-        } catch (error) {
-            console.error('Session kontrol hatası:', error);
-            showPasswordModal();
-        }
-    }
-
-    function showPasswordModal() {
-        document.getElementById('passwordModal').style.display = 'flex';
-        document.getElementById('mainContent').style.display = 'none';
-        setTimeout(() => {
-            document.getElementById('passwordInput').focus();
-        }, 100);
-    }
-
-    function showForm() {
-        document.getElementById('passwordModal').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
-    }
-
-    async function checkPassword() {
-        const input = document.getElementById('passwordInput');
-        const error = document.getElementById('passwordError');
-        const button = document.querySelector('#passwordModal button');
-        const password = input.value;
-
-        if (!password) {
-            error.textContent = '⚠️ Lütfen şifre giriniz';
-            error.style.display = 'block';
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = 'Kontrol ediliyor...';
-        error.style.display = 'none';
-
-        try {
-            const response = await fetch(`${HESAPLAMA_BASE}/check_password.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                error.style.display = 'none';
-                input.value = '';
-                showForm();
-            } else {
-                error.textContent = '❌ Hatalı şifre!';
-                error.style.display = 'block';
-                input.value = '';
-                input.focus();
-                input.style.borderColor = '#dc2626';
-                setTimeout(() => { input.style.borderColor = '#e5e7eb'; }, 2000);
-            }
-        } catch (err) {
-            console.error('Şifre kontrol hatası:', err);
-            error.textContent = '❌ Bağlantı hatası!';
-            error.style.display = 'block';
-        } finally {
-            button.disabled = false;
-            button.textContent = 'Giriş Yap';
-        }
-    }
 
     if (window['pdfjsLib']) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
