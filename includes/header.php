@@ -120,6 +120,9 @@ $isUye = $user && $user['role'] === 'uye';
                             <li class="nav-item">
                                 <a class="nav-link" href="/uye/harcama-talepleri.php"><i class="fas fa-wallet me-1"></i>Harcama Taleplerim</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/uye/iade-formu.php"><i class="fas fa-hand-holding-usd me-1"></i>İade Talebi</a>
+                            </li>
                         <?php endif; ?>
                     </ul>
                     

@@ -142,6 +142,9 @@ $currentPath = $_SERVER['PHP_SELF'];
             <a href="/uye/harcama-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'harcama-talepleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-money-bill-wave me-2"></i>Harcama Taleplerim
             </a>
+            <a href="/uye/iade-formu.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'iade-formu') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-hand-holding-usd me-2"></i>İade Talebi Formu
+            </a>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">HESAP</div>
 
