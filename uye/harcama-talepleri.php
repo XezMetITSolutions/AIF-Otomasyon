@@ -28,7 +28,12 @@ $durumBadgeMap = [
 ];
 $kategoriListesi = [
     'genel' => 'Genel',
-    'seyahat' => 'Seyahat'
+    'hediye' => 'Hediye & Ödül',
+    'seyahat' => 'Seyahat',
+    'etkinlik' => 'Etkinlik Organizasyonu',
+    'ikram' => 'İkram / Ağırlama',
+    'donanim' => 'Ekipman / Donanım',
+    'egitim' => 'Eğitim / Seminer'
 ];
 
 if (!function_exists('splitHarcamaAciklamaVeMeta')) {
