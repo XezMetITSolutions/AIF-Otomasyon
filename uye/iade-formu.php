@@ -5,11 +5,25 @@
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
+require_once __DIR__ . '/../classes/Database.php';
 
 Middleware::requireUye();
 
 $auth = new Auth();
 $user = $auth->getUser();
+$db = Database::getInstance();
+
+$uyeDetay = $db->fetch("
+    SELECT k.ad, k.soyad, b.byk_kodu, b.byk_adi
+    FROM kullanicilar k
+    LEFT JOIN byk b ON k.byk_id = b.byk_id
+    WHERE k.kullanici_id = ?
+", [$user['id']]);
+
+$uyeAd = $uyeDetay['ad'] ?? explode(' ', $user['name'])[0];
+$uyeSoyad = $uyeDetay['soyad'] ?? (explode(' ', $user['name'])[1] ?? '');
+$uyeBykKodu = $uyeDetay['byk_kodu'] ?? '';
+$uyeBykAdi = $uyeDetay['byk_adi'] ?? '';
 
 $pageTitle = 'İade Talebi Formu';
 $formBasePath = '/Hesaplama';
@@ -221,11 +235,11 @@ include __DIR__ . '/../includes/header.php';
                     <div class="form-row">
                         <div class="form-group">
                             <label for="name">İsim</label>
-                            <input type="text" id="name" name="name" placeholder="Adınızı giriniz" required>
+                            <input type="text" id="name" name="name" placeholder="Adınızı giriniz" value="<?php echo htmlspecialchars($uyeAd); ?>" required>
                         </div>
                         <div class="form-group">
                             <label for="surname">Soyisim</label>
-                            <input type="text" id="surname" name="surname" placeholder="Soyadınızı giriniz" required>
+                            <input type="text" id="surname" name="surname" placeholder="Soyadınızı giriniz" value="<?php echo htmlspecialchars($uyeSoyad); ?>" required>
                         </div>
                     </div>
                     <div class="items-container" id="itemsContainer"></div>
@@ -258,6 +272,7 @@ include __DIR__ . '/../includes/header.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script>
     const HESAPLAMA_BASE = '<?php echo $formBasePath; ?>';
+    const DEFAULT_BYK = '<?php echo htmlspecialchars($uyeBykKodu); ?>';
     window.addEventListener('DOMContentLoaded', function () {
         const wrapper = document.getElementById('mainContent');
         if (wrapper) {
@@ -435,10 +450,10 @@ include __DIR__ . '/../includes/header.php';
                 <div class="form-group">
                     <label>Bölge Yönetim Kurulu</label>
                     <select name="region[]" required>
-                        <option value="AT">AT</option>
-                        <option value="KT">KT</option>
-                        <option value="GT">GT</option>
-                        <option value="KGT">KGT</option>
+                        <option value="AT" ${DEFAULT_BYK === 'AT' ? 'selected' : ''}>AT</option>
+                        <option value="KT" ${DEFAULT_BYK === 'KT' ? 'selected' : ''}>KT</option>
+                        <option value="GT" ${DEFAULT_BYK === 'GT' ? 'selected' : ''}>GT</option>
+                        <option value="KGT" ${DEFAULT_BYK === 'KGT' ? 'selected' : ''}>KGT</option>
                     </select>
                 </div>
             </div>
