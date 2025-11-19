@@ -36,15 +36,17 @@ $user = $auth->getUser();
     <!-- Bootstrap 5.3.0 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- AOS (Animate On Scroll) -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-    </script>
+    <?php if ($enableAnimations ?? false): ?>
+        <!-- AOS (Animate On Scroll) -->
+        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+        <script>
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+        </script>
+    <?php endif; ?>
     
     <!-- Custom JS -->
     <script src="/assets/js/main.js"></script>

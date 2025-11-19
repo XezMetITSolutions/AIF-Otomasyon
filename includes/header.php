@@ -6,6 +6,8 @@
 $appConfig = require __DIR__ . '/../config/app.php';
 $auth = new Auth();
 $user = $auth->getUser();
+$enableCharts = $enableCharts ?? false;
+$enableAnimations = $enableAnimations ?? false;
 
 // Rol bazlı menü görünürlüğü
 $isSuperAdmin = $user && $user['role'] === 'super_admin';
@@ -26,11 +28,15 @@ $isUye = $user && $user['role'] === 'uye';
     <!-- Font Awesome 6.4.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- AOS (Animate On Scroll) -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <?php if ($enableAnimations): ?>
+        <!-- AOS (Animate On Scroll) -->
+        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <?php endif; ?>
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <?php if ($enableCharts): ?>
+        <!-- Chart.js (yalnizca gerekli sayfalarda yuklenir) -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <?php endif; ?>
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/style.css">
