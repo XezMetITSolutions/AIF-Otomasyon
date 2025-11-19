@@ -95,11 +95,30 @@ $isUye = $user && $user['role'] === 'uye';
                             <li class="nav-item">
                                 <a class="nav-link" href="/baskan/toplantilar.php"><i class="fas fa-users-cog me-1"></i>Toplantılar</a>
                             </li>
-                        <?php endif; ?>
-                        
-                        <?php if ($isUye || $isBaskan): ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="/<?php echo $isBaskan ? 'baskan' : 'uye'; ?>/izin-talepleri.php"><i class="fas fa-calendar-check me-1"></i>İzin Talepleri</a>
+                                <a class="nav-link" href="/baskan/izin-talepleri.php"><i class="fas fa-calendar-check me-1"></i>İzin Talepleri</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/baskan/harcama-talepleri.php"><i class="fas fa-money-bill me-1"></i>Harcama Talepleri</a>
+                            </li>
+                        <?php elseif ($isUye): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/uye/dashboard.php"><i class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/uye/duyurular.php"><i class="fas fa-bullhorn me-1"></i>Duyurular</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/uye/etkinlikler.php"><i class="fas fa-calendar me-1"></i>Etkinlikler</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/uye/toplantilar.php"><i class="fas fa-users-cog me-1"></i>Toplantılar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/uye/izin-talepleri.php"><i class="fas fa-calendar-check me-1"></i>İzin Taleplerim</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/uye/harcama-talepleri.php"><i class="fas fa-wallet me-1"></i>Harcama Taleplerim</a>
                             </li>
                         <?php endif; ?>
                     </ul>

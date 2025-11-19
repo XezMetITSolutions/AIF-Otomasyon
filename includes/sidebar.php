@@ -8,6 +8,7 @@ if (!$user) return;
 
 $isSuperAdmin = $user['role'] === 'super_admin';
 $isBaskan = $user['role'] === 'baskan';
+$isUye = $user['role'] === 'uye';
 $currentPath = $_SERVER['PHP_SELF'];
 ?>
 
@@ -114,6 +115,38 @@ $currentPath = $_SERVER['PHP_SELF'];
             
             <a href="/baskan/raporlar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'raporlar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-chart-bar me-2"></i>Raporlar
+            </a>
+        <?php elseif ($isUye): ?>
+            <!-- Üye Menüsü -->
+            <a href="/uye/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
+            </a>
+
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">GÜNCEL</div>
+
+            <a href="/uye/duyurular.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-bullhorn me-2"></i>Duyurular
+            </a>
+            <a href="/uye/etkinlikler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-calendar me-2"></i>Etkinlikler
+            </a>
+            <a href="/uye/toplantilar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'toplantilar') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-users-cog me-2"></i>Toplantılar
+            </a>
+
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
+
+            <a href="/uye/izin-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-calendar-check me-2"></i>İzin Taleplerim
+            </a>
+            <a href="/uye/harcama-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'harcama-talepleri') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-money-bill-wave me-2"></i>Harcama Taleplerim
+            </a>
+
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">HESAP</div>
+
+            <a href="/uye/profil.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-user-circle me-2"></i>Profilim
             </a>
         <?php endif; ?>
     </div>
