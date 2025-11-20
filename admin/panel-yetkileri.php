@@ -14,6 +14,7 @@ $appConfig = require __DIR__ . '/../config/app.php';
 $csrfTokenName = $appConfig['security']['csrf_token_name'];
 $csrfToken = Middleware::generateCSRF();
 $moduleDefinitions = require __DIR__ . '/../config/baskan_modules.php';
+$assignableModules = array_filter($moduleDefinitions, fn($info) => ($info['category'] ?? '') !== 'uye');
 
 $superRole = $db->fetch("SELECT * FROM roller WHERE rol_adi = ?", [Auth::ROLE_SUPER_ADMIN]) ?: ['rol_id' => 0];
 
@@ -73,13 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$moduleCards = [];
-foreach ($moduleDefinitions as $key => $info) {
-    $moduleCards[$key] = $info;
-}
+$moduleCards = $assignableModules;
 
-$selectedModule = $selectedModuleKey && isset($moduleDefinitions[$selectedModuleKey])
-    ? $moduleDefinitions[$selectedModuleKey]
+$selectedModule = $selectedModuleKey && isset($assignableModules[$selectedModuleKey])
+    ? $assignableModules[$selectedModuleKey]
     : null;
 $selectedUsers = $selectedModuleKey && isset($modulePermissions[$selectedModuleKey])
     ? $modulePermissions[$selectedModuleKey]
@@ -91,6 +89,49 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 <main class="container-fluid mt-4">
+    <style>
+        .panel-card-button {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            transition: transform .15s ease, box-shadow .15s ease;
+            cursor: pointer;
+        }
+        .panel-card-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(15,23,42,.08);
+        }
+        .panel-card-button.active {
+            border-color: var(--bs-primary);
+            box-shadow: 0 12px 30px rgba(59,130,246,.25);
+        }
+        .icon-bubble {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-pill input {
+            position: absolute;
+            opacity: 0;
+        }
+        .user-pill label {
+            display: block;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all .15s ease;
+        }
+        .user-pill input:checked + label {
+            border-color: var(--bs-primary);
+            background: rgba(59,130,246,.08);
+            color: var(--bs-primary);
+            box-shadow: 0 4px 12px rgba(59,130,246,.15);
+        }
+    </style>
     <div class="content-wrapper">
         <div class="d-flex flex-column flex-lg-row gap-4">
             <div class="flex-grow-1">
@@ -105,7 +146,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         <div class="col">
                             <a href="/admin/panel-yetkileri.php?module=<?php echo urlencode($moduleKey); ?>"
                                class="text-decoration-none text-reset">
-                                <div class="card h-100 border-0 shadow-sm <?php echo $selectedModuleKey === $moduleKey ? 'border border-primary' : ''; ?>">
+                                <div class="panel-card-button card h-100 border-0 shadow-sm <?php echo $selectedModuleKey === $moduleKey ? 'active' : ''; ?>">
                                     <div class="card-body">
                                         <div class="d-flex align-items-start gap-3">
                                             <div class="icon-bubble bg-primary-subtle text-primary">
@@ -153,37 +194,36 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                 <input type="hidden" name="module_key" value="<?php echo htmlspecialchars($selectedModuleKey); ?>">
                                 <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="text-uppercase text-muted small fw-semibold">Seçilen Panel</div>
-                                            <h5 class="mb-0"><?php echo htmlspecialchars($selectedModule['label'] ?? $selectedModuleKey); ?></h5>
-                                        </div>
-                                        <?php if (($selectedModule['category'] ?? '') === 'uye'): ?>
-                                            <span class="badge bg-success">Üye Modülü</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-primary">Başkan Modülü</span>
-                                        <?php endif; ?>
-                                    </div>
+                                    <div class="text-uppercase text-muted small fw-semibold">Seçilen Panel</div>
+                                    <h5 class="mb-1"><?php echo htmlspecialchars($selectedModule['label'] ?? $selectedModuleKey); ?></h5>
+                                    <p class="text-muted mb-0"><?php echo htmlspecialchars($selectedModule['description'] ?? ''); ?></p>
                                 </div>
-                                <?php if (($selectedModule['category'] ?? '') === 'uye'): ?>
-                                    <p class="text-muted">Üye modülleri varsayılan olarak tüm kullanıcılara açıktır.</p>
-                                <?php else: ?>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Paneli görebilecek üyeler</label>
-                                        <select class="form-select" name="module_permissions[]" multiple size="10">
-                                            <?php foreach ($uyeler as $uye): ?>
-                                                <?php $fullName = $uye['ad'] . ' ' . $uye['soyad']; ?>
-                                                <option value="<?php echo $uye['kullanici_id']; ?>" <?php echo in_array($uye['kullanici_id'], $selectedUsers, true) ? 'selected' : ''; ?>>
-                                                    <?php echo htmlspecialchars($fullName); ?>
-                                                    <?php if (!empty($uye['byk_adi']) && $uye['byk_adi'] !== '-'): ?>
-                                                        (<?php echo htmlspecialchars($uye['byk_adi']); ?>)
-                                                    <?php endif; ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <small class="text-muted d-block mt-1">Ctrl/Cmd + tıklamayla birden fazla üye seçebilirsiniz.</small>
-                                    </div>
-                                <?php endif; ?>
+                                <div class="d-flex gap-2 mb-3">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleUserList(true)">
+                                        <i class="fas fa-check-double me-1"></i>Tümünü Seç
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleUserList(false)">
+                                        <i class="fas fa-eraser me-1"></i>Temizle
+                                    </button>
+                                </div>
+                                <div class="row g-2" id="user-list">
+                                    <?php foreach ($uyeler as $uye): ?>
+                                        <?php
+                                            $fullName = $uye['ad'] . ' ' . $uye['soyad'];
+                                            $inputId = 'user-' . $selectedModuleKey . '-' . $uye['kullanici_id'];
+                                            $isSelected = in_array($uye['kullanici_id'], $selectedUsers, true);
+                                        ?>
+                                        <div class="col-12 col-sm-6 user-pill">
+                                            <input type="checkbox" name="module_permissions[]" value="<?php echo $uye['kullanici_id']; ?>" id="<?php echo $inputId; ?>" <?php echo $isSelected ? 'checked' : ''; ?>>
+                                            <label for="<?php echo $inputId; ?>">
+                                                <?php echo htmlspecialchars($fullName); ?>
+                                                <?php if (!empty($uye['byk_adi']) && $uye['byk_adi'] !== '-'): ?>
+                                                    <br><small class="text-muted"><?php echo htmlspecialchars($uye['byk_adi']); ?></small>
+                                                <?php endif; ?>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save me-2"></i>Kaydet
@@ -198,4 +238,11 @@ include __DIR__ . '/../includes/sidebar.php';
     </div>
 </main>
 <?php include __DIR__ . '/../includes/footer.php'; ?>
+<script>
+    function toggleUserList(selectAll) {
+        const container = document.getElementById('user-list');
+        if (!container) return;
+        container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = selectAll);
+    }
+</script>
 
