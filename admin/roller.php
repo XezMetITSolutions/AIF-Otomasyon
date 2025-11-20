@@ -19,6 +19,8 @@ $csrfToken = Middleware::generateCSRF();
 $pageTitle = 'Rol & Yetki Yönetimi';
 $moduleDefinitions = require __DIR__ . '/../config/baskan_modules.php';
 
+$superRole = $db->fetch("SELECT * FROM roller WHERE rol_adi = ?", [Auth::ROLE_SUPER_ADMIN]) ?: ['rol_id' => 0];
+
 // Roller
 $roller = $db->fetchAll("
     SELECT r.*, COUNT(k.kullanici_id) as kullanici_sayisi
@@ -114,53 +116,90 @@ include __DIR__ . '/../includes/header.php';
 <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
 <main class="container-fluid mt-4">
+    <style>
+        .stat-card .icon-bubble {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .panel-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            transition: box-shadow .2s ease;
+        }
+        .panel-card:hover {
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        }
+        .panel-card select {
+            min-height: 160px;
+        }
+        .panel-group-title {
+            letter-spacing: .08em;
+            font-size: .8rem;
+            color: #94a3b8;
+        }
+    </style>
     <div class="content-wrapper">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">
-                    <i class="fas fa-user-shield me-2"></i>Rol & Yetki Yönetimi
-                </h1>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    Toplam: <strong><?php echo count($roller); ?></strong> rol
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-bubble bg-primary-subtle text-primary me-3">
+                                    <i class="fas fa-users fa-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted text-uppercase small fw-semibold">Toplam Rol</div>
+                                    <div class="fs-4 fw-bold"><?php echo count($roller); ?></div>
+                                    <small class="text-muted">Sistem genelindeki rol sayısı</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Rol Adı</th>
-                                    <th>Açıklama</th>
-                                    <th>Yetki Seviyesi</th>
-                                    <th>Kullanıcı Sayısı</th>
-                                    <th>Oluşturma Tarihi</th>
-                                    <th>İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($roller as $rol): ?>
-                                    <tr>
-                                        <td>
-                                            <strong><?php echo htmlspecialchars($rol['rol_adi']); ?></strong>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($rol['rol_aciklama'] ?? '-'); ?></td>
-                                        <td>
-                                            <span class="badge bg-<?php echo $rol['rol_yetki_seviyesi'] == 3 ? 'danger' : ($rol['rol_yetki_seviyesi'] == 2 ? 'warning' : 'info'); ?>">
-                                                Seviye <?php echo $rol['rol_yetki_seviyesi']; ?>
-                                            </span>
-                                        </td>
-                                        <td><?php echo $rol['kullanici_sayisi']; ?></td>
-                                        <td><?php echo date('d.m.Y', strtotime($rol['olusturma_tarihi'])); ?></td>
-                                        <td>
-                                            <a href="/admin/rol-yetkiler.php?id=<?php echo $rol['rol_id']; ?>" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-key"></i> Yetkiler
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-bubble bg-success-subtle text-success me-3">
+                                    <i class="fas fa-user-check fa-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted text-uppercase small fw-semibold">Aktif Üye</div>
+                                    <div class="fs-4 fw-bold">
+                                        <?php
+                                        $activeMembers = $db->fetch("
+                                            SELECT COUNT(*) as count
+                                            FROM kullanicilar
+                                            WHERE rol_id != ? AND aktif = 1
+                                        ", [$superRole['rol_id'] ?? 0])['count'] ?? 0;
+                                        echo $activeMembers;
+                                        ?>
+                                    </div>
+                                    <small class="text-muted">Süper admin hariç</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-bubble bg-warning-subtle text-warning me-3">
+                                    <i class="fas fa-sliders fa-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted text-uppercase small fw-semibold">Panel Yönetimi</div>
+                                    <div class="fs-4 fw-bold"><?php echo count($moduleDefinitions); ?></div>
+                                    <small class="text-muted">Toplam modül anahtarı</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -193,7 +232,7 @@ include __DIR__ . '/../includes/header.php';
                                         <?php foreach ($modules as $moduleKey => $info): ?>
                                             <?php $selected = $modulePermissions[$moduleKey] ?? []; ?>
                                             <div class="col-lg-6">
-                                                <div class="border rounded p-3">
+                                                <div class="panel-card p-3 h-100">
                                                     <label class="form-label fw-semibold">
                                                         <?php echo htmlspecialchars($info['label'] ?? $moduleKey); ?>
                                                         <?php if (($info['category'] ?? '') === 'uye'): ?>
