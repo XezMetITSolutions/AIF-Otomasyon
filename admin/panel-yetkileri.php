@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin - Panel Yetkilendirme
+ * Admin - Panel Yetkilendirme (Matris Görünümü)
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
@@ -14,10 +14,8 @@ $appConfig = require __DIR__ . '/../config/app.php';
 $csrfTokenName = $appConfig['security']['csrf_token_name'];
 $csrfToken = Middleware::generateCSRF();
 $moduleDefinitions = require __DIR__ . '/../config/baskan_modules.php';
-// Filter out 'uye' category if needed, or keep all. The previous code filtered them.
-// $assignableModules = array_filter($moduleDefinitions, fn($info) => ($info['category'] ?? '') !== 'uye');
-// Assuming we want to assign all available modules that are not strictly for 'uye' or maybe all of them.
-// Let's stick to the previous logic of filtering if that was important, but usually admins assign admin panels.
+
+// Filter modules
 $assignableModules = array_filter($moduleDefinitions, fn($info) => ($info['category'] ?? '') !== 'uye');
 
 // Fetch Users (excluding Super Admin)
@@ -36,76 +34,76 @@ $uyeler = $db->fetchAll("
     ORDER BY k.ad, k.soyad
 ", [Auth::ROLE_SUPER_ADMIN]);
 
-$selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
-
-// If no user selected but we have users, maybe select the first one or stay empty?
-// Let's stay empty to force explicit selection, or select first for convenience.
-// The user said "select from there", implying a selection action.
-// Let's default to 0 (no selection) to avoid accidental edits.
-
-$selectedUser = null;
-if ($selectedUserId > 0) {
-    foreach ($uyeler as $uye) {
-        if ((int)$uye['kullanici_id'] === $selectedUserId) {
-            $selectedUser = $uye;
-            break;
-        }
-    }
-}
-
-$userPermissions = [];
 $messages = [];
 $errors = [];
 
 // Handle Form Submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedUser) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!Middleware::verifyCSRF()) {
         $errors[] = 'Güvenlik doğrulaması başarısız oldu.';
     } else {
         try {
-            $postedPermissions = $_POST['permissions'] ?? [];
+            $db->beginTransaction();
+
+            // 1. Get all manageable user IDs to safely clear their permissions
+            $userIds = array_column($uyeler, 'kullanici_id');
             
-            // Delete existing permissions for this user
-            $db->query("DELETE FROM baskan_modul_yetkileri WHERE kullanici_id = ?", [$selectedUserId]);
-            
-            // Insert new permissions
-            if (!empty($postedPermissions)) {
+            if (!empty($userIds)) {
+                // Create placeholders for IN clause
+                $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+                
+                // Delete existing permissions for these users
+                $db->query("DELETE FROM baskan_modul_yetkileri WHERE kullanici_id IN ($placeholders)", $userIds);
+                
+                // 2. Insert new permissions
+                $postedPermissions = $_POST['perm'] ?? [];
                 $insertValues = [];
                 $params = [];
-                foreach ($postedPermissions as $moduleKey) {
-                    if (isset($assignableModules[$moduleKey])) {
-                        $insertValues[] = "(?, ?, 1)";
-                        $params[] = $selectedUserId;
-                        $params[] = $moduleKey;
+                
+                foreach ($postedPermissions as $userId => $modules) {
+                    // Verify user is in our manageable list
+                    if (in_array((int)$userId, $userIds)) {
+                        foreach ($modules as $moduleKey => $val) {
+                            if (isset($assignableModules[$moduleKey])) {
+                                $insertValues[] = "(?, ?, 1)";
+                                $params[] = $userId;
+                                $params[] = $moduleKey;
+                            }
+                        }
                     }
                 }
                 
                 if (!empty($insertValues)) {
+                    // Batch insert
+                    // Note: If too many placeholders, might need to chunk. 
+                    // SQLite limit is high, MySQL usually fine for this size.
+                    // For safety, let's chunk if > 1000 items? 
+                    // With ~50 users * 20 modules = 1000 rows. 
+                    // Let's just run it, usually fine.
                     $sql = "INSERT INTO baskan_modul_yetkileri (kullanici_id, module_key, can_view) VALUES " . implode(', ', $insertValues);
                     $db->query($sql, $params);
                 }
             }
-            
-            $messages[] = 'Yetkiler başarıyla güncellendi.';
+
+            $db->commit();
+            $messages[] = 'Tüm yetkiler başarıyla güncellendi.';
             
         } catch (Exception $e) {
+            $db->rollBack();
             $errors[] = 'Hata oluştu: ' . $e->getMessage();
         }
     }
 }
 
-// Fetch Current Permissions for Selected User
-if ($selectedUser) {
-    try {
-        $rows = $db->fetchAll("
-            SELECT module_key
-            FROM baskan_modul_yetkileri
-            WHERE kullanici_id = ? AND can_view = 1
-        ", [$selectedUserId]);
-        $userPermissions = array_column($rows, 'module_key');
-    } catch (Exception $e) {
-        $userPermissions = [];
+// Fetch All Permissions
+$allPermissions = [];
+try {
+    $rows = $db->fetchAll("SELECT kullanici_id, module_key FROM baskan_modul_yetkileri WHERE can_view = 1");
+    foreach ($rows as $row) {
+        $allPermissions[$row['kullanici_id']][$row['module_key']] = true;
     }
+} catch (Exception $e) {
+    // Ignore
 }
 
 $pageTitle = 'Panel Yetkilendirme';
@@ -115,231 +113,174 @@ include __DIR__ . '/../includes/sidebar.php';
 
 <main class="container-fluid mt-4">
     <style>
-        .user-list-item {
-            transition: all 0.2s;
-            border-left: 4px solid transparent;
-        }
-        .user-list-item:hover {
-            background-color: #f8f9fa;
-        }
-        .user-list-item.active {
-            background-color: #eef2ff;
-            border-left-color: var(--bs-primary);
-            color: var(--bs-primary);
+        .table-matrix th.rotate {
+            height: 140px;
+            white-space: nowrap;
+            vertical-align: bottom;
+            position: relative;
         }
         
-        .panel-checkbox-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.2s ease;
+        .table-matrix th.rotate > div {
+            transform: translate(0px, 0px) rotate(-45deg);
+            width: 30px;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform-origin: bottom left;
+        }
+        
+        .table-matrix th.rotate span {
+            border-bottom: 1px solid #ccc;
+            padding: 5px 10px;
+        }
+
+        .matrix-icon-header {
             cursor: pointer;
-            height: 100%;
+            transition: all 0.2s;
+            padding: 10px;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            position: relative;
-            background: #fff;
+            gap: 5px;
         }
-        
-        .panel-checkbox-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            border-color: #cbd5e1;
+        .matrix-icon-header:hover {
+            background-color: #f1f5f9;
         }
-        
-        .panel-checkbox-card.checked {
-            border-color: var(--bs-primary);
-            background-color: #eff6ff;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-        }
-        
-        .panel-icon {
-            font-size: 2rem;
+        .matrix-icon-header i {
+            font-size: 1.5rem;
             color: #64748b;
+        }
+        .matrix-icon-header.active i {
+            color: var(--bs-primary);
+        }
+        
+        .user-row-header {
+            cursor: pointer;
             transition: color 0.2s;
         }
-        
-        .panel-checkbox-card.checked .panel-icon {
+        .user-row-header:hover {
             color: var(--bs-primary);
-        }
-        
-        .panel-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #334155;
-        }
-        
-        .panel-checkbox-card.checked .panel-name {
-            color: var(--bs-primary);
-        }
-        
-        /* Hide actual checkbox */
-        .custom-checkbox-input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-        
-        .custom-checkmark {
-            width: 24px;
-            height: 24px;
-            border: 2px solid #cbd5e1;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            background: #fff;
-        }
-        
-        .panel-checkbox-card.checked .custom-checkmark {
-            background-color: var(--bs-primary);
-            border-color: var(--bs-primary);
-        }
-        
-        .custom-checkmark i {
-            color: white;
-            font-size: 14px;
-            display: none;
-        }
-        
-        .panel-checkbox-card.checked .custom-checkmark i {
-            display: block;
+            text-decoration: underline;
         }
 
-        .search-box {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: white;
-            padding-bottom: 1rem;
+        .matrix-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
         }
         
-        .user-list-container {
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 10;
+            border-right: 2px solid #e2e8f0;
+        }
+        
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 20;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .sticky-corner {
+            z-index: 30;
+        }
+
+        .table-responsive {
             max-height: calc(100vh - 200px);
-            overflow-y: auto;
         }
     </style>
 
     <div class="content-wrapper">
-        <div class="row g-4">
-            <!-- Left Column: User List -->
-            <div class="col-lg-4 col-xl-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body p-0">
-                        <div class="p-3 border-bottom bg-light rounded-top">
-                            <h5 class="mb-3"><i class="fas fa-users me-2"></i>Kullanıcılar</h5>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-0" id="userSearch" placeholder="İsim ara..." onkeyup="filterUsers()">
-                            </div>
-                        </div>
-                        <div class="user-list-container p-2" id="userList">
-                            <?php foreach ($uyeler as $uye): ?>
-                                <?php 
-                                    $isActive = $selectedUserId === (int)$uye['kullanici_id'];
-                                    $fullName = $uye['ad'] . ' ' . $uye['soyad'];
-                                ?>
-                                <a href="?user_id=<?php echo $uye['kullanici_id']; ?>" class="d-block text-decoration-none text-reset mb-1">
-                                    <div class="user-list-item p-3 rounded <?php echo $isActive ? 'active' : ''; ?>" data-name="<?php echo strtolower($fullName); ?>">
-                                        <div class="fw-bold"><?php echo htmlspecialchars($fullName); ?></div>
-                                        <div class="small text-muted d-flex justify-content-between">
-                                            <span><?php echo htmlspecialchars($uye['gorev_adi'] ?? '-'); ?></span>
-                                            <i class="fas fa-chevron-right opacity-50"></i>
-                                        </div>
-                                    </div>
-                                </a>
-                            <?php endforeach; ?>
-                            <?php if (empty($uyeler)): ?>
-                                <div class="text-center p-4 text-muted">Kullanıcı bulunamadı.</div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1"><i class="fas fa-th me-2"></i>Panel Yetkilendirme</h1>
+                <p class="text-muted mb-0">Tablo üzerinden hızlı yetkilendirme yapın.</p>
+            </div>
+            <div>
+                <button type="submit" form="matrixForm" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                </button>
+            </div>
+        </div>
+
+        <?php foreach ($messages as $msg): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($msg); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endforeach; ?>
+        <?php foreach ($errors as $err): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($err); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endforeach; ?>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white p-3">
+                <div class="input-group" style="max-width: 400px;">
+                    <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="tableSearch" placeholder="Kullanıcı ara..." onkeyup="filterTable()">
                 </div>
             </div>
-
-            <!-- Right Column: Permissions -->
-            <div class="col-lg-8 col-xl-9">
-                <?php if ($selectedUser): ?>
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="mb-1">
-                                    <span class="text-primary"><?php echo htmlspecialchars($selectedUser['ad'] . ' ' . $selectedUser['soyad']); ?></span>
-                                    <span class="text-muted fw-normal">için Yetkiler</span>
-                                </h5>
-                                <p class="text-muted mb-0 small">Aşağıdan bu kullanıcının görebileceği panelleri seçiniz.</p>
-                            </div>
-                            <div>
-                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="toggleAll(true)">Tümünü Seç</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleAll(false)">Temizle</button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <?php foreach ($messages as $msg): ?>
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                    <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($msg); ?>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            <?php endforeach; ?>
-                            <?php foreach ($errors as $err): ?>
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($err); ?>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            <?php endforeach; ?>
-
-                            <form method="POST" id="permissionsForm">
-                                <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
-                                
-                                <div class="row g-3">
+            <div class="card-body p-0">
+                <form method="POST" id="matrixForm">
+                    <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered mb-0 align-middle" id="permissionsTable">
+                            <thead class="sticky-header">
+                                <tr>
+                                    <th class="sticky-col sticky-corner bg-white p-3" style="min-width: 250px;">
+                                        <div class="fw-bold">Kullanıcılar</div>
+                                        <div class="small text-muted fw-normal">Satır başlığına tıkla → Tümünü seç</div>
+                                    </th>
                                     <?php foreach ($assignableModules as $key => $module): ?>
-                                        <?php 
-                                            $isChecked = in_array($key, $userPermissions);
-                                        ?>
-                                        <div class="col-6 col-md-4 col-xl-3">
-                                            <label class="panel-checkbox-card <?php echo $isChecked ? 'checked' : ''; ?>" onclick="toggleCard(this)">
-                                                <input type="checkbox" name="permissions[]" value="<?php echo $key; ?>" class="custom-checkbox-input" <?php echo $isChecked ? 'checked' : ''; ?>>
-                                                
-                                                <div class="panel-icon">
-                                                    <i class="<?php echo $module['icon'] ?? 'fas fa-cube'; ?>"></i>
+                                        <th class="text-center bg-white p-2" style="min-width: 100px;">
+                                            <div class="matrix-icon-header" onclick="toggleColumn('<?php echo $key; ?>')" title="<?php echo htmlspecialchars($module['label']); ?>" data-bs-toggle="tooltip">
+                                                <i class="<?php echo $module['icon'] ?? 'fas fa-cube'; ?>"></i>
+                                                <div class="small fw-bold text-truncate" style="max-width: 90px;">
+                                                    <?php echo htmlspecialchars($module['label']); ?>
                                                 </div>
-                                                
-                                                <div class="panel-name">
-                                                    <?php echo htmlspecialchars($module['label'] ?? $key); ?>
-                                                </div>
-                                                
-                                                <div class="custom-checkmark">
-                                                    <i class="fas fa-check"></i>
-                                                </div>
-                                            </label>
-                                        </div>
+                                            </div>
+                                        </th>
                                     <?php endforeach; ?>
-                                </div>
-
-                                <div class="mt-4 pt-3 border-top d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary btn-lg px-5">
-                                        <i class="fas fa-save me-2"></i>Kaydet
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($uyeler as $uye): ?>
+                                    <?php 
+                                        $userId = $uye['kullanici_id'];
+                                        $fullName = $uye['ad'] . ' ' . $uye['soyad'];
+                                        $gorev = $uye['gorev_adi'] ?? '-';
+                                    ?>
+                                    <tr class="user-row">
+                                        <td class="sticky-col bg-white p-3">
+                                            <div class="user-row-header" onclick="toggleRow(this)">
+                                                <div class="fw-bold"><?php echo htmlspecialchars($fullName); ?></div>
+                                                <div class="small text-muted"><?php echo htmlspecialchars($gorev); ?></div>
+                                            </div>
+                                        </td>
+                                        <?php foreach ($assignableModules as $key => $module): ?>
+                                            <td class="text-center bg-light-subtle">
+                                                <input type="checkbox" 
+                                                       name="perm[<?php echo $userId; ?>][<?php echo $key; ?>]" 
+                                                       class="matrix-checkbox col-check-<?php echo $key; ?>" 
+                                                       value="1"
+                                                       <?php echo isset($allPermissions[$userId][$key]) ? 'checked' : ''; ?>>
+                                            </td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
-                <?php else: ?>
-                    <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center text-muted p-5 border rounded-3 bg-light" style="min-height: 400px;">
-                        <div class="mb-3">
-                            <i class="fas fa-user-edit fa-4x opacity-25"></i>
-                        </div>
-                        <h4>Kullanıcı Seçiniz</h4>
-                        <p>Yetkilerini düzenlemek için sol taraftaki listeden bir kullanıcı seçin.</p>
-                    </div>
-                <?php endif; ?>
+                </form>
             </div>
         </div>
     </div>
@@ -348,46 +289,60 @@ include __DIR__ . '/../includes/sidebar.php';
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 
 <script>
-    function filterUsers() {
-        const query = document.getElementById('userSearch').value.toLowerCase();
-        const items = document.querySelectorAll('.user-list-item');
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    function filterTable() {
+        const query = document.getElementById('tableSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#permissionsTable tbody tr');
         
-        items.forEach(item => {
-            const name = item.getAttribute('data-name');
-            const parentLink = item.closest('a');
-            if (name.includes(query)) {
-                parentLink.style.display = '';
+        rows.forEach(row => {
+            const text = row.querySelector('.sticky-col').textContent.toLowerCase();
+            if (text.includes(query)) {
+                row.style.display = '';
             } else {
-                parentLink.style.display = 'none';
+                row.style.display = 'none';
             }
         });
     }
 
-    function toggleCard(label) {
-        // The click event propagates to the input, so we don't need to manually check it if we clicked the label.
-        // However, we need to update the visual class 'checked'.
-        // We use setTimeout to let the checkbox state update first.
-        setTimeout(() => {
-            const checkbox = label.querySelector('input[type="checkbox"]');
-            if (checkbox.checked) {
-                label.classList.add('checked');
-            } else {
-                label.classList.remove('checked');
-            }
-        }, 10);
-    }
-
-    function toggleAll(state) {
-        const checkboxes = document.querySelectorAll('.custom-checkbox-input');
+    function toggleColumn(key) {
+        const checkboxes = document.querySelectorAll(`.col-check-${key}`);
+        // Check if all visible ones are checked
+        let allChecked = true;
+        let visibleCount = 0;
+        
         checkboxes.forEach(cb => {
-            cb.checked = state;
-            const label = cb.closest('.panel-checkbox-card');
-            if (state) {
-                label.classList.add('checked');
-            } else {
-                label.classList.remove('checked');
+            if (cb.closest('tr').style.display !== 'none') {
+                visibleCount++;
+                if (!cb.checked) allChecked = false;
             }
         });
+        
+        if (visibleCount === 0) return;
+
+        const newState = !allChecked;
+        checkboxes.forEach(cb => {
+            if (cb.closest('tr').style.display !== 'none') {
+                cb.checked = newState;
+            }
+        });
+    }
+
+    function toggleRow(headerDiv) {
+        const row = headerDiv.closest('tr');
+        const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+        
+        let allChecked = true;
+        checkboxes.forEach(cb => {
+            if (!cb.checked) allChecked = false;
+        });
+        
+        const newState = !allChecked;
+        checkboxes.forEach(cb => cb.checked = newState);
     }
 </script>
 
