@@ -166,9 +166,9 @@ class Auth {
             return true;
         }
 
-        // Üyeler kendi modüllerine erişebilir
-        if ($user['role'] === self::ROLE_UYE) {
-            return ($moduleConfig['category'] ?? '') === 'uye';
+        // Üyeler 'uye' kategorisindeki modüllere her zaman erişebilir
+        if (($moduleConfig['category'] ?? '') === 'uye' && $user['role'] === self::ROLE_UYE) {
+            return true;
         }
 
         if ($user['role'] !== self::ROLE_BASKAN) {
