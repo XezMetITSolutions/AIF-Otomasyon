@@ -262,6 +262,11 @@ include __DIR__ . '/../includes/header.php';
                                                     <a href="/admin/kullanici-duzenle.php?id=<?php echo $kullanici['kullanici_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
+                                                    <?php if ($kullanici['rol_adi'] === Auth::ROLE_BASKAN): ?>
+                                                        <a href="/admin/baskan-yetkileri.php?id=<?php echo $kullanici['kullanici_id']; ?>" class="btn btn-sm btn-outline-warning" title="Yetkiler">
+                                                            <i class="fas fa-user-shield"></i>
+                                                        </a>
+                                                    <?php endif; ?>
                                                     <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" data-id="<?php echo $kullanici['kullanici_id']; ?>" data-type="kullanici" data-name="<?php echo htmlspecialchars($kullanici['ad'] . ' ' . $kullanici['soyad']); ?>" title="Sil">
                                                         <i class="fas fa-trash"></i>
                                                     </button>

@@ -10,6 +10,7 @@ require_once __DIR__ . '/../classes/Database.php';
 
 // Yetki kontrolü
 Middleware::requireBaskan();
+Middleware::requireModulePermission('baskan_dashboard');
 
 $auth = new Auth();
 $user = $auth->getUser();

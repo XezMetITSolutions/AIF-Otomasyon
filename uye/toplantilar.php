@@ -8,6 +8,7 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 Middleware::requireUye();
+Middleware::requireModulePermission('uye_toplantilar');
 
 $auth = new Auth();
 $user = $auth->getUser();

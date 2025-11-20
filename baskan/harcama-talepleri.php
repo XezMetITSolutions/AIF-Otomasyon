@@ -8,6 +8,7 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 Middleware::requireBaskan();
+Middleware::requireModulePermission('baskan_harcama_talepleri');
 
 $auth = new Auth();
 $user = $auth->getUser();

@@ -90,6 +90,18 @@ CREATE TABLE IF NOT EXISTS `modul_yetkileri` (
   FOREIGN KEY (`rol_id`) REFERENCES `roller`(`rol_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Başkan modül yetkileri (kullanıcı bazlı)
+CREATE TABLE IF NOT EXISTS `baskan_modul_yetkileri` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `kullanici_id` int(11) NOT NULL,
+  `module_key` varchar(100) NOT NULL,
+  `can_view` tinyint(1) NOT NULL DEFAULT '1',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_module` (`kullanici_id`,`module_key`),
+  CONSTRAINT `baskan_modul_yetkileri_fk_user` FOREIGN KEY (`kullanici_id`) REFERENCES `kullanicilar`(`kullanici_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Etkinlikler tablosu
 CREATE TABLE IF NOT EXISTS `etkinlikler` (
   `etkinlik_id` int(11) NOT NULL AUTO_INCREMENT,

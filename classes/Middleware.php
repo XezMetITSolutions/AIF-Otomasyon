@@ -66,6 +66,18 @@ class Middleware {
             exit;
         }
     }
+
+    /**
+     * Modül bazlı erişim kontrolü
+     */
+    public static function requireModulePermission($moduleKey) {
+        self::requireAuth();
+        $auth = new Auth();
+        if (!$auth->hasModulePermission($moduleKey)) {
+            header('Location: /access-denied.php');
+            exit;
+        }
+    }
     
     /**
      * CSRF token kontrolü

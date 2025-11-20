@@ -83,27 +83,51 @@ $isUye = $user && $user['role'] === 'uye';
                                 <a class="nav-link" href="/admin/toplantilar.php"><i class="fas fa-users-cog me-1"></i>Toplantılar</a>
                             </li>
                         <?php elseif ($isBaskan): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/baskan/dashboard.php"><i class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/baskan/uyeler.php"><i class="fas fa-users me-1"></i>Üyeler</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/baskan/etkinlikler.php"><i class="fas fa-calendar me-1"></i>Etkinlikler</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/baskan/toplantilar.php"><i class="fas fa-users-cog me-1"></i>Toplantılar</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/baskan/izin-talepleri.php"><i class="fas fa-calendar-check me-1"></i>İzin Talepleri</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/baskan/harcama-talepleri.php"><i class="fas fa-money-bill me-1"></i>Harcama Talepleri</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/baskan/iade-formlari.php"><i class="fas fa-hand-holding-usd me-1"></i>İade Formları</a>
-                            </li>
+                            <?php
+                                $baskanHeaderNav = [
+                                    'baskan_dashboard' => ['/baskan/dashboard.php', 'fas fa-tachometer-alt', 'Kontrol Paneli'],
+                                    'baskan_uyeler' => ['/baskan/uyeler.php', 'fas fa-users', 'Üyeler'],
+                                    'baskan_etkinlikler' => ['/baskan/etkinlikler.php', 'fas fa-calendar', 'Etkinlikler'],
+                                    'baskan_toplantilar' => ['/baskan/toplantilar.php', 'fas fa-users-cog', 'Toplantılar'],
+                                    'baskan_izin_talepleri' => ['/baskan/izin-talepleri.php', 'fas fa-calendar-check', 'İzin Talepleri'],
+                                    'baskan_harcama_talepleri' => ['/baskan/harcama-talepleri.php', 'fas fa-money-bill', 'Harcama Talepleri'],
+                                    'baskan_iade_formlari' => ['/baskan/iade-formlari.php', 'fas fa-hand-holding-usd', 'İade Formları'],
+                                ];
+                                $uyeHeaderNav = [
+                                    'uye_dashboard' => ['/uye/dashboard.php', 'fas fa-gauge', 'Üye Paneli'],
+                                    'uye_izin_talepleri' => ['/uye/izin-talepleri.php', 'fas fa-person-walking', 'Üye İzin Talepleri'],
+                                    'uye_harcama_talepleri' => ['/uye/harcama-talepleri.php', 'fas fa-wallet', 'Üye Harcama Talepleri'],
+                                    'uye_iade_formu' => ['/uye/iade-formu.php', 'fas fa-file-invoice-dollar', 'Üye İade Formu'],
+                                ];
+                                $hasUyeHeaderNav = false;
+                                foreach ($uyeHeaderNav as $key => $data) {
+                                    if ($auth->hasModulePermission($key)) {
+                                        $hasUyeHeaderNav = true;
+                                        break;
+                                    }
+                                }
+                            ?>
+                            <?php foreach ($baskanHeaderNav as $moduleKey => $navData): ?>
+                                <?php if ($auth->hasModulePermission($moduleKey)): ?>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="<?php echo $navData[0]; ?>"><i class="<?php echo $navData[1]; ?> me-1"></i><?php echo $navData[2]; ?></a>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            <?php if ($hasUyeHeaderNav): ?>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-user-tag me-1"></i>Üye Modülleri
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <?php foreach ($uyeHeaderNav as $moduleKey => $navData): ?>
+                                            <?php if ($auth->hasModulePermission($moduleKey)): ?>
+                                                <li><a class="dropdown-item" href="<?php echo $navData[0]; ?>"><i class="<?php echo $navData[1]; ?> me-2"></i><?php echo $navData[2]; ?></a></li>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </li>
+                            <?php endif; ?>
                         <?php elseif ($isUye): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="/uye/dashboard.php"><i class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>

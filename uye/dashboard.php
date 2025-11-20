@@ -9,6 +9,7 @@ require_once __DIR__ . '/../classes/Database.php';
 
 // Yetki kontrolü
 Middleware::requireUye();
+Middleware::requireModulePermission('uye_dashboard');
 
 $auth = new Auth();
 $user = $auth->getUser();

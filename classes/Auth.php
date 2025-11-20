@@ -6,6 +6,8 @@
 
 class Auth {
     private $db;
+    private $modulePermissionsCacheUser = null;
+    private $modulePermissionsCache = [];
     
     // Rol sabitleri
     const ROLE_SUPER_ADMIN = 'super_admin';
@@ -145,17 +147,78 @@ class Auth {
     /**
      * Modül yetkisi kontrolü
      */
-    public function hasModulePermission($moduleName, $permissionType = 'view') {
+    public function hasModulePermission($moduleKey) {
         $user = $this->getUser();
-        
-        if ($user['role'] === self::ROLE_SUPER_ADMIN) {
-            return true; // Ana yönetici tüm modüllere erişebilir
+        if (!$user) {
+            return false;
         }
-        
-        // Modül yetkisi kontrolü buraya eklenecek
-        // Örnek: modul_yetkileri tablosundan kontrol
-        
-        return false;
+
+        // Super admin tüm modüllere erişebilir
+        if ($user['role'] === self::ROLE_SUPER_ADMIN) {
+            return true;
+        }
+
+        $modules = $this->getModuleDefinitions();
+        $moduleConfig = $modules[$moduleKey] ?? null;
+
+        // Tanımsız modüllerde kısıtlama uygulama
+        if (!$moduleConfig) {
+            return true;
+        }
+
+        // Üyeler kendi modüllerine erişebilir
+        if ($user['role'] === self::ROLE_UYE) {
+            return ($moduleConfig['category'] ?? '') === 'uye';
+        }
+
+        if ($user['role'] !== self::ROLE_BASKAN) {
+            return false;
+        }
+
+        $default = (bool)($moduleConfig['default'] ?? true);
+        $modulePermissions = $this->getCachedModulePermissions($user['id']);
+
+        if (array_key_exists($moduleKey, $modulePermissions)) {
+            return (bool)$modulePermissions[$moduleKey];
+        }
+
+        return $default;
+    }
+
+    private function getModuleDefinitions() {
+        static $definitions = null;
+        if ($definitions === null) {
+            $configPath = __DIR__ . '/../config/baskan_modules.php';
+            $definitions = file_exists($configPath) ? require $configPath : [];
+        }
+        return $definitions;
+    }
+
+    private function getCachedModulePermissions($userId) {
+        if ($this->modulePermissionsCacheUser !== $userId) {
+            $this->modulePermissionsCache = $this->loadModulePermissions($userId);
+            $this->modulePermissionsCacheUser = $userId;
+        }
+        return $this->modulePermissionsCache;
+    }
+
+    private function loadModulePermissions($userId) {
+        try {
+            $rows = $this->db->fetchAll("
+                SELECT module_key, can_view 
+                FROM baskan_modul_yetkileri 
+                WHERE kullanici_id = ?
+            ", [$userId]);
+        } catch (Exception $e) {
+            // Tablo henüz oluşturulmadıysa varsayılanları kullan
+            return [];
+        }
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['module_key']] = (bool)$row['can_view'];
+        }
+        return $result;
     }
     
     /**

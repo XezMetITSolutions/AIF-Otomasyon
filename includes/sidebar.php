@@ -77,47 +77,196 @@ $currentPath = $_SERVER['PHP_SELF'];
             </a>
             
         <?php elseif ($isBaskan): ?>
-            <!-- Başkan Menüsü -->
-            <a href="/baskan/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
-            </a>
-            
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">YÖNETİM</div>
-            
-            <a href="/baskan/uyeler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'uyeler') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-users me-2"></i>Üye Yönetimi
-            </a>
-            
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
-            
-            <a href="/baskan/etkinlikler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-calendar me-2"></i>Etkinlikler
-            </a>
-            <a href="/baskan/toplantilar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'toplantilar') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-users-cog me-2"></i>Toplantılar
-            </a>
-            <a href="/baskan/duyurular.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-bullhorn me-2"></i>Duyurular
-            </a>
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
-            
-            <a href="/baskan/izin-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-calendar-check me-2"></i>İzin Talepleri
-                <span class="badge bg-danger float-end" id="pendingIzinCount">0</span>
-            </a>
-            <a href="/baskan/harcama-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'harcama-talepleri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-money-bill-wave me-2"></i>Harcama Talepleri
-                <span class="badge bg-warning float-end" id="pendingHarcamaCount">0</span>
-            </a>
-            <a href="/baskan/iade-formlari.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'iade-formlari') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-hand-holding-usd me-2"></i>İade Formları
-            </a>
-            
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">RAPORLAR</div>
-            
-            <a href="/baskan/raporlar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'raporlar') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-chart-bar me-2"></i>Raporlar
-            </a>
+            <?php
+                $baskanSidebarSections = [
+                    [
+                        'title' => null,
+                        'links' => [
+                            [
+                                'key' => 'baskan_dashboard',
+                                'path' => '/baskan/dashboard.php',
+                                'icon' => 'fas fa-tachometer-alt',
+                                'label' => 'Kontrol Paneli',
+                                'match' => 'dashboard',
+                            ],
+                        ],
+                    ],
+                    [
+                        'title' => 'YÖNETİM',
+                        'links' => [
+                            [
+                                'key' => 'baskan_uyeler',
+                                'path' => '/baskan/uyeler.php',
+                                'icon' => 'fas fa-users',
+                                'label' => 'Üye Yönetimi',
+                                'match' => 'uyeler',
+                            ],
+                        ],
+                    ],
+                    [
+                        'title' => 'İÇERİK',
+                        'links' => [
+                            [
+                                'key' => 'baskan_etkinlikler',
+                                'path' => '/baskan/etkinlikler.php',
+                                'icon' => 'fas fa-calendar',
+                                'label' => 'Etkinlikler',
+                                'match' => 'etkinlikler',
+                            ],
+                            [
+                                'key' => 'baskan_toplantilar',
+                                'path' => '/baskan/toplantilar.php',
+                                'icon' => 'fas fa-users-cog',
+                                'label' => 'Toplantılar',
+                                'match' => 'toplantilar',
+                            ],
+                            [
+                                'key' => 'baskan_duyurular',
+                                'path' => '/baskan/duyurular.php',
+                                'icon' => 'fas fa-bullhorn',
+                                'label' => 'Duyurular',
+                                'match' => 'duyurular',
+                            ],
+                        ],
+                    ],
+                    [
+                        'title' => 'İŞLEMLER',
+                        'links' => [
+                            [
+                                'key' => 'baskan_izin_talepleri',
+                                'path' => '/baskan/izin-talepleri.php',
+                                'icon' => 'fas fa-calendar-check',
+                                'label' => 'İzin Talepleri',
+                                'match' => 'izin-talepleri',
+                                'badge' => ['id' => 'pendingIzinCount', 'class' => 'bg-danger'],
+                            ],
+                            [
+                                'key' => 'baskan_harcama_talepleri',
+                                'path' => '/baskan/harcama-talepleri.php',
+                                'icon' => 'fas fa-money-bill-wave',
+                                'label' => 'Harcama Talepleri',
+                                'match' => 'harcama-talepleri',
+                                'badge' => ['id' => 'pendingHarcamaCount', 'class' => 'bg-warning'],
+                            ],
+                            [
+                                'key' => 'baskan_iade_formlari',
+                                'path' => '/baskan/iade-formlari.php',
+                                'icon' => 'fas fa-hand-holding-usd',
+                                'label' => 'İade Formları',
+                                'match' => 'iade-formlari',
+                            ],
+                        ],
+                    ],
+                    [
+                        'title' => 'RAPORLAR',
+                        'links' => [
+                            [
+                                'key' => 'baskan_raporlar',
+                                'path' => '/baskan/raporlar.php',
+                                'icon' => 'fas fa-chart-bar',
+                                'label' => 'Raporlar',
+                                'match' => 'raporlar',
+                            ],
+                        ],
+                    ],
+                ];
+
+                $uyeSidebarLinks = [
+                    [
+                        'key' => 'uye_dashboard',
+                        'path' => '/uye/dashboard.php',
+                        'icon' => 'fas fa-gauge',
+                        'label' => 'Üye Kontrol Paneli',
+                        'match' => 'uye/dashboard',
+                    ],
+                    [
+                        'key' => 'uye_duyurular',
+                        'path' => '/uye/duyurular.php',
+                        'icon' => 'fas fa-bullhorn',
+                        'label' => 'Üye Duyuruları',
+                        'match' => 'uye/duyurular',
+                    ],
+                    [
+                        'key' => 'uye_etkinlikler',
+                        'path' => '/uye/etkinlikler.php',
+                        'icon' => 'fas fa-calendar',
+                        'label' => 'Üye Etkinlikleri',
+                        'match' => 'uye/etkinlikler',
+                    ],
+                    [
+                        'key' => 'uye_toplantilar',
+                        'path' => '/uye/toplantilar.php',
+                        'icon' => 'fas fa-users-cog',
+                        'label' => 'Üye Toplantıları',
+                        'match' => 'uye/toplantilar',
+                    ],
+                    [
+                        'key' => 'uye_izin_talepleri',
+                        'path' => '/uye/izin-talepleri.php',
+                        'icon' => 'fas fa-person-walking',
+                        'label' => 'Üye İzin Talepleri',
+                        'match' => 'uye/izin-talepleri',
+                    ],
+                    [
+                        'key' => 'uye_harcama_talepleri',
+                        'path' => '/uye/harcama-talepleri.php',
+                        'icon' => 'fas fa-wallet',
+                        'label' => 'Üye Harcama Talepleri',
+                        'match' => 'uye/harcama-talepleri',
+                    ],
+                    [
+                        'key' => 'uye_iade_formu',
+                        'path' => '/uye/iade-formu.php',
+                        'icon' => 'fas fa-file-invoice-dollar',
+                        'label' => 'Üye İade Formu',
+                        'match' => 'uye/iade-formu',
+                    ],
+                ];
+
+                foreach ($baskanSidebarSections as $section) {
+                    $visibleLinks = array_filter($section['links'], function ($link) use ($auth) {
+                        return $auth->hasModulePermission($link['key']);
+                    });
+
+                    if (empty($visibleLinks)) {
+                        continue;
+                    }
+
+                    if (!empty($section['title'])) {
+                        echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">' . htmlspecialchars($section['title']) . '</div>';
+                    }
+
+                    foreach ($visibleLinks as $link) {
+                        $isActive = strpos($currentPath, $link['match']) !== false;
+                        ?>
+                        <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?>">
+                            <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
+                            <?php if (!empty($link['badge'])): ?>
+                                <span class="badge <?php echo $link['badge']['class']; ?> float-end" id="<?php echo $link['badge']['id']; ?>">0</span>
+                            <?php endif; ?>
+                        </a>
+                        <?php
+                    }
+                }
+
+                $hasUyeLinks = false;
+                foreach ($uyeSidebarLinks as $link) {
+                    if ($auth->hasModulePermission($link['key'])) {
+                        $hasUyeLinks = true;
+                        break;
+                    }
+                }
+
+                if ($hasUyeLinks): ?>
+                    <div class="list-group-item fw-bold text-muted small" style="cursor: default;">ÜYE MODÜLLERİ</div>
+                    <?php foreach ($uyeSidebarLinks as $link): ?>
+                        <?php if ($auth->hasModulePermission($link['key'])): ?>
+                            <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo strpos($currentPath, $link['match']) !== false ? 'active' : ''; ?>">
+                                <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
+                            </a>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
         <?php elseif ($isUye): ?>
             <!-- Üye Menüsü -->
             <a href="/uye/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
