@@ -13,6 +13,101 @@ $currentPath = $_SERVER['PHP_SELF'];
 ?>
 
 <div class="sidebar bg-light border-end">
+    <?php
+    // Define Baskan Sidebar Sections globally so they can be used by both Baskan and Uye (if granted)
+    $baskanSidebarSections = [
+        [
+            'title' => null,
+            'links' => [
+                [
+                    'key' => 'baskan_dashboard',
+                    'path' => '/baskan/dashboard.php',
+                    'icon' => 'fas fa-tachometer-alt',
+                    'label' => 'Yönetici Paneli', // Changed label to distinguish from Member Dashboard
+                    'match' => 'baskan/dashboard', // More specific match
+                ],
+            ],
+        ],
+        [
+            'title' => 'YÖNETİM',
+            'links' => [
+                [
+                    'key' => 'baskan_uyeler',
+                    'path' => '/baskan/uyeler.php',
+                    'icon' => 'fas fa-users',
+                    'label' => 'Üye Yönetimi',
+                    'match' => 'uyeler',
+                ],
+            ],
+        ],
+        [
+            'title' => 'İÇERİK',
+            'links' => [
+                [
+                    'key' => 'baskan_etkinlikler',
+                    'path' => '/baskan/etkinlikler.php',
+                    'icon' => 'fas fa-calendar',
+                    'label' => 'Etkinlik Yönetimi',
+                    'match' => 'baskan/etkinlikler',
+                ],
+                [
+                    'key' => 'baskan_toplantilar',
+                    'path' => '/baskan/toplantilar.php',
+                    'icon' => 'fas fa-users-cog',
+                    'label' => 'Toplantı Yönetimi',
+                    'match' => 'baskan/toplantilar',
+                ],
+                [
+                    'key' => 'baskan_duyurular',
+                    'path' => '/baskan/duyurular.php',
+                    'icon' => 'fas fa-bullhorn',
+                    'label' => 'Duyuru Yönetimi',
+                    'match' => 'baskan/duyurular',
+                ],
+            ],
+        ],
+        [
+            'title' => 'İŞLEMLER',
+            'links' => [
+                [
+                    'key' => 'baskan_izin_talepleri',
+                    'path' => '/baskan/izin-talepleri.php',
+                    'icon' => 'fas fa-calendar-check',
+                    'label' => 'İzin Onayları',
+                    'match' => 'baskan/izin-talepleri',
+                    'badge' => ['id' => 'pendingIzinCount', 'class' => 'bg-danger'],
+                ],
+                [
+                    'key' => 'baskan_harcama_talepleri',
+                    'path' => '/baskan/harcama-talepleri.php',
+                    'icon' => 'fas fa-money-bill-wave',
+                    'label' => 'Harcama Onayları',
+                    'match' => 'baskan/harcama-talepleri',
+                    'badge' => ['id' => 'pendingHarcamaCount', 'class' => 'bg-warning'],
+                ],
+                [
+                    'key' => 'baskan_iade_formlari',
+                    'path' => '/baskan/iade-formlari.php',
+                    'icon' => 'fas fa-hand-holding-usd',
+                    'label' => 'İade Onayları',
+                    'match' => 'baskan/iade-formlari',
+                ],
+            ],
+        ],
+        [
+            'title' => 'RAPORLAR',
+            'links' => [
+                [
+                    'key' => 'baskan_raporlar',
+                    'path' => '/baskan/raporlar.php',
+                    'icon' => 'fas fa-chart-bar',
+                    'label' => 'Raporlar',
+                    'match' => 'raporlar',
+                ],
+            ],
+        ],
+    ];
+    ?>
     <div class="list-group list-group-flush sidebar-scroll">
         <?php if ($isSuperAdmin): ?>
             <!-- Ana Yönetici Menüsü -->
@@ -77,8 +172,10 @@ $currentPath = $_SERVER['PHP_SELF'];
             </a>
             
         <?php elseif ($isBaskan): ?>
+        <?php elseif ($isBaskan): ?>
             <?php
-                $baskanSidebarSections = [
+                // Baskan sidebar logic uses the global $baskanSidebarSections defined above
+                foreach ($baskanSidebarSections as $section) {
                     [
                         'title' => null,
                         'links' => [
@@ -269,9 +366,41 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <?php endif; ?>
         <?php elseif ($isUye): ?>
             <!-- Üye Menüsü -->
-            <a href="/uye/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
+            <a href="/uye/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'uye/dashboard') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
             </a>
+
+            <?php
+            // Render Authorized Baskan Modules for Uye
+            foreach ($baskanSidebarSections as $section) {
+                $visibleLinks = array_filter($section['links'], function ($link) use ($auth) {
+                    return $auth->hasModulePermission($link['key']);
+                });
+
+                if (empty($visibleLinks)) {
+                    continue;
+                }
+
+                // Add a separator/header if not present
+                if (!empty($section['title'])) {
+                    echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">' . htmlspecialchars($section['title']) . ' (YETKİLİ)</div>';
+                } else {
+                     echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">YÖNETİM</div>';
+                }
+
+                foreach ($visibleLinks as $link) {
+                    $isActive = strpos($currentPath, $link['match']) !== false;
+                    ?>
+                    <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?> list-group-item-warning">
+                        <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
+                        <?php if (!empty($link['badge'])): ?>
+                            <span class="badge <?php echo $link['badge']['class']; ?> float-end" id="<?php echo $link['badge']['id']; ?>">0</span>
+                        <?php endif; ?>
+                    </a>
+                    <?php
+                }
+            }
+            ?>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">GÜNCEL</div>
 
