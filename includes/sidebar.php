@@ -107,6 +107,69 @@ $currentPath = $_SERVER['PHP_SELF'];
             ],
         ],
     ];
+
+    $uyeSidebarLinks = [
+        [
+            'key' => 'uye_dashboard',
+            'path' => '/uye/dashboard.php',
+            'icon' => 'fas fa-gauge',
+            'label' => 'Üye Kontrol Paneli',
+            'match' => 'uye/dashboard',
+        ],
+        [
+            'key' => 'uye_duyurular',
+            'path' => '/uye/duyurular.php',
+            'icon' => 'fas fa-bullhorn',
+            'label' => 'Üye Duyuruları',
+            'match' => 'uye/duyurular',
+        ],
+        [
+            'key' => 'uye_etkinlikler',
+            'path' => '/uye/etkinlikler.php',
+            'icon' => 'fas fa-calendar',
+            'label' => 'Üye Etkinlikleri',
+            'match' => 'uye/etkinlikler',
+        ],
+        [
+            'key' => 'uye_toplantilar',
+            'path' => '/uye/toplantilar.php',
+            'icon' => 'fas fa-users-cog',
+            'label' => 'Üye Toplantıları',
+            'match' => 'uye/toplantilar',
+        ],
+        [
+            'key' => 'uye_izin_talepleri',
+            'path' => '/uye/izin-talepleri.php',
+            'icon' => 'fas fa-person-walking',
+            'label' => 'Üye İzin Talepleri',
+            'match' => 'uye/izin-talepleri',
+        ],
+        [
+            'key' => 'uye_harcama_talepleri',
+            'path' => '/uye/harcama-talepleri.php',
+            'icon' => 'fas fa-wallet',
+            'label' => 'Üye Harcama Talepleri',
+            'match' => 'uye/harcama-talepleri',
+        ],
+        [
+            'key' => 'uye_iade_formu',
+            'path' => '/uye/iade-formu.php',
+            'icon' => 'fas fa-file-invoice-dollar',
+            'label' => 'Üye İade Formu',
+            'match' => 'uye/iade-formu',
+        ],
+    ];
+
+    // Map of Uye modules to hide if corresponding Baskan module is active
+    $exclusionMap = [
+        'uye_dashboard' => 'baskan_dashboard',
+        'uye_duyurular' => 'baskan_duyurular',
+        'uye_etkinlikler' => 'baskan_etkinlikler',
+        'uye_toplantilar' => 'baskan_toplantilar',
+        'uye_izin_talepleri' => 'baskan_izin_talepleri',
+        'uye_harcama_talepleri' => 'baskan_harcama_talepleri',
+        'uye_iade_formu' => 'baskan_iade_formlari',
+    ];
     ?>
     <div class="list-group list-group-flush sidebar-scroll">
         <?php if ($isSuperAdmin): ?>
@@ -200,68 +263,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                     }
                 }
 
-                $uyeSidebarLinks = [
-                    [
-                        'key' => 'uye_dashboard',
-                        'path' => '/uye/dashboard.php',
-                        'icon' => 'fas fa-gauge',
-                        'label' => 'Üye Kontrol Paneli',
-                        'match' => 'uye/dashboard',
-                    ],
-                    [
-                        'key' => 'uye_duyurular',
-                        'path' => '/uye/duyurular.php',
-                        'icon' => 'fas fa-bullhorn',
-                        'label' => 'Üye Duyuruları',
-                        'match' => 'uye/duyurular',
-                    ],
-                    [
-                        'key' => 'uye_etkinlikler',
-                        'path' => '/uye/etkinlikler.php',
-                        'icon' => 'fas fa-calendar',
-                        'label' => 'Üye Etkinlikleri',
-                        'match' => 'uye/etkinlikler',
-                    ],
-                    [
-                        'key' => 'uye_toplantilar',
-                        'path' => '/uye/toplantilar.php',
-                        'icon' => 'fas fa-users-cog',
-                        'label' => 'Üye Toplantıları',
-                        'match' => 'uye/toplantilar',
-                    ],
-                    [
-                        'key' => 'uye_izin_talepleri',
-                        'path' => '/uye/izin-talepleri.php',
-                        'icon' => 'fas fa-person-walking',
-                        'label' => 'Üye İzin Talepleri',
-                        'match' => 'uye/izin-talepleri',
-                    ],
-                    [
-                        'key' => 'uye_harcama_talepleri',
-                        'path' => '/uye/harcama-talepleri.php',
-                        'icon' => 'fas fa-wallet',
-                        'label' => 'Üye Harcama Talepleri',
-                        'match' => 'uye/harcama-talepleri',
-                    ],
-                    [
-                        'key' => 'uye_iade_formu',
-                        'path' => '/uye/iade-formu.php',
-                        'icon' => 'fas fa-file-invoice-dollar',
-                        'label' => 'Üye İade Formu',
-                        'match' => 'uye/iade-formu',
-                    ],
-                ];
 
-                // Map of Uye modules to hide if corresponding Baskan module is active
-                $exclusionMap = [
-                    'uye_dashboard' => 'baskan_dashboard',
-                    'uye_duyurular' => 'baskan_duyurular',
-                    'uye_etkinlikler' => 'baskan_etkinlikler',
-                    'uye_toplantilar' => 'baskan_toplantilar',
-                    'uye_izin_talepleri' => 'baskan_izin_talepleri',
-                    'uye_harcama_talepleri' => 'baskan_harcama_talepleri',
-                    'uye_iade_formu' => 'baskan_iade_formlari',
-                ];
 
                 $hasUyeLinks = false;
                 foreach ($uyeSidebarLinks as $link) {
@@ -283,9 +285,7 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <?php endif; ?>
         <?php elseif ($isUye): ?>
             <!-- Üye Menüsü -->
-            <a href="/uye/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'uye/dashboard') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
-            </a>
+
 
             <?php
             // Render Authorized Baskan Modules for Uye
@@ -319,29 +319,36 @@ $currentPath = $_SERVER['PHP_SELF'];
             }
             ?>
 
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">GÜNCEL</div>
+            <?php
+            $hasUyeLinks = false;
+            foreach ($uyeSidebarLinks as $link) {
+                // Check exclusion
+                if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
+                    continue;
+                }
+                if ($auth->hasModulePermission($link['key'])) {
+                    $hasUyeLinks = true;
+                    break;
+                }
+            }
 
-            <a href="/uye/duyurular.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-bullhorn me-2"></i>Duyurular
-            </a>
-            <a href="/uye/etkinlikler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-calendar me-2"></i>Etkinlikler
-            </a>
-            <a href="/uye/toplantilar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'toplantilar') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-users-cog me-2"></i>Toplantılar
-            </a>
-
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
-
-            <a href="/uye/izin-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-calendar-check me-2"></i>İzin Taleplerim
-            </a>
-            <a href="/uye/harcama-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'harcama-talepleri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-money-bill-wave me-2"></i>Harcama Taleplerim
-            </a>
-            <a href="/uye/iade-formu.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'iade-formu') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-hand-holding-usd me-2"></i>İade Talebi Formu
-            </a>
+            if ($hasUyeLinks): ?>
+                <div class="list-group-item fw-bold text-muted small" style="cursor: default;">GÜNCEL</div>
+                <?php foreach ($uyeSidebarLinks as $link): ?>
+                    <?php 
+                    // Re-check exclusion for rendering
+                    if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
+                        continue;
+                    }
+                    
+                    if ($auth->hasModulePermission($link['key'])): 
+                    ?>
+                        <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo strpos($currentPath, $link['match']) !== false ? 'active' : ''; ?>">
+                            <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">HESAP</div>
 
