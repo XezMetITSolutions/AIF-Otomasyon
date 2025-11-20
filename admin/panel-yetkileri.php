@@ -45,43 +45,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $db->getConnection()->beginTransaction();
 
-            // 1. Get all manageable user IDs to safely clear their permissions
-            $userIds = array_column($uyeler, 'kullanici_id');
+            // 1. Prepare batch insert/update
+            $insertValues = [];
+            $params = [];
             
-            if (!empty($userIds)) {
-                // Create placeholders for IN clause
-                $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+            // Iterate over ALL manageable users and ALL assignable modules
+            // This ensures we explicitly save 0 for unchecked items, overriding defaults
+            foreach ($uyeler as $uye) {
+                $uId = $uye['kullanici_id'];
                 
-                // Delete existing permissions for these users
-                $db->query("DELETE FROM baskan_modul_yetkileri WHERE kullanici_id IN ($placeholders)", $userIds);
-                
-                // 2. Insert new permissions
-                $postedPermissions = $_POST['perm'] ?? [];
-                $insertValues = [];
-                $params = [];
-                
-                foreach ($postedPermissions as $userId => $modules) {
-                    // Verify user is in our manageable list
-                    if (in_array((int)$userId, $userIds)) {
-                        foreach ($modules as $moduleKey => $val) {
-                            if (isset($assignableModules[$moduleKey])) {
-                                $insertValues[] = "(?, ?, 1)";
-                                $params[] = $userId;
-                                $params[] = $moduleKey;
-                            }
-                        }
-                    }
+                foreach ($assignableModules as $moduleKey => $mInfo) {
+                    // Check if this module was checked for this user
+                    $isChecked = isset($_POST['perm'][$uId][$moduleKey]);
+                    $canView = $isChecked ? 1 : 0;
+                    
+                    $insertValues[] = "(?, ?, ?)";
+                    $params[] = $uId;
+                    $params[] = $moduleKey;
+                    $params[] = $canView;
                 }
+            }
+            
+            if (!empty($insertValues)) {
+                // Chunking to be safe, though MySQL limit is high
+                $chunks = array_chunk($insertValues, 500);
+                $paramChunks = array_chunk($params, 500 * 3); // 3 params per row
                 
-                if (!empty($insertValues)) {
-                    // Batch insert
-                    // Note: If too many placeholders, might need to chunk. 
-                    // SQLite limit is high, MySQL usually fine for this size.
-                    // For safety, let's chunk if > 1000 items? 
-                    // With ~50 users * 20 modules = 1000 rows. 
-                    // Let's just run it, usually fine.
-                    $sql = "INSERT INTO baskan_modul_yetkileri (kullanici_id, module_key, can_view) VALUES " . implode(', ', $insertValues);
-                    $db->query($sql, $params);
+                foreach ($chunks as $i => $chunk) {
+                    $sql = "INSERT INTO baskan_modul_yetkileri (kullanici_id, module_key, can_view) 
+                            VALUES " . implode(', ', $chunk) . "
+                            ON DUPLICATE KEY UPDATE can_view = VALUES(can_view)";
+                    $db->query($sql, $paramChunks[$i]);
                 }
             }
 
@@ -98,9 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch All Permissions
 $allPermissions = [];
 try {
-    $rows = $db->fetchAll("SELECT kullanici_id, module_key FROM baskan_modul_yetkileri WHERE can_view = 1");
+    $rows = $db->fetchAll("SELECT kullanici_id, module_key, can_view FROM baskan_modul_yetkileri");
     foreach ($rows as $row) {
-        $allPermissions[$row['kullanici_id']][$row['module_key']] = true;
+        $allPermissions[$row['kullanici_id']][$row['module_key']] = (bool)$row['can_view'];
     }
 } catch (Exception $e) {
     // Ignore
@@ -268,11 +262,17 @@ include __DIR__ . '/../includes/sidebar.php';
                                         </td>
                                         <?php foreach ($assignableModules as $key => $module): ?>
                                             <td class="text-center bg-light-subtle">
+                                                <?php 
+                                                    $default = (bool)($module['default'] ?? true);
+                                                    $isChecked = isset($allPermissions[$userId][$key]) 
+                                                        ? $allPermissions[$userId][$key] 
+                                                        : $default;
+                                                ?>
                                                 <input type="checkbox" 
                                                        name="perm[<?php echo $userId; ?>][<?php echo $key; ?>]" 
                                                        class="matrix-checkbox col-check-<?php echo $key; ?>" 
                                                        value="1"
-                                                       <?php echo isset($allPermissions[$userId][$key]) ? 'checked' : ''; ?>>
+                                                       <?php echo $isChecked ? 'checked' : ''; ?>>
                                             </td>
                                         <?php endforeach; ?>
                                     </tr>
