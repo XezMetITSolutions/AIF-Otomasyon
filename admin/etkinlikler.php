@@ -7,11 +7,15 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireSuperAdmin();
+Middleware::requireLoggedIn();
 
 $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
+
+// Yetki kontrolü
+$isSuperAdmin = $user['role'] === 'super_admin';
+$canManage = $isSuperAdmin || $auth->hasModulePermission('baskan_etkinlikler');
 
 $pageTitle = 'Çalışma Takvimi';
 
@@ -295,6 +299,7 @@ include __DIR__ . '/../includes/header.php';
                     <i class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi
                 </h1>
                 <div class="btn-group">
+                    <?php if ($canManage): ?>
                     <a href="/admin/etkinlik-ekle.php" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
                     </a>
@@ -304,6 +309,7 @@ include __DIR__ . '/../includes/header.php';
                     <a href="/admin/etkinlikler-debug.php" class="btn btn-warning">
                         <i class="fas fa-bug me-2"></i>Debug
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
             
@@ -451,6 +457,7 @@ include __DIR__ . '/../includes/header.php';
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
+                                                    <?php if ($canManage): ?>
                                                     <a href="/admin/etkinlik-duzenle.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
@@ -461,6 +468,11 @@ include __DIR__ . '/../includes/header.php';
                                                             title="Sil">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
+                                                    <?php else: ?>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Yetkiniz yok">
+                                                        <i class="fas fa-lock"></i>
+                                                    </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>
@@ -487,9 +499,11 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <?php if ($canManage): ?>
                 <a href="#" id="eventEditBtn" class="btn btn-primary">
                     <i class="fas fa-edit me-1"></i>Düzenle
                 </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>

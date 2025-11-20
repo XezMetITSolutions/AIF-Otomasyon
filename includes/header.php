@@ -109,9 +109,9 @@ $isUye = $user && $user['role'] === 'uye';
                             ?>
                             <?php foreach ($baskanHeaderNav as $moduleKey => $navData): ?>
                                 <?php if ($auth->hasModulePermission($moduleKey)): ?>
-                                    <li class="nav-item">
+                            <li class="nav-item">
                                         <a class="nav-link" href="<?php echo $navData[0]; ?>"><i class="<?php echo $navData[1]; ?> me-1"></i><?php echo $navData[2]; ?></a>
-                                    </li>
+                            </li>
                                 <?php endif; ?>
                             <?php endforeach; ?>
                             <?php if ($hasUyeHeaderNav): ?>
@@ -126,7 +126,7 @@ $isUye = $user && $user['role'] === 'uye';
                                             <?php endif; ?>
                                         <?php endforeach; ?>
                                     </ul>
-                                </li>
+                            </li>
                             <?php endif; ?>
                         <?php elseif ($isUye): ?>
                             <li class="nav-item">

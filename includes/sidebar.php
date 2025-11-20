@@ -92,6 +92,20 @@ $currentPath = $_SERVER['PHP_SELF'];
                     'label' => 'İade Onayları',
                     'match' => 'baskan/iade-formlari',
                 ],
+                [
+                    'key' => 'baskan_demirbas_talepleri',
+                    'path' => '/baskan/demirbas-talepleri.php',
+                    'icon' => 'fas fa-box',
+                    'label' => 'Demirbaş Talepleri',
+                    'match' => 'baskan/demirbas-talepleri',
+                ],
+                [
+                    'key' => 'baskan_raggal_talepleri',
+                    'path' => '/baskan/raggal-talepleri.php',
+                    'icon' => 'fas fa-calendar-check',
+                    'label' => 'Raggal Talepleri',
+                    'match' => 'baskan/raggal-talepleri',
+                ],
             ],
         ],
         [
@@ -158,6 +172,20 @@ $currentPath = $_SERVER['PHP_SELF'];
             'label' => 'Üye İade Formu',
             'match' => 'uye/iade-formu',
         ],
+        [
+            'key' => 'uye_demirbas_talep',
+            'path' => '/uye/demirbas-talep.php',
+            'icon' => 'fas fa-box',
+            'label' => 'Demirbaş Talep',
+            'match' => 'uye/demirbas-talep',
+        ],
+        [
+            'key' => 'uye_raggal_talep',
+            'path' => '/uye/raggal-talep.php',
+            'icon' => 'fas fa-calendar-plus',
+            'label' => 'Raggal Rezervasyon',
+            'match' => 'uye/raggal-talep',
+        ],
     ];
 
     // Map of Uye modules to hide if corresponding Baskan module is active
@@ -169,6 +197,8 @@ $currentPath = $_SERVER['PHP_SELF'];
         'uye_izin_talepleri' => 'baskan_izin_talepleri',
         'uye_harcama_talepleri' => 'baskan_harcama_talepleri',
         'uye_iade_formu' => 'baskan_iade_formlari',
+        'uye_demirbas_talep' => 'baskan_demirbas_talepleri',
+        'uye_raggal_talep' => 'baskan_raggal_talepleri',
     ];
     ?>
     <div class="list-group list-group-flush sidebar-scroll">
@@ -220,6 +250,12 @@ $currentPath = $_SERVER['PHP_SELF'];
             </a>
             <a href="/admin/demirbaslar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'demirbaslar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-box me-2"></i>Demirbaş Yönetimi
+            </a>
+            <a href="/admin/demirbas-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'demirbas-talepleri') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-box-open me-2"></i>Demirbaş Talepleri
+            </a>
+            <a href="/admin/raggal-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'raggal-talepleri') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-calendar-check me-2"></i>Raggal Talepleri
             </a>
             
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">RAPORLAR</div>

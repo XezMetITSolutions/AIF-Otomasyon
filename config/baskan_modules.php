@@ -77,6 +77,22 @@ return [
         'description' => 'BYK performans raporlarını görüntüleyin.',
         'icon' => 'fas fa-chart-line',
     ],
+    'baskan_demirbas_talepleri' => [
+        'label' => 'Demirbaş Talepleri',
+        'group' => 'Baskan Paneli',
+        'category' => 'baskan',
+        'default' => true,
+        'description' => 'Demirbaş taleplerini yönetin.',
+        'icon' => 'fas fa-box',
+    ],
+    'baskan_raggal_talepleri' => [
+        'label' => 'Raggal Talepleri',
+        'group' => 'Baskan Paneli',
+        'category' => 'baskan',
+        'default' => true,
+        'description' => 'Raggal rezervasyon taleplerini yönetin.',
+        'icon' => 'fas fa-calendar-check',
+    ],
 
     // Üye paneli modülleri (varsayılan: kapalı)
     'uye_dashboard' => [
@@ -134,6 +150,22 @@ return [
         'default' => false,
         'description' => 'İade formu gönderme arayüzü.',
         'icon' => 'fas fa-file-circle-dollar',
+    ],
+    'uye_demirbas_talep' => [
+        'label' => 'Demirbaş Talep',
+        'group' => 'Üye Modülleri',
+        'category' => 'uye',
+        'default' => false,
+        'description' => 'Demirbaş talep formu.',
+        'icon' => 'fas fa-box',
+    ],
+    'uye_raggal_talep' => [
+        'label' => 'Raggal Rezervasyon',
+        'group' => 'Üye Modülleri',
+        'category' => 'uye',
+        'default' => false,
+        'description' => 'Raggal rezervasyon formu.',
+        'icon' => 'fas fa-calendar-plus',
     ],
 ];
 
