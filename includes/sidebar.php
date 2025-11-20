@@ -252,31 +252,16 @@ $currentPath = $_SERVER['PHP_SELF'];
                     ],
                 ];
 
-                foreach ($baskanSidebarSections as $section) {
-                    $visibleLinks = array_filter($section['links'], function ($link) use ($auth) {
-                        return $auth->hasModulePermission($link['key']);
-                    });
-
-                    if (empty($visibleLinks)) {
-                        continue;
-                    }
-
-                    if (!empty($section['title'])) {
-                        echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">' . htmlspecialchars($section['title']) . '</div>';
-                    }
-
-                    foreach ($visibleLinks as $link) {
-                        $isActive = strpos($currentPath, $link['match']) !== false;
-                        ?>
-                        <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?>">
-                            <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
-                            <?php if (!empty($link['badge'])): ?>
-                                <span class="badge <?php echo $link['badge']['class']; ?> float-end" id="<?php echo $link['badge']['id']; ?>">0</span>
-                            <?php endif; ?>
-                        </a>
-                        <?php
-                    }
-                }
+                // Map of Uye modules to hide if corresponding Baskan module is active
+                $exclusionMap = [
+                    'uye_dashboard' => 'baskan_dashboard',
+                    'uye_duyurular' => 'baskan_duyurular',
+                    'uye_etkinlikler' => 'baskan_etkinlikler',
+                    'uye_toplantilar' => 'baskan_toplantilar',
+                    'uye_izin_talepleri' => 'baskan_izin_talepleri',
+                    'uye_harcama_talepleri' => 'baskan_harcama_talepleri',
+                    'uye_iade_formu' => 'baskan_iade_formlari',
+                ];
 
                 $hasUyeLinks = false;
                 foreach ($uyeSidebarLinks as $link) {
