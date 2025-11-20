@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Güvenlik doğrulaması başarısız oldu.';
     } else {
         try {
-            $db->beginTransaction();
+            $db->getConnection()->beginTransaction();
 
             // 1. Get all manageable user IDs to safely clear their permissions
             $userIds = array_column($uyeler, 'kullanici_id');
@@ -85,11 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            $db->commit();
+            $db->getConnection()->commit();
             $messages[] = 'Tüm yetkiler başarıyla güncellendi.';
             
         } catch (Exception $e) {
-            $db->rollBack();
+            $db->getConnection()->rollBack();
             $errors[] = 'Hata oluştu: ' . $e->getMessage();
         }
     }
