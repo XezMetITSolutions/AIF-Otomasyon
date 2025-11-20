@@ -95,27 +95,28 @@ include __DIR__ . '/../includes/sidebar.php';
 ?>
 <main class="container-fluid mt-4">
     <style>
-        .panel-card-button {
+        .panel-grid-card {
             border: 1px solid #e5e7eb;
-            border-radius: 16px;
+            border-radius: 18px;
             transition: transform .15s ease, box-shadow .15s ease;
             cursor: pointer;
         }
-        .panel-card-button:hover {
+        .panel-grid-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(15,23,42,.08);
+            box-shadow: 0 15px 35px rgba(15,23,42,.08);
         }
-        .panel-card-button.active {
+        .panel-grid-card.active {
             border-color: var(--bs-primary);
-            box-shadow: 0 12px 30px rgba(59,130,246,.25);
+            box-shadow: 0 18px 40px rgba(59,130,246,.25);
         }
-        .icon-bubble {
-            width: 48px;
-            height: 48px;
+        .panel-grid-card .icon-bubble {
+            width: 52px;
+            height: 52px;
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.2rem;
         }
         .user-pill input {
             position: absolute;
@@ -123,56 +124,51 @@ include __DIR__ . '/../includes/sidebar.php';
         }
         .user-pill label {
             display: block;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 10px 14px;
             cursor: pointer;
-            font-weight: 500;
             transition: all .15s ease;
         }
         .user-pill input:checked + label {
             border-color: var(--bs-primary);
             background: rgba(59,130,246,.08);
             color: var(--bs-primary);
-            box-shadow: 0 4px 12px rgba(59,130,246,.15);
+            box-shadow: 0 6px 16px rgba(59,130,246,.2);
         }
     </style>
     <div class="content-wrapper">
-        <div class="d-flex flex-column flex-lg-row gap-4">
-            <div class="flex-grow-1">
-                <div class="mb-3">
-                    <h1 class="h3 mb-2">
-                        <i class="fas fa-sliders me-2"></i>Panel Yetkilendirme
-                    </h1>
-                    <p class="text-muted mb-0">Bir panel seçip hangi kullanıcıların görebileceğini belirleyin.</p>
+        <div class="row g-3 align-items-center mb-4">
+            <div class="col-lg-6">
+                <h1 class="h3 mb-1"><i class="fas fa-sliders me-2"></i>Panel Yetkilendirme</h1>
+                <p class="text-muted mb-0">Görev bazlı yetki tanımla, kullanıcıları hızla bul.</p>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="panelSearch" placeholder="Panel adı veya açıklamada ara..." onkeyup="filterPanels()">
+                    <button class="btn btn-outline-secondary" id="panelAssignedToggle" data-active="0" type="button" onclick="toggleAssigned()">Sadece Yetki Verilenler</button>
                 </div>
-                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-xl-8">
+                <div class="row g-3" id="panelGrid">
                     <?php foreach ($moduleCards as $moduleKey => $moduleInfo): ?>
-                        <div class="col">
-                            <a href="/admin/panel-yetkileri.php?module=<?php echo urlencode($moduleKey); ?>"
-                               class="text-decoration-none text-reset">
-                                <div class="panel-card-button card h-100 border-0 shadow-sm <?php echo $selectedModuleKey === $moduleKey ? 'active' : ''; ?>">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start gap-3">
-                                            <div class="icon-bubble bg-primary-subtle text-primary">
-                                                <i class="<?php echo $moduleInfo['icon'] ?? 'fas fa-puzzle-piece'; ?>"></i>
-                                            </div>
-                                            <div>
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <h5 class="card-title h6 mb-1"><?php echo htmlspecialchars($moduleInfo['label'] ?? $moduleKey); ?></h5>
-                                                    <?php if (($moduleInfo['category'] ?? '') === 'uye'): ?>
-                                                        <span class="badge bg-success">Üye</span>
-                                                    <?php else: ?>
-                                                        <span class="badge bg-primary-subtle text-primary">Başkan</span>
-                                                    <?php endif; ?>
+                        <div class="col-12 col-md-6" data-panel-name="<?php echo strtolower(htmlspecialchars($moduleInfo['label'] ?? $moduleKey)); ?>" data-panel-assigned="<?php echo isset($modulePermissions[$moduleKey]) && count($modulePermissions[$moduleKey]) ? '1' : '0'; ?>">
+                            <a href="/admin/panel-yetkileri.php?module=<?php echo urlencode($moduleKey); ?>" class="text-decoration-none text-reset">
+                                <div class="panel-grid-card p-3 h-100 <?php echo $selectedModuleKey === $moduleKey ? 'active' : ''; ?>">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="icon-bubble bg-primary-subtle text-primary">
+                                            <i class="<?php echo $moduleInfo['icon'] ?? 'fas fa-layer-group'; ?>"></i>
+                                        </div>
+                                        <div class="w-100">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="fw-semibold"><?php echo htmlspecialchars($moduleInfo['label'] ?? $moduleKey); ?></div>
+                                                    <small class="text-muted"><?php echo htmlspecialchars($moduleInfo['description'] ?? ''); ?></small>
                                                 </div>
-                                                <p class="card-text text-muted mb-2" style="min-height: 40px;">
-                                                    <?php echo htmlspecialchars($moduleInfo['description'] ?? ''); ?>
-                                                </p>
-                                                <div class="d-flex align-items-center gap-2 text-muted small">
-                                                    <i class="fas fa-user-check"></i>
-                                                    <?php echo isset($modulePermissions[$moduleKey]) ? count($modulePermissions[$moduleKey]) : 0; ?> yetkili üye
-                                                </div>
+                                                <span class="badge bg-primary-subtle text-primary"><?php echo isset($modulePermissions[$moduleKey]) ? count($modulePermissions[$moduleKey]) : 0; ?></span>
                                             </div>
                                         </div>
                                     </div>
@@ -182,8 +178,8 @@ include __DIR__ . '/../includes/sidebar.php';
                     <?php endforeach; ?>
                 </div>
             </div>
-            <div class="flex-shrink-0" style="min-width:320px; max-width:420px;">
-                <div class="card border-0 shadow-sm">
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <?php foreach ($messages as $msg): ?>
                             <div class="alert alert-success"><?php echo htmlspecialchars($msg); ?></div>
@@ -193,16 +189,18 @@ include __DIR__ . '/../includes/sidebar.php';
                         <?php endforeach; ?>
 
                         <?php if (!$selectedModule): ?>
-                            <p class="text-muted text-center mb-0">Sol taraftan bir panel seçerek yetkilendirme yapabilirsiniz.</p>
+                            <p class="text-muted text-center mb-0">Soldan bir panel seçerek yetkilendirmeye başlayın.</p>
                         <?php else: ?>
                             <form method="post" id="panelForm">
                                 <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                 <input type="hidden" name="module_key" value="<?php echo htmlspecialchars($selectedModuleKey); ?>">
+
                                 <div class="mb-3">
                                     <div class="text-uppercase text-muted small fw-semibold">Seçilen Panel</div>
                                     <h5 class="mb-1"><?php echo htmlspecialchars($selectedModule['label'] ?? $selectedModuleKey); ?></h5>
                                     <p class="text-muted mb-0"><?php echo htmlspecialchars($selectedModule['description'] ?? ''); ?></p>
                                 </div>
+
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Yetkili Üyeler</label>
                                     <div class="border rounded p-3" id="selectedSummary">
@@ -213,13 +211,14 @@ include __DIR__ . '/../includes/sidebar.php';
                                                 if (!in_array($uye['kullanici_id'], $selectedUsers, true)) continue;
                                                 ?>
                                                 <span class="badge bg-primary-subtle text-primary me-1 mb-1">
-                                                    <?php echo htmlspecialchars(($uye['gorev_adi'] ?? 'Görev Yok') . ' - ' . $uye['ad'] . ' ' . $uye['soyad']); ?>
+                                                    <?php echo htmlspecialchars(($uye['gorev_adi'] ?? 'GÖREV YOK') . ' - ' . $uye['ad'] . ' ' . $uye['soyad']); ?>
                                                 </span>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                                <div class="d-flex gap-2 mb-3">
+
+                                <div class="d-flex gap-2 mb-3 flex-wrap">
                                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#userModal">
                                         <i class="fas fa-users me-1"></i>Üye Seç
                                     </button>
@@ -230,12 +229,12 @@ include __DIR__ . '/../includes/sidebar.php';
                                         <i class="fas fa-eraser me-1"></i>Temizle
                                     </button>
                                 </div>
+
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save me-2"></i>Kaydet
                                     </button>
                                 </div>
-
                                 <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog modal-lg modal-dialog-scrollable">
                                         <div class="modal-content">
@@ -277,9 +276,6 @@ include __DIR__ . '/../includes/sidebar.php';
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</main>
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 <script>
     function toggleUserList(selectAll) {
@@ -313,5 +309,28 @@ include __DIR__ . '/../includes/sidebar.php';
             pill.style.display = matches ? '' : 'none';
         });
     }
+
+    function filterPanels() {
+        const query = (document.getElementById('panelSearch').value || '').toLowerCase();
+        const onlyAssigned = document.getElementById('panelAssignedToggle')?.dataset.active === '1';
+        document.querySelectorAll('#panelGrid > div').forEach(card => {
+            const nameMatch = card.dataset.panelName.includes(query);
+            const assignedMatch = !onlyAssigned || card.dataset.panelAssigned === '1';
+            card.style.display = nameMatch && assignedMatch ? '' : 'none';
+        });
+    }
+
+    function toggleAssigned() {
+        const toggleBtn = document.getElementById('panelAssignedToggle');
+        const isActive = toggleBtn.dataset.active === '1';
+        toggleBtn.dataset.active = isActive ? '0' : '1';
+        toggleBtn.classList.toggle('btn-outline-secondary', isActive);
+        toggleBtn.classList.toggle('btn-secondary', !isActive);
+        filterPanels();
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        updateSummary();
+        filterPanels();
+    });
 </script>
 
