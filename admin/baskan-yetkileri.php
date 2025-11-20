@@ -37,9 +37,9 @@ $baskans = $db->fetchAll("
     INNER JOIN roller r ON k.rol_id = r.rol_id
     LEFT JOIN byk b ON k.byk_id = b.byk_id
     LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
-    WHERE r.rol_adi = ?
+    WHERE r.rol_adi != ?
     ORDER BY k.ad, k.soyad
-", [Auth::ROLE_BASKAN]);
+", [Auth::ROLE_SUPER_ADMIN]);
 
 $selectedId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($selectedId === 0 && !empty($baskans)) {
@@ -125,8 +125,8 @@ include __DIR__ . '/../includes/header.php';
 <main class="container-fluid mt-4">
     <div class="content-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-user-shield me-2"></i>Başkan Modül Yetkileri
+                            <h1 class="h3 mb-0">
+                                <i class="fas fa-user-shield me-2"></i>Modül Yetkileri
             </h1>
             <a href="/admin/kullanicilar.php" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Kullanıcı Listesine Dön

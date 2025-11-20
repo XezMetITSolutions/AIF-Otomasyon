@@ -232,9 +232,11 @@ include __DIR__ . '/../includes/header.php';
                                             <td><?php echo htmlspecialchars($kullanici['ad'] . ' ' . $kullanici['soyad']); ?></td>
                                             <td><?php echo htmlspecialchars($kullanici['email']); ?></td>
                                             <td>
-                                                <span class="badge bg-<?php echo $kullanici['rol_adi'] === 'super_admin' ? 'danger' : ($kullanici['rol_adi'] === 'baskan' ? 'warning' : 'info'); ?>">
-                                                    <?php echo htmlspecialchars($kullanici['rol_adi']); ?>
-                                                </span>
+                                                <?php if ($kullanici['rol_adi'] === Auth::ROLE_SUPER_ADMIN): ?>
+                                                    <span class="badge bg-danger">Süper Admin</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-info">Üye</span>
+                                                <?php endif; ?>
                                             </td>
                                             <td>
                                                 <?php if (!empty($kullanici['byk_adi']) && $kullanici['byk_adi'] !== '-'): ?>
@@ -262,7 +264,7 @@ include __DIR__ . '/../includes/header.php';
                                                     <a href="/admin/kullanici-duzenle.php?id=<?php echo $kullanici['kullanici_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <?php if ($kullanici['rol_adi'] === Auth::ROLE_BASKAN): ?>
+                                                    <?php if ($kullanici['rol_adi'] !== Auth::ROLE_SUPER_ADMIN): ?>
                                                         <a href="/admin/baskan-yetkileri.php?id=<?php echo $kullanici['kullanici_id']; ?>" class="btn btn-sm btn-outline-warning" title="Yetkiler">
                                                             <i class="fas fa-user-shield"></i>
                                                         </a>
