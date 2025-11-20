@@ -172,101 +172,33 @@ $currentPath = $_SERVER['PHP_SELF'];
             </a>
             
         <?php elseif ($isBaskan): ?>
-        <?php elseif ($isBaskan): ?>
             <?php
                 // Baskan sidebar logic uses the global $baskanSidebarSections defined above
                 foreach ($baskanSidebarSections as $section) {
-                    [
-                        'title' => null,
-                        'links' => [
-                            [
-                                'key' => 'baskan_dashboard',
-                                'path' => '/baskan/dashboard.php',
-                                'icon' => 'fas fa-tachometer-alt',
-                                'label' => 'Kontrol Paneli',
-                                'match' => 'dashboard',
-                            ],
-                        ],
-                    ],
-                    [
-                        'title' => 'YÖNETİM',
-                        'links' => [
-                            [
-                                'key' => 'baskan_uyeler',
-                                'path' => '/baskan/uyeler.php',
-                                'icon' => 'fas fa-users',
-                                'label' => 'Üye Yönetimi',
-                                'match' => 'uyeler',
-                            ],
-                        ],
-                    ],
-                    [
-                        'title' => 'İÇERİK',
-                        'links' => [
-                            [
-                                'key' => 'baskan_etkinlikler',
-                                'path' => '/baskan/etkinlikler.php',
-                                'icon' => 'fas fa-calendar',
-                                'label' => 'Etkinlikler',
-                                'match' => 'etkinlikler',
-                            ],
-                            [
-                                'key' => 'baskan_toplantilar',
-                                'path' => '/baskan/toplantilar.php',
-                                'icon' => 'fas fa-users-cog',
-                                'label' => 'Toplantılar',
-                                'match' => 'toplantilar',
-                            ],
-                            [
-                                'key' => 'baskan_duyurular',
-                                'path' => '/baskan/duyurular.php',
-                                'icon' => 'fas fa-bullhorn',
-                                'label' => 'Duyurular',
-                                'match' => 'duyurular',
-                            ],
-                        ],
-                    ],
-                    [
-                        'title' => 'İŞLEMLER',
-                        'links' => [
-                            [
-                                'key' => 'baskan_izin_talepleri',
-                                'path' => '/baskan/izin-talepleri.php',
-                                'icon' => 'fas fa-calendar-check',
-                                'label' => 'İzin Talepleri',
-                                'match' => 'izin-talepleri',
-                                'badge' => ['id' => 'pendingIzinCount', 'class' => 'bg-danger'],
-                            ],
-                            [
-                                'key' => 'baskan_harcama_talepleri',
-                                'path' => '/baskan/harcama-talepleri.php',
-                                'icon' => 'fas fa-money-bill-wave',
-                                'label' => 'Harcama Talepleri',
-                                'match' => 'harcama-talepleri',
-                                'badge' => ['id' => 'pendingHarcamaCount', 'class' => 'bg-warning'],
-                            ],
-                            [
-                                'key' => 'baskan_iade_formlari',
-                                'path' => '/baskan/iade-formlari.php',
-                                'icon' => 'fas fa-hand-holding-usd',
-                                'label' => 'İade Formları',
-                                'match' => 'iade-formlari',
-                            ],
-                        ],
-                    ],
-                    [
-                        'title' => 'RAPORLAR',
-                        'links' => [
-                            [
-                                'key' => 'baskan_raporlar',
-                                'path' => '/baskan/raporlar.php',
-                                'icon' => 'fas fa-chart-bar',
-                                'label' => 'Raporlar',
-                                'match' => 'raporlar',
-                            ],
-                        ],
-                    ],
-                ];
+                    $visibleLinks = array_filter($section['links'], function ($link) use ($auth) {
+                        return $auth->hasModulePermission($link['key']);
+                    });
+
+                    if (empty($visibleLinks)) {
+                        continue;
+                    }
+
+                    if (!empty($section['title'])) {
+                        echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">' . htmlspecialchars($section['title']) . '</div>';
+                    }
+
+                    foreach ($visibleLinks as $link) {
+                        $isActive = strpos($currentPath, $link['match']) !== false;
+                        ?>
+                        <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?>">
+                            <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
+                            <?php if (!empty($link['badge'])): ?>
+                                <span class="badge <?php echo $link['badge']['class']; ?> float-end" id="<?php echo $link['badge']['id']; ?>">0</span>
+                            <?php endif; ?>
+                        </a>
+                        <?php
+                    }
+                }
 
                 $uyeSidebarLinks = [
                     [
