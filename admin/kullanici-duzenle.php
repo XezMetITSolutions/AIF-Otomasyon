@@ -38,6 +38,28 @@ try {
     $bykList = $db->fetchAll("SELECT * FROM byk WHERE aktif = 1 ORDER BY byk_adi");
 }
 
+// Alt birimler (görevler)
+try {
+    $altBirimler = $db->fetchAll("
+        SELECT ab.alt_birim_id,
+               ab.alt_birim_adi,
+               COALESCE(bc.name, b.byk_adi, '-') AS byk_adi
+        FROM alt_birimler ab
+        LEFT JOIN byk b ON ab.byk_id = b.byk_id
+        LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
+        ORDER BY byk_adi, ab.alt_birim_adi
+    ");
+} catch (Exception $e) {
+    $altBirimler = $db->fetchAll("
+        SELECT ab.alt_birim_id,
+               ab.alt_birim_adi,
+               b.byk_adi
+        FROM alt_birimler ab
+        LEFT JOIN byk b ON ab.byk_id = b.byk_id
+        ORDER BY b.byk_adi, ab.alt_birim_adi
+    ");
+}
+
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sifre = $_POST['sifre'] ?? '';
     $rol_id = (int)($_POST['rol_id'] ?? 0);
     $byk_id = !empty($_POST['byk_id']) ? (int)$_POST['byk_id'] : null;
+    $alt_birim_id = !empty($_POST['alt_birim_id']) ? (int)$_POST['alt_birim_id'] : null;
     $aktif = isset($_POST['aktif']) ? 1 : 0;
     
     // Validasyon
@@ -76,17 +99,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $sifre_hash = password_hash($sifre, PASSWORD_DEFAULT);
                     $db->query("
                         UPDATE kullanicilar 
-                        SET ad = ?, soyad = ?, email = ?, sifre = ?, rol_id = ?, byk_id = ?, aktif = ?
+                        SET ad = ?, soyad = ?, email = ?, sifre = ?, rol_id = ?, byk_id = ?, alt_birim_id = ?, aktif = ?
                         WHERE kullanici_id = ?
-                    ", [$ad, $soyad, $email, $sifre_hash, $rol_id, $byk_id, $aktif, $id]);
+                    ", [$ad, $soyad, $email, $sifre_hash, $rol_id, $byk_id, $alt_birim_id, $aktif, $id]);
                 }
             } else {
                 // Şifre değiştirilmedi
                 $db->query("
                     UPDATE kullanicilar 
-                    SET ad = ?, soyad = ?, email = ?, rol_id = ?, byk_id = ?, aktif = ?
+                    SET ad = ?, soyad = ?, email = ?, rol_id = ?, byk_id = ?, alt_birim_id = ?, aktif = ?
                     WHERE kullanici_id = ?
-                ", [$ad, $soyad, $email, $rol_id, $byk_id, $aktif, $id]);
+                ", [$ad, $soyad, $email, $rol_id, $byk_id, $alt_birim_id, $aktif, $id]);
             }
             
             if (empty($errors)) {
@@ -170,6 +193,20 @@ include __DIR__ . '/../includes/header.php';
                                 <?php foreach ($bykList as $byk): ?>
                                     <option value="<?php echo $byk['byk_id']; ?>" <?php echo (isset($_POST['byk_id']) ? $_POST['byk_id'] : $kullanici['byk_id']) == $byk['byk_id'] ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($byk['byk_adi']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Görev / Alt Birim</label>
+                            <select class="form-select" name="alt_birim_id">
+                                <option value="">Görev Seçiniz (Opsiyonel)</option>
+                                <?php foreach ($altBirimler as $altBirim): ?>
+                                    <option value="<?php echo $altBirim['alt_birim_id']; ?>" <?php echo (isset($_POST['alt_birim_id']) ? $_POST['alt_birim_id'] : $kullanici['alt_birim_id']) == $altBirim['alt_birim_id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars(($altBirim['byk_adi'] ? $altBirim['byk_adi'] . ' - ' : '') . $altBirim['alt_birim_adi']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

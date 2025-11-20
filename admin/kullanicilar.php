@@ -213,7 +213,6 @@ include __DIR__ . '/../includes/header.php';
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Ad Soyad</th>
                                     <th>E-posta</th>
                                     <th>Rol</th>
@@ -230,7 +229,6 @@ include __DIR__ . '/../includes/header.php';
                                 <?php else: ?>
                                     <?php foreach ($kullanicilar as $kullanici): ?>
                                         <tr>
-                                            <td><?php echo $kullanici['kullanici_id']; ?></td>
                                             <td><?php echo htmlspecialchars($kullanici['ad'] . ' ' . $kullanici['soyad']); ?></td>
                                             <td><?php echo htmlspecialchars($kullanici['email']); ?></td>
                                             <td>
