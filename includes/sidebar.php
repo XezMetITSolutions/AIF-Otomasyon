@@ -99,10 +99,6 @@ $currentPath = $_SERVER['PHP_SELF'];
             <a href="/baskan/duyurular.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-bullhorn me-2"></i>Duyurular
             </a>
-            <a href="/baskan/icerik-islemleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'icerik-islemleri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-pen-ruler me-2"></i>İçerik İşlemleri
-            </a>
-            
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
             
             <a href="/baskan/izin-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">

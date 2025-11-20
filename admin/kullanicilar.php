@@ -85,11 +85,13 @@ try {
                r.rol_adi,
                COALESCE(bc.name, b.byk_adi, '-') as byk_adi,
                COALESCE(bc.code, b.byk_kodu, '') as byk_kodu,
-               COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk
+               COALESCE(bc.color, b.renk_kodu, '#009872') as byk_renk,
+               ab.alt_birim_adi AS gorev_adi
         FROM kullanicilar k
         INNER JOIN roller r ON k.rol_id = r.rol_id
         LEFT JOIN byk b ON k.byk_id = b.byk_id
         LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
+        LEFT JOIN alt_birimler ab ON k.alt_birim_id = ab.alt_birim_id
         WHERE $whereClause
         ORDER BY k.olusturma_tarihi DESC
         LIMIT ? OFFSET ?
@@ -97,10 +99,11 @@ try {
 } catch (Exception $e) {
     // byk_categories yoksa eski sorguyu kullan
     $kullanicilar = $db->fetchAll(
-        "SELECT k.*, r.rol_adi, b.byk_adi
+        "SELECT k.*, r.rol_adi, b.byk_adi, ab.alt_birim_adi AS gorev_adi
          FROM kullanicilar k
          INNER JOIN roller r ON k.rol_id = r.rol_id
          LEFT JOIN byk b ON k.byk_id = b.byk_id
+         LEFT JOIN alt_birimler ab ON k.alt_birim_id = ab.alt_birim_id
          WHERE $whereClause
          ORDER BY k.olusturma_tarihi DESC
          LIMIT ? OFFSET ?",
@@ -215,8 +218,7 @@ include __DIR__ . '/../includes/header.php';
                                     <th>E-posta</th>
                                     <th>Rol</th>
                                     <th>BYK</th>
-                                    <th>Durum</th>
-                                    <th>Son Giriş</th>
+                                    <th>Görev</th>
                                     <th>İşlemler</th>
                                 </tr>
                             </thead>
@@ -249,11 +251,14 @@ include __DIR__ . '/../includes/header.php';
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <span class="badge bg-<?php echo $kullanici['aktif'] ? 'success' : 'secondary'; ?>">
-                                                    <?php echo $kullanici['aktif'] ? 'Aktif' : 'Pasif'; ?>
-                                                </span>
+                                                <?php if (!empty($kullanici['gorev_adi'])): ?>
+                                                    <span class="badge bg-secondary">
+                                                        <?php echo htmlspecialchars($kullanici['gorev_adi']); ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">-</span>
+                                                <?php endif; ?>
                                             </td>
-                                            <td><?php echo $kullanici['son_giris'] ? date('d.m.Y H:i', strtotime($kullanici['son_giris'])) : '-'; ?></td>
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <a href="/admin/kullanici-duzenle.php?id=<?php echo $kullanici['kullanici_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">

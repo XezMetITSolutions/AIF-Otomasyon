@@ -96,9 +96,6 @@ $isUye = $user && $user['role'] === 'uye';
                                 <a class="nav-link" href="/baskan/toplantilar.php"><i class="fas fa-users-cog me-1"></i>Toplantılar</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/baskan/icerik-islemleri.php"><i class="fas fa-pen-ruler me-1"></i>İçerik İşlemleri</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="/baskan/izin-talepleri.php"><i class="fas fa-calendar-check me-1"></i>İzin Talepleri</a>
                             </li>
                             <li class="nav-item">
