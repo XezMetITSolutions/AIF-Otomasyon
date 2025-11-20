@@ -212,93 +212,15 @@ include __DIR__ . '/../includes/header.php';
             </div>
 
             <div class="card mt-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-body d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                     <div>
-                        <i class="fas fa-th-large me-2"></i>Panel Yetkileri
+                        <div class="text-uppercase text-muted small fw-semibold mb-1">Panel Yetkileri</div>
+                        <h5 class="mb-1">Tüm panelleri tek ekrandan yönetin</h5>
+                        <p class="text-muted mb-0">Hangi paneli kimlerin görebileceğini belirlemek için özel yetkilendirme sayfasına gidin.</p>
                     </div>
-                    <small class="text-muted">Her paneli kimlerin görebileceğini seçin</small>
-                </div>
-                <div class="card-body">
-                    <?php foreach ($moduleMessages as $msg): ?>
-                        <div class="alert alert-success"><?php echo htmlspecialchars($msg); ?></div>
-                    <?php endforeach; ?>
-                    <?php foreach ($moduleErrors as $err): ?>
-                        <div class="alert alert-danger"><?php echo htmlspecialchars($err); ?></div>
-                    <?php endforeach; ?>
-
-                    <?php if (empty($uyeler)): ?>
-                        <div class="alert alert-info">Henüz atanmış üye bulunmadığı için panel yetkisi tanımlayamazsınız.</div>
-                    <?php else: ?>
-                        <form method="post">
-                            <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
-                            <input type="hidden" name="panel_permissions" value="1">
-
-                            <div class="mb-5">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <h5 class="mb-0 text-success">Üye Panelleri</h5>
-                                    <span class="badge bg-success-subtle text-success">Tüm üyeler görebilir</span>
-                                </div>
-
-                                <?php if (empty($memberModules)): ?>
-                                    <div class="alert alert-light border">Üye modülü tanımlı değil.</div>
-                                <?php else: ?>
-                                    <div class="row g-3 row-cols-1 row-cols-lg-2">
-                                        <?php foreach ($memberModules as $moduleKey => $info): ?>
-                                            <div class="col">
-                                                <div class="panel-card p-3">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <div class="fw-semibold"><?php echo htmlspecialchars($info['label'] ?? $moduleKey); ?></div>
-                                                            <small class="text-muted">Bu panel tüm üyelere açıktır.</small>
-                                                        </div>
-                                                        <div class="badge bg-success text-white">Aktif</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="mb-4">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <h5 class="mb-0 text-primary">Başkan Panelleri</h5>
-                                    <small class="text-muted">Görebilecek üyeleri seçin</small>
-                                </div>
-                                <div class="row g-3 row-cols-1 row-cols-lg-2">
-                                    <?php foreach ($baskanModules as $moduleKey => $info): ?>
-                                        <?php $selected = $modulePermissions[$moduleKey] ?? []; ?>
-                                        <div class="col">
-                                            <div class="panel-card p-3">
-                                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <div class="fw-semibold"><?php echo htmlspecialchars($info['label'] ?? $moduleKey); ?></div>
-                                                </div>
-                                                <select class="form-select" id="module-select-<?php echo $moduleKey; ?>" name="module_permissions[<?php echo $moduleKey; ?>][]" multiple size="6">
-                                                    <?php foreach ($uyeler as $uye): ?>
-                                                        <?php $fullName = $uye['ad'] . ' ' . $uye['soyad']; ?>
-                                                        <option value="<?php echo $uye['kullanici_id']; ?>" <?php echo in_array($uye['kullanici_id'], $selected, true) ? 'selected' : ''; ?>>
-                                                            <?php echo htmlspecialchars($fullName); ?>
-                                                            <?php if (!empty($uye['byk_adi']) && $uye['byk_adi'] !== '-'): ?>
-                                                                (<?php echo htmlspecialchars($uye['byk_adi']); ?>)
-                                                            <?php endif; ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                                <div class="d-flex justify-content-between mt-2">
-                                                    <small class="text-muted">Ctrl/Cmd + tıklamayla birden fazla üye seçebilirsiniz.</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-save me-2"></i>Panel Yetkilerini Kaydet
-                                </button>
-                            </div>
-                        </form>
-                    <?php endif; ?>
+                    <a href="/admin/panel-yetkileri.php" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sliders me-2"></i>Panel Yetkilerini Yönet
+                    </a>
                 </div>
             </div>
     </div>
@@ -307,18 +229,4 @@ include __DIR__ . '/../includes/header.php';
 <?php
 include __DIR__ . '/../includes/footer.php';
 ?>
-<script>
-    function selectAll(moduleKey, selectAll) {
-        const select = document.getElementById('module-select-' + moduleKey);
-        if (!select) return;
-        Array.from(select.options).forEach(option => option.selected = selectAll);
-    }
-
-    function selectAllModules(selectAllUsers) {
-        const selects = document.querySelectorAll('[id^="module-select-"]');
-        selects.forEach(select => {
-            Array.from(select.options).forEach(option => option.selected = selectAllUsers);
-        });
-    }
-</script>
 
