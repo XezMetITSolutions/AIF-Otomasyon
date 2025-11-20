@@ -113,6 +113,9 @@ $currentPath = $_SERVER['PHP_SELF'];
                 <i class="fas fa-money-bill-wave me-2"></i>Harcama Talepleri
                 <span class="badge bg-warning float-end" id="pendingHarcamaCount">0</span>
             </a>
+            <a href="/baskan/iade-formlari.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'iade-formlari') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-hand-holding-usd me-2"></i>İade Formları
+            </a>
             
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">RAPORLAR</div>
             

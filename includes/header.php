@@ -104,6 +104,9 @@ $isUye = $user && $user['role'] === 'uye';
                             <li class="nav-item">
                                 <a class="nav-link" href="/baskan/harcama-talepleri.php"><i class="fas fa-money-bill me-1"></i>Harcama Talepleri</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/baskan/iade-formlari.php"><i class="fas fa-hand-holding-usd me-1"></i>İade Formları</a>
+                            </li>
                         <?php elseif ($isUye): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="/uye/dashboard.php"><i class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>
