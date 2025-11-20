@@ -233,6 +233,54 @@ CREATE TABLE IF NOT EXISTS `harcama_talepleri` (
   FOREIGN KEY (`onaylayan_id`) REFERENCES `kullanicilar`(`kullanici_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- İçerik talepleri tablosu
+CREATE TABLE IF NOT EXISTS `icerik_talepleri` (
+  `talep_id` int(11) NOT NULL AUTO_INCREMENT,
+  `byk_id` int(11) NOT NULL,
+  `kullanici_id` int(11) DEFAULT NULL,
+  `talep_sahibi` varchar(255) DEFAULT NULL,
+  `kanal` varchar(50) NOT NULL DEFAULT 'portal',
+  `talep_turu` varchar(100) NOT NULL,
+  `baslik` varchar(255) NOT NULL,
+  `aciklama` text,
+  `oncelik` varchar(20) NOT NULL DEFAULT 'normal',
+  `etiketler` varchar(255) DEFAULT NULL,
+  `hedef_tarih` date DEFAULT NULL,
+  `durum` varchar(50) NOT NULL DEFAULT 'beklemede' COMMENT 'beklemede, yanitlandi, calisiliyor, tamamlandi, iptal',
+  `yanitlanma_tarihi` datetime DEFAULT NULL,
+  `yanitlayan_id` int(11) DEFAULT NULL,
+  `yanit_ozeti` text,
+  `yanit_sayisi` int(11) NOT NULL DEFAULT '0',
+  `dosya_yolu` varchar(255) DEFAULT NULL,
+  `son_aksiyon_tarihi` datetime DEFAULT NULL,
+  `son_aksiyon_tipi` varchar(50) DEFAULT NULL,
+  `olusturma_tarihi` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `guncelleme_tarihi` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`talep_id`),
+  KEY `byk_id` (`byk_id`),
+  KEY `kullanici_id` (`kullanici_id`),
+  KEY `yanitlayan_id` (`yanitlayan_id`),
+  CONSTRAINT `icerik_talepleri_ibfk_1` FOREIGN KEY (`byk_id`) REFERENCES `byk`(`byk_id`) ON DELETE CASCADE,
+  CONSTRAINT `icerik_talepleri_ibfk_2` FOREIGN KEY (`kullanici_id`) REFERENCES `kullanicilar`(`kullanici_id`) ON DELETE SET NULL,
+  CONSTRAINT `icerik_talepleri_ibfk_3` FOREIGN KEY (`yanitlayan_id`) REFERENCES `kullanicilar`(`kullanici_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- İçerik talep notları tablosu
+CREATE TABLE IF NOT EXISTS `icerik_talep_notlari` (
+  `not_id` int(11) NOT NULL AUTO_INCREMENT,
+  `talep_id` int(11) NOT NULL,
+  `kullanici_id` int(11) NOT NULL,
+  `tip` varchar(20) NOT NULL DEFAULT 'not' COMMENT 'not, yanit, guncelleme',
+  `baslik` varchar(255) DEFAULT NULL,
+  `icerik` text NOT NULL,
+  `olusturma_tarihi` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`not_id`),
+  KEY `talep_id` (`talep_id`),
+  KEY `kullanici_id` (`kullanici_id`),
+  CONSTRAINT `icerik_talep_notlari_ibfk_1` FOREIGN KEY (`talep_id`) REFERENCES `icerik_talepleri`(`talep_id`) ON DELETE CASCADE,
+  CONSTRAINT `icerik_talep_notlari_ibfk_2` FOREIGN KEY (`kullanici_id`) REFERENCES `kullanicilar`(`kullanici_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Demirbaşlar tablosu
 CREATE TABLE IF NOT EXISTS `demirbaslar` (
   `demirbas_id` int(11) NOT NULL AUTO_INCREMENT,
