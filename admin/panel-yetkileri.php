@@ -19,11 +19,16 @@ $assignableModules = array_filter($moduleDefinitions, fn($info) => ($info['categ
 $superRole = $db->fetch("SELECT * FROM roller WHERE rol_adi = ?", [Auth::ROLE_SUPER_ADMIN]) ?: ['rol_id' => 0];
 
 $uyeler = $db->fetchAll("
-    SELECT k.kullanici_id, k.ad, k.soyad, COALESCE(bc.name, b.byk_adi, '-') AS byk_adi
+    SELECT k.kullanici_id,
+           k.ad,
+           k.soyad,
+           COALESCE(bc.name, b.byk_adi, '-') AS byk_adi,
+           ab.alt_birim_adi AS gorev_adi
     FROM kullanicilar k
     INNER JOIN roller r ON k.rol_id = r.rol_id
     LEFT JOIN byk b ON k.byk_id = b.byk_id
     LEFT JOIN byk_categories bc ON b.byk_kodu = bc.code
+    LEFT JOIN alt_birimler ab ON k.alt_birim_id = ab.alt_birim_id
     WHERE r.rol_adi != ?
     ORDER BY k.ad, k.soyad
 ", [Auth::ROLE_SUPER_ADMIN]);
@@ -190,7 +195,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         <?php if (!$selectedModule): ?>
                             <p class="text-muted text-center mb-0">Sol taraftan bir panel seçerek yetkilendirme yapabilirsiniz.</p>
                         <?php else: ?>
-                            <form method="post">
+                            <form method="post" id="panelForm">
                                 <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                 <input type="hidden" name="module_key" value="<?php echo htmlspecialchars($selectedModuleKey); ?>">
                                 <div class="mb-3">
@@ -198,36 +203,74 @@ include __DIR__ . '/../includes/sidebar.php';
                                     <h5 class="mb-1"><?php echo htmlspecialchars($selectedModule['label'] ?? $selectedModuleKey); ?></h5>
                                     <p class="text-muted mb-0"><?php echo htmlspecialchars($selectedModule['description'] ?? ''); ?></p>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Yetkili Üyeler</label>
+                                    <div class="border rounded p-3" id="selectedSummary">
+                                        <?php if (empty($selectedUsers)): ?>
+                                            <span class="text-muted">Henüz üye seçilmedi.</span>
+                                        <?php else: ?>
+                                            <?php foreach ($uyeler as $uye):
+                                                if (!in_array($uye['kullanici_id'], $selectedUsers, true)) continue;
+                                                ?>
+                                                <span class="badge bg-primary-subtle text-primary me-1 mb-1">
+                                                    <?php echo htmlspecialchars(($uye['gorev_adi'] ?? 'Görev Yok') . ' - ' . $uye['ad'] . ' ' . $uye['soyad']); ?>
+                                                </span>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                                 <div class="d-flex gap-2 mb-3">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleUserList(true)">
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#userModal">
+                                        <i class="fas fa-users me-1"></i>Üye Seç
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="toggleUserList(true)">
                                         <i class="fas fa-check-double me-1"></i>Tümünü Seç
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleUserList(false)">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="toggleUserList(false)">
                                         <i class="fas fa-eraser me-1"></i>Temizle
                                     </button>
-                                </div>
-                                <div class="row g-2" id="user-list">
-                                    <?php foreach ($uyeler as $uye): ?>
-                                        <?php
-                                            $fullName = $uye['ad'] . ' ' . $uye['soyad'];
-                                            $inputId = 'user-' . $selectedModuleKey . '-' . $uye['kullanici_id'];
-                                            $isSelected = in_array($uye['kullanici_id'], $selectedUsers, true);
-                                        ?>
-                                        <div class="col-12 col-sm-6 user-pill">
-                                            <input type="checkbox" name="module_permissions[]" value="<?php echo $uye['kullanici_id']; ?>" id="<?php echo $inputId; ?>" <?php echo $isSelected ? 'checked' : ''; ?>>
-                                            <label for="<?php echo $inputId; ?>">
-                                                <?php echo htmlspecialchars($fullName); ?>
-                                                <?php if (!empty($uye['byk_adi']) && $uye['byk_adi'] !== '-'): ?>
-                                                    <br><small class="text-muted"><?php echo htmlspecialchars($uye['byk_adi']); ?></small>
-                                                <?php endif; ?>
-                                            </label>
-                                        </div>
-                                    <?php endforeach; ?>
                                 </div>
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save me-2"></i>Kaydet
                                     </button>
+                                </div>
+
+                                <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title"><i class="fas fa-users me-2"></i>Üye Seç</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="input-group mb-3">
+                                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                    <input type="text" class="form-control" id="userSearch" placeholder="Görev veya isim ara..." onkeyup="filterUsers()">
+                                                </div>
+                                                <div class="row g-2" id="user-list">
+                                                    <?php foreach ($uyeler as $uye): ?>
+                                                        <?php
+                                                            $fullName = $uye['ad'] . ' ' . $uye['soyad'];
+                                                            $gorev = $uye['gorev_adi'] ?? 'Görev Yok';
+                                                            $inputId = 'user-' . $selectedModuleKey . '-' . $uye['kullanici_id'];
+                                                            $isSelected = in_array($uye['kullanici_id'], $selectedUsers, true);
+                                                        ?>
+                                                        <div class="col-12 user-pill" data-name="<?php echo strtolower(htmlspecialchars($fullName)); ?>" data-gorev="<?php echo strtolower(htmlspecialchars($gorev)); ?>">
+                                                            <input type="checkbox" name="module_permissions[]" value="<?php echo $uye['kullanici_id']; ?>" id="<?php echo $inputId; ?>" <?php echo $isSelected ? 'checked' : ''; ?> onchange="updateSummary()">
+                                                            <label for="<?php echo $inputId; ?>">
+                                                                <div class="fw-semibold"><?php echo htmlspecialchars($gorev); ?></div>
+                                                                <div><?php echo htmlspecialchars($fullName); ?></div>
+                                                            </label>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         <?php endif; ?>
@@ -243,6 +286,32 @@ include __DIR__ . '/../includes/sidebar.php';
         const container = document.getElementById('user-list');
         if (!container) return;
         container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = selectAll);
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const summary = document.getElementById('selectedSummary');
+        if (!summary) return;
+        const selected = Array.from(document.querySelectorAll('#user-list input[type="checkbox"]:checked'));
+        if (!selected.length) {
+            summary.innerHTML = '<span class="text-muted">Henüz üye seçilmedi.</span>';
+            return;
+        }
+        const fragments = selected.map(cb => {
+            const label = cb.nextElementSibling;
+            const duty = label.querySelector('.fw-semibold')?.textContent || '';
+            const name = label.querySelector('div:nth-child(2)')?.textContent || '';
+            return `<span class="badge bg-primary-subtle text-primary me-1 mb-1">${duty} - ${name}</span>`;
+        });
+        summary.innerHTML = fragments.join('');
+    }
+
+    function filterUsers() {
+        const query = (document.getElementById('userSearch').value || '').toLowerCase();
+        document.querySelectorAll('#user-list .user-pill').forEach(pill => {
+            const matches = pill.dataset.name.includes(query) || pill.dataset.gorev.includes(query);
+            pill.style.display = matches ? '' : 'none';
+        });
     }
 </script>
 
