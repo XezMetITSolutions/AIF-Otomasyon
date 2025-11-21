@@ -4,7 +4,7 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireLoggedIn();
+Middleware::requireAuth();
 
 $auth = new Auth();
 $user = $auth->getUser();
