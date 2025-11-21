@@ -18,6 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['id'
 
     try {
         $db->query("UPDATE demirbas_talepleri SET durum = ? WHERE id = ?", [$status, $id]);
+        
+        // Eğer onaylandıysa, demirbaşın durumunu 'kirada' yapabiliriz (Opsiyonel, şimdilik yapmıyoruz)
+        // if ($status === 'onaylandi') { ... }
+
         $success = 'Talep durumu güncellendi.';
     } catch (Exception $e) {
         $error = 'Hata: ' . $e->getMessage();
@@ -26,9 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['id'
 
 // Talepleri Listele
 $talepler = $db->fetchAll("
-    SELECT t.*, CONCAT(u.ad, ' ', u.soyad) as kullanici_adi 
+    SELECT t.*, 
+           CONCAT(u.ad, ' ', u.soyad) as kullanici_adi,
+           d.ad as demirbas_adi,
+           d.fotograf_yolu
     FROM demirbas_talepleri t 
     JOIN kullanicilar u ON t.kullanici_id = u.kullanici_id 
+    LEFT JOIN demirbaslar d ON t.demirbas_id = d.id
     ORDER BY t.created_at DESC
 ");
 
@@ -49,12 +57,13 @@ include __DIR__ . '/../includes/header.php';
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover align-middle">
                         <thead>
                             <tr>
                                 <th>Tarih</th>
                                 <th>Kullanıcı</th>
-                                <th>Başlık</th>
+                                <th>Demirbaş</th>
+                                <th>Talep Tarihleri</th>
                                 <th>Açıklama</th>
                                 <th>Durum</th>
                                 <th>İşlemler</th>
@@ -63,14 +72,33 @@ include __DIR__ . '/../includes/header.php';
                         <tbody>
                             <?php if (empty($talepler)): ?>
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">Henüz talep bulunmuyor.</td>
+                                    <td colspan="7" class="text-center text-muted">Henüz talep bulunmuyor.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($talepler as $talep): ?>
                                     <tr>
                                         <td><?php echo date('d.m.Y H:i', strtotime($talep['created_at'])); ?></td>
                                         <td><?php echo htmlspecialchars($talep['kullanici_adi']); ?></td>
-                                        <td><?php echo htmlspecialchars($talep['baslik']); ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <?php if ($talep['fotograf_yolu']): ?>
+                                                    <img src="/<?php echo htmlspecialchars($talep['fotograf_yolu']); ?>" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                <?php endif; ?>
+                                                <div>
+                                                    <strong><?php echo htmlspecialchars($talep['demirbas_adi'] ?? $talep['baslik']); ?></strong>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <?php if ($talep['baslangic_tarihi']): ?>
+                                                <small>
+                                                    <?php echo date('d.m.Y H:i', strtotime($talep['baslangic_tarihi'])); ?> <br>
+                                                    <?php echo date('d.m.Y H:i', strtotime($talep['bitis_tarihi'])); ?>
+                                                </small>
+                                            <?php else: ?>
+                                                -
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?php echo htmlspecialchars($talep['aciklama']); ?></td>
                                         <td>
                                             <?php if ($talep['durum'] === 'bekliyor'): ?>

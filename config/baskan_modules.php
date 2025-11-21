@@ -77,6 +77,14 @@ return [
         'description' => 'BYK performans raporlarını görüntüleyin.',
         'icon' => 'fas fa-chart-line',
     ],
+    'baskan_demirbas_yonetimi' => [
+        'label' => 'Demirbaş Yönetimi',
+        'group' => 'Baskan Paneli',
+        'category' => 'baskan',
+        'default' => true,
+        'description' => 'Demirbaş envanterini yönetin (Ekle/Sil/Düzenle).',
+        'icon' => 'fas fa-boxes-stacked',
+    ],
     'baskan_demirbas_talepleri' => [
         'label' => 'Demirbaş Talepleri',
         'group' => 'Baskan Paneli',
