@@ -30,11 +30,11 @@ $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // Demirbaş talepleri
 $talepler = $db->fetchAll("
-    SELECT dt.*, CONCAT(k.ad, ' ', k.soyad) as kullanici_adi, k.email, b.byk_adi, d.demirbas_adi
+    SELECT dt.*, CONCAT(k.ad, ' ', k.soyad) as kullanici_adi, k.email, b.byk_adi, d.ad as demirbas_adi
     FROM demirbas_talepleri dt
     INNER JOIN kullanicilar k ON dt.kullanici_id = k.kullanici_id
     LEFT JOIN byk b ON k.byk_id = b.byk_id
-    LEFT JOIN demirbaslar d ON dt.demirbas_id = d.demirbas_id
+    LEFT JOIN demirbaslar d ON dt.demirbas_id = d.id
     $whereClause
     ORDER BY dt.created_at DESC
     LIMIT 50
