@@ -5,7 +5,7 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 $auth = new Auth();
-$auth->requirePermission('baskan_raggal_talepleri'); // Permission check
+Middleware::requireModulePermission('baskan_raggal_talepleri');
 
 $db = Database::getInstance();
 $pageTitle = 'Raggal Rezervasyon Talepleri';

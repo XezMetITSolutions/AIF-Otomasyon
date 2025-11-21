@@ -5,7 +5,7 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 $auth = new Auth();
-$auth->requirePermission('baskan_demirbas_talepleri'); // Permission check
+Middleware::requireModulePermission('baskan_demirbas_talepleri');
 
 $db = Database::getInstance();
 $pageTitle = 'Demirbaş Talepleri';
