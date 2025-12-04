@@ -81,6 +81,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['setup'])) {
             }
         }
 
+        // 4. Toplantı Yönetimi Tabloları
+        
+        // Toplantılar
+        $db->query("
+            CREATE TABLE IF NOT EXISTS `toplantilar` (
+                `toplanti_id` INT AUTO_INCREMENT PRIMARY KEY,
+                `byk_id` INT NOT NULL,
+                `baslik` VARCHAR(255) NOT NULL,
+                `aciklama` TEXT,
+                `toplanti_tarihi` DATETIME NOT NULL,
+                `bitis_tarihi` DATETIME DEFAULT NULL,
+                `konum` VARCHAR(255),
+                `toplanti_turu` VARCHAR(50) DEFAULT 'normal',
+                `durum` VARCHAR(20) DEFAULT 'planlandi',
+                `katilimci_sayisi` INT DEFAULT 0,
+                `olusturan_id` INT NOT NULL,
+                `olusturma_tarihi` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                `guncelleme_tarihi` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (`byk_id`) REFERENCES `byk`(`byk_id`),
+                FOREIGN KEY (`olusturan_id`) REFERENCES `kullanicilar`(`kullanici_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $messages[] = "✓ Toplantılar tablosu oluşturuldu/kontrol edildi.";
+
+        // Toplantı Katılımcıları
+        $db->query("
+            CREATE TABLE IF NOT EXISTS `toplanti_katilimcilar` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `toplanti_id` INT NOT NULL,
+                `kullanici_id` INT NOT NULL,
+                `katilim_durumu` VARCHAR(20) DEFAULT 'belirsiz',
+                `mazeret` TEXT,
+                `davet_token` VARCHAR(64) DEFAULT NULL,
+                `yanit_tarihi` DATETIME DEFAULT NULL,
+                FOREIGN KEY (`toplanti_id`) REFERENCES `toplantilar`(`toplanti_id`) ON DELETE CASCADE,
+                FOREIGN KEY (`kullanici_id`) REFERENCES `kullanicilar`(`kullanici_id`),
+                UNIQUE KEY `unique_katilimci` (`toplanti_id`, `kullanici_id`),
+                INDEX `idx_davet_token` (`davet_token`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $messages[] = "✓ Toplantı katılımcıları tablosu oluşturuldu/kontrol edildi.";
+
+        // Toplantı Gündem
+        $db->query("
+            CREATE TABLE IF NOT EXISTS `toplanti_gundem` (
+                `gundem_id` INT AUTO_INCREMENT PRIMARY KEY,
+                `toplanti_id` INT NOT NULL,
+                `sira_no` INT NOT NULL,
+                `baslik` VARCHAR(255) NOT NULL,
+                `aciklama` TEXT,
+                `durum` VARCHAR(20) DEFAULT 'gorusulmedi',
+                `sure_dakika` INT DEFAULT 0,
+                FOREIGN KEY (`toplanti_id`) REFERENCES `toplantilar`(`toplanti_id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $messages[] = "✓ Toplantı gündem tablosu oluşturuldu/kontrol edildi.";
+
+        // Toplantı Kararlar
+        $db->query("
+            CREATE TABLE IF NOT EXISTS `toplanti_kararlar` (
+                `karar_id` INT AUTO_INCREMENT PRIMARY KEY,
+                `toplanti_id` INT NOT NULL,
+                `gundem_id` INT DEFAULT NULL,
+                `karar_no` VARCHAR(50),
+                `baslik` VARCHAR(255) NOT NULL,
+                `karar_metni` TEXT NOT NULL,
+                `oylama_yapildi` TINYINT(1) DEFAULT 0,
+                `kabul_oyu` INT DEFAULT 0,
+                `red_oyu` INT DEFAULT 0,
+                `cekinser_oyu` INT DEFAULT 0,
+                `karar_sonucu` VARCHAR(20),
+                FOREIGN KEY (`toplanti_id`) REFERENCES `toplantilar`(`toplanti_id`) ON DELETE CASCADE,
+                FOREIGN KEY (`gundem_id`) REFERENCES `toplanti_gundem`(`gundem_id`) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $messages[] = "✓ Toplantı kararlar tablosu oluşturuldu/kontrol edildi.";
+
+        // Toplantı Tutanak
+        $db->query("
+            CREATE TABLE IF NOT EXISTS `toplanti_tutanak` (
+                `tutanak_id` INT AUTO_INCREMENT PRIMARY KEY,
+                `toplanti_id` INT NOT NULL,
+                `icerik` LONGTEXT,
+                `hazirlayan_id` INT NOT NULL,
+                `onay_durumu` VARCHAR(20) DEFAULT 'taslak',
+                `olusturma_tarihi` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                `guncelleme_tarihi` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (`toplanti_id`) REFERENCES `toplantilar`(`toplanti_id`) ON DELETE CASCADE,
+                FOREIGN KEY (`hazirlayan_id`) REFERENCES `kullanicilar`(`kullanici_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $messages[] = "✓ Toplantı tutanak tablosu oluşturuldu/kontrol edildi.";
+
         $messages[] = "<strong>✓ Tüm tablolar başarıyla oluşturuldu!</strong>";
 
     } catch (Exception $e) {
