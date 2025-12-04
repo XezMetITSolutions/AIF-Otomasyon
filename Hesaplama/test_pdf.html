@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Test - Türkçe Karakter Testi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #009872;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .test-data {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #009872;
+        }
+
+        .test-data h3 {
+            color: #212529;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .data-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .data-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-value {
+            color: #212529;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-generate {
+            background: #009872;
+            color: white;
+        }
+
+        .btn-generate:hover {
+            background: #007a5e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,152,114,0.3);
+        }
+
+        .btn-download {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108,117,125,0.3);
+        }
+
+        .btn-generate:disabled,
+        .btn-download:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .turkish-test {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .turkish-test h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .turkish-chars {
+            font-size: 24px;
+            font-weight: 600;
+            color: #212529;
+            letter-spacing: 2px;
+        }
+
+        .console-output {
+            background: #212529;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .console-output.show {
+            display: block;
+        }
+
+        .console-line {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 PDF Test Sayfası</h1>
+        <p class="subtitle">Türkçe karakter desteği test aracı - pdfmake kütüphanesi</p>
+
+        <div class="turkish-test">
+            <h4>Türkçe Karakter Testi:</h4>
+            <div class="turkish-chars">İ ı Ğ ğ Ü ü Ş ş Ö ö Ç ç</div>
+            <p style="margin-top: 10px; font-size: 14px; color: #856404;">
+                Bu karakterler PDF'de düzgün görünmeli!
+            </p>
+        </div>
+
+        <div class="test-data">
+            <h3>📋 Test Verisi</h3>
+            <div class="data-row">
+                <span class="data-label">İsim Soyisim:</span>
+                <span class="data-value">Mete Burçak</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">IBAN:</span>
+                <span class="data-value">AT69 2060 4031 0356 8105</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Toplam Tutar:</span>
+                <span class="data-value">29.99 €</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Tarih:</span>
+                <span class="data-value">09.10.2025</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">BYK:</span>
+                <span class="data-value">AT</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Birim:</span>
+                <span class="data-value">Eğitim</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Tür:</span>
+                <span class="data-value">Büro</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Açıklama:</span>
+                <span class="data-value">Avusturya İslam Federasyonu için test gider kaydı. Şüpheli işlem yok.</span>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-generate" onclick="generateTestPDF()">
+                🚀 PDF Oluştur
+            </button>
+            <button class="btn-download" id="downloadBtn" onclick="downloadPDF()" disabled>
+                ⬇️ PDF İndir
+            </button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="console" class="console-output">
+            <div class="console-line">Console log:</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script>
+        let generatedPDF = null;
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            console.classList.add('show');
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            line.textContent = `[${timestamp}] ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        async function generateTestPDF() {
+            try {
+                log('PDF oluşturma başlatıldı...');
+                showStatus('⏳ PDF oluşturuluyor...', 'info');
+
+                // Test verisi
+                const testData = {
+                    isim: 'Mete',
+                    soyisim: 'Burçak',
+                    iban: 'AT692060403103568105',
+                    total: '29.99',
+                    items: [
+                        {
+                            tarih: '2025-10-09',
+                            region: 'AT',
+                            birim: 'egitim',
+                            birim_label: 'Eğitim',
+                            gider_turu: 'buro',
+                            gider_turu_label: 'Büro',
+                            tutar: 29.99,
+                            aciklama: 'Avusturya İslam Federasyonu için test gider kaydı. Şüpheli işlem yok.'
+                        }
+                    ]
+                };
+
+                log('Test verisi hazırlandı');
+                log(`pdfMake versiyonu: ${pdfMake.version || 'bilinmiyor'}`);
+
+                // PDF tanımı
+                const docDefinition = {
+                    pageSize: 'A4',
+                    pageMargins: [40, 60, 40, 60],
+                    content: [
+                        // Başlık
+                        {
+                            columns: [
+                                {
+                                    width: '*',
+                                    stack: [
+                                        { text: 'AİF GİDER FORMU', style: 'header', color: '#009872' },
+                                        { text: 'Avusturya İslam Federasyonu', style: 'subheader' }
+                                    ]
+                                },
+                                {
+                                    width: 'auto',
+                                    stack: [
+                                        { text: new Date().toLocaleDateString('tr-TR') + ' - ' + new Date().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}), style: 'dateText', alignment: 'right' },
+                                        { text: 'Oluşturulma Tarihi', style: 'dateLabel', alignment: 'right' }
+                                    ]
+                                }
+                            ],
+                            margin: [0, 0, 0, 20]
+                        },
+                        
+                        // Türkçe karakter testi
+                        {
+                            table: {
+                                widths: ['*'],
+                                body: [
+                                    [{ text: '🧪 TÜRKÇE KARAKTER TESTİ', style: 'testHeader', fillColor: '#ffc107', color: '#212529' }],
+                                    [{
+                                        text: 'İ ı Ğ ğ Ü ü Ş ş Ö ö Ç ç',
+                                        fontSize: 18,
+                                        bold: true,
+                                        alignment: 'center',
+                                        margin: [0, 10, 0, 10]
+                                    }]
+                                ]
+                            },
+                            layout: 'noBorders',
+                            margin: [0, 0, 0, 20]
+                        },
+                        
+                        // Kişisel Bilgiler
+                        {
+                            table: {
+                                widths: ['*'],
+                                body: [
+                                    [{ text: 'BAŞVURAN BİLGİLERİ', style: 'cardHeader', fillColor: '#009872', color: 'white' }],
+                                    [{
+                                        stack: [
+                                            { text: [{ text: 'İsim Soyisim: ', bold: true }, `${testData.isim} ${testData.soyisim}`], margin: [0, 5, 0, 5] },
+                                            { text: [{ text: 'IBAN: ', bold: true }, testData.iban.replace(/(.{4})/g, '$1 ').trim()], margin: [0, 0, 0, 5] },
+                                            { text: [{ text: 'Toplam Tutar: ', bold: true }, { text: `${testData.total} €`, color: '#28a745', bold: true }], margin: [0, 0, 0, 5] }
+                                        ],
+                                        fillColor: '#f8f9fa',
+                                        margin: 10
+                                    }]
+                                ]
+                            },
+                            layout: 'noBorders',
+                            margin: [0, 0, 0, 20]
+                        },
+                        
+                        // Gider Detayları
+                        { text: 'GİDER DETAYLARI', style: 'sectionHeader', margin: [0, 0, 0, 10] },
+                        
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: ['auto', 'auto', '*', 'auto', 'auto', '*'],
+                                body: [
+                                    [
+                                        { text: 'Tarih', style: 'tableHeader' },
+                                        { text: 'BYK', style: 'tableHeader' },
+                                        { text: 'Birim', style: 'tableHeader' },
+                                        { text: 'Tür', style: 'tableHeader' },
+                                        { text: 'Tutar', style: 'tableHeader' },
+                                        { text: 'Açıklama', style: 'tableHeader' }
+                                    ],
+                                    [
+                                        new Date(testData.items[0].tarih).toLocaleDateString('tr-TR'),
+                                        testData.items[0].region,
+                                        testData.items[0].birim_label,
+                                        testData.items[0].gider_turu_label,
+                                        `${testData.items[0].tutar} €`,
+                                        testData.items[0].aciklama
+                                    ]
+                                ]
+                            },
+                            layout: {
+                                fillColor: function (rowIndex) {
+                                    return (rowIndex % 2 === 0) ? '#f8f9fa' : null;
+                                },
+                                hLineWidth: function (i, node) {
+                                    return (i === 0 || i === 1 || i === node.table.body.length) ? 1 : 0.5;
+                                },
+                                vLineWidth: function () { return 0; },
+                                hLineColor: function (i) {
+                                    return i === 1 ? '#009872' : '#dee2e6';
+                                }
+                            }
+                        }
+                    ],
+                    footer: function(currentPage, pageCount) {
+                        return {
+                            columns: [
+                                { text: 'Bu belge test amaçlı oluşturulmuştur.', style: 'footer', alignment: 'left' },
+                                { text: `Sayfa ${currentPage} / ${pageCount}`, style: 'footer', alignment: 'right' }
+                            ],
+                            margin: [40, 0]
+                        };
+                    },
+                    styles: {
+                        header: { fontSize: 22, bold: true, margin: [0, 0, 0, 5] },
+                        subheader: { fontSize: 12, color: '#6c757d' },
+                        dateText: { fontSize: 10, bold: true },
+                        dateLabel: { fontSize: 8, color: '#6c757d' },
+                        testHeader: { fontSize: 12, bold: true, margin: [10, 10, 10, 10] },
+                        cardHeader: { fontSize: 12, bold: true, margin: [10, 10, 10, 10] },
+                        sectionHeader: { fontSize: 16, bold: true, color: '#212529' },
+                        tableHeader: { bold: true, fontSize: 11, color: 'white', fillColor: '#009872', margin: [5, 8, 5, 8] },
+                        footer: { fontSize: 8, color: '#6c757d' }
+                    },
+                    defaultStyle: {
+                        fontSize: 10,
+                        font: 'Roboto'
+                    }
+                };
+
+                log('Döküman tanımı oluşturuldu');
+
+                // PDF oluştur
+                generatedPDF = pdfMake.createPdf(docDefinition);
+                
+                log('PDF başarıyla oluşturuldu! ✅');
+                showStatus('✅ PDF başarıyla oluşturuldu! İndir butonuna tıklayın.', 'success');
+                
+                document.getElementById('downloadBtn').disabled = false;
+
+            } catch (error) {
+                log(`HATA: ${error.message}`, 'error');
+                console.error('PDF Oluşturma Hatası:', error);
+                showStatus(`❌ Hata: ${error.message}`, 'error');
+            }
+        }
+
+        function downloadPDF() {
+            if (!generatedPDF) {
+                showStatus('❌ Önce PDF oluşturmalısınız!', 'error');
+                return;
+            }
+
+            try {
+                log('PDF indiriliyor...');
+                const timestamp = new Date().getTime();
+                generatedPDF.download(`test_gider_formu_${timestamp}.pdf`);
+                log('PDF başarıyla indirildi! ✅');
+                showStatus('✅ PDF başarıyla indirildi!', 'success');
+            } catch (error) {
+                log(`İndirme hatası: ${error.message}`, 'error');
+                showStatus(`❌ İndirme hatası: ${error.message}`, 'error');
+            }
+        }
+
+        // Sayfa yüklendiğinde
+        window.addEventListener('load', () => {
+            log('Sayfa yüklendi');
+            log(`pdfMake yüklü: ${typeof pdfMake !== 'undefined' ? 'Evet ✅' : 'Hayır ❌'}`);
+            if (typeof pdfMake !== 'undefined') {
+                log('pdfMake hazır, test başlatılabilir!');
+                showStatus('✨ Hazır! "PDF Oluştur" butonuna tıklayın.', 'info');
+            } else {
+                log('HATA: pdfMake yüklenemedi!', 'error');
+                showStatus('❌ pdfMake kütüphanesi yüklenemedi!', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
+
