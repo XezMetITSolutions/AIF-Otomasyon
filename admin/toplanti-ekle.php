@@ -30,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $aciklama = trim($_POST['aciklama'] ?? '');
         $toplanti_tarihi = $_POST['toplanti_tarihi'] ?? '';
         $konum = trim($_POST['konum'] ?? '');
-        $konum = trim($_POST['konum'] ?? '');
         $is_divan = isset($_POST['is_divan']) ? 1 : 0;
         $toplanti_turu = $is_divan ? 'divan' : 'normal';
         $katilimcilar = $_POST['katilimcilar'] ?? [];
@@ -59,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $toplanti_tarihi,
             $konum,
             $toplanti_turu,
-            $user['kullanici_id']
+            $user['id']
         ]);
         
         $toplanti_id = $db->lastInsertId();
