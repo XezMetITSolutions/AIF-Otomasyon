@@ -31,7 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $toplanti_tarihi = $_POST['toplanti_tarihi'] ?? '';
         $bitis_tarihi = $_POST['bitis_tarihi'] ?? null;
         $konum = trim($_POST['konum'] ?? '');
-        $toplanti_turu = $_POST['toplanti_turu'] ?? 'normal';
+        $konum = trim($_POST['konum'] ?? '');
+        $is_divan = isset($_POST['is_divan']) ? 1 : 0;
+        $toplanti_turu = $is_divan ? 'divan' : 'normal';
         $katilimcilar = $_POST['katilimcilar'] ?? [];
         
         // Validasyon
@@ -149,15 +151,13 @@ include __DIR__ . '/../includes/header.php';
                                     </select>
                                 </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="toplanti_turu" class="form-label">Toplantı Türü</label>
-                                    <select class="form-select" id="toplanti_turu" name="toplanti_turu">
-                                        <option value="normal">Normal</option>
-                                        <option value="olagan">Olağan</option>
-                                        <option value="olaganüstü">Olağanüstü</option>
-                                        <option value="acil">Acil</option>
-                                        <option value="ozel">Özel</option>
-                                    </select>
+                                <div class="col-md-6 mb-3 d-flex align-items-end">
+                                    <div class="form-check mb-2" id="divan_checkbox_container" style="display: none;">
+                                        <input class="form-check-input" type="checkbox" id="is_divan" name="is_divan" value="1">
+                                        <label class="form-check-label fw-bold" for="is_divan">
+                                            <i class="fas fa-star text-warning me-1"></i>Divan Toplantısı
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -228,10 +228,30 @@ include __DIR__ . '/../includes/header.php';
 document.addEventListener('DOMContentLoaded', function() {
     const bykSelect = document.getElementById('byk_id');
     const katilimcilarContainer = document.getElementById('katilimcilar-container');
+    const divanCheckboxContainer = document.getElementById('divan_checkbox_container');
+    const divanCheckbox = document.getElementById('is_divan');
     
-    // BYK değiştiğinde katılımcıları yükle
+    // BYK değiştiğinde
     bykSelect.addEventListener('change', function() {
-        const bykId = this.value;
+        const selectedOption = this.options[this.selectedIndex];
+        const bykText = selectedOption.text.toLowerCase();
+        
+        // Ana Teşkilat kontrolü (İsim veya kod kontrolü)
+        if (bykText.includes('ana teşkilat') || bykText.includes('merkez') || bykText.includes('AT')) {
+            divanCheckboxContainer.style.display = 'block';
+        } else {
+            divanCheckboxContainer.style.display = 'none';
+            divanCheckbox.checked = false;
+        }
+        
+        loadMembers();
+    });
+
+    // Divan checkbox değiştiğinde
+    divanCheckbox.addEventListener('change', loadMembers);
+
+    function loadMembers() {
+        const bykId = bykSelect.value;
         
         if (!bykId) {
             katilimcilarContainer.innerHTML = '<p class="text-muted text-center"><i class="fas fa-info-circle me-2"></i>Önce BYK seçiniz</p>';
@@ -242,7 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
         katilimcilarContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="text-muted mt-2">Katılımcılar yükleniyor...</p></div>';
         
         // AJAX ile katılımcıları getir
-        fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}`)
+        const isDivan = document.getElementById('is_divan').checked;
+        fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.uyeler.length > 0) {

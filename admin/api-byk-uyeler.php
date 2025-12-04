@@ -14,11 +14,17 @@ try {
     
     $db = Database::getInstance();
     $byk_id = $_GET['byk_id'] ?? null;
+    $divan_only = isset($_GET['divan_only']) && $_GET['divan_only'] === 'true';
     
     if (!$byk_id) {
         throw new Exception('BYK ID gereklidir');
     }
     
+    $whereClause = "k.byk_id = ? AND k.aktif = 1";
+    if ($divan_only) {
+        $whereClause .= " AND k.divan_uyesi = 1";
+    }
+
     // BYK'ye ait aktif üyeleri getir
     $uyeler = $db->fetchAll("
         SELECT 
@@ -26,13 +32,13 @@ try {
             k.ad,
             k.soyad,
             k.email,
+            k.divan_uyesi,
             r.rol_adi,
             ab.alt_birim_adi
         FROM kullanicilar k
         LEFT JOIN roller r ON k.rol_id = r.rol_id
         LEFT JOIN alt_birimler ab ON k.alt_birim_id = ab.alt_birim_id
-        WHERE k.byk_id = ? 
-        AND k.aktif = 1
+        WHERE $whereClause
         ORDER BY k.ad, k.soyad
     ", [$byk_id]);
     
