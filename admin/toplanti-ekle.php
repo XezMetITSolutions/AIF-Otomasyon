@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 katilimcilarContainer.innerHTML = '<p class="text-danger text-center"><i class="fas fa-exclamation-triangle me-2"></i>Katılımcılar yüklenirken hata oluştu</p>';
             });
-    });
+    }
     
     // Form validasyonu
     document.getElementById('toplantiForm').addEventListener('submit', function(e) {
