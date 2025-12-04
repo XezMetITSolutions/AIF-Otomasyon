@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $baslik = trim($_POST['baslik'] ?? '');
         $aciklama = trim($_POST['aciklama'] ?? '');
         $toplanti_tarihi = $_POST['toplanti_tarihi'] ?? '';
-        $bitis_tarihi = $_POST['bitis_tarihi'] ?? null;
         $konum = trim($_POST['konum'] ?? '');
         $konum = trim($_POST['konum'] ?? '');
         $is_divan = isset($_POST['is_divan']) ? 1 : 0;
@@ -50,15 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Toplantıyı ekle
         $db->query("
             INSERT INTO toplantilar (
-                byk_id, baslik, aciklama, toplanti_tarihi, bitis_tarihi,
+                byk_id, baslik, aciklama, toplanti_tarihi,
                 konum, toplanti_turu, olusturan_id, durum, olusturma_tarihi
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'planlandi', NOW())
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'planlandi', NOW())
         ", [
             $byk_id,
             $baslik,
             $aciklama,
             $toplanti_tarihi,
-            $bitis_tarihi,
             $konum,
             $toplanti_turu,
             $user['kullanici_id']
@@ -168,20 +166,15 @@ include __DIR__ . '/../includes/header.php';
                             </div>
 
                             <div class="mb-3">
-                                <label for="aciklama" class="form-label">Açıklama</label>
-                                <textarea class="form-control" id="aciklama" name="aciklama" rows="3" 
-                                          placeholder="Toplantı hakkında kısa açıklama..."></textarea>
+                                <label for="aciklama" class="form-label">Gündem</label>
+                                <textarea class="form-control" id="aciklama" name="aciklama" rows="6" 
+                                          placeholder="• Gündem maddesi 1&#10;• Gündem maddesi 2"></textarea>
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="toplanti_tarihi" class="form-label">Başlangıç Tarihi & Saati <span class="text-danger">*</span></label>
+                                <div class="col-md-12 mb-3">
+                                    <label for="toplanti_tarihi" class="form-label">Tarih & Saat <span class="text-danger">*</span></label>
                                     <input type="datetime-local" class="form-control" id="toplanti_tarihi" name="toplanti_tarihi" required>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label for="bitis_tarihi" class="form-label">Bitiş Tarihi & Saati</label>
-                                    <input type="datetime-local" class="form-control" id="bitis_tarihi" name="bitis_tarihi">
                                 </div>
                             </div>
 
@@ -336,6 +329,29 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
     });
+
+    // Gündem maddeleri için otomatik bullet point
+    const gundemTextarea = document.getElementById('aciklama');
+    
+    if (gundemTextarea) {
+        gundemTextarea.addEventListener('focus', function() {
+            if (this.value.trim() === '') {
+                this.value = '• ';
+            }
+        });
+
+        gundemTextarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const value = this.value;
+                const newValue = value.substring(0, start) + "\n• " + value.substring(end);
+                this.value = newValue;
+                this.selectionStart = this.selectionEnd = start + 3;
+            }
+        });
+    }
 });
 </script>
 
