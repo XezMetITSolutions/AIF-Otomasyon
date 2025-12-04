@@ -64,7 +64,7 @@ $kararlar = $db->fetchAll("
     FROM toplanti_kararlar tk
     LEFT JOIN toplanti_gundem tg ON tk.gundem_id = tg.gundem_id
     WHERE tk.toplanti_id = ?
-    ORDER BY tk.olusturma_tarihi
+    ORDER BY tk.karar_id
 ", [$toplanti_id]);
 
 // Tutanağı getir
