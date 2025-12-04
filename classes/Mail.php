@@ -45,6 +45,7 @@ class Mail {
 <body>
     <div class="container">
         <div class="header">
+            <img src="https://aifcrm.metechnik.at/assets/img/logo.png" alt="AIF Logo" style="max-height: 60px; margin-bottom: 10px;">
             <h1>Toplantı Daveti</h1>
         </div>
         <div class="content">
