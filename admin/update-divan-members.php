@@ -28,6 +28,16 @@ $names = [
     'Umut Burçak'
 ];
 
+// Kolon kontrolü ve ekleme
+try {
+    $checkColumn = $db->fetch("SHOW COLUMNS FROM `kullanicilar` LIKE 'divan_uyesi'");
+    if (!$checkColumn) {
+        $db->query("ALTER TABLE `kullanicilar` ADD COLUMN `divan_uyesi` TINYINT(1) DEFAULT 0 AFTER `aktif`");
+    }
+} catch (Exception $e) {
+    // Hata oluşursa devam et, belki yetki yoktur ama kolon vardır
+}
+
 $results = [];
 
 if (isset($_POST['update'])) {
