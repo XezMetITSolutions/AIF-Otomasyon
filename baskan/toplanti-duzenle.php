@@ -111,12 +111,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $durum,
                 $toplanti_id
             ]);
-            $success = 'Bilgiler güncellendi.';
-        }
-        // Redirect to clear post
-         header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
-         exit;
-    } catch (Exception $e) {
+
+            // Otomatik Gündem Oluşturma (Eğer hiç gündem yoksa ve açıklamada maddeler varsa)
+            $mevcut_gundem = $db->fetch("SELECT COUNT(*) as sayi FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
+            if ($mevcut_gundem['sayi'] == 0 && !empty($aciklama)) {
+                $lines = explode("\n", $aciklama);
+                $sira = 1;
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    // Bullet styles: -, *, •, 1.
+                    if (preg_match('/^[-*•]\s+(.*)$/', $line, $m) || preg_match('/^\d+\.\s+(.*)$/', $line, $m)) {
+                        $gundem_baslik = trim($m[1]);
+                        if (!empty($gundem_baslik)) {
+                            $db->query("INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) VALUES (?, ?, ?, 'beklemede')", 
+                                [$toplanti_id, $sira++, $gundem_baslik]);
+                        }
+                    }
+                }
+            }
+            
+            $success = 'Bilgiler güncellendi' . ($sira > 1 ? ' ve otomatik gündem oluşturuldu.' : '.');
+            header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
+            exit;
+        } else {
         $msg = $e->getMessage();
         // Self-Healing for missing columns
         if (strpos($msg, 'Unknown column') !== false) {
