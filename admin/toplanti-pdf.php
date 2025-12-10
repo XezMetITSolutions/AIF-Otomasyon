@@ -114,17 +114,13 @@ $html .= '<br>';
 // Katılımcılar
 $html .= '<h2 style="color:#0d6efd;">Katılımcı Durumları</h2>';
 
-// Katılacaklar
+// Katılanlar
 $katilacaklar = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'katilacak');
 if (!empty($katilacaklar)) {
-    $html .= '<h3 style="color:#28a745;">Katılacaklar (' . count($katilacaklar) . ')</h3>';
+    $html .= '<h3 style="color:#28a745;">Katılanlar (' . count($katilacaklar) . ')</h3>';
     $html .= '<ul>';
     foreach ($katilacaklar as $k) {
-        $html .= '<li>' . htmlspecialchars($k['ad'] . ' ' . $k['soyad']);
-        if ($k['alt_birim_adi']) {
-            $html .= ' (' . htmlspecialchars($k['alt_birim_adi']) . ')';
-        }
-        $html .= '</li>';
+        $html .= '<li>' . htmlspecialchars($k['ad'] . ' ' . $k['soyad']) . '</li>';
     }
     $html .= '</ul>';
 }
@@ -148,7 +144,7 @@ $html .= '<br>';
 
 // Gündem
 if (!empty($gundem_maddeleri)) {
-    $html .= '<h2 style="color:#0d6efd;">Gündem ve Görüşme Notları</h2>';
+    $html .= '<h2 style="color:#0d6efd;">Gündem ve Alınan Kararlar</h2>';
     $html .= '<table border="0" cellpadding="5">';
     foreach ($gundem_maddeleri as $index => $g) {
         $html .= '<tr><td>';
@@ -158,7 +154,7 @@ if (!empty($gundem_maddeleri)) {
         }
         if (!empty($g['gorusme_notlari'])) {
             $html .= '<div style="background-color:#f8f9fa; padding:10px; border-left: 3px solid #0d6efd;">';
-            $html .= '<strong>Görüşme Notu:</strong><br>';
+            $html .= '<strong>Notlar:</strong><br>';
             $html .= nl2br(htmlspecialchars($g['gorusme_notlari']));
             $html .= '</div>';
         }

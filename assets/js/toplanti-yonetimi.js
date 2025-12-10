@@ -120,16 +120,35 @@ const ToplantiYonetimi = {
             });
         });
 
-        // Hızlı Karar Ekleme (Inline)
-        document.querySelectorAll('.quick-decision-btn').forEach(btn => {
+        // Karar Metni İşlemleri (Görüşme Notu Gibi)
+        document.querySelectorAll('.decision-save-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const btn = e.target.closest('button');
                 const gundemId = btn.dataset.gundemId;
-                const container = btn.closest('.input-group');
-                const textarea = container.querySelector('.quick-decision-input');
-                const kararMetni = textarea.value.trim();
+                const toplantiId = btn.dataset.toplantiId;
+                const container = btn.closest('.container-karar-text');
+                const textarea = container.querySelector('.decision-text-input');
+                const text = textarea.value.trim();
 
-                this.hizliKararKaydet(gundemId, kararMetni, btn);
+                this.saveDecisionManual(toplantiId, gundemId, text, btn);
+            });
+        });
+
+        document.querySelectorAll('.decision-text-input').forEach(textarea => {
+            let debounceTimer;
+            textarea.addEventListener('input', (e) => {
+                const gundemId = e.target.dataset.gundemId;
+                const toplantiId = e.target.dataset.toplantiId;
+                const text = e.target.value.trim();
+                const container = e.target.closest('.container-karar-text');
+                const statusSpan = container.querySelector('.save-status-decision');
+
+                statusSpan.textContent = 'Kaydediliyor...';
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    this.autoSaveDecision(toplantiId, gundemId, text, statusSpan);
+                }, 1000);
             });
         });
     },
@@ -365,40 +384,62 @@ const ToplantiYonetimi = {
             });
     },
 
-    hizliKararKaydet: function (gundemId, kararMetni, btn) {
-        if (!kararMetni) {
-            this.showAlert('warning', 'Karar metni boş olamaz');
-            return;
-        }
-
-        // Loading
+    saveDecisionManual: function (toplantiId, gundemId, text, btn) {
         const originalHtml = btn.innerHTML;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...';
         btn.disabled = true;
 
         const data = {
-            action: 'add',
-            toplanti_id: this.toplanti_id,
+            toplanti_id: toplantiId,
             gundem_id: gundemId,
-            baslik: 'Gündem Kararı',
-            karar_metni: kararMetni,
-            oylama_yapildi: 0,
-            karar_sonucu: 'kabul'
+            karar_metni: text
         };
 
-        this.apiRequest('/admin/api-toplanti-karar.php', data)
+        this.apiRequest('/api/update-decision-text.php', data)
             .then(result => {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
 
                 if (result.success) {
                     this.showAlert('success', 'Karar kaydedildi');
-                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    this.showAlert('danger', result.error || 'Hata oluştu');
+                    this.showAlert('danger', result.message || 'Hata oluştu');
                 }
             });
     },
+
+    autoSaveDecision: function (toplantiId, gundemId, text, statusSpan) {
+        const data = {
+            toplanti_id: toplantiId,
+            gundem_id: gundemId,
+            karar_metni: text
+        };
+
+        fetch('/api/update-decision-text.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    statusSpan.textContent = 'Kaydedildi';
+                    statusSpan.classList.add('text-success');
+                    setTimeout(() => {
+                        statusSpan.textContent = '';
+                        statusSpan.classList.remove('text-success');
+                    }, 2000);
+                } else {
+                    statusSpan.textContent = 'Hata!';
+                    statusSpan.classList.add('text-danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                statusSpan.textContent = 'Hata!';
+                statusSpan.classList.add('text-danger');
+            });
+    }
 
     // ==================== KARAR İŞLEMLERİ ====================
 

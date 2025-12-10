@@ -32,85 +32,35 @@ foreach ($kararlar as $k) {
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- Inline Karar Ekleme Formu -->
-                        <div class="mb-3">
-                            <label class="form-label small text-muted"><i class="fas fa-pen me-1"></i>Hızlı Karar Ekle</label>
-                            <div class="input-group">
-                                <textarea class="form-control quick-decision-input" 
-                                          rows="2" 
-                                          placeholder="Bu gündem maddesiyle ilgili kararı buraya yazın..."
-                                          data-gundem-id="<?php echo $gundem['gundem_id']; ?>"></textarea>
-                                <button class="btn btn-outline-primary quick-decision-btn" type="button" 
-                                        data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
+                        <!-- Karar Metni Düzenleyici (Görüşme Notu Gibi) -->
+                        <?php 
+                        // Mevcut kararı bul
+                        $mevcut_karar = $kararlar_grouped[$gundem['gundem_id']][0] ?? null; 
+                        $karar_metni = $mevcut_karar ? $mevcut_karar['karar_metni'] : '';
+                        ?>
+                        
+                        <div class="p-3 bg-light rounded container-karar-text">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label text-muted small fw-bold mb-0">
+                                    <i class="fas fa-gavel me-1"></i>Karar Metni
+                                </label>
+                                <span class="small text-muted fst-italic save-status-decision"></span>
+                            </div>
+                            <textarea class="form-control form-control-sm decision-text-input mb-2" 
+                                      rows="3" 
+                                      placeholder="Bu madde ile ilgili alınan kararı buraya yazınız..."
+                                      data-gundem-id="<?php echo $gundem['gundem_id']; ?>"
+                                      data-toplanti-id="<?php echo $toplanti_id; ?>"><?php echo htmlspecialchars($karar_metni); ?></textarea>
+                            <div class="text-end">
+                                <small class="text-muted me-2">Otomatik kaydedilir</small>
+                                <button type="button" class="btn btn-sm btn-outline-success decision-save-btn" 
+                                        data-gundem-id="<?php echo $gundem['gundem_id']; ?>"
+                                        data-toplanti-id="<?php echo $toplanti_id; ?>">
                                     <i class="fas fa-save me-1"></i>Kaydet
                                 </button>
                             </div>
                         </div>
 
-                        <?php if (empty($kararlar_grouped[$gundem['gundem_id']])): ?>
-                            <p class="text-muted text-center mb-0 small fst-italic decisions-empty-msg">Bu gündem maddesi için henüz karar alınmamış.</p>
-                        <?php else: ?>
-                            <div class="accordion" id="accordionGundem<?php echo $gundem['gundem_id']; ?>">
-                                <?php foreach ($kararlar_grouped[$gundem['gundem_id']] as $k_index => $karar): ?>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button" 
-                                                    data-bs-toggle="collapse" 
-                                                    data-bs-target="#karar<?php echo $karar['karar_id']; ?>">
-                                                <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                                                    <div>
-                                                        <?php if ($karar['karar_no']): ?>
-                                                            <span class="badge bg-secondary me-2"><?php echo htmlspecialchars($karar['karar_no']); ?></span>
-                                                        <?php endif; ?>
-                                                        <strong><?php echo htmlspecialchars($karar['baslik']); ?></strong>
-                                                    </div>
-                                                    <?php if ($karar['karar_sonucu']): ?>
-                                                        <span class="badge bg-<?php 
-                                                            echo $karar['karar_sonucu'] === 'kabul' ? 'success' : 
-                                                                ($karar['karar_sonucu'] === 'red' ? 'danger' : 'warning'); 
-                                                        ?>">
-                                                            <?php echo ucfirst($karar['karar_sonucu']); ?>
-                                                        </span>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </button>
-                                        </h2>
-                                        <div id="karar<?php echo $karar['karar_id']; ?>" 
-                                             class="accordion-collapse collapse" 
-                                             data-bs-parent="#accordionGundem<?php echo $gundem['gundem_id']; ?>">
-                                            <div class="accordion-body">
-                                                <div class="mb-3">
-                                                    <h6>Karar Metni:</h6>
-                                                    <p><?php echo nl2br(htmlspecialchars($karar['karar_metni'])); ?></p>
-                                                </div>
-
-                                                <?php if ($karar['oylama_yapildi']): ?>
-                                                    <div class="mb-3">
-                                                        <h6>Oylama Sonuçları:</h6>
-                                                        <div class="d-flex gap-3">
-                                                            <div class="text-success"><i class="fas fa-check-circle me-1"></i>Kabul: <?php echo $karar['kabul_oyu']; ?></div>
-                                                            <div class="text-danger"><i class="fas fa-times-circle me-1"></i>Red: <?php echo $karar['red_oyu']; ?></div>
-                                                            <div class="text-warning"><i class="fas fa-minus-circle me-1"></i>Çekimser: <?php echo $karar['cekinser_oyu']; ?></div>
-                                                        </div>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <div class="d-flex gap-2 justify-content-end">
-                                                    <button type="button" class="btn btn-sm btn-outline-primary karar-duzenle-btn" 
-                                                            data-karar-id="<?php echo $karar['karar_id']; ?>">
-                                                        <i class="fas fa-edit me-1"></i>Düzenle
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger karar-sil-btn" 
-                                                            data-karar-id="<?php echo $karar['karar_id']; ?>">
-                                                        <i class="fas fa-trash me-1"></i>Sil
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
