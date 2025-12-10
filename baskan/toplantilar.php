@@ -15,9 +15,26 @@ $db = Database::getInstance();
 
 $pageTitle = 'Toplantı Yönetimi';
 
-// Toplantılar (Sadece Kendi BYK'sı)
+// Turkish Date Helper
+$trMonths = [
+    'Jan' => 'Ocak', 'Feb' => 'Şubat', 'Mar' => 'Mart', 'Apr' => 'Nisan',
+    'May' => 'Mayıs', 'Jun' => 'Haziran', 'Jul' => 'Temmuz', 'Aug' => 'Ağustos',
+    'Sep' => 'Eylül', 'Oct' => 'Ekim', 'Nov' => 'Kasım', 'Dec' => 'Aralık'
+];
+
+function formatTextAsList($text) {
+    if (empty($text)) return '';
+    $escaped = htmlspecialchars($text);
+    $withBreaks = nl2br($escaped);
+    $formatted = str_replace([' - ', ' • ', ' * '], ['<br>- ', '<br>• ', '<br>* '], $withBreaks);
+    return $formatted;
+}
+
+// Toplantılar (Sadece Kendi BYK'sı) + Katılım İstatistikleri
 $toplantilar = $db->fetchAll("
-    SELECT t.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as olusturan
+    SELECT t.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as olusturan,
+           (SELECT COUNT(*) FROM toplanti_katilimcilar tk WHERE tk.toplanti_id = t.toplanti_id) as total_participants,
+           (SELECT COUNT(*) FROM toplanti_katilimcilar tk WHERE tk.toplanti_id = t.toplanti_id AND tk.katilim_durumu = 'katilacak') as confirmed_participants
     FROM toplantilar t
     INNER JOIN byk b ON t.byk_id = b.byk_id
     INNER JOIN kullanicilar u ON t.olusturan_id = u.kullanici_id
@@ -34,78 +51,134 @@ include __DIR__ . '/../includes/header.php';
 
 <main class="container-fluid mt-4">
     <div class="content-wrapper">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">
-                    <i class="fas fa-users-cog me-2"></i>Toplantı Yönetimi
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h1 class="h3 fw-bold mb-1 text-dark">
+                    <i class="fas fa-users-cog me-2 text-primary"></i>Toplantı Yönetimi
                 </h1>
-                <a href="/baskan/toplanti-ekle.php" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Yeni Toplantı Ekle
-                </a>
+                <p class="text-muted mb-0">Bölge Yürütme Kurulu toplantılarını yönetin.</p>
             </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    Toplam: <strong><?php echo count($toplantilar); ?></strong> toplantı
+            <a href="/baskan/toplanti-ekle.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-plus me-2"></i>Yeni Toplantı Ekle
+            </a>
+        </div>
+
+        <?php if (empty($toplantilar)): ?>
+            <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+                <div class="mb-3 text-muted opacity-50">
+                    <i class="fas fa-calendar-plus fa-4x"></i>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Başlık</th>
-                                    <th>BYK</th>
-                                    <th>Tarih</th>
-                                    <th>Tür</th>
-                                    <th>Durum</th>
-                                    <th>Oluşturan</th>
-                                    <th>İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($toplantilar)): ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted">Henüz toplantı eklenmemiş.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($toplantilar as $toplanti): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($toplanti['baslik']); ?></td>
-                                            <td><?php echo htmlspecialchars($toplanti['byk_adi']); ?></td>
-                                            <td><?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?></td>
-                                            <td>
-                                                <span class="badge bg-info"><?php echo htmlspecialchars($toplanti['toplanti_turu']); ?></span>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-<?php echo $toplanti['durum'] === 'tamamlandi' ? 'success' : ($toplanti['durum'] === 'devam_ediyor' ? 'warning' : 'info'); ?>">
-                                                    <?php echo htmlspecialchars($toplanti['durum']); ?>
-                                                </span>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($toplanti['olusturan']); ?></td>
-                                            <td>
-                                                <a href="/baskan/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <?php if ($toplanti['durum'] !== 'iptal' && $toplanti['durum'] !== 'tamamlandi'): ?>
-                                                    <button class="btn btn-sm btn-outline-warning" onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" title="İptal Et">
-                                                        <i class="fas fa-ban"></i>
-                                                    </button>
-                                                <?php endif; ?>
-                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" title="Sil">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
+                <h5 class="text-muted">Henüz toplantı oluşturulmamış</h5>
+                <p class="text-muted small">Yeni bir toplantı oluşturmak için yukarıdaki butonu kullanın.</p>
+            </div>
+        <?php else: ?>
+            <div class="row g-4">
+                <?php foreach ($toplantilar as $toplanti): ?>
+                    <?php
+                        $tarih = new DateTime($toplanti['toplanti_tarihi']);
+                        $monthShort = $tarih->format('M');
+                        $trMonth = $trMonths[$monthShort] ?? $monthShort;
+                        
+                        // Participation Rate
+                        $total = $toplanti['total_participants'];
+                        $confirmed = $toplanti['confirmed_participants'];
+                        $percent = $total > 0 ? round(($confirmed / $total) * 100) : 0;
+                        
+                        // Status Logic for Border (implicitly shows status via color)
+                        $isPast = $tarih < new DateTime();
+                        $isCancelled = $toplanti['durum'] === 'iptal';
+                        $isActive = !$isPast && !$isCancelled;
+                        
+                        // Visual cues
+                        $cardClass = $isCancelled ? 'border-danger bg-light' : ($isPast ? 'border-secondary' : 'border-primary');
+                        $opacityClass = $isCancelled || $isPast ? 'opacity-75' : '';
+                    ?>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card h-100 shadow-sm <?php echo $cardClass; ?> hover-shadow transition-all <?php echo $opacityClass; ?>">
+                            <div class="card-body">
+                                <div class="d-flex gap-3 mb-3">
+                                    <!-- Date Badge -->
+                                    <div class="d-flex flex-column align-items-center justify-content-center bg-light rounded-3 p-2 text-center border" style="min-width: 70px; height: 70px;">
+                                        <span class="h4 mb-0 fw-bold text-dark"><?php echo $tarih->format('d'); ?></span>
+                                        <span class="small text-uppercase text-muted"><?php echo $trMonth; ?></span>
+                                    </div>
+                                    
+                                    <!-- Title & Actions -->
+                                    <div class="flex-grow-1">
+                                        <h5 class="card-title fw-bold mb-1 text-truncate-2">
+                                            <?php echo htmlspecialchars($toplanti['baslik']); ?>
+                                        </h5>
+                                        <div class="d-flex align-items-center text-muted small mt-1">
+                                            <i class="far fa-clock me-1"></i>
+                                            <?php echo $tarih->format('H:i'); ?>
+                                            
+                                            <?php if($toplanti['konum']): ?>
+                                                <span class="mx-2">•</span>
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                <?php echo htmlspecialchars($toplanti['konum']); ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Description Excerpt -->
+                                <?php if($toplanti['aciklama']): ?>
+                                    <div class="text-muted small mb-3 text-truncate-3">
+                                        <?php echo formatTextAsList($toplanti['aciklama']); ?>
+                                    </div>
                                 <?php endif; ?>
-                            </tbody>
-                        </table>
+                                
+                                <!-- Participation Stats -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center small mb-1">
+                                        <span class="text-muted fw-bold">Katılım Durumu</span>
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="fas fa-users me-1"></i> <?php echo $confirmed; ?> / <?php echo $total; ?>
+                                        </span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: <?php echo $percent; ?>%" 
+                                             aria-valuenow="<?php echo $percent; ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Footer -->
+                            <div class="card-footer bg-white border-top-0 p-3 pt-0 d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($toplanti['olusturan']); ?>
+                                </small>
+                                
+                                <div class="btn-group">
+                                    <a href="/baskan/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    
+                                    <?php if (!$isCancelled && !$isPast): ?>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" 
+                                                title="İptal Et">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                    
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="deleteMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" 
+                                            title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php endforeach; ?>
             </div>
+        <?php endif; ?>
     </div>
 </main>
 
-<!-- Cancel Meeting Modal -->
+<!-- Using existing Cancel/Delete Modals & JS logic (retained) -->
 <div class="modal fade" id="cancelMeetingModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -131,6 +204,29 @@ include __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </div>
+
+<style>
+/* Custom Utilities */
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.hover-shadow:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+.transition-all {
+    transition: all 0.3s ease;
+}
+</style>
 
 <script>
 let currentMeetingId = null;
@@ -180,18 +276,15 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async func
     }
 });
 
-// Delete meeting function
 function deleteMeeting(id, title) {
     if (!confirm(`⚠️ "${title}" toplantısını kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve tüm ilgili veriler (katılımcılar, gündem, kararlar) silinecektir.`)) {
         return;
     }
     
-    // Second confirmation for safety
     if (!confirm(`Son uyarı: Toplantıyı silmek istediğinize %100 emin misiniz?`)) {
         return;
     }
     
-    // Show loading
     const btn = event.target.closest('button');
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
