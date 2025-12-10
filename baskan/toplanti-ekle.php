@@ -90,11 +90,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Katılımcı sayısını güncelle
             $katilimci_sayisi = count($katilimcilar);
-            $db->query("
-                UPDATE toplantilar 
-                SET katilimci_sayisi = ? 
-                WHERE toplanti_id = ?
-            ", [$katilimci_sayisi, $toplanti_id]);
+            try {
+                $db->query("
+                    UPDATE toplantilar 
+                    SET katilimci_sayisi = ? 
+                    WHERE toplanti_id = ?
+                ", [$katilimci_sayisi, $toplanti_id]);
+            } catch (Exception $e) {
+                if (strpos($e->getMessage(), 'Unknown column') !== false && strpos($e->getMessage(), 'katilimci_sayisi') !== false) {
+                    $db->query("ALTER TABLE toplantilar ADD COLUMN katilimci_sayisi INT DEFAULT 0 AFTER durum");
+                    // Retry
+                    $db->query("
+                        UPDATE toplantilar 
+                        SET katilimci_sayisi = ? 
+                        WHERE toplanti_id = ?
+                    ", [$katilimci_sayisi, $toplanti_id]);
+                } else {
+                    throw $e;
+                }
+            }
         }
         
         $success = 'Toplantı başarıyla oluşturuldu!';
