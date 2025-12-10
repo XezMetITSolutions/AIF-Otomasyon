@@ -102,6 +102,22 @@ const ToplantiYonetimi = {
                     }
                 }
             });
+
+            // Auto-save logic
+            let debounceTimer;
+            textarea.addEventListener('input', (e) => {
+                const gundemId = e.target.dataset.gundemId;
+                const notlar = e.target.value.trim();
+                const container = e.target.closest('.container-gorusme-notu');
+                const statusSpan = container.querySelector('.save-status');
+
+                statusSpan.textContent = 'Kaydediliyor...';
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    this.autoSaveNote(gundemId, notlar, statusSpan);
+                }, 1000);
+            });
         });
 
         // Hızlı Karar Ekleme (Inline)
@@ -312,6 +328,40 @@ const ToplantiYonetimi = {
                 } else {
                     this.showAlert('danger', result.message || 'Hata oluştu');
                 }
+            });
+    },
+
+    autoSaveNote: function (gundemId, notlar, statusSpan) {
+        const data = {
+            gundem_id: gundemId,
+            notlar: notlar
+        };
+
+        fetch('/api/update-agenda-note.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    statusSpan.textContent = 'Kaydedildi';
+                    statusSpan.classList.add('text-success');
+                    setTimeout(() => {
+                        statusSpan.textContent = '';
+                        statusSpan.classList.remove('text-success');
+                    }, 2000);
+                } else {
+                    statusSpan.textContent = 'Hata!';
+                    statusSpan.classList.add('text-danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                statusSpan.textContent = 'Hata!';
+                statusSpan.classList.add('text-danger');
             });
     },
 

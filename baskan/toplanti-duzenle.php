@@ -86,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $baslik = trim($_POST['baslik'] ?? '');
             $aciklama = trim($_POST['aciklama'] ?? '');
             $toplanti_tarihi = $_POST['toplanti_tarihi'] ?? '';
-            $bitis_tarihi = $_POST['bitis_tarihi'] ?? null;
             $konum = trim($_POST['konum'] ?? '');
             $toplanti_turu = $_POST['toplanti_turu'] ?? 'normal';
             $durum = $_POST['durum'] ?? 'planlandi';
@@ -96,7 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     baslik = ?,
                     aciklama = ?,
                     toplanti_tarihi = ?,
-                    bitis_tarihi = ?,
                     konum = ?,
                     toplanti_turu = ?,
                     durum = ?
@@ -105,7 +103,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $baslik,
                 $aciklama,
                 $toplanti_tarihi,
-                $bitis_tarihi,
                 $konum,
                 $toplanti_turu,
                 $durum,
@@ -186,7 +183,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     baslik = ?,
                     aciklama = ?,
                     toplanti_tarihi = ?,
-                    bitis_tarihi = ?,
                     konum = ?,
                     toplanti_turu = ?,
                     durum = ?
@@ -195,7 +191,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $baslik,
                 $aciklama,
                 $toplanti_tarihi,
-                $bitis_tarihi,
                 $konum,
                 $toplanti_turu,
                 $durum,

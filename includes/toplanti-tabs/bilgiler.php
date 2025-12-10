@@ -27,16 +27,10 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-12 mb-3">
                     <label for="toplanti_tarihi" class="form-label">Başlangıç Tarihi & Saati</label>
                     <input type="datetime-local" class="form-control" id="toplanti_tarihi" name="toplanti_tarihi" 
                            value="<?php echo date('Y-m-d\TH:i', strtotime($toplanti['toplanti_tarihi'])); ?>" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label for="bitis_tarihi" class="form-label">Bitiş Tarihi & Saati</label>
-                    <input type="datetime-local" class="form-control" id="bitis_tarihi" name="bitis_tarihi" 
-                           value="<?php echo (!empty($toplanti['bitis_tarihi'])) ? date('Y-m-d\TH:i', strtotime($toplanti['bitis_tarihi'])) : ''; ?>">
                 </div>
             </div>
 

@@ -28,9 +28,12 @@
                                     
                                     <!-- Görüşme Notları Alanı -->
                                     <div class="mt-3 p-3 bg-light rounded container-gorusme-notu">
-                                        <label class="form-label text-muted small fw-bold">
-                                            <i class="fas fa-sticky-note me-1"></i>Görüşme Notları
-                                        </label>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label text-muted small fw-bold mb-0">
+                                                <i class="fas fa-sticky-note me-1"></i>Görüşme Notları
+                                            </label>
+                                            <span class="small text-muted fst-italic save-status"></span>
+                                        </div>
                                         <textarea class="form-control form-control-sm gorusme-notu-input mb-2" 
                                                   rows="2" 
                                                   placeholder="Bu gündem maddesiyle ilgili görüşme notlarını buraya yazabilirsiniz..."

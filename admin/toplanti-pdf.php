@@ -107,9 +107,6 @@ $html .= '<h2 style="color:#0d6efd;">Toplantı Bilgileri</h2>';
 $html .= '<table border="0" cellpadding="5">';
 $html .= '<tr><td width="150"><strong>BYK:</strong></td><td>' . htmlspecialchars($toplanti['byk_adi']) . '</td></tr>';
 $html .= '<tr><td><strong>Tarih:</strong></td><td>' . date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])) . '</td></tr>';
-if ($toplanti['bitis_tarihi']) {
-    $html .= '<tr><td><strong>Bitiş:</strong></td><td>' . date('d.m.Y H:i', strtotime($toplanti['bitis_tarihi'])) . '</td></tr>';
-}
 $html .= '<tr><td><strong>Konum:</strong></td><td>' . htmlspecialchars($toplanti['konum'] ?? '-') . '</td></tr>';
 $html .= '<tr><td><strong>Tür:</strong></td><td>' . htmlspecialchars($toplanti['toplanti_turu']) . '</td></tr>';
 $html .= '<tr><td><strong>Durum:</strong></td><td>' . htmlspecialchars($toplanti['durum']) . '</td></tr>';
