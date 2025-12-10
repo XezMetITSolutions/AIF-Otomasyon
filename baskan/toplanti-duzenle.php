@@ -232,56 +232,60 @@ include __DIR__ . '/../includes/header.php';
 <!-- Custom CSS for Baskan Redesign -->
 <style>
 /* Modern Gradient Header */
-.hero-header {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    padding: 2.5rem 2rem;
-    border-radius: 20px;
+/* Modern Minimal Header */
+.modern-header {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 16px;
     margin-bottom: 2rem;
-    box-shadow: 0 10px 25px rgba(30, 60, 114, 0.2);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0,0,0,0.03);
     position: relative;
     overflow: hidden;
 }
 
-.hero-header::before {
+/* Subtle accent line on top */
+.modern-header::before {
     content: '';
     position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 200px;
-    height: 200px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #0d6efd 0%, #0dcaf0 100%);
 }
 
-.hero-header::after {
-    content: '';
-    position: absolute;
-    bottom: -30px;
-    left: 100px;
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-}
-
-.hero-badge {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-size: 0.9rem;
-    font-weight: 500;
+.header-meta {
     display: inline-flex;
     align-items: center;
+    gap: 1.5rem;
+    color: #6c757d;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.header-meta-item {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
+}
+
+.header-breadcrumb {
+    font-size: 0.9rem;
+    color: #0d6efd;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
 }
 
 /* Glass Tabs */
@@ -375,37 +379,34 @@ include __DIR__ . '/../includes/header.php';
 <main class="container-fluid mt-4">
     <div class="content-wrapper" data-toplanti-id="<?php echo $toplanti_id; ?>">
         
-        <!-- Hero Header -->
-        <div class="hero-header">
-            <div class="hero-content">
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                    <div>
-                        <div class="mb-3 d-flex gap-2">
-                             <span class="hero-badge">
-                                <i class="fas fa-calendar-alt"></i>
-                                <?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?>
-                            </span>
-                            <span class="hero-badge">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <?php echo htmlspecialchars($toplanti['konum'] ?? 'Konum Belirtilmedi'); ?>
-                            </span>
-                             <span class="hero-badge" style="background: rgba(255,255,255,0.3)">
-                                <?php echo ucfirst($toplanti['durum']); ?>
-                            </span>
+        <!-- Modern Minimal Header -->
+        <div class="modern-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="header-breadcrumb">
+                        <i class="fas fa-layer-group me-1"></i><?php echo htmlspecialchars($toplanti['byk_adi']); ?>
+                    </span>
+                    <h1 class="page-title"><?php echo htmlspecialchars($toplanti['baslik']); ?></h1>
+                    
+                    <div class="header-meta">
+                        <div class="header-meta-item">
+                            <i class="far fa-calendar-alt text-primary"></i>
+                            <?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?>
                         </div>
-                        <h1 class="display-6 fw-bold mb-2"><?php echo htmlspecialchars($toplanti['baslik']); ?></h1>
-                        <p class="mb-0 opacity-75">
-                            <i class="fas fa-layer-group me-2"></i><?php echo htmlspecialchars($toplanti['byk_adi']); ?>
-                        </p>
+                        <div class="header-meta-item">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <?php echo htmlspecialchars($toplanti['konum'] ?? 'Konum Belirtilmedi'); ?>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                         <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-light text-primary" target="_blank">
-                            <i class="fas fa-file-pdf me-2"></i>Rapor Al
-                        </a>
-                        <a href="/baskan/toplantilar.php" class="btn btn-outline-light">
-                            <i class="fas fa-arrow-left me-2"></i>Listeye Dön
-                        </a>
-                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-file-pdf me-2"></i>Rapor Al
+                    </a>
+                    <a href="/baskan/toplantilar.php" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Listeye Dön
+                    </a>
                 </div>
             </div>
         </div>
