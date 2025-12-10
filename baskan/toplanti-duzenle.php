@@ -285,39 +285,37 @@ include __DIR__ . '/../includes/header.php';
             </div>
         <?php endif; ?>
 
-        <!-- Modern Tabs -->
-        <div class="d-flex justify-content-center">
-            <ul class="nav nav-pills nav-pills-glass mb-4" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" data-bs-toggle="pill" href="#bilgiler">
-                        <i class="fas fa-info-circle me-2"></i>Bilgiler
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#katilimcilar">
-                        <i class="fas fa-users me-2"></i>Katılımcılar
-                        <span class="badge bg-white text-primary ms-1"><?php echo count($katilimcilar); ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#gundem">
-                        <i class="fas fa-list me-2"></i>Gündem
-                        <span class="badge bg-white text-primary ms-1"><?php echo count($gundem_maddeleri); ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#kararlar">
-                        <i class="fas fa-gavel me-2"></i>Kararlar
-                        <span class="badge bg-white text-primary ms-1"><?php echo count($kararlar); ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#tutanak">
-                        <i class="fas fa-file-alt me-2"></i>Tutanak
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <!-- Standard Tabs like Admin -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#bilgiler">
+                    <i class="fas fa-info-circle me-2"></i>Bilgiler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#katilimcilar">
+                    <i class="fas fa-users me-2"></i>Katılımcılar
+                    <span class="badge bg-primary ms-1"><?php echo count($katilimcilar); ?></span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#gundem">
+                    <i class="fas fa-list me-2"></i>Gündem
+                    <span class="badge bg-primary ms-1"><?php echo count($gundem_maddeleri); ?></span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#kararlar">
+                    <i class="fas fa-gavel me-2"></i>Kararlar
+                    <span class="badge bg-primary ms-1"><?php echo count($kararlar); ?></span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tutanak">
+                    <i class="fas fa-file-alt me-2"></i>Tutanak
+                </a>
+            </li>
+        </ul>
 
         <!-- Content Area -->
         <div class="tab-content">
@@ -341,7 +339,8 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </main>
 
+<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
+
 <?php
-$pageSpecificJS = ['/assets/js/toplanti-yonetimi.js?v=' . time()];
 include __DIR__ . '/../includes/footer.php';
 ?>
