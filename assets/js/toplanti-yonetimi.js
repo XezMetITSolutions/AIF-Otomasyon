@@ -430,11 +430,15 @@ const ToplantiYonetimi = {
                         statusSpan.classList.remove('text-success');
                     }, 2000);
                 } else {
-            .catch(err => {
-                    console.error(err);
                     statusSpan.textContent = 'Hata!';
                     statusSpan.classList.add('text-danger');
-                });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                statusSpan.textContent = 'Hata!';
+                statusSpan.classList.add('text-danger');
+            });
     },
 
     // ==================== KARAR İŞLEMLERİ ====================
