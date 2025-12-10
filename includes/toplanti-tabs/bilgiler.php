@@ -13,17 +13,6 @@
                     <input type="text" class="form-control" value="<?php echo htmlspecialchars($toplanti['byk_adi']); ?>" disabled>
                     <small class="text-muted">BYK değiştirilemez</small>
                 </div>
-
-                <div class="col-md-6 mb-3">
-                    <label for="toplanti_turu" class="form-label">Toplantı Türü</label>
-                    <select class="form-select" id="toplanti_turu" name="toplanti_turu">
-                        <option value="normal" <?php echo $toplanti['toplanti_turu'] === 'normal' ? 'selected' : ''; ?>>Normal</option>
-                        <option value="olagan" <?php echo $toplanti['toplanti_turu'] === 'olagan' ? 'selected' : ''; ?>>Olağan</option>
-                        <option value="olaganüstü" <?php echo $toplanti['toplanti_turu'] === 'olaganüstü' ? 'selected' : ''; ?>>Olağanüstü</option>
-                        <option value="acil" <?php echo $toplanti['toplanti_turu'] === 'acil' ? 'selected' : ''; ?>>Acil</option>
-                        <option value="ozel" <?php echo $toplanti['toplanti_turu'] === 'ozel' ? 'selected' : ''; ?>>Özel</option>
-                    </select>
-                </div>
             </div>
 
             <div class="mb-3">
@@ -47,7 +36,7 @@
                 <div class="col-md-6 mb-3">
                     <label for="bitis_tarihi" class="form-label">Bitiş Tarihi & Saati</label>
                     <input type="datetime-local" class="form-control" id="bitis_tarihi" name="bitis_tarihi" 
-                           value="<?php echo $toplanti['bitis_tarihi'] ? date('Y-m-d\TH:i', strtotime($toplanti['bitis_tarihi'])) : ''; ?>">
+                           value="<?php echo (!empty($toplanti['bitis_tarihi'])) ? date('Y-m-d\TH:i', strtotime($toplanti['bitis_tarihi'])) : ''; ?>">
                 </div>
             </div>
 
