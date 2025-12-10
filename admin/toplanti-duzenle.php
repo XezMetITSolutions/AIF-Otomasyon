@@ -46,7 +46,7 @@ $katilimcilar = $db->fetchAll("
     INNER JOIN kullanicilar k ON tk.kullanici_id = k.kullanici_id
     LEFT JOIN alt_birimler ab ON k.alt_birim_id = ab.alt_birim_id
     WHERE tk.toplanti_id = ?
-    ORDER BY tk.katilim_durumu, k.ad, k.soyad
+    ORDER BY FIELD(tk.katilim_durumu, 'katilacak', 'beklemede', 'katilmayacak'), k.ad, k.soyad
 ", [$toplanti_id]);
 
 // Gündem maddelerini getir
