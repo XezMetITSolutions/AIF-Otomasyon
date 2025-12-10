@@ -115,8 +115,8 @@ include __DIR__ . '/../includes/header.php';
                                             </td>
                                             <td>
                                                 <!-- İşlem butonları eklenebilir (onay/red modal vb.) -->
-                                                <button class="btn btn-sm btn-success" onclick="updateStatus(<?php echo $talep['talep_id']; ?>, 'onaylandi')"><i class="fas fa-check"></i></button>
-                                                <button class="btn btn-sm btn-danger" onclick="updateStatus(<?php echo $talep['talep_id']; ?>, 'reddedildi')"><i class="fas fa-times"></i></button>
+                                                <button class="btn btn-sm btn-success" onclick="updateStatus(<?php echo $talep['id']; ?>, 'onaylandi')"><i class="fas fa-check"></i></button>
+                                                <button class="btn btn-sm btn-danger" onclick="updateStatus(<?php echo $talep['id']; ?>, 'reddedildi')"><i class="fas fa-times"></i></button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
