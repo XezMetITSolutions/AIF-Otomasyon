@@ -88,36 +88,6 @@
                                     <div class="mention-list list-group position-absolute shadow-lg" 
                                          id="mention-list-<?php echo $gundem['gundem_id']; ?>" 
                                          style="display:none; z-index: 1000; width: 250px; max-height: 200px; overflow-y: auto;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            
-            <!-- Global JS Variables for Participants -->
-            <script>
-                const TOKEN_KATILIMCILAR = <?php 
-                    $js_katilimcilar = [];
-                    foreach ($katilimcilar as $k) {
-                        $js_katilimcilar[] = [
-                            'id' => $k['kullanici_id'],
-                            'name' => $k['ad'] . ' ' . $k['soyad'],
-                            'email' => $k['email']
-                        ];
-                    }
-                    echo json_encode($js_katilimcilar);
-                ?>;
-            </script>
-    </div>
-</div>
-
-<!-- Gündem Ekle Modal -->
-<div class="modal fade" id="gundemEkleModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
                 <h5 class="modal-title">Gündem Maddesi Ekle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>

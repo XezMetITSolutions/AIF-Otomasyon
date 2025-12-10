@@ -10,6 +10,7 @@ const ToplantiYonetimi = {
         this.toplanti_id = toplantiId;
         this.initEventListeners();
         this.initMentionSystem();
+        this.handleHashNavigation();
     },
 
     initEventListeners: function () {
@@ -66,6 +67,17 @@ const ToplantiYonetimi = {
                 this.kararSil(kararId);
             });
         });
+    },
+
+    handleHashNavigation: function () {
+        const hash = window.location.hash;
+        if (hash) {
+            const triggerEl = document.querySelector(`a[data-bs-toggle="pill"][href="${hash}"]`);
+            if (triggerEl && typeof bootstrap !== 'undefined') {
+                const tab = new bootstrap.Tab(triggerEl);
+                tab.show();
+            }
+        }
     },
 
     // ==================== KATILIMCI İŞLEMLERİ ====================
