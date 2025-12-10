@@ -208,6 +208,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Stats
 $katilim_stats = [
     'beklemede' => 0,
+    'katilacak' => 0,
+    'katilmayacak' => 0,
+    'mazeret' => 0,
     'katildi' => 0,
     'ozur_diledi' => 0,
     'izinli' => 0,

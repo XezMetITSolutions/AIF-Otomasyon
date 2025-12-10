@@ -39,6 +39,12 @@
                                                 <option value="beklemede" <?php echo $katilimci['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>
                                                     ⌛ Davet Edildi
                                                 </option>
+                                                <option value="katilacak" <?php echo $katilimci['katilim_durumu'] === 'katilacak' ? 'selected' : ''; ?>>
+                                                    ✅ Katılacak
+                                                </option>
+                                                <option value="katilmayacak" <?php echo $katilimci['katilim_durumu'] === 'katilmayacak' ? 'selected' : ''; ?>>
+                                                    ❌ Katılmayacak
+                                                </option>
                                                 <option value="katildi" <?php echo $katilimci['katilim_durumu'] === 'katildi' ? 'selected' : ''; ?>>
                                                     ✓ Katıldı
                                                 </option>
@@ -88,11 +94,31 @@
 
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span><i class="fas fa-check-circle text-success me-2"></i>Katıldı</span>
-                        <span class="badge bg-success"><?php echo $katilim_stats['katildi']; ?></span>
+                        <span><i class="fas fa-check-circle text-success me-2"></i>Katılacak</span>
+                        <span class="badge bg-success"><?php echo $katilim_stats['katilacak'] ?? 0; ?></span>
                     </div>
                     <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success" style="width: <?php echo count($katilimcilar) > 0 ? ($katilim_stats['katildi'] / count($katilimcilar) * 100) : 0; ?>%"></div>
+                        <div class="progress-bar bg-success" style="width: <?php echo count($katilimcilar) > 0 ? (($katilim_stats['katilacak'] ?? 0) / count($katilimcilar) * 100) : 0; ?>%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span><i class="fas fa-times-circle text-danger me-2"></i>Katılmayacak</span>
+                        <span class="badge bg-danger"><?php echo $katilim_stats['katilmayacak'] ?? 0; ?></span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-danger" style="width: <?php echo count($katilimcilar) > 0 ? (($katilim_stats['katilmayacak'] ?? 0) / count($katilimcilar) * 100) : 0; ?>%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span><i class="fas fa-check text-primary me-2"></i>Katıldı (Geçmiş)</span>
+                        <span class="badge bg-primary"><?php echo $katilim_stats['katildi']; ?></span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" style="width: <?php echo count($katilimcilar) > 0 ? ($katilim_stats['katildi'] / count($katilimcilar) * 100) : 0; ?>%"></div>
                     </div>
                 </div>
 
@@ -103,26 +129,6 @@
                     </div>
                     <div class="progress" style="height: 8px;">
                         <div class="progress-bar bg-warning" style="width: <?php echo count($katilimcilar) > 0 ? ($katilim_stats['ozur_diledi'] / count($katilimcilar) * 100) : 0; ?>%"></div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span><i class="fas fa-info-circle text-info me-2"></i>İzinli</span>
-                        <span class="badge bg-info"><?php echo $katilim_stats['izinli']; ?></span>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-info" style="width: <?php echo count($katilimcilar) > 0 ? ($katilim_stats['izinli'] / count($katilimcilar) * 100) : 0; ?>%"></div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span><i class="fas fa-times-circle text-danger me-2"></i>Katılmadı</span>
-                        <span class="badge bg-danger"><?php echo $katilim_stats['katilmadi']; ?></span>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-danger" style="width: <?php echo count($katilimcilar) > 0 ? ($katilim_stats['katilmadi'] / count($katilimcilar) * 100) : 0; ?>%"></div>
                     </div>
                 </div>
 
