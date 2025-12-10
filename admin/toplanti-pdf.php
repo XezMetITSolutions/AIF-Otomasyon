@@ -108,8 +108,6 @@ $html .= '<table border="0" cellpadding="5">';
 $html .= '<tr><td width="150"><strong>BYK:</strong></td><td>' . htmlspecialchars($toplanti['byk_adi']) . '</td></tr>';
 $html .= '<tr><td><strong>Tarih:</strong></td><td>' . date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])) . '</td></tr>';
 $html .= '<tr><td><strong>Konum:</strong></td><td>' . htmlspecialchars($toplanti['konum'] ?? '-') . '</td></tr>';
-$html .= '<tr><td><strong>Tür:</strong></td><td>' . htmlspecialchars($toplanti['toplanti_turu']) . '</td></tr>';
-$html .= '<tr><td><strong>Durum:</strong></td><td>' . htmlspecialchars($toplanti['durum']) . '</td></tr>';
 $html .= '</table>';
 $html .= '<br>';
 
@@ -146,31 +144,28 @@ if (!empty($katilmayacaklar)) {
     $html .= '</ul>';
 }
 
-// Bekleyenler
-$bekleyenler = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'beklemede');
-if (!empty($bekleyenler)) {
-    $html .= '<h3 style="color:#6c757d;">Cevap Beklenenler (' . count($bekleyenler) . ')</h3>';
-    $html .= '<ul>';
-    foreach ($bekleyenler as $k) {
-        $html .= '<li>' . htmlspecialchars($k['ad'] . ' ' . $k['soyad']) . '</li>';
-    }
-    $html .= '</ul>';
-}
-
 $html .= '<br>';
 
 // Gündem
 if (!empty($gundem_maddeleri)) {
-    $html .= '<h2 style="color:#0d6efd;">Gündem Maddeleri</h2>';
-    $html .= '<ol>';
-    foreach ($gundem_maddeleri as $g) {
-        $html .= '<li><strong>' . htmlspecialchars($g['baslik']) . '</strong>';
+    $html .= '<h2 style="color:#0d6efd;">Gündem ve Görüşme Notları</h2>';
+    $html .= '<table border="0" cellpadding="5">';
+    foreach ($gundem_maddeleri as $index => $g) {
+        $html .= '<tr><td>';
+        $html .= '<h3>' . ($index + 1) . '. ' . htmlspecialchars($g['baslik']) . '</h3>';
         if ($g['aciklama']) {
-            $html .= '<br><em>' . nl2br(htmlspecialchars($g['aciklama'])) . '</em>';
+            $html .= '<p><em>' . nl2br(htmlspecialchars($g['aciklama'])) . '</em></p>';
         }
-        $html .= '</li>';
+        if (!empty($g['gorusme_notlari'])) {
+            $html .= '<div style="background-color:#f8f9fa; padding:10px; border-left: 3px solid #0d6efd;">';
+            $html .= '<strong>Görüşme Notu:</strong><br>';
+            $html .= nl2br(htmlspecialchars($g['gorusme_notlari']));
+            $html .= '</div>';
+        }
+        $html .= '</td></tr>';
+        $html .= '<tr><td><hr></td></tr>';
     }
-    $html .= '</ol>';
+    $html .= '</table>';
     $html .= '<br>';
 }
 
