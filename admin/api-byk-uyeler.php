@@ -10,7 +10,19 @@ require_once __DIR__ . '/../classes/Database.php';
 header('Content-Type: application/json');
 
 try {
-    Middleware::requireSuperAdmin();
+    Middleware::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_BASKAN]);
+    
+    $auth = new Auth();
+    $user = $auth->getUser();
+    
+    // Başkan sadece kendi BYK'sını görebilir
+    if ($user['role'] === Auth::ROLE_BASKAN) {
+        if (isset($_GET['byk_id']) && $_GET['byk_id'] != $user['byk_id']) {
+            throw new Exception('Kendi BYK\'nız dışındaki üyeleri görüntüleyemezsiniz.');
+        }
+        // BYK ID'yi zorla kullanıcı BYK'sı yap (GET parametresi gelmese bile)
+        $_GET['byk_id'] = $user['byk_id'];
+    }
     
     $db = Database::getInstance();
     $byk_id = $_GET['byk_id'] ?? null;
