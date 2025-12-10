@@ -477,7 +477,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </main>
 
-<script src="/assets/js/toplanti-yonetimi.js"></script>
+<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
