@@ -308,13 +308,16 @@ include __DIR__ . '/../includes/header.php';
 .content-wrapper {
     max-width: 100% !important;
     margin: 0 !important;
-    padding-right: 20px;
+    padding: 0 !important; /* Full width */
 }
 
 /* Sidebar Layout Fix */
 @media (min-width: 992px) {
     main.container-fluid {
-        padding-left: 290px; /* Sidebar width (280px) + gap (10px) */
+        padding-left: 280px !important; /* Exact Sidebar width */
+        padding-right: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
     }
 }
 </style>
