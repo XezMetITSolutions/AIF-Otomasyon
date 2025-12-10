@@ -435,7 +435,7 @@ include __DIR__ . '/../includes/header.php';
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="pill" href="#katilimcilar">
                         <i class="fas fa-users me-2"></i>Katılımcılar
-                        <span class="badge bg-white text-primary ms-1"><?php echo ($katilim_stats['katildi'] + $katilim_stats['katilacak']) . '/' . count($katilimcilar); ?></span>
+                        <span class="badge bg-white text-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
                     </a>
                 </li>
                 <li class="nav-item">
