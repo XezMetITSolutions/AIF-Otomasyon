@@ -479,7 +479,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </main>
 
-<script src="/assets/js/toplanti-yonetimi.js"></script>
+<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
