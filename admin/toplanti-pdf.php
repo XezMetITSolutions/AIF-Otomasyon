@@ -142,6 +142,19 @@ if (!empty($katilmayacaklar)) {
 
 $html .= '<br>';
 
+// Helper to format mentions: @Ahmet Yılmaz -> <b>Ahmet Yılmaz</b>
+function formatMentions($text) {
+    if (empty($text)) return '';
+    // Match @Name Name (unicode supported) until punctuation or end
+    // Note: Simple regex, might need refinement for complex cases
+    // Explanation: @ then 1+ word characters/spaces/unicode letters, lookahead for separator
+    $pattern = '/@([\w\s\p{L}]+?)(?=\s|$|<|\.|,)/u';
+    $replacement = '<b>$1</b>';
+    return preg_replace($pattern, $replacement, htmlspecialchars($text));
+}
+
+// ... existing code ...
+
 // Gündem
 if (!empty($gundem_maddeleri)) {
     $html .= '<h2 style="color:#0d6efd;">Gündem ve Alınan Kararlar</h2>';
@@ -155,7 +168,8 @@ if (!empty($gundem_maddeleri)) {
         if (!empty($g['gorusme_notlari'])) {
             $html .= '<div style="background-color:#f8f9fa; padding:10px; border-left: 3px solid #0d6efd;">';
             $html .= '<strong>Notlar:</strong><br>';
-            $html .= nl2br(htmlspecialchars($g['gorusme_notlari']));
+            // Apply formatting here instead of raw htmlspecialchars
+            $html .= nl2br(formatMentions($g['gorusme_notlari']));
             $html .= '</div>';
         }
         $html .= '</td></tr>';
@@ -175,7 +189,8 @@ if (!empty($kararlar)) {
         }
         $html .= '</h3>';
         $html .= '<p><strong>' . htmlspecialchars($k['baslik']) . '</strong></p>';
-        $html .= '<p>' . nl2br(htmlspecialchars($k['karar_metni'])) . '</p>';
+        // Apply formatting here
+        $html .= '<p>' . nl2br(formatMentions($k['karar_metni'])) . '</p>';
         
         if ($k['oylama_yapildi']) {
             $html .= '<p><strong>Oylama Sonuçları:</strong> ';
