@@ -64,8 +64,8 @@ try {
         
         $db->query("
             INSERT INTO toplanti_kararlar 
-            (toplanti_id, gundem_id, baslik, karar_metni, karar_sonucu, oylama_yapildi, olusturma_tarihi)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
+            (toplanti_id, gundem_id, baslik, karar_metni, karar_sonucu, oylama_yapildi)
+            VALUES (?, ?, ?, ?, ?, ?)
         ", [
             $toplanti_id, 
             $gundem_id ?: null, 
