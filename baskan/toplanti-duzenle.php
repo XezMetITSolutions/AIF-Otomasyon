@@ -1,7 +1,7 @@
 <?php
 /**
  * Başkan - Toplantı Düzenleme & Detay
- * Modern Dashboard Tasarımı
+ * Yeniden yapılandırılmış minimal versiyon
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
@@ -77,7 +77,7 @@ $tutanak = $db->fetch("
 $error = '';
 $success = $_GET['success'] ?? '';
 
-// Form gönderildiğinde (Basit Update)
+// Form gönderildiğinde
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $action = $_POST['action'] ?? '';
@@ -91,394 +91,228 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $toplanti_turu = $_POST['toplanti_turu'] ?? 'normal';
             $durum = $_POST['durum'] ?? 'planlandi';
             
-            $db->query("
-                UPDATE toplantilar SET
-                    baslik = ?,
-                    aciklama = ?,
-                    toplanti_tarihi = ?,
-                    bitis_tarihi = ?,
-                    konum = ?,
-                    toplanti_turu = ?,
-                    durum = ?
-                WHERE toplanti_id = ?
-            ", [
-                $baslik,
-                $aciklama,
-                $toplanti_tarihi,
-                $bitis_tarihi,
-                $konum,
-                $toplanti_turu,
-                $durum,
-                $toplanti_id
-            ]);
-
-            // Otomatik Gündem Senkronizasyonu (Açıklama maddelerine göre güncelle)
-            if (!empty($aciklama)) {
-                $lines = explode("\n", $aciklama);
-                $yeni_maddeler = [];
-                $sira = 1;
-                
-                // 1. Yeni maddeleri parse et
-                foreach ($lines as $line) {
-                    $line = trim($line);
-                    // Bullet styles: -, *, •, +, o, –, —, 1., 1), a., a), >
-                    // \p{N} matches any number
-                    if (preg_match('/^\s*([-*•+o–—>]|\d+[.)]|[a-zA-Z][.)])\s+(.*)$/u', $line, $m)) {
-                        $baslik = trim($m[2]);
-                        if (!empty($baslik)) {
-                            $yeni_maddeler[$sira++] = $baslik;
-                        }
+            try {
+                $db->query("
+                    UPDATE toplantilar SET
+                        baslik = ?,
+                        aciklama = ?,
+                        toplanti_tarihi = ?,
+                        bitis_tarihi = ?,
+                        konum = ?,
+                        toplanti_turu = ?,
+                        durum = ?
+                    WHERE toplanti_id = ?
+                ", [$baslik, $aciklama, $toplanti_tarihi, $bitis_tarihi, $konum, $toplanti_turu, $durum, $toplanti_id]);
+            } catch (PDOException $e) {
+                // Self-healing
+                $msg = $e->getMessage();
+                if (strpos($msg, 'Unknown column') !== false) {
+                    if (strpos($msg, 'bitis_tarihi') !== false) {
+                        $db->query("ALTER TABLE toplantilar ADD COLUMN bitis_tarihi DATETIME NULL AFTER toplanti_tarihi");
                     }
-                }
-
-                // 2. Mevcut maddeleri getir
-                $mevcut_gundem = $db->fetchAll("SELECT * FROM toplanti_gundem WHERE toplanti_id = ? ORDER BY sira_no", [$toplanti_id]);
-                $mevcut_map = [];
-                foreach ($mevcut_gundem as $mg) {
-                    $mevcut_map[$mg['sira_no']] = $mg;
-                }
-
-                // 3. Senkronizasyon (Update/Insert)
-                foreach ($yeni_maddeler as $sira_no => $baslik) {
-                    if (isset($mevcut_map[$sira_no])) {
-                        // Varsa güncelle
-                        if ($mevcut_map[$sira_no]['baslik'] !== $baslik) {
-                            $db->query("UPDATE toplanti_gundem SET baslik = ? WHERE gundem_id = ?", [$baslik, $mevcut_map[$sira_no]['gundem_id']]);
-                        }
-                    } else {
-                        // Yoksa ekle
-                        $db->query("INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) VALUES (?, ?, ?, 'beklemede')", 
-                            [$toplanti_id, $sira_no, $baslik]);
+                    if (strpos($msg, 'toplanti_turu') !== false) {
+                        $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olağanüstü') DEFAULT 'normal' AFTER gundem");
                     }
-                }
-
-                // 4. Fazlalıkları sil (Delete)
-                // Açıklamayı sildiyse gündemi de silsin mi? Evet, senkronizasyon mantığı budur.
-                // Ancak kararlara bağlıysa silinemez (DB hatası verebilir), try-catch ile yönetelim.
-                foreach ($mevcut_map as $sira_no => $mg) {
-                    if (!isset($yeni_maddeler[$sira_no])) {
-                        try {
-                            $db->query("DELETE FROM toplanti_gundem WHERE gundem_id = ?", [$mg['gundem_id']]);
-                        } catch (Exception $e) {
-                            // Silinemiyorsa (muhtemelen karar bağlı), pass geç.
-                        }
-                    }
+                    $db->query("
+                        UPDATE toplantilar SET
+                            baslik = ?,
+                            aciklama = ?,
+                            toplanti_tarihi = ?,
+                            bitis_tarihi = ?,
+                            konum = ?,
+                            toplanti_turu = ?,
+                            durum = ?
+                        WHERE toplanti_id = ?
+                    ", [$baslik, $aciklama, $toplanti_tarihi, $bitis_tarihi, $konum, $toplanti_turu, $durum, $toplanti_id]);
+                } else {
+                    throw $e;
                 }
             }
             
-            $success = 'Bilgiler ve gündem maddeleri güncellendi.';
+            $success = 'Bilgiler güncellendi.';
             header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
             exit;
         }
     } catch (Exception $e) {
-        $msg = $e->getMessage();
-        // Self-Healing for missing columns
-        if (strpos($msg, 'Unknown column') !== false) {
-             if (strpos($msg, 'bitis_tarihi') !== false) {
-                 $db->query("ALTER TABLE toplantilar ADD COLUMN bitis_tarihi DATETIME NULL AFTER toplanti_tarihi");
-             }
-             if (strpos($msg, 'toplanti_turu') !== false) {
-                 $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olaganüstü') DEFAULT 'normal' AFTER gundem");
-             }
-             // Retry Update
-              $db->query("
-                UPDATE toplantilar SET
-                    baslik = ?,
-                    aciklama = ?,
-                    toplanti_tarihi = ?,
-                    bitis_tarihi = ?,
-                    konum = ?,
-                    toplanti_turu = ?,
-                    durum = ?
-                WHERE toplanti_id = ?
-            ", [
-                $baslik,
-                $aciklama,
-                $toplanti_tarihi,
-                $bitis_tarihi,
-                $konum,
-                $toplanti_turu,
-                $durum,
-                $toplanti_id
-            ]);
-            $success = 'Bilgiler güncellendi (Sistem onarımı yapıldı).';
-            header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
-            exit;
-        } else {
-            $error = $msg;
-        }
-    }
-}
-
-// Stats
-$katilim_stats = [
-    'beklemede' => 0,
-    'katildi' => 0,
-    'ozur_diledi' => 0,
-    'izinli' => 0,
-    'katilmadi' => 0
-];
-foreach ($katilimcilar as $k) {
-    if (isset($katilim_stats[$k['katilim_durumu']])) {
-        $katilim_stats[$k['katilim_durumu']]++;
+        $error = $e->getMessage();
     }
 }
 
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Custom CSS for Baskan Redesign -->
 <style>
-/* Modern Gradient Header */
-.hero-header {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+/* Minimal Custom Styling */
+.meeting-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 2.5rem 2rem;
-    border-radius: 20px;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px rgba(30, 60, 114, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-header::before {
-    content: '';
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 200px;
-    height: 200px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-}
-
-.hero-header::after {
-    content: '';
-    position: absolute;
-    bottom: -30px;
-    left: 100px;
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-}
-
-.hero-badge {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Glass Tabs */
-.nav-pills-glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 0.5rem;
-    border-radius: 15px;
-    display: inline-flex;
-    gap: 0.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    margin-bottom: 2rem;
-}
-
-.nav-pills-glass .nav-link {
-    color: #555;
+    padding: 2rem;
     border-radius: 10px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    margin-bottom: 2rem;
 }
 
-.nav-pills-glass .nav-link:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.nav-pills-glass .nav-link.active {
-    background: #1e3c72;
-    color: white;
-    box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
-}
-
-/* Glass Cards overrides */
-.card {
+.nav-tabs .nav-link {
     border: none;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    overflow: hidden;
+    color: #666;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+.nav-tabs .nav-link.active {
+    background: #667eea;
+    color: white;
+    border-radius: 5px;
 }
 
-.card-header {
-    background: #fff;
-    border-bottom: 1px solid #eee;
-    padding: 1.25rem 1.5rem;
+.tab-content {
+    padding: 2rem 0;
 }
 
-.stat-box {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    text-align: center;
-}
-
-/* Layout overrides */
-.content-wrapper {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Hide Alt Birim Column in Participants Tab */
-#katilimcilar table th:nth-child(2),
-#katilimcilar table td:nth-child(2) {
-    display: none;
-}
-
-/* Sidebar Layout Fix */
 @media (min-width: 992px) {
     main.container-fluid {
         padding-left: 280px !important;
-        padding-right: 20px !important; /* Slight padding for aesthetics */
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
+        padding-right: 20px !important;
     }
 }
 </style>
-
-<link rel="stylesheet" href="/assets/css/toplanti-yonetimi.css">
 
 <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
 <main class="container-fluid mt-4">
     <div class="content-wrapper" data-toplanti-id="<?php echo $toplanti_id; ?>">
         
-        <!-- Hero Header -->
-        <div class="hero-header">
-            <div class="hero-content">
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                    <div>
-                        <div class="mb-3 d-flex gap-2">
-                             <span class="hero-badge">
-                                <i class="fas fa-calendar-alt"></i>
-                                <?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?>
-                            </span>
-                            <span class="hero-badge">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <?php echo htmlspecialchars($toplanti['konum'] ?? 'Konum Belirtilmedi'); ?>
-                            </span>
-                             <span class="hero-badge" style="background: rgba(255,255,255,0.3)">
-                                <?php echo ucfirst($toplanti['durum']); ?>
-                            </span>
-                        </div>
-                        <h1 class="display-6 fw-bold mb-2"><?php echo htmlspecialchars($toplanti['baslik']); ?></h1>
-                        <p class="mb-0 opacity-75">
-                            <i class="fas fa-layer-group me-2"></i><?php echo htmlspecialchars($toplanti['byk_adi']); ?>
-                        </p>
-                    </div>
-                    <div class="d-flex gap-2">
-                         <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-light text-primary" target="_blank">
-                            <i class="fas fa-file-pdf me-2"></i>Rapor Al
-                        </a>
-                        <a href="/baskan/toplantilar.php" class="btn btn-outline-light">
-                            <i class="fas fa-arrow-left me-2"></i>Listeye Dön
-                        </a>
-                    </div>
+        <!-- Header -->
+        <div class="meeting-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="mb-3"><?php echo htmlspecialchars($toplanti['baslik']); ?></h1>
+                    <p class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>
+                        <?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?>
+                        <span class="ms-3">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <?php echo htmlspecialchars($toplanti['konum'] ?? 'Konum Belirtilmedi'); ?>
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-light" target="_blank">
+                        <i class="fas fa-file-pdf me-2"></i>PDF
+                    </a>
+                    <a href="/baskan/toplantilar.php" class="btn btn-outline-light ms-2">
+                        <i class="fas fa-arrow-left me-2"></i>Geri
+                    </a>
                 </div>
             </div>
         </div>
 
         <?php if ($error): ?>
             <div class="alert alert-danger alert-dismissible fade show">
-                <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+                <?php echo htmlspecialchars($error); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <?php if ($success): ?>
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?>
+                <?php echo htmlspecialchars($success); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
-        <!-- Modern Tabs -->
-        <div class="d-flex justify-content-center">
-            <ul class="nav nav-pills nav-pills-glass mb-4" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" data-bs-toggle="pill" href="#bilgiler">
-                        <i class="fas fa-info-circle me-2"></i>Bilgiler
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#katilimcilar">
-                        <i class="fas fa-users me-2"></i>Katılımcılar
-                        <span class="badge bg-white text-primary ms-1"><?php echo count($katilimcilar); ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#gundem">
-                        <i class="fas fa-list me-2"></i>Gündem
-                        <span class="badge bg-white text-primary ms-1"><?php echo count($gundem_maddeleri); ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#kararlar">
-                        <i class="fas fa-gavel me-2"></i>Kararlar
-                        <span class="badge bg-white text-primary ms-1"><?php echo count($kararlar); ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#tutanak">
-                        <i class="fas fa-file-alt me-2"></i>Tutanak
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="meetingTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="bilgiler-tab" data-bs-toggle="tab" data-bs-target="#bilgiler" type="button" role="tab">
+                    <i class="fas fa-info-circle me-2"></i>Bilgiler
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="katilimcilar-tab" data-bs-toggle="tab" data-bs-target="#katilimcilar" type="button" role="tab">
+                    <i class="fas fa-users me-2"></i>Katılımcılar
+                    <span class="badge bg-primary ms-1"><?php echo count($katilimcilar); ?></span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="gundem-tab" data-bs-toggle="tab" data-bs-target="#gundem" type="button" role="tab">
+                    <i class="fas fa-list me-2"></i>Gündem
+                    <span class="badge bg-primary ms-1"><?php echo count($gundem_maddeleri); ?></span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="kararlar-tab" data-bs-toggle="tab" data-bs-target="#kararlar" type="button" role="tab">
+                    <i class="fas fa-gavel me-2"></i>Kararlar
+                    <span class="badge bg-primary ms-1"><?php echo count($kararlar); ?></span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tutanak-tab" data-bs-toggle="tab" data-bs-target="#tutanak" type="button" role="tab">
+                    <i class="fas fa-file-alt me-2"></i>Tutanak
+                </button>
+            </li>
+        </ul>
 
-        <!-- Content Area -->
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="bilgiler">
+        <!-- Tab Content -->
+        <div class="tab-content" id="meetingTabContent">
+            <div class="tab-pane fade show active" id="bilgiler" role="tabpanel">
                 <?php include __DIR__ . '/../includes/toplanti-tabs/bilgiler.php'; ?>
             </div>
-            <div class="tab-pane fade" id="katilimcilar">
+            <div class="tab-pane fade" id="katilimcilar" role="tabpanel">
                 <?php include __DIR__ . '/../includes/toplanti-tabs/katilimcilar.php'; ?>
             </div>
-            <div class="tab-pane fade" id="gundem">
+            <div class="tab-pane fade" id="gundem" role="tabpanel">
                 <?php include __DIR__ . '/../includes/toplanti-tabs/gundem.php'; ?>
             </div>
-            <div class="tab-pane fade" id="kararlar">
+            <div class="tab-pane fade" id="kararlar" role="tabpanel">
                 <?php include __DIR__ . '/../includes/toplanti-tabs/kararlar.php'; ?>
             </div>
-            <div class="tab-pane fade" id="tutanak">
+            <div class="tab-pane fade" id="tutanak" role="tabpanel">
                 <?php include __DIR__ . '/../includes/toplanti-tabs/tutanak.php'; ?>
             </div>
         </div>
     </div>
 </main>
 
-<?php
-include __DIR__ . '/../includes/footer.php';
-?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 
-<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
+<!-- Minimal Custom Script - Only for API operations -->
+<script>
+const ToplantiYonetimi = {
+    toplanti_id: <?php echo $toplanti_id; ?>,
+    
+    apiRequest: function(url, data) {
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error:', error);
+            return { success: false, error: 'Network error' };
+        });
+    },
+    
+    showAlert: function(type, message, duration = 3000) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => alertDiv.remove(), duration);
+    }
+};
+
+// Hash navigation support
+document.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash;
+    if (hash) {
+        const tabId = hash.replace('#', '');
+        const tabEl = document.getElementById(tabId + '-tab');
+        if (tabEl) {
+            const tab = new bootstrap.Tab(tabEl);
+            tab.show();
+        }
+    }
+});
+</script>
