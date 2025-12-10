@@ -4,12 +4,23 @@
  * Cancels a meeting and notifies all participants via email
  */
 
-// Disable error display for clean JSON
+// Disable error display but enable logging
 ini_set('display_errors', 0);
-error_reporting(0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
 
 // Set JSON header first
 header('Content-Type: application/json; charset=utf-8');
+
+// Shutdown handler to catch fatal errors
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && ($error['type'] === E_ERROR || $error['type'] === E_PARSE || $error['type'] === E_COMPILE_ERROR)) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Sistem hatası: ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']]);
+        exit;
+    }
+});
 
 try {
     // Start session
@@ -43,7 +54,13 @@ try {
         exit;
     }
 
-    $data = json_decode(file_get_contents('php://input'), true);
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Geçersiz JSON verisi');
+    }
+
     $toplanti_id = $data['toplanti_id'] ?? null;
     $iptal_nedeni = $data['iptal_nedeni'] ?? '';
 
@@ -112,7 +129,10 @@ try {
         'emails_failed' => $emailsFailed
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Sistem hatası']);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Hata: ' . $e->getMessage()
+    ]);
 }
