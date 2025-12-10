@@ -1,5 +1,20 @@
 /**
  * Toplantı Yönetimi - JavaScript
+ * Tüm AJAX işlemleri ve dinamik etkileşimler
+ */
+
+const ToplantiYonetimi = {
+    toplanti_id: null,
+
+    init: function (toplantiId) {
+        this.toplanti_id = toplantiId;
+        this.initEventListeners();
+        this.initMentionSystem();
+    },
+
+    initEventListeners: function () {
+        // Katılımcı İşlemleri
+        document.getElementById('katilimciEkleBtn')?.addEventListener('click', () => this.katilimciEkle());
 
         document.querySelectorAll('.katilim-durum-select').forEach(select => {
             select.addEventListener('change', (e) => {
@@ -364,8 +379,6 @@
         const lastAt = val.lastIndexOf('@', cursorPos - 1);
         if (lastAt !== -1) {
             const query = val.substring(lastAt + 1, cursorPos);
-            // If query contains space, likely not a mention anymore unless name
-            // Allow spaces for names, but limit length to avoid false positives
             if (query.length < 20) {
                 this.showMentionList(gundemId, query, lastAt, textarea);
             } else {
@@ -406,7 +419,6 @@
 
         listEl.innerHTML = html;
         listEl.style.display = 'block';
-        // Position handled relative to parent but maybe improved later
     },
 
     hideMentionList: function (gundemId) {
@@ -415,8 +427,6 @@
     },
 
     selectMention: function (gundemId, userId, userName, atIndex, query, btnElement) {
-        // Find textarea relative to list (grandparent logic or by id)
-        // Better: use Data attribute on list? Or just re-query
         const textarea = document.querySelector(`.gundem-not-input[data-gundem-id="${gundemId}"]`);
         if (!textarea) return;
 
@@ -424,25 +434,16 @@
         const before = text.substring(0, atIndex);
         const after = text.substring(atIndex + 1 + query.length);
 
-        // Replace @query with Name
-        // Actually user wants "@Name" in text? Or just "Name"?
-        // User said "@ yaptigimizda... secebilelim bu sayede onu görevli olarak atayalim"
-        // Usually visual is "@Name".
         textarea.value = before + '@' + userName + ' ' + after;
 
-        // Update Assignments
         this.sorumluAta(gundemId, userId, userName);
-
-        // Hide list & Refocus
         this.hideMentionList(gundemId);
         textarea.focus();
 
-        // Trigger save immediately
         this.gundemNotKaydet(gundemId, textarea.value, userId);
     },
 
     sorumluAta: function (gundemId, userId, userName) {
-        // Update UI Badge
         const container = document.getElementById(`sorumlu-container-${gundemId}`);
         container.innerHTML = `
             <span class="badge bg-primary">
@@ -451,7 +452,6 @@
             </span>
         `;
 
-        // Update textarea dataset
         const textarea = document.querySelector(`.gundem-not-input[data-gundem-id="${gundemId}"]`);
         if (textarea) textarea.dataset.sorumluId = userId;
     },
@@ -463,7 +463,6 @@
         const textarea = document.querySelector(`.gundem-not-input[data-gundem-id="${gundemId}"]`);
         if (textarea) {
             textarea.dataset.sorumluId = '';
-            // Save removal
             this.gundemNotKaydet(gundemId, textarea.value, null);
         }
     },
@@ -475,7 +474,6 @@
             sorumlu_id: sorumluId || null
         };
 
-        // Silent save (no big alert unless error)
         fetch('/api/gundem-islem.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
