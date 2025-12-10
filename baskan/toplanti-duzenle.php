@@ -480,6 +480,11 @@ include __DIR__ . '/../includes/header.php';
 </main>
 
 <script src="/assets/js/toplanti-yonetimi.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
+    });
+</script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
