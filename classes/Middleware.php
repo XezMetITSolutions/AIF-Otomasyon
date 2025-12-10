@@ -45,7 +45,7 @@ class Middleware {
      * Başkan erişimi
      */
     public static function requireBaskan() {
-        self::requireUye();
+        self::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_BASKAN]);
     }
     
     /**

@@ -11,7 +11,7 @@ class Auth {
     
     // Rol sabitleri
     const ROLE_SUPER_ADMIN = 'super_admin';
-    const ROLE_BASKAN = 'uye'; // Başka ayrım yok, tüm standart kullanıcılar 'uye'
+    const ROLE_BASKAN = 'baskan';
     const ROLE_UYE = 'uye';
     
     public function __construct() {
