@@ -74,9 +74,44 @@ $tutanak = $db->fetch("
     WHERE toplanti_id = ?
 ", [$toplanti_id]);
 
-// ... (TCPDF setup skippped in this chunk, jumping to HTML content) ...
+// PDF oluştur
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-// ... (Header skipped) ...
+// PDF bilgileri
+$pdf->SetCreator('Otomasyon Sistemi');
+$pdf->SetAuthor($toplanti['olusturan']);
+$pdf->SetTitle($toplanti['baslik']);
+$pdf->SetSubject('Toplantı Raporu');
+
+// Header ve Footer
+$pdf->setPrintHeader(false);
+$pdf->setPrintFooter(true);
+
+// Sayfa ayarları
+$pdf->SetMargins(15, 15, 15);
+$pdf->SetAutoPageBreak(TRUE, 15);
+
+// Font
+$pdf->SetFont('dejavusans', '', 10);
+
+// Sayfa ekle
+$pdf->AddPage();
+
+// Başlık
+$html = '<h1 style="text-align:center; color:#0d6efd;">' . htmlspecialchars($toplanti['baslik']) . '</h1>';
+$html .= '<h3 style="text-align:center; color:#6c757d;">Toplantı Raporu</h3>';
+$html .= '<hr>';
+
+// Toplantı Bilgileri
+$html .= '<h2 style="color:#0d6efd;">Toplantı Bilgileri</h2>';
+$html .= '<table border="0" cellpadding="5">';
+$html .= '<tr><td width="150"><strong>BYK:</strong></td><td>' . htmlspecialchars($toplanti['byk_adi']) . '</td></tr>';
+$html .= '<tr><td><strong>Tarih:</strong></td><td>' . date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])) . '</td></tr>';
+$html .= '<tr><td><strong>Konum:</strong></td><td>' . htmlspecialchars($toplanti['konum'] ?? '-') . '</td></tr>';
+$html .= '<tr><td><strong>Tür:</strong></td><td>' . htmlspecialchars($toplanti['toplanti_turu']) . '</td></tr>';
+$html .= '<tr><td><strong>Durum:</strong></td><td>' . htmlspecialchars($toplanti['durum']) . '</td></tr>';
+$html .= '</table>';
+$html .= '<br>';
 
 // Katılımcılar
 $html .= '<h2 style="color:#0d6efd;">Katılımcı Durumları</h2>';
