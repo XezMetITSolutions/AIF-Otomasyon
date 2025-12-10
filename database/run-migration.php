@@ -13,14 +13,25 @@ echo "<pre>";
 $db = Database::getInstance();
 
 try {
-    // Read SQL file
-    $sqlFile = __DIR__ . '/migrations/005_add_notes_to_agenda.sql';
+    // SQL Code Embedded directly to avoid file not found issues
+    $sql = '
+SET @dbname = DATABASE();
+SET @tablename = "toplanti_gundem";
+
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+   WHERE (table_name = @tablename)
+   AND (table_schema = @dbname)
+   AND (column_name = "gorusme_notlari")) > 0,
+  "SELECT 1",
+  "ALTER TABLE toplanti_gundem ADD COLUMN gorusme_notlari TEXT NULL AFTER aciklama"
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+';
     
-    if (!file_exists($sqlFile)) {
-        throw new Exception("Migration file not found: $sqlFile");
-    }
-    
-    $sql = file_get_contents($sqlFile);
+    // $sql = file_get_contents($sqlFile);
     
     // Split by semicolon and execute each statement
     $statements = explode(';', $sql);
