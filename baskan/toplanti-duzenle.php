@@ -250,6 +250,13 @@ include __DIR__ . '/../includes/header.php';
     box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     text-align: center;
 }
+
+/* Sidebar Layout Fix */
+@media (min-width: 992px) {
+    main.container-fluid {
+        padding-left: 290px; /* Sidebar width (280px) + gap (10px) */
+    }
+}
 </style>
 
 <link rel="stylesheet" href="/assets/css/toplanti-yonetimi.css">
