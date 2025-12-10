@@ -82,4 +82,67 @@ class Mail {
 </html>
 HTML;
     }
+
+    public static function getMeetingCancellationTemplate($data) {
+        $baslik = htmlspecialchars($data['baslik']);
+        $tarih = date('d.m.Y H:i', strtotime($data['toplanti_tarihi']));
+        $konum = htmlspecialchars($data['konum'] ?? '-');
+        $adSoyad = htmlspecialchars($data['ad_soyad']);
+        $iptalNedeni = !empty($data['iptal_nedeni']) ? nl2br(htmlspecialchars($data['iptal_nedeni'])) : 'Belirtilmemiş';
+        
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { background: #dc3545; color: #fff; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .meeting-details { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #dc3545; }
+        .meeting-item { margin-bottom: 10px; }
+        .meeting-item strong { width: 120px; display: inline-block; }
+        .alert { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 5px; margin-top: 20px; }
+        .footer { background: #333; color: #fff; text-align: center; padding: 15px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://aifcrm.metechnik.at/assets/img/logo.png" alt="AIF Logo" style="max-height: 60px; margin-bottom: 10px;">
+            <h1>⚠️ Toplantı İPTAL Edildi</h1>
+        </div>
+        <div class="content">
+            <p>Sayın <strong>{$adSoyad}</strong>,</p>
+            <p>Katılımınız beklenen aşağıdaki toplantı <strong style="color: #dc3545;">iptal edilmiştir</strong>.</p>
+            
+            <div class="meeting-details">
+                <div class="meeting-item">
+                    <strong>Konu:</strong> {$baslik}
+                </div>
+                <div class="meeting-item">
+                    <strong>Tarih:</strong> {$tarih}
+                </div>
+                <div class="meeting-item">
+                    <strong>Konum:</strong> {$konum}
+                </div>
+            </div>
+
+            <div class="alert">
+                <strong>İptal Nedeni:</strong><br>
+                {$iptalNedeni}
+            </div>
+
+            <p style="margin-top: 20px;">Yeni bir toplantı tarihi belirlendiğinde sizinle tekrar iletişime geçilecektir.</p>
+            <p>Anlayışınız için teşekkür ederiz.</p>
+        </div>
+        <div class="footer">
+            &copy; 2025 AIF Otomasyon Sistemi. Bu mesaj otomatik olarak oluşturulmuştur.
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
 }

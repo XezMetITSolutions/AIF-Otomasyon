@@ -84,6 +84,11 @@ include __DIR__ . '/../includes/header.php';
                                                 <a href="/admin/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
+                                                <?php if ($toplanti['durum'] !== 'iptal' && $toplanti['durum'] !== 'tamamlandi'): ?>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')">
+                                                        <i class="fas fa-times-circle"></i>
+                                                    </button>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -95,6 +100,82 @@ include __DIR__ . '/../includes/header.php';
             </div>
     </div>
 </main>
+
+<!-- Cancel Meeting Modal -->
+<div class="modal fade" id="cancelMeetingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Toplantıyı İptal Et</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>⚠️ <strong id="meetingTitle"></strong> toplantısını iptal etmek istediğinize emin misiniz?</p>
+                <p class="text-muted">Tüm katılımcılara iptal bildirimi e-postası gönderilecektir.</p>
+                
+                <div class="mb-3">
+                    <label for="cancelReason" class="form-label">İptal Nedeni (Opsiyonel)</label>
+                    <textarea class="form-control" id="cancelReason" rows="3" placeholder="İptal nedenini buraya yazabilirsiniz..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                    <i class="fas fa-times-circle me-2"></i>Toplantıyı İptal Et
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentMeetingId = null;
+
+function cancelMeeting(id, title) {
+    currentMeetingId = id;
+    document.getElementById('meetingTitle').textContent = title;
+    document.getElementById('cancelReason').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('cancelMeetingModal'));
+    modal.show();
+}
+
+document.getElementById('confirmCancelBtn').addEventListener('click', async function() {
+    const reason = document.getElementById('cancelReason').value;
+    const btn = this;
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>İptal Ediliyor...';
+    
+    try {
+        const response = await fetch('/api/cancel-meeting.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                toplanti_id: currentMeetingId,
+                iptal_nedeni: reason
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ Hata: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch (error) {
+        alert('❌ Bir hata oluştu: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+});
+</script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
