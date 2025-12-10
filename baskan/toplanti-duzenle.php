@@ -304,6 +304,13 @@ include __DIR__ . '/../includes/header.php';
     text-align: center;
 }
 
+/* Layout overrides */
+.content-wrapper {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding-right: 20px;
+}
+
 /* Sidebar Layout Fix */
 @media (min-width: 992px) {
     main.container-fluid {
