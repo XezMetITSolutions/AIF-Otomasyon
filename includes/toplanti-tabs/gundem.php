@@ -33,7 +33,7 @@
                                         ?>">
                                             <?php echo ucfirst(str_replace('_', ' ', $gundem['durum'])); ?>
                                         </span>
-                                        <?php if ($gundem['sunum_dosyasi']): ?>
+                                        <?php if (!empty($gundem['sunum_dosyasi'] ?? null)): ?>
                                             <a href="/uploads/toplanti/<?php echo htmlspecialchars($gundem['sunum_dosyasi']); ?>" target="_blank" class="text-decoration-none">
                                                 <i class="fas fa-file-pdf me-1"></i>Sunum
                                             </a>
