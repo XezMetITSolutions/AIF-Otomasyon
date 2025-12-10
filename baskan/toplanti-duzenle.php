@@ -121,8 +121,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // 1. Yeni maddeleri parse et
                 foreach ($lines as $line) {
                     $line = trim($line);
-                    if (preg_match('/^[-*•]\s+(.*)$/', $line, $m) || preg_match('/^\d+\.\s+(.*)$/', $line, $m)) {
-                        $baslik = trim($m[1]);
+                    // Bullet styles: -, *, •, +, o, –, —, 1., 1), a., a), >
+                    // \p{N} matches any number
+                    if (preg_match('/^\s*([-*•+o–—>]|\d+[.)]|[a-zA-Z][.)])\s+(.*)$/u', $line, $m)) {
+                        $baslik = trim($m[2]);
                         if (!empty($baslik)) {
                             $yeni_maddeler[$sira++] = $baslik;
                         }
