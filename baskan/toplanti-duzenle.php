@@ -338,10 +338,10 @@ include __DIR__ . '/../includes/header.php';
             </div>
         </div>
     </div>
+    </div>
 </main>
 
-<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
-
 <?php
+$pageSpecificJS = ['/assets/js/toplanti-yonetimi.js?v=' . time()];
 include __DIR__ . '/../includes/footer.php';
 ?>
