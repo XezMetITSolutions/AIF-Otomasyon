@@ -73,7 +73,7 @@ try {
     $db = Database::getInstance();
 
     // Toplantı bilgilerini al
-    $toplanti = $db->fetchOne("
+    $toplanti = $db->fetch("
         SELECT t.*, b.byk_adi 
         FROM toplantilar t
         INNER JOIN byk b ON t.byk_id = b.byk_id

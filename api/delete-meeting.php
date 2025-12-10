@@ -71,7 +71,7 @@ try {
     $db = Database::getInstance();
 
     // Check if meeting exists
-    $toplanti = $db->fetchOne("
+    $toplanti = $db->fetch("
         SELECT toplanti_id, baslik 
         FROM toplantilar 
         WHERE toplanti_id = ?
