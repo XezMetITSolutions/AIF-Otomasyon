@@ -3,28 +3,40 @@
  * API Endpoint: Cancel Meeting
  * Cancels a meeting and notifies all participants via email
  */
-// Disable error display for clean JSON output
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
 
-// Clean output buffer
+// Start output buffering to catch any unexpected output
 ob_start();
 
-require_once __DIR__ . '/../includes/init.php';
-require_once __DIR__ . '/../classes/Auth.php';
-require_once __DIR__ . '/../classes/Database.php';
-require_once __DIR__ . '/../classes/Mail.php';
-require_once __DIR__ . '/../classes/Middleware.php';
+// Disable error display for clean JSON
+ini_set('display_errors', 0);
+error_reporting(0);
 
-// Clear any output from includes
+// Start session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once __DIR__ . '/../classes/Database.php';
+require_once __DIR__ . '/../classes/Auth.php';
+require_once __DIR__ . '/../classes/Mail.php';
+
+// Clear any buffered output
 ob_end_clean();
 
-header('Content-Type: application/json');
+// Set JSON header
+header('Content-Type: application/json; charset=utf-8');
 
-// Only super admin can cancel meetings
-try {
-    Middleware::requireSuperAdmin();
-} catch (Exception $e) {
+// Check authentication
+$auth = new Auth();
+if (!$auth->checkAuth()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Oturum bulunamadı']);
+    exit;
+}
+
+// Check if user is super admin
+$user = $auth->getUser();
+if ($user['role'] !== 'super_admin') {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Yetkisiz erişim']);
     exit;
@@ -108,5 +120,5 @@ try {
     
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Hata: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Sistem hatası']);
 }
