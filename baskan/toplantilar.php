@@ -106,7 +106,9 @@ include __DIR__ . '/../includes/header.php';
                                     <!-- Title & Actions -->
                                     <div class="flex-grow-1">
                                         <h5 class="card-title fw-bold mb-1 text-truncate-2">
-                                            <?php echo htmlspecialchars($toplanti['baslik']); ?>
+                                            <a href="/baskan/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none stretched-link">
+                                                <?php echo htmlspecialchars($toplanti['baslik']); ?>
+                                            </a>
                                         </h5>
                                         <div class="d-flex align-items-center text-muted small mt-1">
                                             <i class="far fa-clock me-1"></i>
@@ -150,7 +152,7 @@ include __DIR__ . '/../includes/header.php';
                                     <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($toplanti['olusturan']); ?>
                                 </small>
                                 
-                                <div class="btn-group">
+                                <div class="btn-group" style="position: relative; z-index: 2;">
                                     <a href="/baskan/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                         <i class="fas fa-edit"></i>
                                     </a>
