@@ -20,6 +20,7 @@ $durumFiltre = $_GET['durum'] ?? 'yaklasan';
 $katilimFiltre = $_GET['katilim'] ?? '';
 $selectedId = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $allowedDurumFiltresi = ['yaklasan', 'gecmis', 'tum'];
+// Backend valid statuses
 $allowedKatilimDurumlari = ['beklemede', 'katilacak', 'katilmayacak', 'mazeret'];
 
 if (!in_array($durumFiltre, $allowedDurumFiltresi, true)) {
@@ -55,8 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$katilimci) {
                     $errors[] = 'Katılım kaydı bulunamadı.';
                 } else {
-                    if ($yeniDurum === 'mazeret' && $mazeretAciklama === '') {
-                        $errors[] = 'Mazeret açıklaması zorunludur.';
+                    // Validation: Mazeret is required if status is 'katilmayacak'
+                    if ($yeniDurum === 'katilmayacak' && $mazeretAciklama === '') {
+                        $errors[] = 'Lütfen katılamama nedeninizi (mazeret) belirtiniz.';
                     }
                     
                     if (empty($errors)) {
@@ -139,14 +141,14 @@ include __DIR__ . '/../includes/header.php';
         
         <!-- Alerts -->
         <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger shadow-sm border-0 border-start border-4 border-danger rounded-3">
+             <div class="alert alert-danger shadow-sm border-0 border-start border-4 border-danger rounded-3">
                 <div class="d-flex align-items-center">
                     <i class="fas fa-exclamation-circle fa-lg me-3"></i>
-                    <div>
+                     <ul class="mb-0 ps-3">
                         <?php foreach ($errors as $error): ?>
-                            <div><?php echo htmlspecialchars($error); ?></div>
+                            <li><?php echo htmlspecialchars($error); ?></li>
                         <?php endforeach; ?>
-                    </div>
+                    </ul>
                 </div>
             </div>
         <?php endif; ?>
@@ -178,13 +180,15 @@ include __DIR__ . '/../includes/header.php';
                 <?php foreach ($toplantilar as $toplanti): ?>
                     <?php
                         $tarih = new DateTime($toplanti['toplanti_tarihi']);
-                        $durumClass = match ($toplanti['katilim_durumu']) {
-                            'katilacak' => 'success',
-                            'katilmayacak' => 'danger',
-                            'mazeret' => 'warning',
-                            default => 'secondary',
+                        
+                        // Map status codes to readable text and colors
+                        // Enum: beklemede, katilacak, katilmayacak, mazeret
+                        $durumProps = match ($toplanti['katilim_durumu']) {
+                            'katilacak' => ['text' => 'Katılacağım', 'class' => 'success', 'icon' => 'check-circle'],
+                            'katilmayacak' => ['text' => 'Katılamayacağım', 'class' => 'danger', 'icon' => 'times-circle'],
+                            'mazeret' => ['text' => 'Mazeretli', 'class' => 'warning', 'icon' => 'exclamation-circle'],
+                            default => ['text' => 'Beklemede', 'class' => 'secondary', 'icon' => 'question-circle'],
                         };
-                        $durumText = ucfirst($toplanti['katilim_durumu']);
                         
                         // Card Border Color based on status
                         $borderClass = $toplanti['katilim_durumu'] === 'beklemede' ? 'border-warning' : 'border-0';
@@ -224,11 +228,11 @@ include __DIR__ . '/../includes/header.php';
                                     </p>
                                 <?php endif; ?>
 
-                                <!-- Current Status Badge (Top right absolute or inline) -->
-                                <div class="mb-3">
-                                    <span class="badge rounded-pill bg-<?php echo $durumClass; ?> bg-opacity-10 text-<?php echo $durumClass; ?> px-3 py-2">
-                                        <i class="fas fa-circle small me-1"></i>
-                                        <?php echo $durumText; ?>
+                                <!-- Current Status Badge -->
+                                <div class="mb-2">
+                                    <span class="badge rounded-pill bg-<?php echo $durumProps['class']; ?> bg-opacity-10 text-<?php echo $durumProps['class']; ?> px-3 py-2">
+                                        <i class="fas fa-<?php echo $durumProps['icon']; ?> small me-1"></i>
+                                        <?php echo $durumProps['text']; ?>
                                     </span>
                                     <?php if($toplanti['mazeret_aciklama']): ?>
                                         <small class="d-block mt-1 text-muted fst-italic">
@@ -239,31 +243,32 @@ include __DIR__ . '/../includes/header.php';
                             </div>
                             
                             <!-- Action Footer -->
-                            <div class="card-footer bg-light bg-opacity-50 border-top-0 p-3">
+                            <div class="card-footer bg-white border-top-0 p-3 pt-0">
+                                <hr class="my-2 opacity-50">
                                 <form method="post">
                                     <input type="hidden" name="action" value="katilim_guncelle">
                                     <input type="hidden" name="katilimci_id" value="<?php echo $toplanti['katilimci_id']; ?>">
                                     <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                     
-                                    <label class="form-label small fw-bold text-uppercase text-muted mb-2">Durum Güncelle</label>
-                                    <div class="input-group input-group-sm">
-                                        <select name="katilim_durumu" class="form-select status-select" data-target="mazeret-<?php echo $toplanti['katilimci_id']; ?>">
-                                            <?php foreach ($allowedKatilimDurumlari as $durum): ?>
-                                                <option value="<?php echo $durum; ?>" <?php echo $toplanti['katilim_durumu'] === $durum ? 'selected' : ''; ?>>
-                                                    <?php echo ucfirst($durum); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <button type="submit" class="btn btn-outline-primary">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Mazeret Input (Hidden by default unless mazeret selected) -->
-                                    <div id="mazeret-<?php echo $toplanti['katilimci_id']; ?>" class="mt-2 <?php echo $toplanti['katilim_durumu'] === 'mazeret' ? '' : 'd-none'; ?>">
-                                        <input type="text" name="mazeret_aciklama" class="form-control form-control-sm" 
-                                               placeholder="Mazeretiniz nedir?" 
-                                               value="<?php echo htmlspecialchars($toplanti['mazeret_aciklama'] ?? ''); ?>">
+                                    <div class="d-flex flex-column gap-2">
+                                        <label class="form-label small fw-bold text-uppercase text-muted mb-0">Durum Bildir</label>
+                                        <div class="input-group input-group-sm">
+                                            <select name="katilim_durumu" class="form-select status-select" data-target="mazeret-<?php echo $toplanti['katilimci_id']; ?>">
+                                                <option value="beklemede" <?php echo $toplanti['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>Seçiniz...</option>
+                                                <option value="katilacak" <?php echo $toplanti['katilim_durumu'] === 'katilacak' ? 'selected' : ''; ?>>Katılacağım</option>
+                                                <option value="katilmayacak" <?php echo $toplanti['katilim_durumu'] === 'katilmayacak' ? 'selected' : ''; ?>>Katılamayacağım</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-primary" title="Kaydet">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Mazeret Input (Only shows if 'katilmayacak' is selected) -->
+                                        <div id="mazeret-<?php echo $toplanti['katilimci_id']; ?>" class="mt-1 <?php echo $toplanti['katilim_durumu'] === 'katilmayacak' ? '' : 'd-none'; ?>">
+                                            <input type="text" name="mazeret_aciklama" class="form-control form-control-sm" 
+                                                   placeholder="Lütfen mazeretinizi giriniz..." 
+                                                   value="<?php echo htmlspecialchars($toplanti['mazeret_aciklama'] ?? ''); ?>">
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -300,17 +305,21 @@ include __DIR__ . '/../includes/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Show/Hide Mazeret input based on selection
+    // Show/Hide Mazeret input based on selection (trigger: katilmayacak)
     document.querySelectorAll('.status-select').forEach(select => {
         select.addEventListener('change', function() {
             const mazeretDiv = document.getElementById(this.dataset.target);
-            if (this.value === 'mazeret') {
+            const inputInfo = mazeretDiv.querySelector('input');
+            
+            // Logic: If 'katilmayacak' -> show mazeret and make required
+            if (this.value === 'katilmayacak') {
                 mazeretDiv.classList.remove('d-none');
-                mazeretDiv.querySelector('input').required = true;
-                mazeretDiv.querySelector('input').focus();
+                inputInfo.required = true;
+                // Optional: focus if status changed to this
+                inputInfo.focus();
             } else {
                 mazeretDiv.classList.add('d-none');
-                mazeretDiv.querySelector('input').required = false;
+                inputInfo.required = false;
             }
         });
     });
