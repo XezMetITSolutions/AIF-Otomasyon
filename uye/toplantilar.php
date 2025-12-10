@@ -15,6 +15,32 @@ $user = $auth->getUser();
 $db = Database::getInstance();
 $appConfig = require __DIR__ . '/../config/app.php';
 
+// Turkish Date Helper
+$trMonths = [
+    'Jan' => 'Ocak', 'Feb' => 'Şubat', 'Mar' => 'Mart', 'Apr' => 'Nisan',
+    'May' => 'Mayıs', 'Jun' => 'Haziran', 'Jul' => 'Temmuz', 'Aug' => 'Ağustos',
+    'Sep' => 'Eylül', 'Oct' => 'Ekim', 'Nov' => 'Kasım', 'Dec' => 'Aralık'
+];
+
+function formatTextAsList($text) {
+    if (empty($text)) return '';
+    $escaped = htmlspecialchars($text);
+    // Convert newlines to breaks first
+    $withBreaks = nl2br($escaped);
+    // If user used "- " or "* " or "• " within textual lines without newlines (rare but requested)
+    // or just to enforce styling.
+    // Let's just rely on nl2br for basic cases, but user asked specifically: "her aufzählungszeichenden sonra yeni satır baslasin"
+    // "After every bullet point start a new line". This implies if it's inline like "Item 1 - Item 2", break it?
+    // Or just ensuring list items are distinct.
+    // Let's try to interpret "- " as a new line starter if it's not already.
+    
+    // Replace " - " with "<br>- " to force new line for inline bullets
+    $formatted = str_replace([' - ', ' • ', ' * '], ['<br>- ', '<br>• ', '<br>* '], $withBreaks);
+    
+    // Also basic list rendering: ensure lines starting with - get proper spacing
+    return $formatted;
+}
+
 $pageTitle = 'Toplantılarım';
 $durumFiltre = $_GET['durum'] ?? 'yaklasan';
 $katilimFiltre = $_GET['katilim'] ?? '';
@@ -180,6 +206,8 @@ include __DIR__ . '/../includes/header.php';
                 <?php foreach ($toplantilar as $toplanti): ?>
                     <?php
                         $tarih = new DateTime($toplanti['toplanti_tarihi']);
+                        $monthShort = $tarih->format('M');
+                        $trMonth = $trMonths[$monthShort] ?? $monthShort;
                         
                         // Map status codes to readable text and colors
                         // Enum: beklemede, katilacak, katilmayacak, mazeret
@@ -200,7 +228,7 @@ include __DIR__ . '/../includes/header.php';
                                     <!-- Date Badge -->
                                     <div class="d-flex flex-column align-items-center justify-content-center bg-light rounded-3 p-2 text-center" style="min-width: 70px; height: 70px;">
                                         <span class="h4 mb-0 fw-bold text-dark"><?php echo $tarih->format('d'); ?></span>
-                                        <span class="small text-uppercase text-muted"><?php echo $tarih->format('M'); ?></span>
+                                        <span class="small text-uppercase text-muted"><?php echo $trMonth; ?></span>
                                     </div>
                                     
                                     <!-- Title & Meta -->
@@ -223,9 +251,9 @@ include __DIR__ . '/../includes/header.php';
 
                                 <!-- Description Excerpt -->
                                 <?php if($toplanti['aciklama']): ?>
-                                    <p class="text-muted small mb-3 text-truncate-3">
-                                        <?php echo htmlspecialchars($toplanti['aciklama']); ?>
-                                    </p>
+                                    <div class="text-muted small mb-3 text-truncate-3">
+                                        <?php echo formatTextAsList($toplanti['aciklama']); ?>
+                                    </div>
                                 <?php endif; ?>
 
                                 <!-- Current Status Badge -->
