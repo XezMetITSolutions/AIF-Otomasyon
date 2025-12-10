@@ -168,8 +168,6 @@ $katilim_stats = [
     'katilmayacak' => 0,
     'mazeret' => 0,
     'katildi' => 0,
-    'ozur_diledi' => 0,
-    'izinli' => 0,
     'katilmadi' => 0
 ];
 foreach ($katilimcilar as $k) {
