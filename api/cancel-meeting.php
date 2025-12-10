@@ -4,63 +4,57 @@
  * Cancels a meeting and notifies all participants via email
  */
 
-// Start output buffering to catch any unexpected output
-ob_start();
-
 // Disable error display for clean JSON
 ini_set('display_errors', 0);
 error_reporting(0);
 
-// Start session
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-require_once __DIR__ . '/../classes/Database.php';
-require_once __DIR__ . '/../classes/Auth.php';
-require_once __DIR__ . '/../classes/Mail.php';
-
-// Clear any buffered output
-ob_end_clean();
-
-// Set JSON header
+// Set JSON header first
 header('Content-Type: application/json; charset=utf-8');
 
-// Check authentication
-$auth = new Auth();
-if (!$auth->checkAuth()) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Oturum bulunamadı']);
-    exit;
-}
-
-// Check if user is super admin
-$user = $auth->getUser();
-if ($user['role'] !== 'super_admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Yetkisiz erişim']);
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-    exit;
-}
-
-$data = json_decode(file_get_contents('php://input'), true);
-$toplanti_id = $data['toplanti_id'] ?? null;
-$iptal_nedeni = $data['iptal_nedeni'] ?? '';
-
-if (!$toplanti_id) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Toplantı ID gereklidir']);
-    exit;
-}
-
-$db = Database::getInstance();
-
 try {
+    // Start session
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    require_once __DIR__ . '/../classes/Database.php';
+    require_once __DIR__ . '/../classes/Auth.php';
+    require_once __DIR__ . '/../classes/Mail.php';
+
+    // Check authentication
+    $auth = new Auth();
+    if (!$auth->checkAuth()) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Oturum bulunamadı']);
+        exit;
+    }
+
+    // Check if user is super admin
+    $user = $auth->getUser();
+    if ($user['role'] !== 'super_admin') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Yetkisiz erişim']);
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        exit;
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+    $toplanti_id = $data['toplanti_id'] ?? null;
+    $iptal_nedeni = $data['iptal_nedeni'] ?? '';
+
+    if (!$toplanti_id) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Toplantı ID gereklidir']);
+        exit;
+    }
+
+    $db = Database::getInstance();
+
     // Toplantı bilgilerini al
     $toplanti = $db->fetchOne("
         SELECT t.*, b.byk_adi 
