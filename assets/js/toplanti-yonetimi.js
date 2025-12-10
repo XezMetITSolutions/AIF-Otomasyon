@@ -9,6 +9,27 @@ const ToplantiYonetimi = {
     init: function (toplantiId) {
         this.toplanti_id = toplantiId;
         this.initEventListeners();
+        this.initMentions();
+    },
+
+    initMentions: function () {
+        if (typeof Tribute === 'undefined' || typeof MEETING_PARTICIPANTS === 'undefined') return;
+
+        const tribute = new Tribute({
+            values: MEETING_PARTICIPANTS,
+            selectTemplate: function (item) {
+                return '@' + item.original.value;
+            },
+            menuItemTemplate: function (item) {
+                return item.string;
+            }
+        });
+
+        // Attach to existing inputs
+        const inputs = document.querySelectorAll('.gorusme-notu-input, .decision-text-input');
+        if (inputs.length > 0) {
+            tribute.attach(inputs);
+        }
     },
 
     initEventListeners: function () {
