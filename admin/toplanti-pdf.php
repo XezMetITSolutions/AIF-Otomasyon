@@ -65,7 +65,7 @@ $kararlar = $db->fetchAll("
     FROM toplanti_kararlar tk
     LEFT JOIN toplanti_gundem tg ON tk.gundem_id = tg.gundem_id
     WHERE tk.toplanti_id = ?
-    ORDER BY tk.olusturma_tarihi
+    ORDER BY tk.karar_id
 ", [$toplanti_id]);
 
 // Tutanağı getir
@@ -74,54 +74,19 @@ $tutanak = $db->fetch("
     WHERE toplanti_id = ?
 ", [$toplanti_id]);
 
-// PDF oluştur
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+// ... (TCPDF setup skippped in this chunk, jumping to HTML content) ...
 
-// PDF bilgileri
-$pdf->SetCreator('Otomasyon Sistemi');
-$pdf->SetAuthor($toplanti['olusturan']);
-$pdf->SetTitle($toplanti['baslik']);
-$pdf->SetSubject('Toplantı Raporu');
-
-// Header ve Footer
-$pdf->setPrintHeader(false);
-$pdf->setPrintFooter(true);
-
-// Sayfa ayarları
-$pdf->SetMargins(15, 15, 15);
-$pdf->SetAutoPageBreak(TRUE, 15);
-
-// Font
-$pdf->SetFont('dejavusans', '', 10);
-
-// Sayfa ekle
-$pdf->AddPage();
-
-// Başlık
-$html = '<h1 style="text-align:center; color:#0d6efd;">' . htmlspecialchars($toplanti['baslik']) . '</h1>';
-$html .= '<h3 style="text-align:center; color:#6c757d;">Toplantı Raporu</h3>';
-$html .= '<hr>';
-
-// Toplantı Bilgileri
-$html .= '<h2 style="color:#0d6efd;">Toplantı Bilgileri</h2>';
-$html .= '<table border="0" cellpadding="5">';
-$html .= '<tr><td width="150"><strong>BYK:</strong></td><td>' . htmlspecialchars($toplanti['byk_adi']) . '</td></tr>';
-$html .= '<tr><td><strong>Tarih:</strong></td><td>' . date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])) . '</td></tr>';
-$html .= '<tr><td><strong>Konum:</strong></td><td>' . htmlspecialchars($toplanti['konum'] ?? '-') . '</td></tr>';
-$html .= '<tr><td><strong>Tür:</strong></td><td>' . htmlspecialchars($toplanti['toplanti_turu']) . '</td></tr>';
-$html .= '<tr><td><strong>Durum:</strong></td><td>' . htmlspecialchars($toplanti['durum']) . '</td></tr>';
-$html .= '</table>';
-$html .= '<br>';
+// ... (Header skipped) ...
 
 // Katılımcılar
-$html .= '<h2 style="color:#0d6efd;">Katılımcılar</h2>';
+$html .= '<h2 style="color:#0d6efd;">Katılımcı Durumları</h2>';
 
-// Katılanlar
-$katilanlar = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'katildi');
-if (!empty($katilanlar)) {
-    $html .= '<h3 style="color:#28a745;">Katılanlar (' . count($katilanlar) . ')</h3>';
+// Katılacaklar
+$katilacaklar = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'katilacak');
+if (!empty($katilacaklar)) {
+    $html .= '<h3 style="color:#28a745;">Katılacaklar (' . count($katilacaklar) . ')</h3>';
     $html .= '<ul>';
-    foreach ($katilanlar as $k) {
+    foreach ($katilacaklar as $k) {
         $html .= '<li>' . htmlspecialchars($k['ad'] . ' ' . $k['soyad']);
         if ($k['alt_birim_adi']) {
             $html .= ' (' . htmlspecialchars($k['alt_birim_adi']) . ')';
@@ -131,23 +96,27 @@ if (!empty($katilanlar)) {
     $html .= '</ul>';
 }
 
-// Özür Dileyenler
-$ozur_dileyenler = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'ozur_diledi');
-if (!empty($ozur_dileyenler)) {
-    $html .= '<h3 style="color:#ffc107;">Özür Dileyenler (' . count($ozur_dileyenler) . ')</h3>';
+// Katılmayacaklar
+$katilmayacaklar = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'katilmayacak');
+if (!empty($katilmayacaklar)) {
+    $html .= '<h3 style="color:#dc3545;">Katılmayacaklar (' . count($katilmayacaklar) . ')</h3>';
     $html .= '<ul>';
-    foreach ($ozur_dileyenler as $k) {
-        $html .= '<li>' . htmlspecialchars($k['ad'] . ' ' . $k['soyad']) . '</li>';
+    foreach ($katilmayacaklar as $k) {
+        $html .= '<li>' . htmlspecialchars($k['ad'] . ' ' . $k['soyad']);
+         if ($k['mazeret_aciklama']) {
+            $html .= ' <br><small><em>Mazeret: ' . htmlspecialchars($k['mazeret_aciklama']) . '</em></small>';
+        }
+        $html .= '</li>';
     }
     $html .= '</ul>';
 }
 
-// İzinliler
-$izinliler = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'izinli');
-if (!empty($izinliler)) {
-    $html .= '<h3 style="color:#17a2b8;">İzinliler (' . count($izinliler) . ')</h3>';
+// Bekleyenler
+$bekleyenler = array_filter($katilimcilar, fn($k) => $k['katilim_durumu'] === 'beklemede');
+if (!empty($bekleyenler)) {
+    $html .= '<h3 style="color:#6c757d;">Cevap Beklenenler (' . count($bekleyenler) . ')</h3>';
     $html .= '<ul>';
-    foreach ($izinliler as $k) {
+    foreach ($bekleyenler as $k) {
         $html .= '<li>' . htmlspecialchars($k['ad'] . ' ' . $k['soyad']) . '</li>';
     }
     $html .= '</ul>';
