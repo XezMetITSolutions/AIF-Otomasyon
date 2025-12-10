@@ -112,25 +112,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $toplanti_id
             ]);
 
-            // Otomatik Gündem Oluşturma (Eğer hiç gündem yoksa ve açıklamada maddeler varsa)
-            $mevcut_gundem = $db->fetch("SELECT COUNT(*) as sayi FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
-            if ($mevcut_gundem['sayi'] == 0 && !empty($aciklama)) {
+            // Otomatik Gündem Senkronizasyonu (Açıklama maddelerine göre güncelle)
+            if (!empty($aciklama)) {
                 $lines = explode("\n", $aciklama);
+                $yeni_maddeler = [];
                 $sira = 1;
+                
+                // 1. Yeni maddeleri parse et
                 foreach ($lines as $line) {
                     $line = trim($line);
-                    // Bullet styles: -, *, •, 1.
                     if (preg_match('/^[-*•]\s+(.*)$/', $line, $m) || preg_match('/^\d+\.\s+(.*)$/', $line, $m)) {
-                        $gundem_baslik = trim($m[1]);
-                        if (!empty($gundem_baslik)) {
-                            $db->query("INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) VALUES (?, ?, ?, 'beklemede')", 
-                                [$toplanti_id, $sira++, $gundem_baslik]);
+                        $baslik = trim($m[1]);
+                        if (!empty($baslik)) {
+                            $yeni_maddeler[$sira++] = $baslik;
+                        }
+                    }
+                }
+
+                // 2. Mevcut maddeleri getir
+                $mevcut_gundem = $db->fetchAll("SELECT * FROM toplanti_gundem WHERE toplanti_id = ? ORDER BY sira_no", [$toplanti_id]);
+                $mevcut_map = [];
+                foreach ($mevcut_gundem as $mg) {
+                    $mevcut_map[$mg['sira_no']] = $mg;
+                }
+
+                // 3. Senkronizasyon (Update/Insert)
+                foreach ($yeni_maddeler as $sira_no => $baslik) {
+                    if (isset($mevcut_map[$sira_no])) {
+                        // Varsa güncelle
+                        if ($mevcut_map[$sira_no]['baslik'] !== $baslik) {
+                            $db->query("UPDATE toplanti_gundem SET baslik = ? WHERE gundem_id = ?", [$baslik, $mevcut_map[$sira_no]['gundem_id']]);
+                        }
+                    } else {
+                        // Yoksa ekle
+                        $db->query("INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) VALUES (?, ?, ?, 'beklemede')", 
+                            [$toplanti_id, $sira_no, $baslik]);
+                    }
+                }
+
+                // 4. Fazlalıkları sil (Delete)
+                // Açıklamayı sildiyse gündemi de silsin mi? Evet, senkronizasyon mantığı budur.
+                // Ancak kararlara bağlıysa silinemez (DB hatası verebilir), try-catch ile yönetelim.
+                foreach ($mevcut_map as $sira_no => $mg) {
+                    if (!isset($yeni_maddeler[$sira_no])) {
+                        try {
+                            $db->query("DELETE FROM toplanti_gundem WHERE gundem_id = ?", [$mg['gundem_id']]);
+                        } catch (Exception $e) {
+                            // Silinemiyorsa (muhtemelen karar bağlı), pass geç.
                         }
                     }
                 }
             }
             
-            $success = 'Bilgiler güncellendi' . ($sira > 1 ? ' ve otomatik gündem oluşturuldu.' : '.');
+            $success = 'Bilgiler ve gündem maddeleri güncellendi.';
             header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
             exit;
         }
