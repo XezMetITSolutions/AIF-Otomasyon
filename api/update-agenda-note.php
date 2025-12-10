@@ -23,13 +23,23 @@ try {
     // Check if agenda exists and belongs to user's authorized area (if applicable)
     // For simplicity, just update assuming auth checked by Middleware
     
-    $result = $db->query("
+    $stmt = $db->query("
         UPDATE toplanti_gundem 
         SET gorusme_notlari = ? 
         WHERE gundem_id = ?
     ", [$notlar, $gundem_id]);
     
-    echo json_encode(['success' => true, 'message' => 'Notlar kaydedildi']);
+    $rowCount = $stmt->rowCount();
+
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Notlar kaydedildi',
+        'debug' => [
+            'received_id' => $gundem_id,
+            'affected_rows' => $rowCount,
+            'note_length' => strlen($notlar)
+        ]
+    ]);
     
 } catch (Exception $e) {
     http_response_code(400);
