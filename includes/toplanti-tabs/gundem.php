@@ -43,13 +43,15 @@
                                     </div>
 
                                     <div class="d-flex align-items-center gap-3 mt-3">
-                                        <span class="badge bg-<?php 
-                                            echo $gundem['durum'] === 'karara_baglandi' ? 'success' : 
-                                                ($gundem['durum'] === 'gorusuluyor' ? 'warning' : 
-                                                ($gundem['durum'] === 'ertelendi' ? 'danger' : 'info')); 
-                                        ?>">
-                                            <?php echo ucfirst(str_replace('_', ' ', $gundem['durum'])); ?>
-                                        </span>
+                                        <?php if ($gundem['durum'] !== 'beklemede'): ?>
+                                            <span class="badge bg-<?php 
+                                                echo $gundem['durum'] === 'karara_baglandi' ? 'success' : 
+                                                    ($gundem['durum'] === 'gorusuluyor' ? 'warning' : 
+                                                    ($gundem['durum'] === 'ertelendi' ? 'danger' : 'info')); 
+                                            ?>">
+                                                <?php echo ucfirst(str_replace('_', ' ', $gundem['durum'])); ?>
+                                            </span>
+                                        <?php endif; ?>
                                         <?php if (!empty($gundem['sunum_dosyasi'] ?? null)): ?>
                                             <a href="/uploads/toplanti/<?php echo htmlspecialchars($gundem['sunum_dosyasi']); ?>" target="_blank" class="text-decoration-none">
                                                 <i class="fas fa-file-pdf me-1"></i>Sunum

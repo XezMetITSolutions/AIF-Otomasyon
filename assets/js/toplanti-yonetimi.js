@@ -79,6 +79,30 @@ const ToplantiYonetimi = {
                 this.gorusmeNotuKaydet(gundemId, notlar, btn);
             });
         });
+
+        // Auto-bullet logic
+        document.querySelectorAll('.gorusme-notu-input').forEach(textarea => {
+            textarea.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    const cursorPosition = this.selectionStart;
+                    const currentValue = this.value;
+                    const beforeCursor = currentValue.substring(0, cursorPosition);
+                    const lastLineIndex = beforeCursor.lastIndexOf('\n');
+                    const lastLine = beforeCursor.substring(lastLineIndex + 1);
+
+                    const bulletMatch = lastLine.match(/^(\s*)([-*•])\s+/);
+
+                    if (bulletMatch) {
+                        e.preventDefault();
+                        const bullet = `\n${bulletMatch[1]}${bulletMatch[2]} `;
+                        const afterCursor = currentValue.substring(cursorPosition);
+
+                        this.value = beforeCursor + bullet + afterCursor;
+                        this.selectionStart = this.selectionEnd = cursorPosition + bullet.length;
+                    }
+                }
+            });
+        });
     },
 
     // ==================== KATILIMCI İŞLEMLERİ ====================
