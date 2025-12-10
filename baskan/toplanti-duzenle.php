@@ -307,17 +307,25 @@ include __DIR__ . '/../includes/header.php';
 /* Layout overrides */
 .content-wrapper {
     max-width: 100% !important;
+    width: 100% !important;
     margin: 0 !important;
-    padding: 0 !important; /* Full width */
+    padding: 0 !important;
+}
+
+/* Hide Alt Birim Column in Participants Tab */
+#katilimcilar table th:nth-child(2),
+#katilimcilar table td:nth-child(2) {
+    display: none;
 }
 
 /* Sidebar Layout Fix */
 @media (min-width: 992px) {
     main.container-fluid {
-        padding-left: 280px !important; /* Exact Sidebar width */
-        padding-right: 0 !important;
+        padding-left: 280px !important;
+        padding-right: 20px !important; /* Slight padding for aesthetics */
         margin: 0 !important;
         width: 100% !important;
+        max-width: 100% !important;
     }
 }
 </style>
