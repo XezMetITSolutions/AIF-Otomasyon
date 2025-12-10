@@ -36,6 +36,9 @@
                                         <td>
                                             <select class="form-select form-select-sm katilim-durum-select" 
                                                     data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>">
+                                                <option value="beklemede" <?php echo $katilimci['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>
+                                                    ⌛ Davet Edildi
+                                                </option>
                                                 <option value="katildi" <?php echo $katilimci['katilim_durumu'] === 'katildi' ? 'selected' : ''; ?>>
                                                     ✓ Katıldı
                                                 </option>
@@ -73,6 +76,16 @@
                 <h5 class="mb-0">Katılım İstatistikleri</h5>
             </div>
             <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span><i class="fas fa-hourglass-half text-secondary me-2"></i>Davet Edildi</span>
+                        <span class="badge bg-secondary"><?php echo $katilim_stats['beklemede'] ?? 0; ?></span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-secondary" style="width: <?php echo count($katilimcilar) > 0 ? (($katilim_stats['beklemede'] ?? 0) / count($katilimcilar) * 100) : 0; ?>%"></div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span><i class="fas fa-check-circle text-success me-2"></i>Katıldı</span>
@@ -142,6 +155,7 @@
                 <div class="mb-3">
                     <label class="form-label">Katılım Durumu</label>
                     <select class="form-select" id="yeni_katilim_durumu">
+                        <option value="beklemede">Davet Edildi</option>
                         <option value="katildi">Katıldı</option>
                         <option value="ozur_diledi">Özür Diledi</option>
                         <option value="izinli">İzinli</option>

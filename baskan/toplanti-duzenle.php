@@ -1,13 +1,13 @@
 <?php
 /**
- * Ana Yönetici - Toplantı Düzenleme
+ * Başkan - Toplantı Düzenleme
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireSuperAdmin();
+Middleware::requireBaskan();
 
 $auth = new Auth();
 $user = $auth->getUser();
@@ -17,20 +17,20 @@ $pageTitle = 'Toplantı Düzenle';
 
 $toplanti_id = $_GET['id'] ?? null;
 if (!$toplanti_id) {
-    header('Location: /admin/toplantilar.php');
+    header('Location: /baskan/toplantilar.php');
     exit;
 }
 
-// Toplantı bilgilerini getir
+// Toplantı bilgilerini getir (Sadece kendi BYK'sı)
 $toplanti = $db->fetch("
     SELECT t.*, b.byk_adi, b.byk_kodu
     FROM toplantilar t
     INNER JOIN byk b ON t.byk_id = b.byk_id
-    WHERE t.toplanti_id = ?
-", [$toplanti_id]);
+    WHERE t.toplanti_id = ? AND t.byk_id = ?
+", [$toplanti_id, $user['byk_id']]);
 
 if (!$toplanti) {
-    header('Location: /admin/toplantilar.php');
+    header('Location: /baskan/toplantilar.php');
     exit;
 }
 
@@ -73,13 +73,10 @@ $tutanak = $db->fetch("
     WHERE toplanti_id = ?
 ", [$toplanti_id]);
 
-// BYK listesi
-$bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk ORDER BY byk_adi");
-
 $error = '';
 $success = $_GET['success'] ?? '';
 
-// Form gönderildiğinde
+// Form gönderildiğinde (Sadece güncelleme işlemleri)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $action = $_POST['action'] ?? '';
@@ -117,8 +114,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = 'Toplantı bilgileri güncellendi!';
         }
         
-        // Sayfayı yenile
-        header("Location: /admin/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
+        // Diğer CRUD işlemleri (Katılımcı, Gündem, Karar) için API'ler veya tab endpointleri kullanılacaktır.
+        // Bu sayfada çoğunlukla AJAX ile işlem yapıldığı varsayılmaktadır (tab altındaki include dosyaları).
+        
+        header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
         exit;
         
     } catch (Exception $e) {
@@ -156,7 +155,7 @@ include __DIR__ . '/../includes/header.php';
                 <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-danger" target="_blank">
                     <i class="fas fa-file-pdf me-2"></i>PDF İndir
                 </a>
-                <a href="/admin/toplantilar.php" class="btn btn-secondary">
+                <a href="/baskan/toplantilar.php" class="btn btn-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Geri Dön
                 </a>
             </div>

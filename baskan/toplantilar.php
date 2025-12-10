@@ -1,6 +1,6 @@
 <?php
 /**
- * Başkan - Toplantılar
+ * Başkan - Toplantı Yönetimi
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
@@ -8,259 +8,223 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 Middleware::requireBaskan();
-Middleware::requireModulePermission('baskan_toplantilar');
 
 $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
-$appConfig = require __DIR__ . '/../config/app.php';
 
-$pageTitle = 'Toplantılar';
-$csrfTokenName = $appConfig['security']['csrf_token_name'];
-$csrfToken = Middleware::generateCSRF();
-$message = null;
-$messageType = 'success';
+$pageTitle = 'Toplantı Yönetimi';
 
-$allowedStatuses = ['planlandi', 'devam_ediyor', 'tamamlandi', 'iptal'];
-$allowedTypes = ['normal', 'acil', 'ozel'];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!Middleware::verifyCSRF()) {
-        $message = 'Güvenlik doğrulaması başarısız.';
-        $messageType = 'danger';
-    } else {
-        $action = $_POST['action'] ?? '';
-        if ($action === 'create') {
-            $baslik = trim($_POST['baslik'] ?? '');
-            $aciklama = trim($_POST['aciklama'] ?? '');
-            $tarih = $_POST['toplanti_tarihi'] ?? '';
-            $konum = trim($_POST['konum'] ?? '');
-            $tur = $_POST['toplanti_turu'] ?? 'normal';
-
-            if (!$baslik || !$tarih || !$konum) {
-                $message = 'Başlık, tarih ve konum zorunludur.';
-                $messageType = 'danger';
-            } elseif (!in_array($tur, $allowedTypes, true)) {
-                $message = 'Geçersiz toplantı türü.';
-                $messageType = 'danger';
-            } else {
-                $db->query("
-                    INSERT INTO toplantilar (byk_id, toplanti_turu, baslik, aciklama, toplanti_tarihi, konum, durum, olusturan_id)
-                    VALUES (?, ?, ?, ?, ?, ?, 'planlandi', ?)
-                ", [
-                    $user['byk_id'],
-                    $tur,
-                    $baslik,
-                    $aciklama ?: null,
-                    $tarih,
-                    $konum,
-                    $user['id']
-                ]);
-                $message = 'Toplantı planlandı.';
-            }
-        } elseif ($action === 'status') {
-            $toplantiId = (int)($_POST['toplanti_id'] ?? 0);
-            $durum = $_POST['durum'] ?? '';
-            if (!$toplantiId || !in_array($durum, $allowedStatuses, true)) {
-                $message = 'Geçersiz toplantı veya durum.';
-                $messageType = 'danger';
-            } else {
-                $meeting = $db->fetch("
-                    SELECT toplanti_id FROM toplantilar
-                    WHERE toplanti_id = ? AND byk_id = ?
-                ", [$toplantiId, $user['byk_id']]);
-                if (!$meeting) {
-                    $message = 'Toplantı bulunamadı.';
-                    $messageType = 'danger';
-                } else {
-                    $db->query("
-                        UPDATE toplantilar
-                        SET durum = ?, guncelleme_tarihi = NOW()
-                        WHERE toplanti_id = ?
-                    ", [$durum, $toplantiId]);
-                    $message = 'Toplantı durumu güncellendi.';
-                }
-            }
-        }
-    }
-}
-
-$upcomingMeetings = $db->fetchAll("
-    SELECT t.*, 
-        (SELECT COUNT(*) FROM toplanti_katilimcilar tk WHERE tk.toplanti_id = t.toplanti_id) as katilimci_sayisi
+// Toplantılar (Sadece Kendi BYK'sı)
+$toplantilar = $db->fetchAll("
+    SELECT t.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as olusturan
     FROM toplantilar t
-    WHERE t.byk_id = ? AND t.toplanti_tarihi >= DATE_SUB(NOW(), INTERVAL 1 DAY)
-    ORDER BY t.toplanti_tarihi ASC
-    LIMIT 50
-", [$user['byk_id']]);
-
-$pastMeetings = $db->fetchAll("
-    SELECT t.*
-    FROM toplantilar t
-    WHERE t.byk_id = ? AND t.toplanti_tarihi < NOW()
+    INNER JOIN byk b ON t.byk_id = b.byk_id
+    INNER JOIN kullanicilar u ON t.olusturan_id = u.kullanici_id
+    WHERE t.byk_id = ?
     ORDER BY t.toplanti_tarihi DESC
-    LIMIT 20
+    LIMIT 50
 ", [$user['byk_id']]);
 
 include __DIR__ . '/../includes/header.php';
 ?>
 
+<!-- Sidebar -->
 <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
 <main class="container-fluid mt-4">
     <div class="content-wrapper">
-        <div class="row g-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                    <div>
-                        <h1 class="h3 mb-1"><i class="fas fa-users-cog me-2"></i>Toplantılar</h1>
-                        <p class="text-muted mb-0">Komite toplantılarınızı planlayın, durumlarını takip edin.</p>
-                    </div>
-                </div>
-                <?php if ($message): ?>
-                    <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
-                        <?php echo htmlspecialchars($message); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-users-cog me-2"></i>Toplantı Yönetimi
+                </h1>
+                <a href="/baskan/toplanti-ekle.php" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Yeni Toplantı Ekle
+                </a>
             </div>
-
-            <div class="col-lg-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="fas fa-plus-circle me-2"></i>Yeni Toplantı Planla
-                    </div>
-                    <div class="card-body">
-                        <form method="post" class="row g-3">
-                            <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
-                            <input type="hidden" name="action" value="create">
-                            <div class="col-12">
-                                <label class="form-label">Başlık</label>
-                                <input type="text" name="baslik" class="form-control" required placeholder="Örn. Bölge Değerlendirme">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Açıklama</label>
-                                <textarea name="aciklama" class="form-control" rows="3" placeholder="Gündem ve hedefler"></textarea>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Konum</label>
-                                <input type="text" name="konum" class="form-control" required placeholder="Örn. Merkez Ofis / Zoom">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Tarih & Saat</label>
-                                <input type="datetime-local" name="toplanti_tarihi" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Toplantı Türü</label>
-                                <select name="toplanti_turu" class="form-select">
-                                    <option value="normal">Normal</option>
-                                    <option value="acil">Acil</option>
-                                    <option value="ozel">Özel</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-calendar-plus me-1"></i>Planla
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    Toplam: <strong><?php echo count($toplantilar); ?></strong> toplantı
                 </div>
-            </div>
-
-            <div class="col-lg-8">
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-sun me-2 text-primary"></i>Yaklaşan Toplantılar</span>
-                        <span class="badge bg-primary"><?php echo count($upcomingMeetings); ?></span>
-                    </div>
-                    <div class="card-body">
-                        <?php if (empty($upcomingMeetings)): ?>
-                            <p class="text-muted mb-0">Yaklaşan toplantı bulunmuyor.</p>
-                        <?php else: ?>
-                            <div class="list-group list-group-flush">
-                                <?php foreach ($upcomingMeetings as $meeting): ?>
-                                    <div class="list-group-item">
-                                        <div class="d-flex justify-content-between flex-wrap gap-3">
-                                            <div>
-                                                <h6 class="mb-1"><?php echo htmlspecialchars($meeting['baslik']); ?></h6>
-                                                <div class="small text-muted mb-1">
-                                                    <i class="fas fa-clock me-1"></i><?php echo date('d.m.Y H:i', strtotime($meeting['toplanti_tarihi'])); ?>
-                                                    <span class="mx-2">|</span>
-                                                    <i class="fas fa-map-marker-alt me-1"></i><?php echo htmlspecialchars($meeting['konum']); ?>
-                                                </div>
-                                                <?php if ($meeting['aciklama']): ?>
-                                                    <div class="small text-muted"><?php echo htmlspecialchars($meeting['aciklama']); ?></div>
-                                                <?php endif; ?>
-                                                <div class="small">
-                                                    <span class="badge bg-light text-dark me-2 text-uppercase"><?php echo $meeting['toplanti_turu']; ?></span>
-                                                    <span class="badge bg-outline-secondary text-dark border">
-                                                        <i class="fas fa-user-friends me-1"></i><?php echo $meeting['katilimci_sayisi']; ?> katılımcı
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <form method="post" class="d-flex align-items-center gap-2">
-                                                <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
-                                                <input type="hidden" name="action" value="status">
-                                                <input type="hidden" name="toplanti_id" value="<?php echo $meeting['toplanti_id']; ?>">
-                                                <select name="durum" class="form-select form-select-sm">
-                                                    <?php foreach ($allowedStatuses as $status): ?>
-                                                        <option value="<?php echo $status; ?>" <?php echo $meeting['durum'] === $status ? 'selected' : ''; ?>>
-                                                            <?php echo ucfirst(str_replace('_', ' ', $status)); ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                                <button class="btn btn-sm btn-outline-secondary" type="submit">
-                                                    <i class="fas fa-sync me-1"></i>Güncelle
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-history me-2 text-muted"></i>Geçmiş Toplantılar</span>
-                        <span class="badge bg-secondary"><?php echo count($pastMeetings); ?></span>
-                    </div>
-                    <div class="card-body">
-                        <?php if (empty($pastMeetings)): ?>
-                            <p class="text-muted mb-0">Henüz geçmiş toplantı kaydı yok.</p>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>BYK</th>
+                                    <th>Tarih</th>
+                                    <th>Tür</th>
+                                    <th>Durum</th>
+                                    <th>Oluşturan</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($toplantilar)): ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Henüz toplantı eklenmemiş.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($toplantilar as $toplanti): ?>
                                         <tr>
-                                            <th>Başlık</th>
-                                            <th>Tarih</th>
-                                            <th>Durum</th>
+                                            <td><?php echo htmlspecialchars($toplanti['baslik']); ?></td>
+                                            <td><?php echo htmlspecialchars($toplanti['byk_adi']); ?></td>
+                                            <td><?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?></td>
+                                            <td>
+                                                <span class="badge bg-info"><?php echo htmlspecialchars($toplanti['toplanti_turu']); ?></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-<?php echo $toplanti['durum'] === 'tamamlandi' ? 'success' : ($toplanti['durum'] === 'devam_ediyor' ? 'warning' : 'info'); ?>">
+                                                    <?php echo htmlspecialchars($toplanti['durum']); ?>
+                                                </span>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($toplanti['olusturan']); ?></td>
+                                            <td>
+                                                <a href="/baskan/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <?php if ($toplanti['durum'] !== 'iptal' && $toplanti['durum'] !== 'tamamlandi'): ?>
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" title="İptal Et">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" title="Sil">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($pastMeetings as $meeting): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($meeting['baslik']); ?></td>
-                                                <td><?php echo date('d.m.Y H:i', strtotime($meeting['toplanti_tarihi'])); ?></td>
-                                                <td><?php echo ucfirst(str_replace('_', ' ', $meeting['durum'])); ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+            </div>
+    </div>
+</main>
+
+<!-- Cancel Meeting Modal -->
+<div class="modal fade" id="cancelMeetingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Toplantıyı İptal Et</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>⚠️ <strong id="meetingTitle"></strong> toplantısını iptal etmek istediğinize emin misiniz?</p>
+                <p class="text-muted">Tüm katılımcılara iptal bildirimi e-postası gönderilecektir.</p>
+                
+                <div class="mb-3">
+                    <label for="cancelReason" class="form-label">İptal Nedeni (Opsiyonel)</label>
+                    <textarea class="form-control" id="cancelReason" rows="3" placeholder="İptal nedenini buraya yazabilirsiniz..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                    <i class="fas fa-times-circle me-2"></i>Toplantıyı İptal Et
+                </button>
             </div>
         </div>
     </div>
-</main>
+</div>
+
+<script>
+let currentMeetingId = null;
+
+function cancelMeeting(id, title) {
+    currentMeetingId = id;
+    document.getElementById('meetingTitle').textContent = title;
+    document.getElementById('cancelReason').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('cancelMeetingModal'));
+    modal.show();
+}
+
+document.getElementById('confirmCancelBtn').addEventListener('click', async function() {
+    const reason = document.getElementById('cancelReason').value;
+    const btn = this;
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>İptal Ediliyor...';
+    
+    try {
+        const response = await fetch('/api/cancel-meeting.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                toplanti_id: currentMeetingId,
+                iptal_nedeni: reason
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ Hata: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch (error) {
+        alert('❌ Bir hata oluştu: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+});
+
+// Delete meeting function
+function deleteMeeting(id, title) {
+    if (!confirm(`⚠️ "${title}" toplantısını kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve tüm ilgili veriler (katılımcılar, gündem, kararlar) silinecektir.`)) {
+        return;
+    }
+    
+    // Second confirmation for safety
+    if (!confirm(`Son uyarı: Toplantıyı silmek istediğinize %100 emin misiniz?`)) {
+        return;
+    }
+    
+    // Show loading
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
+    fetch('/api/delete-meeting.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            toplanti_id: id
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ Hata: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    })
+    .catch(error => {
+        alert('❌ Bir hata oluştu: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    });
+}
+</script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
 ?>
-
-
