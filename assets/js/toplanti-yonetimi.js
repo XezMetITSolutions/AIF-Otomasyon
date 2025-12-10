@@ -103,6 +103,19 @@ const ToplantiYonetimi = {
                 }
             });
         });
+
+        // Hızlı Karar Ekleme (Inline)
+        document.querySelectorAll('.quick-decision-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                const gundemId = btn.dataset.gundemId;
+                const container = btn.closest('.input-group');
+                const textarea = container.querySelector('.quick-decision-input');
+                const kararMetni = textarea.value.trim();
+
+                this.hizliKararKaydet(gundemId, kararMetni, btn);
+            });
+        });
     },
 
     // ==================== KATILIMCI İŞLEMLERİ ====================
@@ -298,6 +311,41 @@ const ToplantiYonetimi = {
                     this.showAlert('success', 'Görüşme notu kaydedildi');
                 } else {
                     this.showAlert('danger', result.message || 'Hata oluştu');
+                }
+            });
+    },
+
+    hizliKararKaydet: function (gundemId, kararMetni, btn) {
+        if (!kararMetni) {
+            this.showAlert('warning', 'Karar metni boş olamaz');
+            return;
+        }
+
+        // Loading
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...';
+        btn.disabled = true;
+
+        const data = {
+            action: 'add',
+            toplanti_id: this.toplanti_id,
+            gundem_id: gundemId,
+            baslik: 'Gündem Kararı',
+            karar_metni: kararMetni,
+            oylama_yapildi: 0,
+            karar_sonucu: 'kabul'
+        };
+
+        this.apiRequest('/admin/api-toplanti-karar.php', data)
+            .then(result => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+
+                if (result.success) {
+                    this.showAlert('success', 'Karar kaydedildi');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    this.showAlert('danger', result.error || 'Hata oluştu');
                 }
             });
     },

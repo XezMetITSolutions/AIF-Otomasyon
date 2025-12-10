@@ -30,16 +30,25 @@ foreach ($kararlar as $k) {
                             <span class="badge bg-secondary me-2"><?php echo $gundem['sira_no']; ?></span>
                             <strong><?php echo htmlspecialchars($gundem['baslik']); ?></strong>
                         </div>
-                        <button type="button" class="btn btn-sm btn-primary" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#kararEkleModal" 
-                                data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
-                            <i class="fas fa-plus me-1"></i>Karar Ekle
-                        </button>
                     </div>
                     <div class="card-body">
+                        <!-- Inline Karar Ekleme Formu -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted"><i class="fas fa-pen me-1"></i>Hızlı Karar Ekle</label>
+                            <div class="input-group">
+                                <textarea class="form-control quick-decision-input" 
+                                          rows="2" 
+                                          placeholder="Bu gündem maddesiyle ilgili kararı buraya yazın..."
+                                          data-gundem-id="<?php echo $gundem['gundem_id']; ?>"></textarea>
+                                <button class="btn btn-outline-primary quick-decision-btn" type="button" 
+                                        data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
+                                    <i class="fas fa-save me-1"></i>Kaydet
+                                </button>
+                            </div>
+                        </div>
+
                         <?php if (empty($kararlar_grouped[$gundem['gundem_id']])): ?>
-                            <p class="text-muted text-center mb-0 small fst-italic">Bu gündem maddesi için henüz karar alınmamış.</p>
+                            <p class="text-muted text-center mb-0 small fst-italic decisions-empty-msg">Bu gündem maddesi için henüz karar alınmamış.</p>
                         <?php else: ?>
                             <div class="accordion" id="accordionGundem<?php echo $gundem['gundem_id']; ?>">
                                 <?php foreach ($kararlar_grouped[$gundem['gundem_id']] as $k_index => $karar): ?>
