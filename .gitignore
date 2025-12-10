@@ -1,0 +1,24 @@
+# System files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+error_log
+
+# Backups
+*_backup.php
+*_backup.json
+*.bak
+*.old
+*.tmp
+
+# Vendor
+vendor/
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp

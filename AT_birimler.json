@@ -1,0 +1,374 @@
+{
+  "birim_adi": "AT",
+  "toplam_kayit": 46,
+  "birimler": [
+    {
+      "sira_no": 1,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Bölge Başkanı",
+      "kisi_adi_soyadi": "Yasin Cakmak",
+      "mail": "gulsultan33@hotmail.com",
+      "telefon_numarasi": "6601252177"
+    },
+    {
+      "sira_no": 2,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Teşkilatlanma Başkanı",
+      "kisi_adi_soyadi": "Fatih  Demir",
+      "mail": "demirfatih55@hotmail.com",
+      "telefon_numarasi": "6605091355"
+    },
+    {
+      "sira_no": 3,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Eğitim Başkanı",
+      "kisi_adi_soyadi": "Volkan Meral",
+      "mail": "volkanmeral@msn.com",
+      "telefon_numarasi": "6769419393"
+    },
+    {
+      "sira_no": 4,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İrşad Başkanı",
+      "kisi_adi_soyadi": "Ali Gümüş",
+      "mail": "vatan38_hasret@hotmail.com",
+      "telefon_numarasi": "69915064066"
+    },
+    {
+      "sira_no": 5,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Kurumsal İletişim Başkanı",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 6,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İnsani Yardım ve  Sosyal Hizmetler Başkanı",
+      "kisi_adi_soyadi": "Namik Demirkiran",
+      "mail": "cimbiloglu@gmail.com",
+      "telefon_numarasi": "6645347841"
+    },
+    {
+      "sira_no": 7,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Bölge Kadınlar Teşkilatı Başkanı",
+      "kisi_adi_soyadi": "Hatice  Armağan",
+      "mail": "esra-hatic@hotmail.com",
+      "telefon_numarasi": "6502219936"
+    },
+    {
+      "sira_no": 8,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Bölge Gençlik Teskilatı Başkanı",
+      "kisi_adi_soyadi": "Hüseyin Ayhan",
+      "mail": "ayhan.hueseyin_20@gmx.at",
+      "telefon_numarasi": "6643860657"
+    },
+    {
+      "sira_no": 9,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Bölge Kadınlar Gençlik Teşkilatı Başkanı",
+      "kisi_adi_soyadi": "Selda Avcı",
+      "mail": "selda.akts@hotmail.de",
+      "telefon_numarasi": "6765971152"
+    },
+    {
+      "sira_no": 10,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Teftiş Başkanı",
+      "kisi_adi_soyadi": "Halit  Sicimli",
+      "mail": "Halitefe20@outlook.com",
+      "telefon_numarasi": "6769514220"
+    },
+    {
+      "sira_no": 11,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Muhasebe Başkanı",
+      "kisi_adi_soyadi": "Sinan Yiğit",
+      "mail": "y.sinan@gmx.com",
+      "telefon_numarasi": "6508282093"
+    },
+    {
+      "sira_no": 12,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Sekreter",
+      "kisi_adi_soyadi": "Ömer Kutlucan",
+      "mail": "oemkut-neu@yahoo.de",
+      "telefon_numarasi": "4917695873296"
+    },
+    {
+      "sira_no": 13,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İdari İşler Başkanı",
+      "kisi_adi_soyadi": "Hüseyin Ergül",
+      "mail": "erguelwilli@yahoo.de",
+      "telefon_numarasi": "6608282615"
+    },
+    {
+      "sira_no": 14,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Hac-Umre Sey. İşleri Başkanı",
+      "kisi_adi_soyadi": "Hüseyin Akyıldız",
+      "mail": "huseyinakyildiz61@hotmail.com",
+      "telefon_numarasi": "6506685461"
+    },
+    {
+      "sira_no": 15,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Genel Merkez Üyelik Başkanı",
+      "kisi_adi_soyadi": "Raşit Demir",
+      "mail": "rasit57@gmx.at",
+      "telefon_numarasi": "6606653048"
+    },
+    {
+      "sira_no": 16,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Cenaze Hizmetleri Başkanı",
+      "kisi_adi_soyadi": "Hamit Ünye",
+      "mail": "hamitunye_34@gmail.com",
+      "telefon_numarasi": "6763363128"
+    },
+    {
+      "sira_no": 17,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Emlak Başkanı",
+      "kisi_adi_soyadi": "Muhammed Enes Sivrikaya",
+      "mail": "enessivrikaya1@gmail.com",
+      "telefon_numarasi": "6601791081"
+    },
+    {
+      "sira_no": 18,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Tanıtım Kültür Hizmetleri Başkanı",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 19,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İhsan Sohbetleri Başkanı",
+      "kisi_adi_soyadi": "Ali Yaman",
+      "mail": "mertenesyaman1978@gmail.com",
+      "telefon_numarasi": "6606824664"
+    },
+    {
+      "sira_no": 20,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Basın Yayın Başkanı",
+      "kisi_adi_soyadi": "Mahmut Yıldız",
+      "mail": "mmyy1212@hotmail.com",
+      "telefon_numarasi": "6767854903"
+    },
+    {
+      "sira_no": 21,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Başkan Danışmanı",
+      "kisi_adi_soyadi": "Fikret Özcan",
+      "mail": "fikret1975@gmx.at",
+      "telefon_numarasi": "6608122041"
+    },
+    {
+      "sira_no": 22,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "BYK Üyesi",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 23,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Halkla İlişkiler Başkanı",
+      "kisi_adi_soyadi": "Sinan Yiğit",
+      "mail": "y.sinan@gmx.com",
+      "telefon_numarasi": "6508282093"
+    },
+    {
+      "sira_no": 24,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Komisyon Üyesi",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 25,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Teşkilatlanma Başkan Yrd.",
+      "kisi_adi_soyadi": "İbrahim Çetin",
+      "mail": "ibrahimcetin1990@gmail.com",
+      "telefon_numarasi": 6769031999
+    },
+    {
+      "sira_no": 26,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Eğitim Başkan Yrd.",
+      "kisi_adi_soyadi": "Mete Burçak",
+      "mail": "mete.burcak@gmx.at",
+      "telefon_numarasi": 6645311282
+    },
+    {
+      "sira_no": 27,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İrşad Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 28,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Kurumsal İletişim Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 29,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İnsani Yardım ve Sosyal Hizmetler Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 30,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Teftiş Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 31,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Muhasebe Başkan Yrd.",
+      "kisi_adi_soyadi": "Ekrem Gürel",
+      "mail": "pasa-57@hotmail.com",
+      "telefon_numarasi": "6606132156"
+    },
+    {
+      "sira_no": 32,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Hac-Umre Sey. İşleri Başkan Yrd.",
+      "kisi_adi_soyadi": "Melisa Yaylalı,Mehmet Baltaci",
+      "mail": "melsa12339@gmail.com, mehmet.e42@hotmail.de",
+      "telefon_numarasi": "436764616212, 6507876068"
+    },
+    {
+      "sira_no": 33,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Genel Merkez Üyelik Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 34,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Cenaze Hizmetleri Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 35,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İdari İşler Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 36,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Sekreter Yardımcısı",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 37,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Emlak Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 38,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Tanıtım Kültür Hizmetleri Başkan Yrd.",
+      "kisi_adi_soyadi": "Ali Heybeli",
+      "mail": "heybeli09@outlook.com",
+      "telefon_numarasi": "6702028811"
+    },
+    {
+      "sira_no": 39,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İhsan Sohbetleri Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 40,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Basın Yayın Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 41,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Halkla İlişkiler Başkan Yrd.",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 42,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Çocuk Kulübü Sorumlusu",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 43,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Aile Eğitim Sorumlusu",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 44,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "İslami İlimler Sorumlusu",
+      "kisi_adi_soyadi": "Semra Yildiz",
+      "mail": "hayrun_nisa_61@hotmail.com",
+      "telefon_numarasi": "6765086126"
+    },
+    {
+      "sira_no": 45,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Yetiskinler Egitim Kursu Sorumlusu",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    },
+    {
+      "sira_no": 46,
+      "bolge": "A. Arlberg",
+      "gorev_adi": "Ana Sınıf Sorumlusu",
+      "kisi_adi_soyadi": null,
+      "mail": null,
+      "telefon_numarasi": null
+    }
+  ]
+}

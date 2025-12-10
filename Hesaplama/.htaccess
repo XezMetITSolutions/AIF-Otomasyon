@@ -1,0 +1,39 @@
+# Protect sensitive files
+<Files "submissions.json">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+<Files "pageviews.json">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Protect password check files from direct access (only allow AJAX)
+<FilesMatch "^(check_password|verify_session)\.php$">
+    # Allow only POST/GET requests (AJAX)
+    <LimitExcept POST GET>
+        Order Allow,Deny
+        Deny from all
+    </LimitExcept>
+</FilesMatch>
+
+# Protect debug files (uncomment in production)
+# <Files "debug.php">
+#     Order Allow,Deny
+#     Deny from all
+# </Files>
+# <Files "test_setup.php">
+#     Order Allow,Deny
+#     Deny from all
+# </Files>
+
+# Allow PDF access in uploads folder
+<FilesMatch "\.(pdf)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Enable error reporting for debugging (remove in production)
+php_flag display_errors on
+php_value error_reporting E_ALL
