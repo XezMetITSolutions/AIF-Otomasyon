@@ -85,10 +85,13 @@ include __DIR__ . '/../includes/header.php';
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <?php if ($toplanti['durum'] !== 'iptal' && $toplanti['durum'] !== 'tamamlandi'): ?>
-                                                    <button class="btn btn-sm btn-outline-danger" onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')">
-                                                        <i class="fas fa-times-circle"></i>
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" title="İptal Et">
+                                                        <i class="fas fa-ban"></i>
                                                     </button>
                                                 <?php endif; ?>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')" title="Sil">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -175,6 +178,50 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async func
         btn.innerHTML = originalText;
     }
 });
+
+// Delete meeting function
+function deleteMeeting(id, title) {
+    if (!confirm(`⚠️ "${title}" toplantısını kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve tüm ilgili veriler (katılımcılar, gündem, kararlar) silinecektir.`)) {
+        return;
+    }
+    
+    // Second confirmation for safety
+    if (!confirm(`Son uyarı: Toplantıyı silmek istediğinize %100 emin misiniz?`)) {
+        return;
+    }
+    
+    // Show loading
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
+    fetch('/api/delete-meeting.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            toplanti_id: id
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ Hata: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    })
+    .catch(error => {
+        alert('❌ Bir hata oluştu: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    });
+}
 </script>
 
 <?php

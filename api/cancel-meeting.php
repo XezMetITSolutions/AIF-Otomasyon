@@ -3,16 +3,32 @@
  * API Endpoint: Cancel Meeting
  * Cancels a meeting and notifies all participants via email
  */
+// Disable error display for clean JSON output
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// Clean output buffer
+ob_start();
+
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Database.php';
 require_once __DIR__ . '/../classes/Mail.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 
+// Clear any output from includes
+ob_end_clean();
+
 header('Content-Type: application/json');
 
 // Only super admin can cancel meetings
-Middleware::requireSuperAdmin();
+try {
+    Middleware::requireSuperAdmin();
+} catch (Exception $e) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Yetkisiz erişim']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
