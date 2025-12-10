@@ -27,7 +27,7 @@
 
 /* Gündem Kartları */
 .gundem-item {
-    border-left: 4px solid #0d6efd;
+    border-left: 4px solid #2596be;
     transition: box-shadow 0.2s;
 }
 
@@ -46,8 +46,8 @@
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: #e7f1ff;
-    color: #0d6efd;
+    background-color: rgba(37, 150, 190, 0.1);
+    color: #2596be;
 }
 
 /* Oylama Sonuçları */
@@ -82,7 +82,7 @@
 }
 
 .list-group-item:hover {
-    border-left-color: #0d6efd;
+    border-left-color: #2596be;
     background-color: #f8f9fa;
 }
 
@@ -116,8 +116,8 @@
 }
 
 .nav-tabs .nav-link.active {
-    color: #0d6efd;
-    border-bottom-color: #0d6efd;
+    color: #2596be;
+    border-bottom-color: #2596be;
     background-color: transparent;
 }
 
@@ -214,8 +214,8 @@
 
 .form-control:focus,
 .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    border-color: #2596be;
+    box-shadow: 0 0 0 0.2rem rgba(37, 150, 190, 0.25);
 }
 
 /* Badge Stilleri */

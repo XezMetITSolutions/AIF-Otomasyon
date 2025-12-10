@@ -231,7 +231,7 @@ include __DIR__ . '/../includes/header.php';
 <style>
 /* Modern Gradient Header */
 .hero-header {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: linear-gradient(135deg, #2596be 0%, #176B8A 100%);
     color: white;
     padding: 2.5rem 2rem;
     border-radius: 20px;
@@ -307,9 +307,9 @@ include __DIR__ . '/../includes/header.php';
 }
 
 .nav-pills-glass .nav-link.active {
-    background: #1e3c72;
+    background: #2596be;
     color: white;
-    box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+    box-shadow: 0 4px 12px rgba(37, 150, 190, 0.3);
 }
 
 /* Glass Cards overrides */
