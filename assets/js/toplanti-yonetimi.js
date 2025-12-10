@@ -67,18 +67,6 @@ const ToplantiYonetimi = {
                 this.kararSil(kararId);
             });
         });
-
-        // Tab Değişimi Manuel Tetikleme (Bootstrap Conflict Fix)
-        document.querySelectorAll('a[data-bs-toggle="pill"]').forEach(tabEl => {
-            tabEl.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (typeof bootstrap !== 'undefined') {
-                    const target = e.target.closest('a'); // Icon'a tıklanırsa a'yı bul
-                    const tab = new bootstrap.Tab(target);
-                    tab.show();
-                }
-            });
-        });
     },
 
     handleHashNavigation: function () {
