@@ -133,7 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = 'Bilgiler güncellendi' . ($sira > 1 ? ' ve otomatik gündem oluşturuldu.' : '.');
             header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
             exit;
-        } else {
+        }
+    } catch (Exception $e) {
         $msg = $e->getMessage();
         // Self-Healing for missing columns
         if (strpos($msg, 'Unknown column') !== false) {
