@@ -6,15 +6,15 @@
 const ToplantiYonetimi = {
     toplanti_id: null,
 
-    init: function(toplantiId) {
+    init: function (toplantiId) {
         this.toplanti_id = toplantiId;
         this.initEventListeners();
     },
 
-    initEventListeners: function() {
+    initEventListeners: function () {
         // Katılımcı İşlemleri
         document.getElementById('katilimciEkleBtn')?.addEventListener('click', () => this.katilimciEkle());
-        
+
         document.querySelectorAll('.katilim-durum-select').forEach(select => {
             select.addEventListener('change', (e) => {
                 const katilimciId = e.target.dataset.katilimciId;
@@ -65,11 +65,25 @@ const ToplantiYonetimi = {
                 this.kararSil(kararId);
             });
         });
+
+        // Görüşme Notu İşlemleri
+        document.querySelectorAll('.gorusme-notu-kaydet-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                const gundemId = btn.dataset.gundemId;
+                // Find textarea in same container
+                const container = btn.closest('.container-gorusme-notu');
+                const textarea = container.querySelector('.gorusme-notu-input');
+                const notlar = textarea.value.trim();
+
+                this.gorusmeNotuKaydet(gundemId, notlar, btn);
+            });
+        });
     },
 
     // ==================== KATILIMCI İŞLEMLERİ ====================
-    
-    katilimciEkle: function() {
+
+    katilimciEkle: function () {
         const kullaniciId = document.getElementById('yeni_katilimci_id').value;
         const katilimDurumu = document.getElementById('yeni_katilim_durumu').value;
 
@@ -96,7 +110,7 @@ const ToplantiYonetimi = {
             });
     },
 
-    katilimDurumuGuncelle: function(katilimciId, durum) {
+    katilimDurumuGuncelle: function (katilimciId, durum) {
         const data = {
             action: 'update',
             katilimci_id: katilimciId,
@@ -113,7 +127,7 @@ const ToplantiYonetimi = {
             });
     },
 
-    katilimciSil: function(katilimciId, ad) {
+    katilimciSil: function (katilimciId, ad) {
         if (!confirm(`${ad} isimli katılımcıyı silmek istediğinize emin misiniz?`)) {
             return;
         }
@@ -136,7 +150,7 @@ const ToplantiYonetimi = {
 
     // ==================== GÜNDEM İŞLEMLERİ ====================
 
-    gundemEkle: function() {
+    gundemEkle: function () {
         const siraNo = document.getElementById('gundem_sira_no').value;
         const baslik = document.getElementById('gundem_baslik').value.trim();
         const aciklama = document.getElementById('gundem_aciklama').value.trim();
@@ -167,7 +181,7 @@ const ToplantiYonetimi = {
             });
     },
 
-    gundemDuzenleModalAc: function(gundemId) {
+    gundemDuzenleModalAc: function (gundemId) {
         fetch(`/admin/api-toplanti-gundem.php?action=get&gundem_id=${gundemId}`)
             .then(response => response.json())
             .then(result => {
@@ -187,7 +201,7 @@ const ToplantiYonetimi = {
             });
     },
 
-    gundemGuncelle: function() {
+    gundemGuncelle: function () {
         const gundemId = document.getElementById('edit_gundem_id').value;
         const siraNo = document.getElementById('edit_gundem_sira_no').value;
         const baslik = document.getElementById('edit_gundem_baslik').value.trim();
@@ -219,7 +233,7 @@ const ToplantiYonetimi = {
             });
     },
 
-    gundemSil: function(gundemId) {
+    gundemSil: function (gundemId) {
         if (!confirm('Bu gündem maddesini silmek istediğinize emin misiniz?')) {
             return;
         }
@@ -240,9 +254,33 @@ const ToplantiYonetimi = {
             });
     },
 
+    gorusmeNotuKaydet: function (gundemId, notlar, btn) {
+        // Loading state
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...';
+        btn.disabled = true;
+
+        const data = {
+            gundem_id: gundemId,
+            notlar: notlar
+        };
+
+        this.apiRequest('/api/update-agenda-note.php', data)
+            .then(result => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+
+                if (result.success) {
+                    this.showAlert('success', 'Görüşme notu kaydedildi');
+                } else {
+                    this.showAlert('danger', result.message || 'Hata oluştu');
+                }
+            });
+    },
+
     // ==================== KARAR İŞLEMLERİ ====================
 
-    kararEkle: function() {
+    kararEkle: function () {
         const kararNo = document.getElementById('karar_no').value.trim();
         const gundemId = document.getElementById('karar_gundem_id').value;
         const baslik = document.getElementById('karar_baslik').value.trim();
@@ -283,12 +321,12 @@ const ToplantiYonetimi = {
             });
     },
 
-    kararDuzenleModalAc: function(kararId) {
+    kararDuzenleModalAc: function (kararId) {
         // TODO: Implement karar düzenleme modal
         this.showAlert('info', 'Karar düzenleme özelliği yakında eklenecek');
     },
 
-    kararSil: function(kararId) {
+    kararSil: function (kararId) {
         if (!confirm('Bu kararı silmek istediğinize emin misiniz?')) {
             return;
         }
@@ -311,7 +349,7 @@ const ToplantiYonetimi = {
 
     // ==================== YARDIMCI FONKSİYONLAR ====================
 
-    apiRequest: function(url, data) {
+    apiRequest: function (url, data) {
         return fetch(url, {
             method: 'POST',
             headers: {
@@ -319,15 +357,15 @@ const ToplantiYonetimi = {
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
-        .catch(error => {
-            console.error('Error:', error);
-            this.showAlert('danger', 'Bir hata oluştu');
-            return { success: false, error: 'Network error' };
-        });
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Error:', error);
+                this.showAlert('danger', 'Bir hata oluştu');
+                return { success: false, error: 'Network error' };
+            });
     },
 
-    showAlert: function(type, message, duration = 3000) {
+    showAlert: function (type, message, duration = 3000) {
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
         alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
@@ -344,7 +382,7 @@ const ToplantiYonetimi = {
 };
 
 // Sayfa yüklendiğinde başlat
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const toplantiIdElement = document.querySelector('[data-toplanti-id]');
     if (toplantiIdElement) {
         const toplantiId = toplantiIdElement.dataset.toplantiId;

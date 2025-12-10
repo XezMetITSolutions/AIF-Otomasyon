@@ -25,7 +25,24 @@
                                     <?php if ($gundem['aciklama']): ?>
                                         <p class="text-muted mb-2"><?php echo nl2br(htmlspecialchars($gundem['aciklama'])); ?></p>
                                     <?php endif; ?>
-                                    <div class="d-flex align-items-center gap-3">
+                                    
+                                    <!-- Görüşme Notları Alanı -->
+                                    <div class="mt-3 p-3 bg-light rounded container-gorusme-notu">
+                                        <label class="form-label text-muted small fw-bold">
+                                            <i class="fas fa-sticky-note me-1"></i>Görüşme Notları
+                                        </label>
+                                        <textarea class="form-control form-control-sm gorusme-notu-input mb-2" 
+                                                  rows="2" 
+                                                  placeholder="Bu gündem maddesiyle ilgili görüşme notlarını buraya yazabilirsiniz..."
+                                                  data-gundem-id="<?php echo $gundem['gundem_id']; ?>"><?php echo htmlspecialchars($gundem['gorusme_notlari'] ?? ''); ?></textarea>
+                                        <div class="text-end">
+                                            <button type="button" class="btn btn-sm btn-outline-success gorusme-notu-kaydet-btn" data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
+                                                <i class="fas fa-save me-1"></i>Notu Kaydet
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-3 mt-3">
                                         <span class="badge bg-<?php 
                                             echo $gundem['durum'] === 'karara_baglandi' ? 'success' : 
                                                 ($gundem['durum'] === 'gorusuluyor' ? 'warning' : 

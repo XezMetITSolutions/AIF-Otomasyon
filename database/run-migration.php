@@ -14,7 +14,7 @@ $db = Database::getInstance();
 
 try {
     // Read SQL file
-    $sqlFile = __DIR__ . '/migrations/004_meeting_management_system.sql';
+    $sqlFile = __DIR__ . '/migrations/005_add_notes_to_agenda.sql';
     
     if (!file_exists($sqlFile)) {
         throw new Exception("Migration file not found: $sqlFile");
