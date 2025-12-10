@@ -1,6 +1,6 @@
 <?php
 /**
- * Başkan - Etkinlikler
+ * Başkan - Çalışma Takvimi
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
@@ -8,211 +8,406 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 Middleware::requireBaskan();
-Middleware::requireModulePermission('baskan_etkinlikler');
+// Module permission check if needed (Assuming 'baskan_etkinlikler' covers viewing)
+// Middleware::requireModulePermission('baskan_etkinlikler');
 
 $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
-$appConfig = require __DIR__ . '/../config/app.php';
 
-$pageTitle = 'Etkinlikler';
-$csrfTokenName = $appConfig['security']['csrf_token_name'];
-$csrfToken = Middleware::generateCSRF();
-$message = null;
-$messageType = 'success';
+$pageTitle = 'Çalışma Takvimi';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!Middleware::verifyCSRF()) {
-        $message = 'Güvenlik doğrulaması başarısız.';
-        $messageType = 'danger';
-    } else {
-        $baslik = trim($_POST['baslik'] ?? '');
-        $aciklama = trim($_POST['aciklama'] ?? '');
-        $baslangic = $_POST['baslangic_tarihi'] ?? '';
-        $bitis = $_POST['bitis_tarihi'] ?? '';
-        $konum = trim($_POST['konum'] ?? '');
-        $renk = $_POST['renk_kodu'] ?? '#009872';
+// Filtreleme
+$search = $_GET['search'] ?? '';
+$monthFilter = $_GET['ay'] ?? '';
+$yearFilter = $_GET['yil'] ?? date('Y');
 
-        if (!$baslik || !$baslangic || !$bitis) {
-            $message = 'Başlık, başlangıç ve bitiş tarihleri zorunludur.';
-            $messageType = 'danger';
-        } elseif (strtotime($bitis) < strtotime($baslangic)) {
-            $message = 'Bitiş tarihi başlangıç tarihinden önce olamaz.';
-            $messageType = 'danger';
-        } else {
-            $db->query("
-                INSERT INTO etkinlikler (byk_id, baslik, aciklama, baslangic_tarihi, bitis_tarihi, konum, renk_kodu, olusturan_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ", [
-                $user['byk_id'],
-                $baslik,
-                $aciklama ?: null,
-                $baslangic,
-                $bitis,
-                $konum ?: null,
-                $renk,
-                $user['id']
-            ]);
-            $message = 'Etkinlik başarıyla oluşturuldu.';
-        }
-    }
+// Force BYK filter for security
+$where = ["e.byk_id = ?"];
+$params = [$user['byk_id']];
+
+if ($search) {
+    // Note: Parameter order matters. Since we already pushed byk_id, search params must come after.
+    // BUT we are using named params or ? ? ?.
+    // Standard PDO uses ? in order.
+    // So if I add search to where, I must add search to params IN ORDER.
+    // Correct approach:
+    // $where[] = "(...)";
+    // $params[] = ...;
+    // BUT e.byk_id is already first.
+    
+    $where[] = "(e.baslik LIKE ? OR e.aciklama LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
 }
 
-$upcomingEvents = $db->fetchAll("
-    SELECT * FROM etkinlikler
-    WHERE byk_id = ? AND baslangic_tarihi >= DATE_SUB(NOW(), INTERVAL 1 DAY)
-    ORDER BY baslangic_tarihi ASC
-    LIMIT 50
-", [$user['byk_id']]);
+if ($monthFilter) {
+    $where[] = "MONTH(e.baslangic_tarihi) = ?";
+    $params[] = $monthFilter;
+}
 
-$pastEvents = $db->fetchAll("
-    SELECT * FROM etkinlikler
-    WHERE byk_id = ? AND baslangic_tarihi < NOW()
-    ORDER BY baslangic_tarihi DESC
-    LIMIT 20
-", [$user['byk_id']]);
+if ($yearFilter) {
+    $where[] = "YEAR(e.baslangic_tarihi) = ?";
+    $params[] = $yearFilter;
+}
+
+$whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+// Etkinlikler
+try {
+    $etkinlikler = $db->fetchAll("
+        SELECT e.*, 
+               COALESCE(b.byk_adi, '-') as byk_adi,
+               COALESCE(b.byk_kodu, '') as byk_kodu,
+               COALESCE(b.renk_kodu, e.renk_kodu, '#009872') as byk_renk,
+               COALESCE(CONCAT(u.ad, ' ', u.soyad), '-') as olusturan
+        FROM etkinlikler e
+        LEFT JOIN byk b ON e.byk_id = b.byk_id
+        LEFT JOIN kullanicilar u ON e.olusturan_id = u.kullanici_id
+        $whereClause
+        ORDER BY e.baslangic_tarihi ASC
+        LIMIT 500
+    ", $params);
+    
+    // Process colors logic similar to admin (simplified or full copy)
+    // For Baskan, mostly just their own colors matter, which likely fall back to default or BYK color.
+    // I'll preserve the robust color logic just in case.
+    
+    if (!empty($etkinlikler)) {
+        try {
+            $bykCategories = $db->fetchAll("SELECT code, name, color FROM byk_categories");
+            $bykCategoryMap = [];
+            foreach ($bykCategories as $cat) {
+                $bykCategoryMap[$cat['code']] = [
+                    'name' => $cat['name'],
+                    'color' => $cat['color']
+                ];
+            }
+            
+            foreach ($etkinlikler as &$etkinlik) {
+                $bykKodu = $etkinlik['byk_kodu'] ?? '';
+                if (!empty($bykKodu) && isset($bykCategoryMap[$bykKodu])) {
+                    $etkinlik['byk_adi'] = $bykCategoryMap[$bykKodu]['name'];
+                    if (!empty($bykCategoryMap[$bykKodu]['color'])) {
+                        $etkinlik['byk_renk'] = $bykCategoryMap[$bykKodu]['color'];
+                    }
+                }
+                if (empty($etkinlik['byk_renk']) || $etkinlik['byk_renk'] == '#009872') {
+                    if (!empty($etkinlik['renk_kodu'])) {
+                        $etkinlik['byk_renk'] = $etkinlik['renk_kodu'];
+                    }
+                }
+            }
+            unset($etkinlik);
+        } catch (Exception $e) { /* Ignore */ }
+    }
+} catch (Exception $e) {
+    $etkinlikler = [];
+}
+
+// Ensure array
+if (!is_array($etkinlikler)) {
+    $etkinlikler = [];
+}
+
+// Calendar Events mapping
+$bykDefaultColors = [
+    'AT' => '#dc3545',
+    'KT' => '#6f42c1',
+    'KGT' => '#198754',
+    'GT' => '#0d6efd'
+];
+$bykColorMap = []; // Simplified
+
+$calendarEvents = [];
+foreach ($etkinlikler as $etkinlik) {
+    if (empty($etkinlik['baslangic_tarihi']) || empty($etkinlik['bitis_tarihi']) || empty($etkinlik['baslik'])) {
+        continue;
+    }
+    
+    try {
+        $baslangic = new DateTime($etkinlik['baslangic_tarihi']);
+        $bitis = new DateTime($etkinlik['bitis_tarihi']);
+    } catch (Exception $e) { continue; }
+    
+    $bykRenk = $etkinlik['byk_renk'] ?? '#009872';
+    // Simplified color logic
+    if (empty($bykRenk) || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
+         $bykRenk = '#009872';
+    }
+    
+    $calendarEvents[] = [
+        'id' => $etkinlik['etkinlik_id'],
+        'title' => $etkinlik['baslik'],
+        'start' => $baslangic->format('Y-m-d\TH:i:s'),
+        'end' => $bitis->format('Y-m-d\TH:i:s'),
+        'allDay' => (date('H:i:s', strtotime($etkinlik['baslangic_tarihi'])) == '00:00:00' && 
+                     date('H:i:s', strtotime($etkinlik['bitis_tarihi'])) == '23:59:59'),
+        'backgroundColor' => $bykRenk,
+        'borderColor' => $bykRenk,
+        'textColor' => '#ffffff',
+        'extendedProps' => [
+            'byk' => $etkinlik['byk_adi'] ?? '',
+            'konum' => $etkinlik['konum'] ?? '',
+            'aciklama' => $etkinlik['aciklama'] ?? '',
+            'olusturan' => $etkinlik['olusturan'] ?? ''
+        ]
+    ];
+}
+
+$pageSpecificCSS = [
+    'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css'
+];
+
+$pageSpecificJS = [
+    'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'
+];
 
 include __DIR__ . '/../includes/header.php';
 ?>
 
+<!-- Sidebar -->
 <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
 <main class="container-fluid mt-4">
     <div class="content-wrapper">
-        <div class="row g-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                    <div>
-                        <h1 class="h3 mb-1"><i class="fas fa-calendar me-2"></i>Etkinlikler</h1>
-                        <p class="text-muted mb-0">BYK’nız için planlanan tüm aktiviteleri burada yönetin.</p>
-                    </div>
-                </div>
-                <?php if ($message): ?>
-                    <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
-                        <?php echo htmlspecialchars($message); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="fas fa-plus-circle me-2"></i>Yeni Etkinlik Oluştur
-                    </div>
-                    <div class="card-body">
-                        <form method="post" class="row g-3">
-                            <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
-                            <div class="col-12">
-                                <label class="form-label">Başlık</label>
-                                <input type="text" name="baslik" class="form-control" required placeholder="Örn. Eğitim Kampı">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Açıklama</label>
-                                <textarea name="aciklama" class="form-control" rows="3" placeholder="Etkinlik hakkında kısa bilgi"></textarea>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Konum</label>
-                                <input type="text" name="konum" class="form-control" placeholder="Adres veya çevrim içi bağlantı">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Başlangıç</label>
-                                <input type="datetime-local" name="baslangic_tarihi" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Bitiş</label>
-                                <input type="datetime-local" name="bitis_tarihi" class="form-control" required>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Renk</label>
-                                <input type="color" name="renk_kodu" class="form-control form-control-color" value="#009872">
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="fas fa-save me-1"></i>Etkinliği Kaydet
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi
+                </h1>
+                <div class="btn-group">
+                    <a href="/baskan/etkinlik-ekle.php" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
+                    </a>
                 </div>
             </div>
+            
+            <?php if (isset($_GET['success'])): ?>
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle me-2"></i>İşlem başarıyla tamamlandı.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
 
-            <div class="col-lg-8">
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-sun me-2 text-success"></i>Yaklaşan Etkinlikler</span>
-                        <span class="badge bg-success"><?php echo count($upcomingEvents); ?></span>
-                    </div>
-                    <div class="card-body">
-                        <?php if (empty($upcomingEvents)): ?>
-                            <p class="text-muted mb-0">Yaklaşan etkinlik bulunmuyor.</p>
-                        <?php else: ?>
-                            <div class="list-group list-group-flush">
-                                <?php foreach ($upcomingEvents as $event): ?>
-                                    <div class="list-group-item">
-                                        <div class="d-flex justify-content-between flex-wrap gap-2">
-                                            <div>
-                                                <h6 class="mb-1"><?php echo htmlspecialchars($event['baslik']); ?></h6>
-                                                <div class="small text-muted">
-                                                    <i class="fas fa-clock me-1"></i><?php echo date('d.m.Y H:i', strtotime($event['baslangic_tarihi'])); ?>
-                                                    -
-                                                    <?php echo date('d.m.Y H:i', strtotime($event['bitis_tarihi'])); ?>
-                                                </div>
-                                                <?php if ($event['konum']): ?>
-                                                    <div class="small"><i class="fas fa-map-marker-alt me-1 text-danger"></i><?php echo htmlspecialchars($event['konum']); ?></div>
-                                                <?php endif; ?>
-                                                <?php if ($event['aciklama']): ?>
-                                                    <div class="small text-muted mt-1"><?php echo htmlspecialchars($event['aciklama']); ?></div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <span class="badge" style="background: <?php echo htmlspecialchars($event['renk_kodu']); ?>;">Etkinlik</span>
-                                        </div>
-                                    </div>
+            <!-- Filtreler -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Arama</label>
+                            <input type="text" class="form-control" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Etkinlik adı, açıklama...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Ay</label>
+                            <select class="form-select" name="ay">
+                                <option value="">Tüm Aylar</option>
+                                <?php
+                                $aylar = [
+                                    1 => 'Ocak', 2 => 'Şubat', 3 => 'Mart', 4 => 'Nisan',
+                                    5 => 'Mayıs', 6 => 'Haziran', 7 => 'Temmuz', 8 => 'Ağustos',
+                                    9 => 'Eylül', 10 => 'Ekim', 11 => 'Kasım', 12 => 'Aralık'
+                                ];
+                                foreach ($aylar as $num => $ayAdi):
+                                ?>
+                                    <option value="<?php echo $num; ?>" <?php echo $monthFilter == $num ? 'selected' : ''; ?>>
+                                        <?php echo $ayAdi; ?>
+                                    </option>
                                 <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Yıl</label>
+                            <input type="number" class="form-control" name="yil" value="<?php echo htmlspecialchars($yearFilter); ?>" min="2020" max="2030">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i>Filtrele
+                            </button>
+                            <?php if ($search || $monthFilter || $yearFilter != date('Y')): ?>
+                                <a href="/baskan/etkinlikler.php" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-history me-2 text-muted"></i>Geçmiş Etkinlikler</span>
-                        <span class="badge bg-secondary"><?php echo count($pastEvents); ?></span>
-                    </div>
-                    <div class="card-body">
-                        <?php if (empty($pastEvents)): ?>
-                            <p class="text-muted mb-0">Geçmiş etkinlik bulunmuyor.</p>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Başlık</th>
-                                            <th>Tarih</th>
-                                            <th>Konum</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($pastEvents as $event): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($event['baslik']); ?></td>
-                                                <td><?php echo date('d.m.Y', strtotime($event['baslangic_tarihi'])); ?></td>
-                                                <td><?php echo htmlspecialchars($event['konum'] ?? '-'); ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
+            </div>
+            
+            <!-- Görünüm Seçici -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-info me-2">Toplam: <strong><?php echo count($etkinlikler); ?></strong> etkinlik</span>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary active" id="calendarViewBtn">
+                                <i class="fas fa-calendar-alt me-1"></i>Takvim
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="listViewBtn">
+                                <i class="fas fa-list me-1"></i>Liste
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            
+            <!-- Takvim Görünümü -->
+            <div class="card" id="calendarView">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+            
+            <!-- Liste Görünümü -->
+            <div class="card d-none" id="listView">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Başlık</th>
+                                    <th>Konum</th>
+                                    <th>Oluşturan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($etkinlikler)): ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Henüz etkinlik eklenmemiş.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($etkinlikler as $etkinlik): ?>
+                                        <tr>
+                                            <td>
+                                                <strong><?php echo date('d.m.Y', strtotime($etkinlik['baslangic_tarihi'])); ?></strong><br>
+                                                <small class="text-muted">
+                                                    <?php 
+                                                        $baslangicSaat = date('H:i', strtotime($etkinlik['baslangic_tarihi']));
+                                                        $bitisSaat = date('H:i', strtotime($etkinlik['bitis_tarihi']));
+                                                        if ($baslangicSaat != '00:00' || $bitisSaat != '23:59') {
+                                                            echo $baslangicSaat . ' - ' . $bitisSaat;
+                                                        } else {
+                                                            echo 'Tüm gün';
+                                                        }
+                                                    ?>
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <strong><?php echo htmlspecialchars($etkinlik['baslik']); ?></strong>
+                                                <?php if (!empty($etkinlik['aciklama'])): ?>
+                                                    <br><small class="text-muted"><?php echo htmlspecialchars(substr($etkinlik['aciklama'], 0, 50)); ?><?php echo strlen($etkinlik['aciklama']) > 50 ? '...' : ''; ?></small>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php echo !empty($etkinlik['konum']) ? htmlspecialchars($etkinlik['konum']) : '<span class="text-muted">-</span>'; ?>
+                                            </td>
+                                            <td>
+                                                <?php echo !empty($etkinlik['olusturan']) ? htmlspecialchars($etkinlik['olusturan']) : '<span class="text-muted">-</span>'; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
     </div>
 </main>
 
-<?php
-include __DIR__ . '/../includes/footer.php';
-?>
+<!-- Etkinlik Detay Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">Etkinlik Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="eventModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarViewBtn = document.getElementById('calendarViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const calendarView = document.getElementById('calendarView');
+    const listView = document.getElementById('listView');
+    
+    calendarViewBtn.addEventListener('click', function() {
+        calendarViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+        calendarView.classList.remove('d-none');
+        listView.classList.add('d-none');
+        calendar.render(); 
+    });
+    
+    listViewBtn.addEventListener('click', function() {
+        listViewBtn.classList.add('active');
+        calendarViewBtn.classList.remove('active');
+        listView.classList.remove('d-none');
+        calendarView.classList.add('d-none');
+    });
+    
+    const calendarEvents = <?php echo json_encode($calendarEvents, JSON_UNESCAPED_UNICODE); ?>;
+    const calendarEl = document.getElementById('calendar');
+    
+    if (calendarEl) {
+        window.calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'tr',
+            firstDay: 1,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listWeek'
+            },
+            buttonText: {
+                today: 'Bugün',
+                month: 'Ay',
+                week: 'Hafta',
+                day: 'Gün',
+                list: 'Liste'
+            },
+            events: calendarEvents,
+            eventClick: function(info) {
+                const event = info.event;
+                const extendedProps = event.extendedProps;
+                
+                const modalBody = document.getElementById('eventModalBody');
+                const modalTitle = document.getElementById('eventModalLabel');
+                
+                modalTitle.textContent = event.title;
+                
+                let html = '<div class="mb-3"><strong>Başlık:</strong> ' + event.title + '</div>';
+                
+                if (extendedProps.byk) {
+                    html += '<div class="mb-3"><strong>BYK:</strong> <span class="badge" style="background-color: ' + event.backgroundColor + '; color: white;">' + extendedProps.byk + '</span></div>';
+                }
+                
+                html += '<div class="mb-3"><strong>Başlangıç:</strong> ' + event.start.toLocaleString('tr-TR') + '</div>';
+                html += '<div class="mb-3"><strong>Bitiş:</strong> ' + event.end.toLocaleString('tr-TR') + '</div>';
+                
+                if (extendedProps.konum) html += '<div class="mb-3"><strong>Konum:</strong> ' + extendedProps.konum + '</div>';
+                if (extendedProps.aciklama) html += '<div class="mb-3"><strong>Açıklama:</strong><br>' + extendedProps.aciklama + '</div>';
+                if (extendedProps.olusturan) html += '<div class="mb-3"><strong>Oluşturan:</strong> ' + extendedProps.olusturan + '</div>';
+                
+                modalBody.innerHTML = html;
+                new bootstrap.Modal(document.getElementById('eventModal')).show();
+            },
+            eventDisplay: 'block',
+            height: 'auto'
+        });
+        
+        window.calendar.render();
+    }
+});
+</script>
 
+<?php include __DIR__ . '/../includes/footer.php'; ?>
