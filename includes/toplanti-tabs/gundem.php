@@ -51,11 +51,65 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- Notlar ve Sorumlu Atama Bölümü -->
+                            <div class="mt-3 pt-3 border-top">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0 fw-bold"><i class="fas fa-sticky-note me-1 text-warning"></i>Notlar & Görevliler</label>
+                                    <small class="text-muted">Kişi atamak için <strong>@isim</strong> yazın.</small>
+                                </div>
+                                <div class="position-relative">
+                                    <textarea class="form-control gundem-not-input" 
+                                              data-gundem-id="<?php echo $gundem['gundem_id']; ?>"
+                                              data-sorumlu-id="<?php echo $gundem['sorumlu_id'] ?? ''; ?>"
+                                              rows="2" 
+                                              placeholder="Toplantı notlarını buraya girin..."><?php echo htmlspecialchars($gundem['notlar'] ?? ''); ?></textarea>
+                                    
+                                    <!-- Sorumlu Göstergesi -->
+                                    <div class="mt-2 sorumlu-badge-container" id="sorumlu-container-<?php echo $gundem['gundem_id']; ?>">
+                                        <?php if (!empty($gundem['sorumlu_id'])): ?>
+                                            <?php 
+                                            // Sorumlu ismini bul (Performance note: scanning array is fine for small N)
+                                            $sorumlu_ad = 'Bilinmeyen Kişi';
+                                            foreach ($katilimcilar as $k) {
+                                                if ($k['kullanici_id'] == $gundem['sorumlu_id']) {
+                                                    $sorumlu_ad = $k['ad'] . ' ' . $k['soyad'];
+                                                    break;
+                                                }
+                                            }
+                                            ?>
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-user-tag me-1"></i>Sorumlu: <?php echo htmlspecialchars($sorumlu_ad); ?>
+                                                <i class="fas fa-times ms-2 pointer sorumlu-sil-btn" onclick="ToplantiYonetimi.sorumluSil(<?php echo $gundem['gundem_id']; ?>)"></i>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <!-- Auto-complete List Container -->
+                                    <div class="mention-list list-group position-absolute shadow-lg" 
+                                         id="mention-list-<?php echo $gundem['gundem_id']; ?>" 
+                                         style="display:none; z-index: 1000; width: 250px; max-height: 200px; overflow-y: auto;">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
-        <?php endif; ?>
+            
+            <!-- Global JS Variables for Participants -->
+            <script>
+                const TOKEN_KATILIMCILAR = <?php 
+                    $js_katilimcilar = [];
+                    foreach ($katilimcilar as $k) {
+                        $js_katilimcilar[] = [
+                            'id' => $k['kullanici_id'],
+                            'name' => $k['ad'] . ' ' . $k['soyad'],
+                            'email' => $k['email']
+                        ];
+                    }
+                    echo json_encode($js_katilimcilar);
+                ?>;
+            </script>
     </div>
 </div>
 
