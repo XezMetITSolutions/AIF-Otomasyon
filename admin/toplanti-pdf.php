@@ -8,7 +8,9 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 require_once __DIR__ . '/../vendor/autoload.php'; // TCPDF için
 
-Middleware::requireSuperAdmin();
+Middleware::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_BASKAN]);
+$auth = new Auth();
+$user = $auth->getUser();
 
 $db = Database::getInstance();
 $toplanti_id = $_GET['id'] ?? null;
@@ -25,6 +27,10 @@ $toplanti = $db->fetch("
     INNER JOIN kullanicilar u ON t.olusturan_id = u.kullanici_id
     WHERE t.toplanti_id = ?
 ", [$toplanti_id]);
+
+if ($user['role'] === Auth::ROLE_BASKAN && $toplanti['byk_id'] != $user['byk_id']) {
+    die('Erişim reddedildi: Bu toplantının raporunu görüntüleme yetkiniz yok.');
+}
 
 if (!$toplanti) {
     die('Toplantı bulunamadı');
