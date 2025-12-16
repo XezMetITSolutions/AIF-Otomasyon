@@ -141,7 +141,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Gündem Maddesi <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="edit_gundem_baslik" required>
+                        <input type="text" class="form-control" id="edit_gundem_baslik" placeholder="Örn: Bütçe Görüşmeleri" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Açıklama</label>
