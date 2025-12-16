@@ -6,5 +6,5 @@ return [
     'port' => 587,
     'secure' => 'tls', // tls or ssl
     'from_email' => 'sitzung@islamischefoederation.at',
-    'from_name' => 'AIF Otomasyon'
+    'from_name' => 'AİF Otomasyon'
 ];
