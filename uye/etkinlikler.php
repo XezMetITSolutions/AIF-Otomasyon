@@ -241,6 +241,9 @@ include __DIR__ . '/../includes/header.php';
                 <h1 class="h3 mb-0 text-dark fw-bold">
                     <i class="fas fa-calendar-alt me-2 text-primary"></i>Etkinlik Takvimi
                 </h1>
+                <a href="/api/export-calendar.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success">
+                    <i class="fas fa-file-export me-2"></i>Takvime Aktar
+                </a>
             </div>
             
             <!-- Filtreler -->

@@ -276,6 +276,9 @@ include __DIR__ . '/../includes/header.php';
                     <i class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi
                 </h1>
                 <div class="btn-group">
+                    <a href="/api/export-calendar.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success">
+                        <i class="fas fa-file-export me-2"></i>Takvime Aktar
+                    </a>
                     <a href="/baskan/etkinlik-ekle.php" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
                     </a>
