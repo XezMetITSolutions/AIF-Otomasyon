@@ -22,9 +22,52 @@
             </div>
 
             <div class="mb-3">
-                <label for="aciklama" class="form-label">Açıklama</label>
+                <label for="aciklama" class="form-label">Gündem</label>
                 <textarea class="form-control" id="aciklama" name="aciklama" rows="3"><?php echo htmlspecialchars($toplanti['aciklama'] ?? ''); ?></textarea>
             </div>
+            
+            <script>
+            // Auto-bullet for aciklama
+            document.getElementById('aciklama').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    
+                    const cursorPosition = this.selectionStart;
+                    const currentValue = this.value;
+                    const beforeCursor = currentValue.substring(0, cursorPosition);
+                    const afterCursor = currentValue.substring(cursorPosition);
+                    
+                    // Check if current line starts with bullet
+                    const lastLineIndex = beforeCursor.lastIndexOf('\n');
+                    const lastLine = beforeCursor.substring(lastLineIndex + 1);
+                    const bulletMatch = lastLine.match(/^(\s*)([-*•>])\s*/);
+                    
+                    let insertion = '\n';
+                    
+                    if (bulletMatch) {
+                        insertion += bulletMatch[1] + bulletMatch[2] + ' ';
+                    } else if (lastLine.trim().length > 0) {
+                        // If no bullet but line exists, start new list? OR just newline
+                        // User requirement: "her satırda yeni aufzählungszeichen"
+                        // Force bullet if none exists
+                         insertion += '• ';
+                    } else {
+                         insertion += '• ';
+                    }
+                    
+                    this.value = beforeCursor + insertion + afterCursor;
+                    this.selectionStart = this.selectionEnd = cursorPosition + insertion.length;
+                    
+                    // Scroll to bottom/cursor
+                    this.blur();
+                    this.focus();
+                }
+            });
+            // Init with bullet if empty
+            if (document.getElementById('aciklama').value.trim() === '') {
+                 document.getElementById('aciklama').value = '• ';
+            }
+            </script>
 
             <div class="row">
                 <div class="col-md-12 mb-3">
