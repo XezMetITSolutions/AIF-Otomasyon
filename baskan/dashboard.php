@@ -32,27 +32,28 @@ $stats = [
         FROM kullanicilar 
         WHERE byk_id = ? AND aktif = 1 AND rol_id = (SELECT rol_id FROM roller WHERE rol_adi = 'uye')
     ", [$user['byk_id']])['count'],
-    'toplam_etkinlik' => $db->fetch("
+    'toplam_etkinlik' => $auth->hasModulePermission('baskan_etkinlikler') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM etkinlikler 
-        WHERE byk_id = ? AND baslangic_tarihi >= CURDATE()
-    ", [$user['byk_id']])['count'],
-    'toplam_toplanti' => $db->fetch("
+        WHERE byk_id = ? AND baslangic_tarihi >= CURDATE() 
+        AND baslangic_tarihi <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))
+    ", [$user['byk_id']])['count'] : 0,
+    'toplam_toplanti' => $auth->hasModulePermission('baskan_toplantilar') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM toplantilar 
         WHERE byk_id = ? AND durum = 'planlandi'
-    ", [$user['byk_id']])['count'],
-    'bekleyen_izin' => $db->fetch("
+    ", [$user['byk_id']])['count'] : 0,
+    'bekleyen_izin' => $auth->hasModulePermission('baskan_izin_talepleri') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM izin_talepleri it
         INNER JOIN kullanicilar k ON it.kullanici_id = k.kullanici_id
         WHERE k.byk_id = ? AND it.durum = 'beklemede'
-    ", [$user['byk_id']])['count'],
-    'bekleyen_harcama' => $db->fetch("
+    ", [$user['byk_id']])['count'] : 0,
+    'bekleyen_harcama' => $auth->hasModulePermission('baskan_harcama_talepleri') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM harcama_talepleri 
         WHERE byk_id = ? AND durum = 'beklemede'
-    ", [$user['byk_id']])['count'],
+    ", [$user['byk_id']])['count'] : 0,
 ];
 
 // Son aktiviteler (kendi BYK'sı için)
@@ -105,6 +106,7 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
                 
+                <?php if ($auth->hasModulePermission('baskan_etkinlikler')): ?>
                 <div class="col-md-3 mb-3">
                     <div class="card stat-card success">
                         <div class="d-flex justify-content-between align-items-center">
@@ -118,7 +120,9 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
                 
+                <?php if ($auth->hasModulePermission('baskan_toplantilar')): ?>
                 <div class="col-md-3 mb-3">
                     <div class="card stat-card info">
                         <div class="d-flex justify-content-between align-items-center">
@@ -132,7 +136,9 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
                 
+                <?php if ($auth->hasModulePermission('baskan_izin_talepleri')): ?>
                 <div class="col-md-3 mb-3">
                     <div class="card stat-card warning">
                         <div class="d-flex justify-content-between align-items-center">
@@ -146,10 +152,12 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
             
             <!-- Bekleyen İşlemler -->
             <div class="row mb-4">
+                <?php if ($auth->hasModulePermission('baskan_izin_talepleri')): ?>
                 <div class="col-md-6 mb-3">
                     <div class="card">
                         <div class="card-header">
@@ -165,7 +173,9 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
                 
+                <?php if ($auth->hasModulePermission('baskan_harcama_talepleri')): ?>
                 <div class="col-md-6 mb-3">
                     <div class="card">
                         <div class="card-header">
@@ -181,6 +191,7 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
             
             <!-- Son Aktiviteler -->

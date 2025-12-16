@@ -28,60 +28,61 @@ $kullanici = $db->fetch("
 
 // İstatistikleri al (kişisel)
 $stats = [
-    'aktif_izin' => $db->fetch("
+    'aktif_izin' => $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM izin_talepleri 
         WHERE kullanici_id = ? AND durum = 'onaylandi' 
         AND baslangic_tarihi <= CURDATE() AND bitis_tarihi >= CURDATE()
-    ", [$user['id']])['count'],
-    'bekleyen_izin' => $db->fetch("
+    ", [$user['id']])['count'] : 0,
+    'bekleyen_izin' => $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM izin_talepleri 
         WHERE kullanici_id = ? AND durum = 'beklemede'
-    ", [$user['id']])['count'],
-    'yaklasan_etkinlik' => $db->fetch("
+    ", [$user['id']])['count'] : 0,
+    'yaklasan_etkinlik' => $auth->hasModulePermission('uye_etkinlikler') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM etkinlikler 
         WHERE byk_id = ? AND baslangic_tarihi >= CURDATE() 
-        AND baslangic_tarihi <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-    ", [$user['byk_id']])['count'],
-    'yaklasan_toplanti' => $db->fetch("
+        AND baslangic_tarihi <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))
+    ", [$user['byk_id']])['count'] : 0,
+    'yaklasan_toplanti' => $auth->hasModulePermission('uye_toplantilar') ? $db->fetch("
         SELECT COUNT(*) as count 
         FROM toplanti_katilimcilar tk
         INNER JOIN toplantilar t ON tk.toplanti_id = t.toplanti_id
         WHERE tk.kullanici_id = ? AND t.toplanti_tarihi >= CURDATE()
         AND t.toplanti_tarihi <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
         AND tk.katilim_durumu = 'katilacak'
-    ", [$user['id']])['count'],
+    ", [$user['id']])['count'] : 0,
 ];
 
 // Yaklaşan etkinlikler
-$yaklasan_etkinlikler = $db->fetchAll("
+$yaklasan_etkinlikler = $auth->hasModulePermission('uye_etkinlikler') ? $db->fetchAll("
     SELECT e.*
     FROM etkinlikler e
     WHERE e.byk_id = ? AND e.baslangic_tarihi >= CURDATE()
+    AND e.baslangic_tarihi <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))
     ORDER BY e.baslangic_tarihi ASC
     LIMIT 5
-", [$user['byk_id']]);
+", [$user['byk_id']]) : [];
 
 // Yaklaşan toplantılar
-$yaklasan_toplantilar = $db->fetchAll("
+$yaklasan_toplantilar = $auth->hasModulePermission('uye_toplantilar') ? $db->fetchAll("
     SELECT t.*, tk.katilim_durumu
     FROM toplantilar t
     INNER JOIN toplanti_katilimcilar tk ON t.toplanti_id = tk.toplanti_id
     WHERE tk.kullanici_id = ? AND t.toplanti_tarihi >= CURDATE()
     ORDER BY t.toplanti_tarihi ASC
     LIMIT 5
-", [$user['id']]);
+", [$user['id']]) : [];
 
 // Son izin talepleri
-$son_izinler = $db->fetchAll("
+$son_izinler = $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetchAll("
     SELECT *
     FROM izin_talepleri
     WHERE kullanici_id = ?
     ORDER BY olusturma_tarihi DESC
     LIMIT 5
-", [$user['id']]);
+", [$user['id']]) : [];
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -102,6 +103,7 @@ include __DIR__ . '/../includes/header.php';
         
         <!-- İstatistik Kartları -->
         <div class="row mb-4">
+            <?php if ($auth->hasModulePermission('uye_izin_talepleri')): ?>
             <div class="col-md-3 mb-3">
                 <div class="card stat-card">
                     <div class="d-flex justify-content-between align-items-center">
@@ -129,7 +131,9 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
             
+            <?php if ($auth->hasModulePermission('uye_etkinlikler')): ?>
             <div class="col-md-3 mb-3">
                 <div class="card stat-card info">
                     <div class="d-flex justify-content-between align-items-center">
@@ -143,7 +147,9 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
             
+            <?php if ($auth->hasModulePermission('uye_toplantilar')): ?>
             <div class="col-md-3 mb-3">
                 <div class="card stat-card success">
                     <div class="d-flex justify-content-between align-items-center">
@@ -157,10 +163,12 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
         
         <!-- Yaklaşan Etkinlikler ve Toplantılar -->
         <div class="row mb-4">
+            <?php if ($auth->hasModulePermission('uye_etkinlikler')): ?>
             <div class="col-md-6 mb-3">
                 <div class="card">
                     <div class="card-header">
@@ -193,7 +201,9 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
             
+            <?php if ($auth->hasModulePermission('uye_toplantilar')): ?>
             <div class="col-md-6 mb-3">
                 <div class="card">
                     <div class="card-header">
@@ -233,9 +243,11 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
         
         <!-- Son İzin Talepleri -->
+        <?php if ($auth->hasModulePermission('uye_izin_talepleri')): ?>
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -303,6 +315,7 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 </main>
 
