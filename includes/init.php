@@ -1,0 +1,29 @@
+<?php
+/**
+ * Uygulama Başlatma Dosyası
+ * Tüm sayfalarda en üstte include edilmelidir
+ */
+
+// Hata raporlama (geliştirme ortamı için)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Oturum başlat
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Zaman dilimi ayarı
+date_default_timezone_set('Europe/Istanbul');
+
+// Autoloader
+spl_autoload_register(function ($class) {
+    $file = __DIR__ . '/../classes/' . $class . '.php';
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
+
+// Yapılandırma dosyalarını yükle
+require_once __DIR__ . '/../config/app.php';
+

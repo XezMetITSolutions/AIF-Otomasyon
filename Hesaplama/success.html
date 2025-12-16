@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gider Başarıyla Gönderildi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #009872 0%, #00c896 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .success-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .checkmark-circle {
+            width: 100px;
+            height: 100px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: scaleIn 0.5s ease-out 0.2s backwards;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .checkmark {
+            width: 50px;
+            height: 50px;
+            border: 5px solid white;
+            border-top: none;
+            border-right: none;
+            transform: rotate(-45deg);
+            margin-top: -10px;
+        }
+        
+        h1 {
+            color: #28a745;
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #6c757d;
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #009872;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+            border-radius: 8px;
+        }
+        
+        .info-box p {
+            color: #495057;
+            line-height: 1.8;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .info-box p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .gider-no {
+            background: linear-gradient(135deg, #009872 0%, #00c896 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 152, 114, 0.3);
+        }
+        
+        .message {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #856404;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #009872 0%, #00c896 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 152, 114, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 152, 114, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+        
+        .footer-text {
+            color: #6c757d;
+            font-size: 13px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        @media (max-width: 600px) {
+            .success-container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="checkmark-circle">
+            <div class="checkmark"></div>
+        </div>
+        
+        <h1>✅ Gideriniz Başarıyla Gönderildi!</h1>
+        <p class="subtitle">Gider formunuz başarıyla sisteme kaydedildi.</p>
+        
+        <div class="gider-no" id="giderNoDisplay">
+            📋 Gider No: <span id="giderNo">-</span>
+        </div>
+        
+        <div class="info-box">
+            <p><strong>📌 Önemli Bilgilendirme:</strong></p>
+            <p>• Gider başvurunuz inceleme sürecine alınmıştır.</p>
+            <p>• İşlem süreci <strong>en az iki hafta</strong> sürmektedir.</p>
+            <p>• Onay sonucunda ödeme yapılacaktır.</p>
+        </div>
+        
+        <div class="message">
+            <strong>🤲 Dua</strong><br>
+            Allah yapmış olduğunuz çalışmalardan dolayı razı olsun.
+        </div>
+        
+        <div class="buttons">
+            <a href="index.html" class="btn btn-primary">
+                📝 Yeni Gider Ekle
+            </a>
+            <a href="javascript:window.close()" class="btn btn-secondary">
+                ❌ Kapat
+            </a>
+        </div>
+        
+        <p class="footer-text">
+            Avusturya İslam Federasyonu - Gider Yönetim Sistemi<br>
+            © 2025 - Tüm hakları saklıdır
+        </p>
+    </div>
+    
+    <script>
+        // URL'den gider numarasını al
+        const urlParams = new URLSearchParams(window.location.search);
+        const giderNo = urlParams.get('gider_no');
+        
+        if (giderNo) {
+            document.getElementById('giderNo').textContent = giderNo;
+        } else {
+            document.getElementById('giderNoDisplay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
+
