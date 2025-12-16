@@ -176,41 +176,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
     } catch (Exception $e) {
         $msg = $e->getMessage();
+        
         // Self-Healing for missing columns
         if (strpos($msg, 'Unknown column') !== false) {
-             if (strpos($msg, 'bitis_tarihi') !== false) {
-                 $db->query("ALTER TABLE toplantilar ADD COLUMN bitis_tarihi DATETIME NULL AFTER toplanti_tarihi");
-             }
-             if (strpos($msg, 'toplanti_turu') !== false) {
-                 $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olaganüstü') DEFAULT 'normal' AFTER gundem");
-             }
-             // Retry Update
-              $db->query("
-                UPDATE toplantilar SET
-                    baslik = ?,
-                    aciklama = ?,
-                    toplanti_tarihi = ?,
-                    bitis_tarihi = ?,
-                    konum = ?,
-                    toplanti_turu = ?,
-                    durum = ?
-                WHERE toplanti_id = ?
-            ", [
-                $baslik,
-                $aciklama,
-                $toplanti_tarihi,
-                $bitis_tarihi,
-                $konum,
-                $toplanti_turu,
-                $durum,
-                $toplanti_id
-            ]);
-            $success = 'Toplantı bilgileri güncellendi (Sistem onarımı yapıldı).';
-            header("Location: /admin/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
-            exit;
-        } else {
-            $error = $msg;
+            
+            // Handle 'token' column missing (common in invitation flow)
+            if (strpos($msg, 'token') !== false) {
+                $db->query("ALTER TABLE toplanti_katilimcilar ADD COLUMN token VARCHAR(64) NULL AFTER katilim_durumu");
+                
+                // Retry sending invitations if that was the action
+                if ($action === 'send_invitations') {
+                     header("Location: /admin/toplanti-duzenle.php?id={$toplanti_id}&error=" . urlencode("Sistem güncellendi ('token' sütunu eklendi). Lütfen işlemi tekrar deneyin."));
+                     exit;
+                }
+            }
+
+            // Handle 'toplantilar' columns missing (only for update action)
+            if ($action === 'update_toplanti') {
+                $healed = false;
+                if (strpos($msg, 'bitis_tarihi') !== false) {
+                    $db->query("ALTER TABLE toplantilar ADD COLUMN bitis_tarihi DATETIME NULL AFTER toplanti_tarihi");
+                    $healed = true;
+                }
+                if (strpos($msg, 'toplanti_turu') !== false) {
+                    $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olaganüstü') DEFAULT 'normal' AFTER gundem");
+                    $healed = true;
+                }
+                
+                if ($healed) {
+                    // Retry Update
+                    $db->query("
+                        UPDATE toplantilar SET
+                            baslik = ?,
+                            aciklama = ?,
+                            toplanti_tarihi = ?,
+                            bitis_tarihi = ?,
+                            konum = ?,
+                            toplanti_turu = ?,
+                            durum = ?
+                        WHERE toplanti_id = ?
+                    ", [
+                        $baslik,
+                        $aciklama,
+                        $toplanti_tarihi,
+                        $bitis_tarihi,
+                        $konum,
+                        $toplanti_turu,
+                        $durum,
+                        $toplanti_id
+                    ]);
+                    $success = 'Toplantı bilgileri güncellendi (Sistem onarımı yapıldı).';
+                    header("Location: /admin/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
+                    exit;
+                }
+            }
         }
+        
+        $error = $msg;
     }
 }
 
