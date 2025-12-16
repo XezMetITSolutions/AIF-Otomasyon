@@ -111,7 +111,7 @@ include __DIR__ . '/../includes/header.php';
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <strong><?php echo htmlspecialchars($seciliEtkinlik['baslik']); ?></strong>
-                    <span class="badge bg-info"><?php echo date('d.m.Y H:i', strtotime($seciliEtkinlik['baslangic_tarihi'])); ?></span>
+                    <span class="badge bg-info"><?php echo date('d.m.Y', strtotime($seciliEtkinlik['baslangic_tarihi'])); ?></span>
                 </div>
                 <div class="card-body">
                     <p class="text-muted">
@@ -121,13 +121,13 @@ include __DIR__ . '/../includes/header.php';
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded">
                                 <small class="text-muted d-block">Başlangıç</small>
-                                <strong><?php echo date('d.m.Y H:i', strtotime($seciliEtkinlik['baslangic_tarihi'])); ?></strong>
+                                <strong><?php echo date('d.m.Y', strtotime($seciliEtkinlik['baslangic_tarihi'])); ?></strong>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded">
                                 <small class="text-muted d-block">Bitiş</small>
-                                <strong><?php echo date('d.m.Y H:i', strtotime($seciliEtkinlik['bitis_tarihi'])); ?></strong>
+                                <strong><?php echo date('d.m.Y', strtotime($seciliEtkinlik['bitis_tarihi'])); ?></strong>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -171,8 +171,8 @@ include __DIR__ . '/../includes/header.php';
                                     <tr class="<?php echo $selectedId === (int) $etkinlik['etkinlik_id'] ? 'table-primary' : ''; ?>">
                                         <td><?php echo htmlspecialchars($etkinlik['baslik']); ?></td>
                                         <td><?php echo htmlspecialchars($etkinlik['alt_birim_adi'] ?? '-'); ?></td>
-                                        <td><?php echo date('d.m.Y H:i', strtotime($etkinlik['baslangic_tarihi'])); ?></td>
-                                        <td><?php echo date('d.m.Y H:i', strtotime($etkinlik['bitis_tarihi'])); ?></td>
+                                        <td><?php echo date('d.m.Y', strtotime($etkinlik['baslangic_tarihi'])); ?></td>
+                                        <td><?php echo date('d.m.Y', strtotime($etkinlik['bitis_tarihi'])); ?></td>
                                         <td><?php echo htmlspecialchars($etkinlik['konum'] ?? '-'); ?></td>
                                         <td class="text-end">
                                             <a href="/uye/etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>&tarih=<?php echo urlencode($tarihFiltre); ?>" class="btn btn-sm btn-outline-primary">
