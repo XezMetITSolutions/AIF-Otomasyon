@@ -141,25 +141,145 @@ include __DIR__ . '/../includes/header.php';
 <!-- Sidebar -->
 <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
+<!-- Modern Design Assets -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg: #ffffff;
+        --card: #ffffff;
+        --muted: #6b7280;
+        --text: #0f172a;
+        --primary: #009872;
+        --primary-600: #007a5e;
+        --accent: #009872;
+        --danger: #dc2626;
+        --warning: #d97706;
+        --border: #e2e8f0;
+        --input: #ffffff;
+    }
+    
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background: radial-gradient(1200px 600px at 20% 0%, rgba(0,152,114,.05), transparent 60%),
+                    radial-gradient(900px 500px at 80% 0%, rgba(0,152,114,.03), transparent 60%),
+                    var(--bg);
+        color: var(--text);
+    }
+    
+    .content-wrapper {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        color: #1e293b;
+    }
+
+    .card.meeting-card {
+        border: 1px solid rgba(0,152,114,0.1);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        border-radius: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card.meeting-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+        border-color: rgba(0,152,114,0.3);
+    }
+
+    .date-badge {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        color: var(--primary);
+        border-radius: 0.75rem;
+        border: 1px solid rgba(0,152,114,0.1);
+        min-width: 70px;
+        height: 70px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .status-badge.katilacak { background: #dcfce7; color: #166534; }
+    .status-badge.katilmayacak { background: #fee2e2; color: #991b1b; }
+    .status-badge.mazeret { background: #ffedd5; color: #9a3412; }
+    .status-badge.beklemede { background: #f1f5f9; color: #475569; }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-600);
+        border-color: var(--primary-600);
+    }
+
+    .filter-btn {
+        border-radius: 9999px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .filter-btn.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(0,152,114,0.3);
+    }
+    
+    .filter-btn:not(.active) {
+        background: white;
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+    
+    .filter-btn:not(.active):hover {
+        background: #f8fafc;
+        color: var(--text);
+    }
+</style>
+
 <main class="container-fluid mt-4">
     <div class="content-wrapper">
         <!-- Header & Filters -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-4">
             <div>
-                <h1 class="h3 fw-bold mb-1 text-dark">
-                    <i class="fas fa-calendar-check me-2 text-primary"></i>Toplantılarım
+                <h1 class="h3 fw-bold mb-2 text-dark">
+                    Toplantılarım
                 </h1>
-                <p class="text-muted mb-0">Katılmanız beklenen toplantıları yönetin.</p>
+                <p class="text-muted mb-0">Katılmanız beklenen toplantıları buradan yönetebilirsiniz.</p>
             </div>
             
-            <div class="bg-white p-1 rounded-pill shadow-sm d-inline-flex">
-                <a href="?durum=yaklasan" class="btn btn-sm rounded-pill px-3 <?php echo $durumFiltre === 'yaklasan' ? 'btn-primary' : 'btn-light text-muted'; ?>">
+            <div class="d-flex gap-2">
+                <a href="?durum=yaklasan" class="filter-btn text-decoration-none <?php echo $durumFiltre === 'yaklasan' ? 'active' : ''; ?>">
                     Yaklaşan
                 </a>
-                <a href="?durum=gecmis" class="btn btn-sm rounded-pill px-3 <?php echo $durumFiltre === 'gecmis' ? 'btn-primary' : 'btn-light text-muted'; ?>">
+                <a href="?durum=gecmis" class="filter-btn text-decoration-none <?php echo $durumFiltre === 'gecmis' ? 'active' : ''; ?>">
                     Geçmiş
                 </a>
-                <a href="?durum=tum" class="btn btn-sm rounded-pill px-3 <?php echo $durumFiltre === 'tum' ? 'btn-primary' : 'btn-light text-muted'; ?>">
+                <a href="?durum=tum" class="filter-btn text-decoration-none <?php echo $durumFiltre === 'tum' ? 'active' : ''; ?>">
                     Tümü
                 </a>
             </div>
@@ -222,79 +342,85 @@ include __DIR__ . '/../includes/header.php';
                         $borderClass = $toplanti['katilim_durumu'] === 'beklemede' ? 'border-warning' : 'border-0';
                     ?>
                     <div class="col-md-6 col-xl-4">
-                        <div class="card h-100 shadow-sm <?php echo $borderClass; ?> hover-shadow transition-all">
-                            <div class="card-body">
-                                <div class="d-flex gap-3 mb-3">
+                        <div class="card meeting-card h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex gap-3 mb-4">
                                     <!-- Date Badge -->
-                                    <div class="d-flex flex-column align-items-center justify-content-center bg-light rounded-3 p-2 text-center" style="min-width: 70px; height: 70px;">
-                                        <span class="h4 mb-0 fw-bold text-dark"><?php echo $tarih->format('d'); ?></span>
-                                        <span class="small text-uppercase text-muted"><?php echo $trMonth; ?></span>
+                                    <div class="date-badge">
+                                        <span class="h3 mb-0 fw-bold"><?php echo $tarih->format('d'); ?></span>
+                                        <span class="small fw-semibold text-uppercase opacity-75"><?php echo $trMonth; ?></span>
                                     </div>
                                     
                                     <!-- Title & Meta -->
                                     <div class="flex-grow-1">
-                                        <h5 class="card-title fw-bold mb-1 text-truncate-2">
+                                        <h5 class="card-title fw-bold mb-2 text-dark text-truncate-2">
                                             <?php echo htmlspecialchars($toplanti['baslik']); ?>
                                         </h5>
-                                        <div class="d-flex align-items-center text-muted small mt-1">
-                                            <i class="far fa-clock me-1"></i>
+                                        <div class="d-flex align-items-center text-muted small">
+                                            <i class="far fa-clock me-1 text-primary"></i>
                                             <?php echo $tarih->format('H:i'); ?>
                                             
                                             <?php if($toplanti['konum']): ?>
-                                                <span class="mx-2">•</span>
-                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                <span class="mx-2 opacity-50">•</span>
+                                                <i class="fas fa-map-marker-alt me-1 text-primary"></i>
                                                 <?php echo htmlspecialchars($toplanti['konum']); ?>
                                             <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Description Excerpt -->
-                                <?php if($toplanti['aciklama']): ?>
-                                    <div class="text-muted small mb-3 text-truncate-3">
-                                        <?php echo formatTextAsList($toplanti['aciklama']); ?>
-                                    </div>
-                                <?php endif; ?>
-
                                 <!-- Current Status Badge -->
-                                <div class="mb-2">
-                                    <span class="badge rounded-pill bg-<?php echo $durumProps['class']; ?> bg-opacity-10 text-<?php echo $durumProps['class']; ?> px-3 py-2">
-                                        <i class="fas fa-<?php echo $durumProps['icon']; ?> small me-1"></i>
+                                <div class="mb-4">
+                                    <?php 
+                                    $badgeClass = match($toplanti['katilim_durumu']) {
+                                        'katilacak' => 'katilacak',
+                                        'katilmayacak' => 'katilmayacak',
+                                        'mazeret' => 'mazeret',
+                                        default => 'beklemede'
+                                    };
+                                    ?>
+                                    <span class="status-badge <?php echo $badgeClass; ?>">
+                                        <i class="fas fa-<?php echo $durumProps['icon']; ?>"></i>
                                         <?php echo $durumProps['text']; ?>
                                     </span>
                                     <?php if($toplanti['mazeret_aciklama']): ?>
-                                        <small class="d-block mt-1 text-muted fst-italic">
+                                        <div class="mt-2 text-muted small fst-italic ps-2 border-start border-3 border-secondary">
                                             "<?php echo htmlspecialchars($toplanti['mazeret_aciklama']); ?>"
-                                        </small>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
+
+                                <!-- Description Excerpt -->
+                                <?php if($toplanti['aciklama']): ?>
+                                    <div class="text-muted small mb-0 text-truncate-3" style="line-height: 1.6;">
+                                        <?php echo formatTextAsList($toplanti['aciklama']); ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             
                             <!-- Action Footer -->
-                            <div class="card-footer bg-white border-top-0 p-3 pt-0">
-                                <hr class="my-2 opacity-50">
+                            <div class="card-footer bg-transparent border-top p-4">
                                 <form method="post">
                                     <input type="hidden" name="action" value="katilim_guncelle">
                                     <input type="hidden" name="katilimci_id" value="<?php echo $toplanti['katilimci_id']; ?>">
                                     <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                     
-                                    <div class="d-flex flex-column gap-2">
-                                        <label class="form-label small fw-bold text-uppercase text-muted mb-0">Durum Bildir</label>
-                                        <div class="input-group input-group-sm">
-                                            <select name="katilim_durumu" class="form-select status-select" data-target="mazeret-<?php echo $toplanti['katilimci_id']; ?>">
-                                                <option value="beklemede" <?php echo $toplanti['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>Seçiniz...</option>
-                                                <option value="katilacak" <?php echo $toplanti['katilim_durumu'] === 'katilacak' ? 'selected' : ''; ?>>Katılacağım</option>
-                                                <option value="katilmayacak" <?php echo $toplanti['katilim_durumu'] === 'katilmayacak' ? 'selected' : ''; ?>>Katılamayacağım</option>
+                                    <div class="d-flex flex-column gap-3">
+                                        <div class="input-group">
+                                            <select name="katilim_durumu" class="form-select status-select border-end-0" style="border-radius: 0.5rem 0 0 0.5rem;" data-target="mazeret-<?php echo $toplanti['katilimci_id']; ?>">
+                                                <option value="beklemede" <?php echo $toplanti['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>Durum Seçiniz...</option>
+                                                <option value="katilacak" <?php echo $toplanti['katilim_durumu'] === 'katilacak' ? 'selected' : ''; ?>>✅ Katılacağım</option>
+                                                <option value="katilmayacak" <?php echo $toplanti['katilim_durumu'] === 'katilmayacak' ? 'selected' : ''; ?>>❌ Katılamayacağım</option>
                                             </select>
-                                            <button type="submit" class="btn btn-primary" title="Kaydet">
-                                                <i class="fas fa-paper-plane"></i>
+                                            <button type="submit" class="btn btn-primary px-4" style="border-radius: 0 0.5rem 0.5rem 0;">
+                                                Kaydet
                                             </button>
                                         </div>
                                         
-                                        <!-- Mazeret Input (Only shows if 'katilmayacak' is selected) -->
-                                        <div id="mazeret-<?php echo $toplanti['katilimci_id']; ?>" class="mt-1 <?php echo $toplanti['katilim_durumu'] === 'katilmayacak' ? '' : 'd-none'; ?>">
-                                            <input type="text" name="mazeret_aciklama" class="form-control form-control-sm" 
-                                                   placeholder="Lütfen mazeretinizi giriniz..." 
+                                        <!-- Mazeret Input -->
+                                        <div id="mazeret-<?php echo $toplanti['katilimci_id']; ?>" class="<?php echo $toplanti['katilim_durumu'] === 'katilmayacak' ? '' : 'd-none'; ?>">
+                                            <input type="text" name="mazeret_aciklama" class="form-control" 
+                                                   placeholder="Katılamama nedeniniz (Mazeret)..." 
                                                    value="<?php echo htmlspecialchars($toplanti['mazeret_aciklama'] ?? ''); ?>">
                                         </div>
                                     </div>
