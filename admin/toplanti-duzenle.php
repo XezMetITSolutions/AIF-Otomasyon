@@ -126,8 +126,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $line = trim($line);
                     if (empty($line)) continue;
                     
-                    // Remove bullets/numbers (e.g., "1.", "1-", "-", "*")
-                    $clean_line = preg_replace('/^(\d+[\.\-\)]|\-|\*)\s+/', '', $line);
+                    // Remove bullets/numbers (e.g., "1.", "1-", "-", "*", "•")
+                    // Supports unicode bullets and various separators
+                    $clean_line = preg_replace('/^(\d+[\.\-\)]|[\-\*•])\s+/u', '', $line);
                     $clean_line = trim($clean_line);
                     
                     if (empty($clean_line)) continue;
