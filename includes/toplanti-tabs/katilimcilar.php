@@ -20,6 +20,9 @@
                             <button type="submit" class="btn btn-primary" onclick="return confirm('Seçili katılımcılara davetiye e-postası gönderilecek. Emin misiniz?')">
                                 <i class="fas fa-paper-plane me-2"></i>Seçilenlere Davetiye Gönder
                             </button>
+                            <button type="button" class="btn btn-outline-secondary ms-2" id="btnSelectAll">
+                                <i class="fas fa-check-double me-2"></i>Tümünü Seç
+                            </button>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -87,9 +90,27 @@
                     </form>
                     
                     <script>
+                        // Existing checkbox listener
                         document.getElementById('selectAll').addEventListener('change', function() {
                             const checkboxes = document.querySelectorAll('.katilimci-checkbox');
                             checkboxes.forEach(cb => cb.checked = this.checked);
+                        });
+                        
+                        // New Button listener
+                        document.getElementById('btnSelectAll').addEventListener('click', function() {
+                            const masterCheckbox = document.getElementById('selectAll');
+                            const checkboxes = document.querySelectorAll('.katilimci-checkbox');
+                            
+                            // Toggle based on master or check all if unchecked
+                            const newState = !masterCheckbox.checked;
+                            
+                            masterCheckbox.checked = newState;
+                            checkboxes.forEach(cb => cb.checked = newState);
+                            
+                            // Update button text logic (Optional)
+                            this.innerHTML = newState ? 
+                                '<i class="fas fa-times me-2"></i>Seçimi Kaldır' : 
+                                '<i class="fas fa-check-double me-2"></i>Tümünü Seç';
                         });
                     </script>
                 <?php endif; ?>
