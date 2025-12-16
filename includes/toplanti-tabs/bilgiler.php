@@ -77,11 +77,100 @@
                 </div>
             </div>
 
-            <div class="mb-3">
+            <style>
+                .suggestions {
+                    position: absolute;
+                    z-index: 1000;
+                    background: #fff;
+                    border: 1px solid #dee2e6;
+                    border-radius: 0.25rem;
+                    width: 100%;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                    display: none;
+                }
+                .suggestion-item {
+                    padding: 0.5rem 0.75rem;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f8f9fa;
+                }
+                .suggestion-item:last-child { border-bottom: none; }
+                .suggestion-item:hover { background-color: #f8f9fa; color: #009872; }
+            </style>
+
+            <div class="mb-3 position-relative">
                 <label for="konum" class="form-label">Konum</label>
                 <input type="text" class="form-control" id="konum" name="konum" 
-                       value="<?php echo htmlspecialchars($toplanti['konum'] ?? ''); ?>">
+                       value="<?php echo htmlspecialchars($toplanti['konum'] ?? ''); ?>" placeholder="Adres aramaya başlayın...">
+                <div class="suggestions" id="konumSuggestions"></div>
             </div>
+
+            <script>
+            // OpenRouteService API Logic
+            const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+            
+            function debounce(fn, delay) {
+                let t;
+                return (...args) => {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn(...args), delay);
+                };
+            }
+
+            async function fetchAddressSuggestions(query) {
+                if (!query || query.length < 2) return [];
+                const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${encodeURIComponent(ORS_API_KEY)}&text=${encodeURIComponent(query)}&size=5&boundary.country=AT,DE,CH&lang=tr`;
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (!data.features) return [];
+                    return data.features.map(f => ({ label: f.properties.label || '' }));
+                } catch (e) {
+                    console.error('ORS Error:', e);
+                    return [];
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const inputEl = document.getElementById('konum');
+                const suggestionsEl = document.getElementById('konumSuggestions');
+
+                if (inputEl && suggestionsEl) {
+                    const render = (items) => {
+                        suggestionsEl.innerHTML = '';
+                        if (!items.length) { suggestionsEl.style.display = 'none'; return; }
+                        suggestionsEl.style.display = 'block';
+                        items.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.textContent = item.label;
+                            div.onclick = () => {
+                                inputEl.value = item.label;
+                                suggestionsEl.style.display = 'none';
+                            };
+                            suggestionsEl.appendChild(div);
+                        });
+                    };
+
+                    const debouncedSearch = debounce(async () => {
+                        const q = inputEl.value.trim();
+                        const items = await fetchAddressSuggestions(q);
+                        render(items);
+                    }, 300);
+
+                    inputEl.addEventListener('input', debouncedSearch);
+                    
+                    // Close on blur (delayed to allow click)
+                    inputEl.addEventListener('blur', () => setTimeout(() => suggestionsEl.style.display = 'none', 200));
+                    
+                    // Show if focused and has content
+                    inputEl.addEventListener('focus', () => { 
+                        if (inputEl.value.trim().length >= 2) debouncedSearch(); 
+                    });
+                }
+            });
+            </script>
 
             <div class="mb-3">
                 <label for="durum" class="form-label">Durum</label>
