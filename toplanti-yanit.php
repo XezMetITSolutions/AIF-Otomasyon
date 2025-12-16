@@ -22,11 +22,46 @@ $showForm = false;
 if ($token && $yanit) {
     // Katılımcıyı bul
     $katilimci = $db->fetch("
-        SELECT tk.*, t.baslik, t.toplanti_tarihi
+        SELECT tk.*, t.baslik, t.toplanti_tarihi, t.konum, t.aciklama
         FROM toplanti_katilimcilar tk
         INNER JOIN toplantilar t ON tk.toplanti_id = t.toplanti_id
         WHERE tk.token = ?
     ", [$token]);
+
+    // ICS Download Handler
+    if (isset($_GET['action']) && $_GET['action'] === 'download_ics' && $katilimci) {
+        $eventStart = strtotime($katilimci['toplanti_tarihi']);
+        $eventEnd = $eventStart + 3600; // 1 hour duration default
+        
+        $now = gmdate('Ymd\THis\Z');
+        $start = gmdate('Ymd\THis\Z', $eventStart);
+        $end = gmdate('Ymd\THis\Z', $eventEnd);
+        
+        $summary = $katilimci['baslik'];
+        $location = $katilimci['konum'] ?? '';
+        $description = trim(preg_replace('/\s+/', ' ', strip_tags($katilimci['aciklama'] ?? '')));
+        
+        $icsContent = "BEGIN:VCALENDAR\r\n";
+        $icsContent .= "VERSION:2.0\r\n";
+        $icsContent .= "PRODID:-//AIF CRM//Meeting//EN\r\n";
+        $icsContent .= "METHOD:PUBLISH\r\n";
+        $icsContent .= "BEGIN:VEVENT\r\n";
+        $icsContent .= "UID:" . md5($katilimci['toplanti_id'] . $now) . "@aifcrm.metechnik.at\r\n";
+        $icsContent .= "DTSTAMP:" . $now . "\r\n";
+        $icsContent .= "DTSTART:" . $start . "\r\n";
+        $icsContent .= "DTEND:" . $end . "\r\n";
+        $icsContent .= "SUMMARY:" . $summary . "\r\n";
+        if ($location) $icsContent .= "LOCATION:" . $location . "\r\n";
+        if ($description) $icsContent .= "DESCRIPTION:" . $description . "\r\n";
+        $icsContent .= "END:VEVENT\r\n";
+        $icsContent .= "END:VCALENDAR";
+
+        ob_clean(); // Clean any previous output
+        header('Content-Type: text/calendar; charset=utf-8');
+        header('Content-Disposition: attachment; filename="davetiye.ics"');
+        echo $icsContent;
+        exit;
+    }
 
     if ($katilimci) {
         $konu = htmlspecialchars($katilimci['baslik'] ?? '');
@@ -124,6 +159,12 @@ include __DIR__ . '/includes/header.php';
                         <p class="lead mb-4"><?php echo $message; ?></p>
                         
                         <a href="/" class="btn btn-primary px-4">Ana Sayfaya Dön</a>
+                        
+                        <?php if ($yanit === 'katiliyor'): ?>
+                            <a href="?token=<?php echo urlencode($token); ?>&yanit=katiliyor&action=download_ics" class="btn btn-outline-success px-4 ms-2">
+                                <i class="fas fa-calendar-plus me-2"></i>Takvime Ekle
+                            </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                     
                 </div>
