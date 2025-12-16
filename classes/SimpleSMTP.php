@@ -85,7 +85,14 @@ class SimpleSMTP {
             $headers[] = "Date: " . date("r");
             $headers[] = "From: =?UTF-8?B?" . base64_encode($fromName) . "?= <" . $fromEmail . ">";
             $headers[] = "To: <" . $to . ">";
+            $headers[] = "Reply-To: <" . $fromEmail . ">";
             $headers[] = "Subject: =?UTF-8?B?" . base64_encode($subject) . "?=";
+            
+            // Unique Message-ID matches the behavior of professional mailers
+            $messageId = sprintf("<%s.%s@%s>", base64_encode(uniqid()), time(), parse_url($host, PHP_URL_HOST) ?? 'aifcrm.metechnik.at');
+            $headers[] = "Message-ID: " . $messageId;
+            $headers[] = "X-Mailer: AIF CRM Mailer v1.0";
+            $headers[] = "X-Priority: 3"; // Normal priority
             
             if ($isHtml) {
                 $headers[] = "Content-Type: text/html; charset=UTF-8";
