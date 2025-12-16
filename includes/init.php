@@ -14,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Zaman dilimi ayarı
-date_default_timezone_set('Europe/Istanbul');
+date_default_timezone_set('Europe/Vienna');
 
 // Autoloader
 spl_autoload_register(function ($class) {

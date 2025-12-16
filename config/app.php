@@ -8,7 +8,7 @@ return [
     'app_name' => 'AIF Otomasyon Sistemi',
     'app_version' => '1.0.1',
     'app_url' => 'http://localhost',
-    'timezone' => 'Europe/Istanbul',
+    'timezone' => 'Europe/Vienna',
     'locale' => 'tr_TR',
     'date_format' => 'd.m.Y',
     'datetime_format' => 'd.m.Y H:i',
