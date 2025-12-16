@@ -87,129 +87,57 @@ $son_izinler = $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetchAll(
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Sidebar -->
-<?php include __DIR__ . '/../includes/sidebar.php'; ?>
-
-<!-- Modern Design Assets -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<style>
-    :root {
-        --primary: #009872;
-        --primary-light: rgba(0, 152, 114, 0.1);
-        --text-dark: #1e293b;
-        --text-muted: #64748b;
-        --card-bg: rgba(255, 255, 255, 0.9);
-        --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+    /* Sidebar & Layout Fixes */
+    .dashboard-layout {
+        display: flex;
+        min-height: calc(100vh - 56px);
+        margin-top: 56px; /* Height of fixed navbar */
     }
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background: radial-gradient(circle at 0% 0%, rgba(0, 152, 114, 0.08) 0%, transparent 50%),
-                    radial-gradient(circle at 100% 100%, rgba(0, 152, 114, 0.05) 0%, transparent 50%),
-                    #f8fafc;
-        color: var(--text-dark);
-    }
-    
-    .content-wrapper {
-        background: transparent !important;
-        box-shadow: none !important;
-        max-width: 1400px;
-        margin: 0 auto;
+    .sidebar-wrapper {
+        width: 250px;
+        flex-shrink: 0;
+        border-right: 1px solid rgba(0,0,0,0.05);
+        background: rgba(255,255,255,0.8);
+        display: none; /* Hidden by default (mobile) */
     }
 
-    /* Glass Cards */
-    .card {
-        background: var(--card-bg);
-        backdrop-filter: blur(10px);
-        border: var(--glass-border);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        border-radius: 1rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-    }
-
-    .card-header {
-        background: transparent;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        padding: 1.25rem 1.5rem;
-        font-weight: 600;
-        color: var(--text-dark);
-    }
-
-    /* Stat Cards */
-    .stat-card {
+    .main-content {
+        flex-grow: 1;
+        width: 100%; /* Ensure full width on mobile */
         padding: 1.5rem;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        border: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .stat-card .stat-label {
-        color: var(--text-muted);
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-    
-    .stat-card .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-dark);
-        line-height: 1;
     }
 
-    .stat-icon-wrapper {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
-
-    /* Stat Variants */
-    .stat-card.primary .stat-icon-wrapper { background: rgba(0, 152, 114, 0.1); color: #009872; }
-    .stat-card.warning .stat-icon-wrapper { background: rgba(245, 158, 11, 0.1); color: #d97706; }
-    .stat-card.info .stat-icon-wrapper { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
-    .stat-card.success .stat-icon-wrapper { background: rgba(16, 185, 129, 0.1); color: #059669; }
-
-    /* Lists */
-    .list-group-item {
-        background: transparent;
-        border: none;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid rgba(0,0,0,0.03);
-    }
-    
-    .list-group-item:last-child {
-        border-bottom: none;
-    }
-
-    /* Badge tweaks */
-    .badge {
-        padding: 0.5em 0.8em;
-        font-weight: 500;
-        border-radius: 6px;
+    /* Desktop View */
+    @media (min-width: 992px) {
+        .sidebar-wrapper {
+            display: block;
+            position: fixed;
+            height: calc(100vh - 56px);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .main-content {
+            margin-left: 250px; /* Push content to right */
+        }
     }
 </style>
 
-<main class="container-fluid mt-4 pb-5">
-    <div class="content-wrapper">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h3 mb-0">
-                    <i class="fas fa-user-circle me-2"></i>Hoş Geldiniz, <?php echo htmlspecialchars($user['name']); ?>
-                </h1>
+<div class="dashboard-layout">
+    <!-- Sidebar Wrapper -->
+    <div class="sidebar-wrapper">
+        <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Hoş Geldiniz, <?php echo htmlspecialchars($user['name']); ?>
+                    </h1>
                 <small class="text-muted"><?php echo htmlspecialchars($kullanici['byk_adi'] ?? 'BYK'); ?> - Üye Paneli</small>
             </div>
         </div>
@@ -457,8 +385,9 @@ include __DIR__ . '/../includes/header.php';
             </div>
         </div>
         <?php endif; ?>
-    </div>
-</main>
+        </div>
+    </main>
+</div>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
