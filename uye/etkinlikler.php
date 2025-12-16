@@ -29,7 +29,7 @@ if (!$userBykId) {
 // Filtreleme Parametreleri
 $search = $_GET['search'] ?? '';
 $monthFilter = $_GET['ay'] ?? '';
-$yearFilter = $_GET['yil'] ?? date('Y');
+$yearFilter = $_GET['yil'] ?? '';
 
 // Sorgu Koşulları
 $where = ["e.byk_id = ?"];
