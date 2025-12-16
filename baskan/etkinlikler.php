@@ -20,7 +20,7 @@ $pageTitle = 'Çalışma Takvimi';
 // Filtreleme
 $search = $_GET['search'] ?? '';
 $monthFilter = $_GET['ay'] ?? '';
-$yearFilter = $_GET['yil'] ?? date('Y');
+$yearFilter = $_GET['yil'] ?? '';
 
 // Force BYK filter for security
 $where = ["e.byk_id = ?"];

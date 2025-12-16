@@ -23,7 +23,7 @@ $pageTitle = 'Çalışma Takvimi';
 $search = $_GET['search'] ?? '';
 $bykFilter = $_GET['byk'] ?? '';
 $monthFilter = $_GET['ay'] ?? '';
-$yearFilter = $_GET['yil'] ?? date('Y');
+$yearFilter = $_GET['yil'] ?? '';
 
 $where = [];
 $params = [];
