@@ -30,26 +30,26 @@
     --gray-700: #374151;
     --gray-800: #1f2937;
     --gray-900: #111827;
-    
+
     /* Glassmorphism */
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(255, 255, 255, 0.18);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    
+
     /* Shadows */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
     --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.2);
-    
+
     /* Border Radius */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 20px;
     --radius-2xl: 24px;
-    
+
     /* Transitions */
     --transition-fast: 0.15s ease;
     --transition-base: 0.3s ease;
@@ -57,7 +57,8 @@
 }
 
 /* Genel Stiller */
-html, body {
+html,
+body {
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
@@ -78,9 +79,11 @@ body {
 
 main {
     flex: 1;
-    margin-top: 0; /* Navbar zaten fixed, margin gerekmez */
+    margin-top: 0;
+    /* Navbar zaten fixed, margin gerekmez */
 }
 
+/* Sidebar Stilleri - Tamamen Yenilendi */
 /* Sidebar Stilleri - Tamamen Yenilendi */
 .sidebar {
     width: 280px !important;
@@ -97,6 +100,14 @@ main {
     background: #ffffff;
     border-right: 1px solid var(--gray-200);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+    /* Mobile: Hidden by default */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Sidebar Active State (Mobile toggle) */
+.sidebar.show {
+    transform: translateX(0);
 }
 
 .sidebar * {
@@ -229,18 +240,19 @@ main {
     overflow: hidden;
 }
 
-.sidebar .list-group-item.list-group-item-action > *:not(i):not(.badge) {
+.sidebar .list-group-item.list-group-item-action>*:not(i):not(.badge) {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* Ana içerik alanı için margin (sidebar için alan bırak) */
+/* Ana içerik alanı için margin (Default: Mobile / Full Width) */
 .content-wrapper {
-    margin-left: 280px;
-    padding: 24px 32px;
-    width: calc(100% - 280px);
-    min-width: calc(100% - 280px);
+    margin-left: 0;
+    padding: 24px 16px;
+    width: 100%;
+    min-width: 100%;
+    transition: margin-left 0.3s ease-in-out;
 }
 
 main.container-fluid {
@@ -252,38 +264,20 @@ main.container-fluid {
     max-width: 100%;
 }
 
-/* Responsive - mobil için */
-@media (max-width: 991.98px) {
-    .sidebar {
-        position: fixed;
-        left: -280px;
-        transition: left var(--transition-base);
-        z-index: 1050;
-    }
-    
-    .sidebar.show {
-        left: 0;
-    }
-    
-    .content-wrapper {
-        margin-left: 0;
-        padding: 16px;
-    }
-    
-    /* Sidebar toggle button (mobil için) */
-    .sidebar-toggle {
-        display: block;
-    }
-}
-
-/* Büyük ekranlarda sidebar genişliği kontrolü */
+/* Responsive - Desktop */
 @media (min-width: 992px) {
     .sidebar {
-        width: 280px;
+        transform: none;
+        /* Always show on desktop */
     }
-    
+
     .content-wrapper {
         margin-left: 280px;
+        /* Push content for sidebar */
+        padding: 24px 32px;
+        width: calc(100% - 280px);
+        /* Adjust width */
+        min-width: calc(100% - 280px);
     }
 }
 
@@ -340,13 +334,22 @@ main.container-fluid {
     right: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     animation: pulse 3s ease-in-out infinite;
 }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
 }
 
 .stat-card:hover {
@@ -594,7 +597,12 @@ main.container-fluid {
 }
 
 /* Başlık Stilleri - Modern */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-weight: 700;
     color: var(--gray-800);
     letter-spacing: -0.5px;
@@ -624,15 +632,15 @@ footer {
         position: relative !important;
         min-height: auto !important;
     }
-    
+
     .stat-card .stat-value {
         font-size: 2.5rem;
     }
-    
+
     .stat-card .stat-icon {
         font-size: 2.5rem;
     }
-    
+
     .content-wrapper {
         padding: 16px;
     }
@@ -676,6 +684,7 @@ footer {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -687,6 +696,7 @@ footer {
         opacity: 0;
         transform: translateX(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -698,6 +708,7 @@ footer {
         opacity: 0;
         transform: scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -717,14 +728,25 @@ footer {
 }
 
 /* Page Load Animation */
-.content-wrapper > * {
+.content-wrapper>* {
     animation: fadeIn 0.6s ease-out backwards;
 }
 
-.content-wrapper > *:nth-child(1) { animation-delay: 0.1s; }
-.content-wrapper > *:nth-child(2) { animation-delay: 0.2s; }
-.content-wrapper > *:nth-child(3) { animation-delay: 0.3s; }
-.content-wrapper > *:nth-child(4) { animation-delay: 0.4s; }
+.content-wrapper>*:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.content-wrapper>*:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.content-wrapper>*:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.content-wrapper>*:nth-child(4) {
+    animation-delay: 0.4s;
+}
 
 /* Scrollbar Stilleri (Webkit tarayıcılar için) - Modern */
 ::-webkit-scrollbar {
@@ -749,16 +771,16 @@ footer {
 
 /* Print Stilleri */
 @media print {
+
     .navbar,
     .sidebar,
     .btn,
     footer {
         display: none !important;
     }
-    
+
     .card {
         box-shadow: none;
         border: 1px solid #dee2e6;
     }
 }
-
