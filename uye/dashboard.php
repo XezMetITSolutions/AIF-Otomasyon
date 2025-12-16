@@ -187,7 +187,7 @@ include __DIR__ . '/../includes/header.php';
                                                 <br>
                                                 <small class="text-muted">
                                                     <i class="fas fa-clock me-1"></i>
-                                                    <?php echo date('d.m.Y H:i', strtotime($etkinlik['baslangic_tarihi'])); ?>
+                                                    <?php echo date('d.m.Y', strtotime($etkinlik['baslangic_tarihi'])); ?>
                                                 </small>
                                             </div>
                                             <a href="/uye/etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-outline-primary">
