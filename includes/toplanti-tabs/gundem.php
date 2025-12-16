@@ -96,8 +96,8 @@
                         <input type="number" class="form-control" id="gundem_sira_no" value="<?php echo count($gundem_maddeleri) + 1; ?>" min="1">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Başlık <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="gundem_baslik" required>
+                        <label class="form-label">Gündem Maddesi <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="gundem_baslik" placeholder="Örn: Bütçe Görüşmeleri" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Açıklama</label>
@@ -140,7 +140,7 @@
                         <input type="number" class="form-control" id="edit_gundem_sira_no" min="1">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Başlık <span class="text-danger">*</span></label>
+                        <label class="form-label">Gündem Maddesi <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="edit_gundem_baslik" required>
                     </div>
                     <div class="mb-3">
