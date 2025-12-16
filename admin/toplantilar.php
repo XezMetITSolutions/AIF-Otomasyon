@@ -18,7 +18,9 @@ $pageTitle = 'Toplantı Yönetimi';
 
 // Toplantılar
 $toplantilar = $db->fetchAll("
-    SELECT t.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as olusturan
+    SELECT t.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as olusturan,
+           (SELECT COUNT(*) FROM toplanti_katilimcilar tk WHERE tk.toplanti_id = t.toplanti_id) as total_participants,
+           (SELECT COUNT(*) FROM toplanti_katilimcilar tk WHERE tk.toplanti_id = t.toplanti_id AND tk.katilim_durumu = 'katilacak') as confirmed_participants
     FROM toplantilar t
     INNER JOIN byk b ON t.byk_id = b.byk_id
     INNER JOIN kullanicilar u ON t.olusturan_id = u.kullanici_id
@@ -55,8 +57,7 @@ include __DIR__ . '/../includes/header.php';
                                     <th>Başlık</th>
                                     <th>BYK</th>
                                     <th>Tarih</th>
-                                    <th>Tür</th>
-                                    <th>Durum</th>
+                                    <th>Katılım</th>
                                     <th>Oluşturan</th>
                                     <th>İşlemler</th>
                                 </tr>
@@ -64,7 +65,7 @@ include __DIR__ . '/../includes/header.php';
                             <tbody>
                                 <?php if (empty($toplantilar)): ?>
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">Henüz toplantı eklenmemiş.</td>
+                                        <td colspan="6" class="text-center text-muted">Henüz toplantı eklenmemiş.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($toplantilar as $toplanti): ?>
@@ -73,11 +74,9 @@ include __DIR__ . '/../includes/header.php';
                                             <td><?php echo htmlspecialchars($toplanti['byk_adi']); ?></td>
                                             <td><?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?></td>
                                             <td>
-                                                <span class="badge bg-info"><?php echo htmlspecialchars($toplanti['toplanti_turu']); ?></span>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-<?php echo $toplanti['durum'] === 'tamamlandi' ? 'success' : ($toplanti['durum'] === 'devam_ediyor' ? 'warning' : 'info'); ?>">
-                                                    <?php echo htmlspecialchars($toplanti['durum']); ?>
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="fas fa-users me-1"></i> 
+                                                    <?php echo $toplanti['confirmed_participants']; ?> / <?php echo $toplanti['total_participants']; ?>
                                                 </span>
                                             </td>
                                             <td><?php echo htmlspecialchars($toplanti['olusturan']); ?></td>
