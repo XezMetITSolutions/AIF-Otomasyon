@@ -56,7 +56,11 @@ if ($token && $yanit) {
         $icsContent .= "END:VEVENT\r\n";
         $icsContent .= "END:VCALENDAR";
 
-        ob_clean(); // Clean any previous output
+        // buffer clearing
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
         header('Content-Type: text/calendar; charset=utf-8');
         header('Content-Disposition: attachment; filename="davetiye.ics"');
         echo $icsContent;
