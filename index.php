@@ -78,7 +78,7 @@ $pageTitle = 'Giriş Yap';
     <link rel="stylesheet" href="/assets/css/style.css">
     
     <style>
-        body.login-page {
+        body {
             background: url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
@@ -86,7 +86,6 @@ $pageTitle = 'Giriş Yap';
             align-items: center;
             justify-content: center;
             font-family: 'Inter', sans-serif;
-            padding-top: 0 !important; /* Override global style */
         }
         
         .overlay {
@@ -263,7 +262,7 @@ $pageTitle = 'Giriş Yap';
         }
     </style>
 </head>
-<body class="login-page">
+<body>
     <div class="overlay"></div>
 
     <div class="container login-container">

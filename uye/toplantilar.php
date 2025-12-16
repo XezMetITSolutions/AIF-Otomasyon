@@ -138,8 +138,7 @@ $toplantilar = $db->fetchAll("
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Sidebar -->
-<?php include __DIR__ . '/../includes/sidebar.php'; ?>
+
 
 <!-- Modern Design Assets -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -148,36 +147,69 @@ include __DIR__ . '/../includes/header.php';
 
 <style>
     :root {
-        --bg: #ffffff;
-        --card: #ffffff;
-        --muted: #6b7280;
-        --text: #0f172a;
         --primary: #009872;
-        --primary-600: #007a5e;
-        --accent: #009872;
-        --danger: #dc2626;
-        --warning: #d97706;
-        --border: #e2e8f0;
-        --input: #ffffff;
+        --primary-light: rgba(0, 152, 114, 0.1);
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.5);
     }
     
     body {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        background: radial-gradient(1200px 600px at 20% 0%, rgba(0,152,114,.05), transparent 60%),
-                    radial-gradient(900px 500px at 80% 0%, rgba(0,152,114,.03), transparent 60%),
-                    var(--bg);
-        color: var(--text);
+        font-family: 'Inter', sans-serif;
+        background: radial-gradient(circle at 0% 0%, rgba(0, 152, 114, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(0, 152, 114, 0.05) 0%, transparent 50%),
+                    #f8fafc;
+        color: var(--text-dark);
     }
-    
+
+    /* CSS Overrides for Mobile Layout Fix */
+    .dashboard-layout {
+        display: block;
+    }
+
+    .sidebar-wrapper {
+        display: none;
+    }
+
     .content-wrapper {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1rem !important;
         background: transparent !important;
         box-shadow: none !important;
     }
 
-    h1, h2, h3, h4, h5, h6 {
-        font-weight: 600;
-        letter-spacing: -0.025em;
-        color: #1e293b;
+    .main-content {
+        width: 100%;
+    }
+
+    /* Desktop View */
+    @media (min-width: 992px) {
+        .dashboard-layout {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar-wrapper {
+            display: block;
+            width: 250px;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            width: auto;
+        }
+
+        .content-wrapper {
+            padding: 1.5rem 2rem !important;
+            max-width: 1400px !important;
+            margin: 0 auto !important;
+        }
     }
 
     .card.meeting-card {
@@ -261,8 +293,15 @@ include __DIR__ . '/../includes/header.php';
     }
 </style>
 
-<main class="container-fluid mt-4">
-    <div class="content-wrapper">
+<div class="dashboard-layout">
+    <!-- Sidebar Wrapper -->
+    <div class="sidebar-wrapper">
+        <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
         <!-- Header & Filters -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-4">
             <div>
@@ -432,7 +471,9 @@ include __DIR__ . '/../includes/header.php';
             </div>
         <?php endif; ?>
     </div>
-</main>
+    </div>
+    </main>
+</div>
 
 <style>
 /* Custom Utilities */

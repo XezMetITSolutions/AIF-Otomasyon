@@ -32,10 +32,7 @@ $formBasePath = '/Hesaplama';
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
-<main class="container-fluid mt-4">
-    <div class="content-wrapper">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -208,9 +205,67 @@ include __DIR__ . '/../includes/header.php';
             }
             .suggestion-item:last-child { border-bottom: 0; }
             .suggestion-item:hover { background: rgba(0,152,114,.08); }
+
+            /* CSS Overrides for Mobile Layout Fix */
+            .dashboard-layout {
+                display: block;
+            }
+
+            .sidebar-wrapper {
+                display: none;
+            }
+
+            .content-wrapper {
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                margin-left: 0 !important;
+                padding: 1rem !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
+            .main-content {
+                width: 100%;
+            }
+
+            /* Desktop View */
+            @media (min-width: 992px) {
+                .dashboard-layout {
+                    display: flex;
+                    flex-direction: row;
+                }
+
+                .sidebar-wrapper {
+                    display: block;
+                    width: 250px;
+                    flex-shrink: 0;
+                    z-index: 1000;
+                }
+                
+                .main-content {
+                    flex-grow: 1;
+                    width: auto;
+                }
+
+                .content-wrapper {
+                    padding: 1.5rem 2rem !important;
+                    max-width: 1400px !important;
+                    margin: 0 auto !important;
+                }
+            }
         </style>
 
-        <div class="card mb-4">
+        <div class="dashboard-layout">
+            <!-- Sidebar Wrapper -->
+            <div class="sidebar-wrapper">
+                <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+            </div>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="content-wrapper">
+                <div class="card mb-4">
             <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h1 class="h4 mb-2">
@@ -224,6 +279,7 @@ include __DIR__ . '/../includes/header.php';
                     <a href="<?php echo $formBasePath; ?>/index.html" target="_blank" rel="noopener" class="btn btn-outline-success">
                         <i class="fas fa-external-link-alt me-1"></i>Yedek Tam Ekran
                     </a>
+                </div>
                 </div>
             </div>
         </div>
@@ -262,6 +318,9 @@ include __DIR__ . '/../includes/header.php';
                 <div id="spinner"></div>
                 <div id="errorMessage" class="error-message"></div>
             </div>
+        </div>
+    </div>
+            </main>
         </div>
     </div>
 </main>

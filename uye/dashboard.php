@@ -87,10 +87,71 @@ $son_izinler = $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetchAll(
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Sidebar -->
-<?php include __DIR__ . '/../includes/sidebar.php'; ?>
+<style>
+    /* CSS Overrides for Dashboard */
+    
+    /* Reset layout for container */
+    .dashboard-layout {
+        display: block; /* Default to block for mobile */
+        /* margin-top: 56px; removed because body has padding-top: 56px in style.css */
+    }
 
-<main class="container-fluid mt-4 pb-5">
+    .sidebar-wrapper {
+        display: none; /* Hide custom wrapper on mobile */
+    }
+
+    /* Fix Content Width and Spacing */
+    .content-wrapper {
+        /* Override style.css global styles that cause squashing */
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1rem !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .main-content {
+        width: 100%;
+    }
+
+    /* Desktop View */
+    @media (min-width: 992px) {
+        .dashboard-layout {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar-wrapper {
+            display: block;
+            width: 250px;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            width: auto;
+        }
+
+        .content-wrapper {
+            /* On desktop, we want comfortable padding but full width of the main area */
+            padding: 1.5rem 2rem !important;
+            max-width: 1400px !important; /* Cap width on very large screens */
+            margin: 0 auto !important; /* Center content */
+        }
+    }
+</style>
+
+<div class="dashboard-layout">
+    <!-- Sidebar Wrapper -->
+    <div class="sidebar-wrapper">
+        <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
         <div class="content-wrapper">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -344,8 +405,9 @@ include __DIR__ . '/../includes/header.php';
             </div>
         </div>
         <?php endif; ?>
-    </div>
-</main>
+        </div>
+    </main>
+</div>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
