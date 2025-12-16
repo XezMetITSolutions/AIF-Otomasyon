@@ -31,7 +31,7 @@
                                             </div>
                                         </th>
                                         <th>Ad Soyad</th>
-                                        <th>Alt Birim</th>
+                                        <th>Mazeret</th>
                                         <th>Katılım Durumu</th>
                                         <th>İşlemler</th>
                                     </tr>
@@ -49,7 +49,15 @@
                                                 <br>
                                                 <small class="text-muted"><?php echo htmlspecialchars($katilimci['email']); ?></small>
                                             </td>
-                                            <td><?php echo htmlspecialchars($katilimci['alt_birim_adi'] ?? '-'); ?></td>
+                                            <td>
+                                                <?php 
+                                                if (!empty($katilimci['red_nedeni'])) {
+                                                    echo '<span class="text-danger small"><i class="fas fa-info-circle me-1"></i>' . htmlspecialchars($katilimci['red_nedeni']) . '</span>';
+                                                } else {
+                                                    echo '-';
+                                                }
+                                                ?>
+                                            </td>
                                             <td>
                                                 <select class="form-select form-select-sm katilim-durum-select" 
                                                         data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>">
