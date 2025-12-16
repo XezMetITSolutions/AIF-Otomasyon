@@ -27,6 +27,18 @@ class Mail {
         $acceptUrl = "{$baseUrl}/toplanti-yanit.php?token={$token}&yanit=katiliyor";
         $rejectUrl = "{$baseUrl}/toplanti-yanit.php?token={$token}&yanit=katilmiyor";
 
+        $gundemHtml = '';
+        if (!empty($gundem)) {
+            $gundemHtml = <<<HTML
+            <div style="margin-bottom: 35px;">
+                <h3 style="margin: 0 0 15px 0; color: #343a40; font-size: 16px; border-bottom: 2px solid #00936F; display: inline-block; padding-bottom: 5px;">Gündem</h3>
+                <div style="color: #6c757d; font-size: 15px; line-height: 1.6;">
+                    {$gundem}
+                </div>
+            </div>
+HTML;
+        }
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -82,14 +94,7 @@ class Mail {
                             </table>
 
                             <!-- Agenda -->
-                            <?php if (!empty($gundem)): ?>
-                            <div style="margin-bottom: 35px;">
-                                <h3 style="margin: 0 0 15px 0; color: #343a40; font-size: 16px; border-bottom: 2px solid #00936F; display: inline-block; padding-bottom: 5px;">Gündem</h3>
-                                <div style="color: #6c757d; font-size: 15px; line-height: 1.6;">
-                                    {$gundem}
-                                </div>
-                            </div>
-                            <?php endif; ?>
+                            {$gundemHtml}
 
                             <!-- Actions -->
                             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
