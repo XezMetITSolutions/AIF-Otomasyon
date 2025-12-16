@@ -1,11 +1,18 @@
 <?php
 class Mail {
     public static function send($to, $subject, $message) {
-        $headers = "MIME-Version: 1.0" . "\r\n";
-        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-        $headers .= 'From: AIF Otomasyon <noreply@aifcrm.metechnik.at>' . "\r\n";
+        $config = require __DIR__ . '/../config/mail.php';
         
-        return mail($to, $subject, $message, $headers);
+        require_once __DIR__ . '/SimpleSMTP.php';
+        $smtp = new SimpleSMTP($config);
+        
+        return $smtp->send(
+            $to, 
+            $subject, 
+            $message, 
+            $config['from_email'], 
+            $config['from_name']
+        );
     }
 
     public static function getMeetingInvitationTemplate($data) {

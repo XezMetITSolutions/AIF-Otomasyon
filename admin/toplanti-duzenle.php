@@ -115,6 +115,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             
             $success = 'Toplantı bilgileri güncellendi!';
+        } elseif ($action === 'send_invitations') {
+            require_once __DIR__ . '/../classes/Mail.php';
+            
+            $selected_ids = $_POST['selected_participants'] ?? [];
+            if (empty($selected_ids)) {
+                throw new Exception('Lütfen en az bir katılımcı seçin.');
+            }
+
+            $success_count = 0;
+            $fail_count = 0;
+
+            // Seçilen katılımcıların detaylarını getir
+            $placeholders = implode(',', array_fill(0, count($selected_ids), '?'));
+            $params = array_merge([$toplanti_id], $selected_ids);
+            
+            $targets = $db->fetchAll("
+                SELECT k.ad, k.soyad, k.email, tk.token
+                FROM toplanti_katilimcilar tk
+                INNER JOIN kullanicilar k ON tk.kullanici_id = k.kullanici_id
+                WHERE tk.toplanti_id = ? AND tk.katilimci_id IN ($placeholders)
+            ", $params);
+
+            foreach ($targets as $target) {
+                // Token yoksa oluştur ve kaydet
+                if (empty($target['token'])) {
+                    $target['token'] = bin2hex(random_bytes(32));
+                    $db->query("UPDATE toplanti_katilimcilar SET token = ? WHERE toplanti_id = ? AND kullanici_id = (SELECT kullanici_id FROM kullanicilar WHERE email = ?)", [
+                        $target['token'], 
+                        $toplanti_id, 
+                        $target['email']
+                    ]);
+                }
+
+                $mailData = [
+                    'baslik' => $toplanti['baslik'],
+                    'toplanti_tarihi' => $toplanti['toplanti_tarihi'],
+                    'konum' => $toplanti['konum'],
+                    'aciklama' => $toplanti['aciklama'],
+                    'ad_soyad' => $target['ad'] . ' ' . $target['soyad'],
+                    'token' => $target['token']
+                ];
+
+                $subject = 'Toplantı Daveti: ' . $toplanti['baslik'];
+                $message = Mail::getMeetingInvitationTemplate($mailData);
+
+                if (Mail::send($target['email'], $subject, $message)) {
+                    $success_count++;
+                } else {
+                    $fail_count++;
+                }
+            }
+
+            $success = "İşlem tamamlandı: $success_count başarılı, $fail_count başarısız gönderim.";
         }
         
         // Sayfayı yenile

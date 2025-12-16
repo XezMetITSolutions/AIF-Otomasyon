@@ -14,51 +14,76 @@
                         <i class="fas fa-info-circle me-2"></i>Henüz katılımcı eklenmemiş
                     </p>
                 <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Ad Soyad</th>
-                                    <th>Alt Birim</th>
-                                    <th>Katılım Durumu</th>
-                                    <th>İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($katilimcilar as $katilimci): ?>
+                    <form method="POST" id="davetiyeForm">
+                        <input type="hidden" name="action" value="send_invitations">
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary" onclick="return confirm('Seçili katılımcılara davetiye e-postası gönderilecek. Emin misiniz?')">
+                                <i class="fas fa-paper-plane me-2"></i>Seçilenlere Davetiye Gönder
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <strong><?php echo htmlspecialchars($katilimci['ad'] . ' ' . $katilimci['soyad']); ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?php echo htmlspecialchars($katilimci['email']); ?></small>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($katilimci['alt_birim_adi'] ?? '-'); ?></td>
-                                        <td>
-                                            <select class="form-select form-select-sm katilim-durum-select" 
-                                                    data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>">
-                                                <option value="beklemede" <?php echo $katilimci['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>
-                                                    ⌛ Davet Edildi
-                                                </option>
-                                                <option value="katilacak" <?php echo $katilimci['katilim_durumu'] === 'katilacak' ? 'selected' : ''; ?>>
-                                                    ✅ Katılacak
-                                                </option>
-                                                <option value="katilmayacak" <?php echo $katilimci['katilim_durumu'] === 'katilmayacak' ? 'selected' : ''; ?>>
-                                                    ❌ Katılmayacak
-                                                </option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-danger katilimci-sil-btn" 
-                                                    data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>"
-                                                    data-ad="<?php echo htmlspecialchars($katilimci['ad'] . ' ' . $katilimci['soyad']); ?>">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
+                                        <th style="width: 40px;">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAll">
+                                            </div>
+                                        </th>
+                                        <th>Ad Soyad</th>
+                                        <th>Alt Birim</th>
+                                        <th>Katılım Durumu</th>
+                                        <th>İşlemler</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($katilimcilar as $katilimci): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input katilimci-checkbox" type="checkbox" name="selected_participants[]" value="<?php echo $katilimci['katilimci_id']; ?>">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong><?php echo htmlspecialchars($katilimci['ad'] . ' ' . $katilimci['soyad']); ?></strong>
+                                                <br>
+                                                <small class="text-muted"><?php echo htmlspecialchars($katilimci['email']); ?></small>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($katilimci['alt_birim_adi'] ?? '-'); ?></td>
+                                            <td>
+                                                <select class="form-select form-select-sm katilim-durum-select" 
+                                                        data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>">
+                                                    <option value="beklemede" <?php echo $katilimci['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>
+                                                        ⌛ Davet Edildi
+                                                    </option>
+                                                    <option value="katilacak" <?php echo $katilimci['katilim_durumu'] === 'katilacak' ? 'selected' : ''; ?>>
+                                                        ✅ Katılacak
+                                                    </option>
+                                                    <option value="katilmayacak" <?php echo $katilimci['katilim_durumu'] === 'katilmayacak' ? 'selected' : ''; ?>>
+                                                        ❌ Katılmayacak
+                                                    </option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-danger katilimci-sil-btn" 
+                                                        data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>"
+                                                        data-ad="<?php echo htmlspecialchars($katilimci['ad'] . ' ' . $katilimci['soyad']); ?>">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    
+                    <script>
+                        document.getElementById('selectAll').addEventListener('change', function() {
+                            const checkboxes = document.querySelectorAll('.katilimci-checkbox');
+                            checkboxes.forEach(cb => cb.checked = this.checked);
+                        });
+                    </script>
                 <?php endif; ?>
             </div>
         </div>
