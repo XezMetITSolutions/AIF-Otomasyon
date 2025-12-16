@@ -88,39 +88,58 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <style>
-    /* Sidebar & Layout Fixes */
+    /* CSS Overrides for Dashboard */
+    
+    /* Reset layout for container */
     .dashboard-layout {
-        display: flex;
-        min-height: calc(100vh - 56px);
-        margin-top: 56px; /* Height of fixed navbar */
+        display: block; /* Default to block for mobile */
+        /* margin-top: 56px; removed because body has padding-top: 56px in style.css */
     }
 
     .sidebar-wrapper {
-        width: 250px;
-        flex-shrink: 0;
-        border-right: 1px solid rgba(0,0,0,0.05);
-        background: rgba(255,255,255,0.8);
-        display: none; /* Hidden by default (mobile) */
+        display: none; /* Hide custom wrapper on mobile */
+    }
+
+    /* Fix Content Width and Spacing */
+    .content-wrapper {
+        /* Override style.css global styles that cause squashing */
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1rem !important;
+        background: transparent !important;
+        box-shadow: none !important;
     }
 
     .main-content {
-        flex-grow: 1;
-        width: 100%; /* Ensure full width on mobile */
-        padding: 1.5rem;
+        width: 100%;
     }
 
     /* Desktop View */
     @media (min-width: 992px) {
+        .dashboard-layout {
+            display: flex;
+            flex-direction: row;
+        }
+
         .sidebar-wrapper {
             display: block;
-            position: fixed;
-            height: calc(100vh - 56px);
-            overflow-y: auto;
+            width: 250px;
+            flex-shrink: 0;
             z-index: 1000;
         }
         
         .main-content {
-            margin-left: 250px; /* Push content to right */
+            flex-grow: 1;
+            width: auto;
+        }
+
+        .content-wrapper {
+            /* On desktop, we want comfortable padding but full width of the main area */
+            padding: 1.5rem 2rem !important;
+            max-width: 1400px !important; /* Cap width on very large screens */
+            margin: 0 auto !important; /* Center content */
         }
     }
 </style>
