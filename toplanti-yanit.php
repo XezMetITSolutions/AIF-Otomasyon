@@ -30,14 +30,7 @@ if ($token && $yanit) {
             WHERE katilimci_id = ?
         ", [$yeniDurum, $katilimci['katilimci_id']]);
 
-        // Self-Healing: If 'karilimci_id' column name is typo in previous schema, try correct 'katilimci_id'
-         if ($db->lastError()) {
-             $db->query("
-                UPDATE toplanti_katilimcilar 
-                SET katilim_durumu = ? 
-                WHERE katilimci_id = ?
-            ", [$yeniDurum, $katilimci['katilimci_id']]);
-         }
+
 
         if ($yeniDurum === 'katilacak') {
             $messageType = 'success';
