@@ -16,11 +16,11 @@ class Mail {
     }
 
     public static function getMeetingInvitationTemplate($data) {
-        $baslik = htmlspecialchars($data['baslik']);
-        $tarih = date('d.m.Y H:i', strtotime($data['toplanti_tarihi']));
-        $konum = htmlspecialchars($data['konum']);
-        $gundem = nl2br(htmlspecialchars($data['aciklama']));
-        $adSoyad = htmlspecialchars($data['ad_soyad']);
+        $baslik = htmlspecialchars($data['baslik'] ?? '');
+        $tarih = date('d.m.Y H:i', strtotime($data['toplanti_tarihi'] ?? 'now'));
+        $konum = htmlspecialchars($data['konum'] ?? '');
+        $gundem = nl2br(htmlspecialchars($data['aciklama'] ?? ''));
+        $adSoyad = htmlspecialchars($data['ad_soyad'] ?? '');
         
         // Token varsa linkleri oluştur, yoksa # koy (preview için)
         $token = $data['token'] ?? 'preview';
@@ -91,10 +91,10 @@ HTML;
     }
 
     public static function getMeetingCancellationTemplate($data) {
-        $baslik = htmlspecialchars($data['baslik']);
-        $tarih = date('d.m.Y H:i', strtotime($data['toplanti_tarihi']));
+        $baslik = htmlspecialchars($data['baslik'] ?? '');
+        $tarih = date('d.m.Y H:i', strtotime($data['toplanti_tarihi'] ?? 'now'));
         $konum = htmlspecialchars($data['konum'] ?? '-');
-        $adSoyad = htmlspecialchars($data['ad_soyad']);
+        $adSoyad = htmlspecialchars($data['ad_soyad'] ?? '');
         $iptalNedeni = !empty($data['iptal_nedeni']) ? nl2br(htmlspecialchars($data['iptal_nedeni'])) : 'Belirtilmemiş';
         
         return <<<HTML
