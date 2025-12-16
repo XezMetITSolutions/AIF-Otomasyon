@@ -218,13 +218,7 @@
                     <p class="text-muted mb-0">Alınan Karar</p>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stat-box">
-                    <i class="fas fa-file-alt fa-2x text-warning mb-2"></i>
-                    <h4><?php echo $tutanak ? '1' : '0'; ?></h4>
-                    <p class="text-muted mb-0">Tutanak</p>
-                </div>
-            </div>
+
         </div>
     </div>
 </div>
