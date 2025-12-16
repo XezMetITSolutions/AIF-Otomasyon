@@ -115,6 +115,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             
             $success = 'Toplantı bilgileri güncellendi!';
+
+            // Auto-Sync: Description to Agenda
+            if (!empty($aciklama)) {
+                // 1. Get existing agenda items to prevent duplicates
+                $existing_items = $db->fetchAll("SELECT baslik FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
+                $existing_titles = array_map(function($item) { return mb_strtolower(trim($item['baslik'])); }, $existing_items);
+                
+                // 2. Parse description
+                $lines = explode("\n", $aciklama);
+                $new_items = [];
+                
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if (empty($line)) continue;
+                    
+                    // Remove bullets/numbers (e.g., "1.", "1-", "-", "*")
+                    $clean_line = preg_replace('/^(\d+[\.\-\)]|\-|\*)\s+/', '', $line);
+                    $clean_line = trim($clean_line);
+                    
+                    if (empty($clean_line)) continue;
+                    
+                    // Check if exists (case-insensitive)
+                    if (!in_array(mb_strtolower($clean_line), $existing_titles)) {
+                        $new_items[] = $clean_line;
+                    }
+                }
+                
+                // 3. Insert new items
+                if (!empty($new_items)) {
+                    // Get current max sort order
+                    $max_sort = $db->fetch("SELECT MAX(sira_no) as max_sira FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
+                    $current_sort = ($max_sort['max_sira'] ?? 0) + 1;
+                    
+                    $insert_sql = "INSERT INTO toplanti_gundem (toplanti_id, baslik, sira_no, durum) VALUES (?, ?, ?, 'beklemede')";
+                    $stmt = $db->getConnection()->prepare($insert_sql);
+                    
+                    foreach ($new_items as $item) {
+                        $stmt->execute([$toplanti_id, $item, $current_sort]);
+                        $current_sort++;
+                    }
+                    
+                    $success .= " (" . count($new_items) . " yeni gündem maddesi eklendi)";
+                }
+            }
         } elseif ($action === 'send_invitations') {
             require_once __DIR__ . '/../classes/Mail.php';
             
