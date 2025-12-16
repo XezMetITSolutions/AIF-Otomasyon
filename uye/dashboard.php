@@ -87,6 +87,7 @@ $son_izinler = $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetchAll(
 include __DIR__ . '/../includes/header.php';
 ?>
 
+<style>
     /* Sidebar & Layout Fixes */
     .dashboard-layout {
         display: flex;
