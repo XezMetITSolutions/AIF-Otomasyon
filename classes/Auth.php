@@ -8,6 +8,7 @@ class Auth {
     private $db;
     private $modulePermissionsCacheUser = null;
     private $modulePermissionsCache = [];
+    private $accountingHeadCache = []; // Cache for accounting head status
     
     // Rol sabitleri
     const ROLE_SUPER_ADMIN = 'super_admin';
@@ -143,6 +144,24 @@ class Auth {
         
         return false;
     }
+
+    /**
+     * Kullanıcının Muhasebe Başkanı olup olmadığını kontrol et
+     */
+    public function isAccountingHead($userId) {
+        if (isset($this->accountingHeadCache[$userId])) {
+            return $this->accountingHeadCache[$userId];
+        }
+
+        try {
+            $result = $this->db->fetch("SELECT count(*) as cnt FROM byk WHERE muhasebe_baskani_id = ?", [$userId]);
+            $isHead = ($result && $result['cnt'] > 0);
+            $this->accountingHeadCache[$userId] = $isHead;
+            return $isHead;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
     
     /**
      * Modül yetkisi kontrolü
@@ -155,6 +174,11 @@ class Auth {
 
         // Super admin tüm modüllere erişebilir
         if ($user['role'] === self::ROLE_SUPER_ADMIN) {
+            return true;
+        }
+
+        // Muhasebe Başkanı ise ilgili modüllere otomatik erişim
+        if ($this->isAccountingHead($user['id']) && in_array($moduleKey, ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
             return true;
         }
 
@@ -281,4 +305,3 @@ class Auth {
         return true;
     }
 }
-
