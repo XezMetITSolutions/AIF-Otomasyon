@@ -10,6 +10,20 @@ $isSuperAdmin = $user['role'] === 'super_admin';
 $isBaskan = $user['role'] === 'baskan';
 $isUye = $user['role'] === 'uye';
 $currentPath = $_SERVER['PHP_SELF'];
+
+// Muhasebe Başkanı olup olmadığını kontrol et
+$isMuhasebeBaskani = false;
+if ($user) {
+    $db = Database::getInstance();
+    try {
+        $checkMuhasebe = $db->fetch("SELECT count(*) as cnt FROM byk WHERE muhasebe_baskani_id = ?", [$user['id']]);
+        if ($checkMuhasebe && $checkMuhasebe['cnt'] > 0) {
+            $isMuhasebeBaskani = true;
+        }
+    } catch (Exception $e) {
+        // Tablo kolonu yoksa veya hata varsa yoksay
+    }
+}
 ?>
 
 <div class="sidebar bg-light border-end">
@@ -274,7 +288,11 @@ $currentPath = $_SERVER['PHP_SELF'];
             <?php
                 // Baskan sidebar logic uses the global $baskanSidebarSections defined above
                 foreach ($baskanSidebarSections as $section) {
-                    $visibleLinks = array_filter($section['links'], function ($link) use ($auth) {
+                    $visibleLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani) {
+                        // Muhasebe başkanı ise harcama ve iade modüllerini görsün
+                        if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
+                            return true;
+                        }
                         return $auth->hasModulePermission($link['key']);
                     });
 
@@ -326,7 +344,10 @@ $currentPath = $_SERVER['PHP_SELF'];
             <?php
             // Render Authorized Baskan Modules for Uye
             foreach ($baskanSidebarSections as $section) {
-                $visibleLinks = array_filter($section['links'], function ($link) use ($auth) {
+                $visibleLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani) {
+                    if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
+                        return true;
+                    }
                     return $auth->hasModulePermission($link['key']);
                 });
 
