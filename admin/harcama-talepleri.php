@@ -90,8 +90,22 @@ include __DIR__ . '/../includes/header.php';
                                             <td><?php echo htmlspecialchars($talep['byk_adi']); ?></td>
                                             <td><strong><?php echo number_format($talep['tutar'], 2, ',', '.'); ?> TL</strong></td>
                                             <td>
-                                                <span class="badge bg-<?php echo $talep['durum'] === 'onaylandi' ? 'success' : ($talep['durum'] === 'reddedildi' ? 'danger' : 'warning'); ?>">
-                                                    <?php echo htmlspecialchars($talep['durum']); ?>
+                                                <?php 
+                                                    $statusClass = 'warning';
+                                                    $statusText = htmlspecialchars($talep['durum']);
+                                                    
+                                                    if ($talep['durum'] === 'onaylandi') {
+                                                        $statusClass = 'success';
+                                                    } elseif ($talep['durum'] === 'reddedildi') {
+                                                        $statusClass = 'danger';
+                                                    } elseif ($talep['durum'] === 'beklemede') {
+                                                        $stage = $talep['onay_asamasi'] ?? 1;
+                                                        if ($stage == 1) $statusText .= ' (Birim)';
+                                                        if ($stage == 2) $statusText .= ' (AT)';
+                                                    }
+                                                ?>
+                                                <span class="badge bg-<?php echo $statusClass; ?>">
+                                                    <?php echo $statusText; ?>
                                                 </span>
                                             </td>
                                             <td><?php echo date('d.m.Y', strtotime($talep['olusturma_tarihi'])); ?></td>
