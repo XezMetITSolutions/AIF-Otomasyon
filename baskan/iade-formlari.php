@@ -77,6 +77,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     WHERE talep_id = ?
                 ", [$user['id'], $note ?: null, $talepId]);
                 $message = 'Talep ödenmedi olarak işaretlendi.';
+            } elseif ($action === 'approve') {
+                 $db->query("
+                    UPDATE harcama_talepleri
+                    SET durum = 'onaylandi',
+                        onaylayan_id = ?,
+                        onay_tarihi = NOW(),
+                        onay_aciklama = ?
+                    WHERE talep_id = ?
+                ", [$user['id'], $note ?: 'Birim Onayı Verildi', $talepId]);
+                $message = 'Talep onaylandı ve AT muhasebesine iletildi.';
+            } elseif ($action === 'reject') {
+                 $db->query("
+                    UPDATE harcama_talepleri
+                    SET durum = 'reddedildi',
+                        onaylayan_id = ?,
+                        onay_tarihi = NOW(),
+                        onay_aciklama = ?
+                    WHERE talep_id = ?
+                ", [$user['id'], $note ?: 'Reddedildi', $talepId]);
+                $message = 'Talep reddedildi.';
             } else {
                 $message = 'Geçersiz işlem.';
                 $messageType = 'danger';
@@ -478,15 +498,58 @@ include __DIR__ . '/../includes/header.php';
                                         </td>
                                         <td>
                                             <div class="actions">
+                                                <?php 
+                                                // Yetki Kontrolü: 
+                                                // Eğer AT birimi başkanı ise veya Super Admin ise -> ÖDEME butonlarını gör
+                                                // Diğer birim başkanları -> SADECE ONAY/RED butonlarını gör
+                                                
+                                                // Bu sayfaya sadece yetkililer giriyor zaten.
+                                                // Kullanıcının birim kodunu bulalım (Session veya DB'den)
+                                                // Basitlik için: Session'da yoksa sorgulayalım.
+                                                // Not: Bu sayfa zaten BYK filtreli çalışıyor. $user['byk_id'] kullanıcının kendi birimi.
+                                                
+                                                // Kullanıcının birim kodunu al
+                                                $userBykCode = '';
+                                                try {
+                                                    $bykInfo = $db->fetch("SELECT byk_kodu FROM byk WHERE byk_id = ?", [$user['byk_id']]);
+                                                    $userBykCode = $bykInfo['byk_kodu'] ?? '';
+                                                } catch (Exception $e) {}
+
+                                                $isAtUnit = ($userBykCode === 'AT');
+                                                $canPay = ($isAtUnit || $user['role'] === 'super_admin');
+                                                ?>
+
                                                 <form method="post">
                                                     <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                                     <input type="hidden" name="talep_id" value="<?php echo $talep['talep_id']; ?>">
-                                                    <input type="hidden" name="action" value="<?php echo $isPaid ? 'mark_unpaid' : 'mark_paid'; ?>">
-                                                    <button type="submit" class="action-button <?php echo $isPaid ? 'unpay' : 'pay'; ?>">
-                                                        <i class="fas <?php echo $isPaid ? 'fa-undo' : 'fa-check'; ?> me-1"></i>
-                                                        <?php echo $isPaid ? 'Ödenmedi Yap' : 'Ödendi'; ?>
-                                                    </button>
-                                                    <input type="text" name="aciklama" class="action-input" placeholder="Not (opsiyonel)">
+                                                    
+                                                    <?php if ($canPay): ?>
+                                                        <!-- AT veya Super Admin: ÖDEME İŞLEMLERİ -->
+                                                        <input type="hidden" name="action" value="<?php echo $isPaid ? 'mark_unpaid' : 'mark_paid'; ?>">
+                                                        <button type="submit" class="action-button <?php echo $isPaid ? 'unpay' : 'pay'; ?>">
+                                                            <i class="fas <?php echo $isPaid ? 'fa-undo' : 'fa-check'; ?> me-1"></i>
+                                                            <?php echo $isPaid ? 'Ödenmedi Yap' : 'Ödendi Olarak İşaretle'; ?>
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <!-- Diğer Muhasebe Başkanları: ONAY İŞLEMLERİ -->
+                                                        <?php if ($talep['durum'] === 'beklemede'): ?>
+                                                            <button type="button" class="action-button pay mb-2" onclick="openApprovalModal(<?php echo $talep['talep_id']; ?>, 'approve')">
+                                                                <i class="fas fa-check me-1"></i>Onayla (AT'ye Gönder)
+                                                            </button>
+                                                            <button type="button" class="action-button unpay" onclick="openApprovalModal(<?php echo $talep['talep_id']; ?>, 'reject')">
+                                                                <i class="fas fa-times me-1"></i>Reddet (Düzeltme İste)
+                                                            </button>
+                                                        <?php else: ?>
+                                                            <div class="text-muted text-center small border p-2 rounded">
+                                                                İşlem Yapıldı<br>
+                                                                (<?php echo ucfirst($talep['durum']); ?>)
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                    
+                                                    <?php if ($canPay): ?>
+                                                        <input type="text" name="aciklama" class="action-input" placeholder="Not (opsiyonel)">
+                                                    <?php endif; ?>
                                                 </form>
                                             </div>
                                         </td>
@@ -500,6 +563,34 @@ include __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </main>
+
+<!-- Action Modal for Non-AT Units -->
+<div class="modal fade" id="actionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actionModalLabel">İşlem Onayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
+                <input type="hidden" name="talep_id" id="modalTalepId">
+                <input type="hidden" name="action" id="modalAction">
+                
+                <p id="modalMessage"></p>
+                
+                <div class="mb-3">
+                    <label class="form-label">Açıklama / Not</label>
+                    <textarea name="aciklama" class="form-control" rows="3" placeholder="İsterseniz bir not ekleyebilirsiniz..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="submit" class="btn btn-primary" id="modalSubmitBtn">Onayla</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
     function applyIadeFilters() {
@@ -519,6 +610,32 @@ include __DIR__ . '/../includes/header.php';
 
     function resetIadeFilters() {
         window.location.href = window.location.pathname;
+    }
+
+    function openApprovalModal(talepId, action) {
+        const modal = new bootstrap.Modal(document.getElementById('actionModal'));
+        document.getElementById('modalTalepId').value = talepId;
+        document.getElementById('modalAction').value = action;
+        
+        const label = document.getElementById('actionModalLabel');
+        const message = document.getElementById('modalMessage');
+        const btn = document.getElementById('modalSubmitBtn');
+        
+        if (action === 'approve') {
+            label.innerText = 'Talebi Onayla';
+            label.className = 'modal-title text-success';
+            message.innerText = 'Bu talebi onaylamak ve AT Muhasebesine iletmek üzeresiniz. Onaylıyor musunuz?';
+            btn.className = 'btn btn-success';
+            btn.innerText = 'Onayla ve Gönder';
+        } else {
+            label.innerText = 'Talebi Reddet';
+            label.className = 'modal-title text-danger';
+            message.innerText = 'Bu talebi reddederek düzeltme isteyeceksiniz. Emin misiniz?';
+            btn.className = 'btn btn-danger';
+            btn.innerText = 'Reddet';
+        }
+        
+        modal.show();
     }
 </script>
 
