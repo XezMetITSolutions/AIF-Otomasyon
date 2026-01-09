@@ -252,9 +252,7 @@ include __DIR__ . '/../includes/header.php';
                                             </div>
                                             <div>
                                                 <h6 class="mb-0 fw-semibold text-dark"><?php echo htmlspecialchars($etkinlik['baslik']); ?></h6>
-                                                <small class="text-muted">
-                                                    <i class="far fa-clock me-1"></i><?php echo date('H:i', strtotime($etkinlik['baslangic_tarihi'])); ?>
-                                                </small>
+                                                <!-- Time removed as per request -->
                                             </div>
                                         </div>
                                         <a href="/uye/etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
