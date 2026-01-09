@@ -23,19 +23,40 @@ $monthFilter = $_GET['ay'] ?? '';
 $yearFilter = $_GET['yil'] ?? '';
 
 // Force BYK filter for security
-$where = ["e.byk_id = ?"];
-$params = [$user['byk_id']];
+// Force BYK filter for security
+// CUSTOM LOGIC: If user is AT (Ana Teşkilat), allow seeing events from related units (KT, KGT, GT) in the same region
+$userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
+$isAT = ($userByk && $userByk['byk_kodu'] === 'AT');
+$regionPrefix = '';
+
+if ($isAT) {
+    // Extract region name (remove 'AT' or 'Ana Teşkilat' from the end)
+    // Assuming format "RegionName AT" or "RegionName Ana Teşkilat"
+    // Heuristic: Take the part before the last word if it contains AT/Ana Teşkilat, 
+    // OR simply match by region name if we had one.
+    // Let's assume the BYK Name starts with the Region Name.
+    // Simplest: Find all BYKs that start with the same first word? No, could be "Viyana" vs "Villach".
+    // Better: Remove "Ana Teşkilat" or "AT" from the name.
+    $regionName = str_replace([' Ana Teşkilat', ' AT'], '', $userByk['byk_adi']);
+    $regionName = trim($regionName);
+    $regionPrefix = $regionName; // Store for valid usage
+    
+    // Find all related BYK IDs
+    $relatedByks = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_adi LIKE ?", ["$regionName%"]);
+    $relatedBykIds = array_column($relatedByks, 'byk_id');
+    
+    if (empty($relatedBykIds)) {
+        $relatedBykIds = [$user['byk_id']];
+    }
+    
+    $where = ["e.byk_id IN (" . implode(',', $relatedBykIds) . ")"];
+    $params = []; // Reset params because we hardcoded IDs in IN clause (safe integers usually, but cleaning recommended if inputs were dynamic)
+} else {
+    $where = ["e.byk_id = ?"];
+    $params = [$user['byk_id']];
+}
 
 if ($search) {
-    // Note: Parameter order matters. Since we already pushed byk_id, search params must come after.
-    // BUT we are using named params or ? ? ?.
-    // Standard PDO uses ? in order.
-    // So if I add search to where, I must add search to params IN ORDER.
-    // Correct approach:
-    // $where[] = "(...)";
-    // $params[] = ...;
-    // BUT e.byk_id is already first.
-    
     $where[] = "(e.baslik LIKE ? OR e.aciklama LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
@@ -49,6 +70,19 @@ if ($monthFilter) {
 if ($yearFilter) {
     $where[] = "YEAR(e.baslangic_tarihi) = ?";
     $params[] = $yearFilter;
+}
+
+// Birim Filtresi (Sadece AT için)
+$birimFilter = $_GET['birim'] ?? '';
+if ($isAT && $birimFilter) {
+    // Filter by creating a subquery or join? No, e.byk_id must match the selected unit type's byk_id
+    // We need to find the specific BYK ID for the selected unit code within this region
+    // Or simpler: Join BYK table and filter by byk_kodu
+    // We already do a left join below.
+    // NOTE: We can't add this to $where easily because the JOIN happens in the main query.
+    // Let's add the condition to the WHERE clause using the alias 'b'
+    $where[] = "b.byk_kodu = ?";
+    $params[] = $birimFilter;
 }
 
 $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -326,12 +360,33 @@ include __DIR__ . '/../includes/header.php';
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-search me-1"></i>Filtrele
                             </button>
-                            <?php if ($search || $monthFilter || $yearFilter != date('Y')): ?>
+                            <?php if ($search || $monthFilter || $yearFilter != date('Y') || ($isAT && $birimFilter)): ?>
                                 <a href="/panel/baskan_etkinlikler.php" class="btn btn-secondary">
                                     <i class="fas fa-times"></i>
                                 </a>
                             <?php endif; ?>
                         </div>
+                        
+                        <?php if ($isAT): ?>
+                        <div class="col-12 border-top pt-3 mt-3">
+                            <label class="form-label d-block text-muted small fw-bold mb-2">BİRİM GÖSTERİMİ (Bölge: <?php echo htmlspecialchars($regionName); ?>)</label>
+                            <div class="btn-group" role="group">
+                                <a href="?<?php echo http_build_query(array_merge($_GET, ['birim' => ''])); ?>" class="btn btn-sm btn-outline-secondary <?php echo $birimFilter == '' ? 'active' : ''; ?>">Tümü</a>
+                                <?php
+                                // Get available unit types in this region
+                                $availableTypes = $db->fetchAll("SELECT DISTINCT byk_kodu FROM byk WHERE byk_adi LIKE ? ORDER BY byk_kodu", ["$regionPrefix%"]);
+                                foreach ($availableTypes as $type):
+                                    if(empty($type['byk_kodu'])) continue;
+                                    $label = $type['byk_kodu'];
+                                    $isActive = ($birimFilter == $type['byk_kodu']);
+                                ?>
+                                <a href="?<?php echo http_build_query(array_merge($_GET, ['birim' => $type['byk_kodu']])); ?>" class="btn btn-sm btn-outline-primary <?php echo $isActive ? 'active' : ''; ?>">
+                                    <?php echo htmlspecialchars($label); ?>
+                                </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </form>
                 </div>
             </div>
