@@ -7,7 +7,7 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireBaskan();
+
 // Module permission check if needed (Assuming 'baskan_etkinlikler' covers viewing)
 // Middleware::requireModulePermission('baskan_etkinlikler');
 
