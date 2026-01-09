@@ -402,17 +402,17 @@ include __DIR__ . '/../includes/header.php';
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Arama Scripti
-    const searchInput = document.getElementById('baskanSearch');
-    const baskanItems = document.querySelectorAll('.baskan-item');
-    if(searchInput) {
-        searchInput.addEventListener('input', function(e) {
+    // Arama Scripti (Event Delegation for AJAX support)
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.id === 'baskanSearch') {
             const val = e.target.value.toLowerCase();
+            const baskanItems = document.querySelectorAll('.baskan-item');
             baskanItems.forEach(item => {
                 const txt = item.innerText.toLowerCase();
                 item.style.display = txt.includes(val) ? '' : 'none';
             });
-        });
-    }
+        }
+    });
 
     // Checkbox label değişimi
     const switches = document.querySelectorAll('.form-check-input[role="switch"]');
