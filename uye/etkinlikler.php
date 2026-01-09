@@ -26,14 +26,37 @@ if (!$userBykId) {
     exit;
 }
 
+// BYK Koduna göre kontrol
+$userBykCode = '';
+// Fetch user's BYK code
+if ($userBykId) {
+    try {
+        $bykInfo = $db->fetch("SELECT byk_kodu FROM byk WHERE byk_id = ?", [$userBykId]);
+        if ($bykInfo) {
+            $userBykCode = $bykInfo['byk_kodu'];
+        }
+    } catch (Exception $e) {}
+}
+
 // Filtreleme Parametreleri
 $search = $_GET['search'] ?? '';
 $monthFilter = $_GET['ay'] ?? '';
 $yearFilter = $_GET['yil'] ?? '';
+$bykFilter = $_GET['byk_id'] ?? ''; // AT üyeleri için birim filtresi
 
 // Sorgu Koşulları
-$where = ["e.byk_id = ?"];
-$params = [$userBykId];
+$where = [];
+$params = [];
+
+// AT birimi için tümünü gör, diğerleri sadece kendi birimini görsün
+if ($userBykCode !== 'AT') {
+    $where[] = "e.byk_id = ?";
+    $params[] = $userBykId;
+} elseif ($bykFilter) {
+    // AT üyesi filtreleme yaparsa
+    $where[] = "e.byk_id = ?";
+    $params[] = $bykFilter;
+}
 
 if ($search) {
     $where[] = "(e.baslik LIKE ? OR e.aciklama LIKE ?)";
@@ -51,23 +74,25 @@ if ($yearFilter) {
     $params[] = $yearFilter;
 }
 
-$whereClause = 'WHERE ' . implode(' AND ', $where);
+$whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // Etkinlikleri Çek
 $etkinlikler = [];
 try {
-    // Üye ekranında detaylı BYK verisine veya oluşturan kişi detayına derinlemesine ihtiyaç yok,
-    // ancak admin görünümüyle tutarlılık için benzer yapıyı koruyoruz.
-    $etkinlikler = $db->fetchAll("
+    // BYK bilgisi ile birleştirerek çek
+    $sql = "
         SELECT e.*, 
-               'Size Özel' as byk_adi, 
-               '' as byk_kodu,
+               COALESCE(b.byk_adi, 'Genel') as byk_adi, 
+               COALESCE(b.byk_kodu, '') as byk_kodu,
                COALESCE(e.renk_kodu, '#009872') as byk_renk
         FROM etkinlikler e
+        LEFT JOIN byk b ON e.byk_id = b.byk_id
         $whereClause
         ORDER BY e.baslangic_tarihi ASC
         LIMIT 500
-    ", $params);
+    ";
+    
+    $etkinlikler = $db->fetchAll($sql, $params);
 
 } catch (Exception $e) {
     $etkinlikler = [];
@@ -99,7 +124,8 @@ if (!empty($etkinlikler)) {
             'textColor' => '#ffffff',
             'extendedProps' => [
                 'konum' => $etkinlik['konum'] ?? '',
-                'aciklama' => $etkinlik['aciklama'] ?? ''
+                'aciklama' => $etkinlik['aciklama'] ?? '',
+                'byk_adi' => $etkinlik['byk_adi'] ?? ''
             ]
         ];
     }
@@ -272,6 +298,21 @@ include __DIR__ . '/../includes/header.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <?php if ($userBykCode === 'AT'): 
+                            $tumBirimler = $db->fetchAll("SELECT byk_id, byk_adi FROM byk ORDER BY byk_adi ASC");
+                        ?>
+                        <div class="col-md-2">
+                            <label class="form-label">Birim</label>
+                            <select class="form-select" name="byk_id">
+                                <option value="">Tüm Birimler</option>
+                                <?php foreach ($tumBirimler as $b): ?>
+                                    <option value="<?php echo $b['byk_id']; ?>" <?php echo $bykFilter == $b['byk_id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($b['byk_adi']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
                         <div class="col-md-2">
                             <label class="form-label">Yıl</label>
                             <input type="number" class="form-control" name="yil" value="<?php echo htmlspecialchars($yearFilter); ?>" min="2020" max="2030">
@@ -440,6 +481,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (props.konum) {
                 html += '<div class="mb-3"><strong>Konum:</strong> ' + props.konum + '</div>';
             }
+
+            <?php if ($userBykCode === 'AT'): ?>
+            // AT üyeleri için hangi birime ait olduğu
+             if (event.extendedProps.byk_adi) {
+                html += '<div class="mb-3"><strong>Birim:</strong> <span class="badge" style="background-color:' + event.backgroundColor + '">' + event.extendedProps.byk_adi + '</span></div>';
+            }
+            <?php endif; ?>
             
             if (props.aciklama) {
                 html += '<div class="mb-3"><strong>Açıklama:</strong><p class="mt-1">' + props.aciklama.replace(/\n/g, '<br>') + '</p></div>';
