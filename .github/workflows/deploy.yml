@@ -20,8 +20,8 @@ jobs:
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
+          server: w0072b78.kasserver.com
+          username: f017f010
           password: ${{ secrets.FTP_PASSWORD }}
           exclude: |
             **/.git*
