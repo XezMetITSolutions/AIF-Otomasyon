@@ -17,9 +17,9 @@ if ($auth->checkAuth()) {
     if ($user['role'] === 'super_admin') {
         $redirectPath = '/admin/dashboard.php';
     } elseif ($user['role'] === 'baskan') {
-        $redirectPath = '/baskan/dashboard.php';
+        $redirectPath = '/panel/baskan_dashboard.php';
     } elseif ($user['role'] === 'uye') {
-        $redirectPath = '/uye/dashboard.php';
+        $redirectPath = '/panel/uye_dashboard.php';
     }
     
     if ($redirectPath) {
@@ -51,9 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user['role'] === 'super_admin') {
                 $redirectPath = '/admin/dashboard.php';
             } elseif ($user['role'] === 'baskan') {
-                $redirectPath = '/baskan/dashboard.php';
+                $redirectPath = '/panel/baskan_dashboard.php';
             } elseif ($user['role'] === 'uye') {
-                $redirectPath = '/uye/dashboard.php';
+                $redirectPath = '/panel/uye_dashboard.php';
             }
             
             if ($redirectPath) {

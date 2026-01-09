@@ -118,7 +118,7 @@ include __DIR__ . '/../includes/header.php';
                 <a href="?durum=onaylandi" class="btn btn-outline-success btn-sm <?php echo $durum === 'onaylandi' ? 'active' : ''; ?>"><i class="fas fa-check me-1"></i>Onaylananlar</a>
                 <a href="?durum=reddedildi" class="btn btn-outline-danger btn-sm <?php echo $durum === 'reddedildi' ? 'active' : ''; ?>"><i class="fas fa-times me-1"></i>Reddedilenler</a>
                 <a href="?durum=odenmistir" class="btn btn-outline-primary btn-sm <?php echo $durum === 'odenmistir' ? 'active' : ''; ?>"><i class="fas fa-money-bill-wave me-1"></i>Ödenenler</a>
-                <a href="/baskan/harcama-talepleri.php" class="btn btn-outline-secondary btn-sm <?php echo $durum === '' ? 'active' : ''; ?>"><i class="fas fa-layer-group me-1"></i>Tümü</a>
+                <a href="/panel/baskan_harcama-talepleri.php" class="btn btn-outline-secondary btn-sm <?php echo $durum === '' ? 'active' : ''; ?>"><i class="fas fa-layer-group me-1"></i>Tümü</a>
             </div>
         </div>
 

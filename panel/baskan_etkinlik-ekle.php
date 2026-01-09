@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user['id']
             ]);
             $message = 'Etkinlik başarıyla oluşturuldu.';
-            header('Location: /baskan/etkinlikler.php?success=1');
+            header('Location: /panel/baskan_etkinlikler.php?success=1');
             exit;
         }
     }
@@ -72,7 +72,7 @@ include __DIR__ . '/../includes/header.php';
                     <div class="card-header bg-white py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0"><i class="fas fa-plus-circle me-2 text-primary"></i>Yeni Etkinlik Oluştur</h5>
-                            <a href="/baskan/etkinlikler.php" class="btn btn-outline-secondary btn-sm">
+                            <a href="/panel/baskan_etkinlikler.php" class="btn btn-outline-secondary btn-sm">
                                 <i class="fas fa-arrow-left me-2"></i>Listeye Dön
                             </a>
                         </div>

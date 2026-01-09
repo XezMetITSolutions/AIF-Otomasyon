@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $success = 'Toplantı başarıyla oluşturuldu!';
         
         // Toplantı detay sayfasına yönlendir
-        header("Location: /baskan/toplanti-duzenle.php?id={$toplanti_id}&success=1");
+        header("Location: /panel/baskan_toplanti-duzenle.php?id={$toplanti_id}&success=1");
         exit;
         
     } catch (Exception $e) {
@@ -134,7 +134,7 @@ include __DIR__ . '/../includes/header.php';
             <h1 class="h3 mb-0">
                 <i class="fas fa-plus-circle me-2"></i>Yeni Toplantı Ekle
             </h1>
-            <a href="/baskan/toplantilar.php" class="btn btn-secondary">
+            <a href="/panel/baskan_toplantilar.php" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Geri Dön
             </a>
         </div>
@@ -227,7 +227,7 @@ include __DIR__ . '/../includes/header.php';
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-save me-2"></i>Toplantıyı Oluştur
                         </button>
-                        <a href="/baskan/toplantilar.php" class="btn btn-outline-secondary">
+                        <a href="/panel/baskan_toplantilar.php" class="btn btn-outline-secondary">
                             <i class="fas fa-times me-2"></i>İptal
                         </a>
                     </div>
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         katilimcilarContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="text-muted mt-2">Katılımcılar yükleniyor...</p></div>';
         
         const isDivan = document.getElementById('is_divan').checked;
-        fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan}`)
+        fetch(`/admin/api-byk-baskan_uyeler.php?byk_id=${bykId}&divan_only=${isDivan}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.uyeler.length > 0) {

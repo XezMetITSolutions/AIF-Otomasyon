@@ -158,7 +158,7 @@ include __DIR__ . '/../includes/header.php';
                 </h1>
                 <p class="text-muted mb-0">Bölge Yürütme Kurulu toplantılarını yönetin.</p>
             </div>
-            <a href="/baskan/toplanti-ekle.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <a href="/panel/baskan_toplanti-ekle.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
                 <i class="fas fa-plus me-2"></i>Yeni Toplantı Ekle
             </a>
         </div>
@@ -206,7 +206,7 @@ include __DIR__ . '/../includes/header.php';
                                     <!-- Title & Actions -->
                                     <div class="flex-grow-1">
                                         <h5 class="card-title fw-bold mb-1 text-truncate-2">
-                                            <a href="/baskan/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none stretched-link">
+                                            <a href="/panel/baskan_toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none stretched-link">
                                                 <?php echo htmlspecialchars($toplanti['baslik']); ?>
                                             </a>
                                         </h5>
@@ -253,7 +253,7 @@ include __DIR__ . '/../includes/header.php';
                                 </small>
                                 
                                 <div class="btn-group" style="position: relative; z-index: 2;">
-                                    <a href="/baskan/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                    <a href="/panel/baskan_toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     

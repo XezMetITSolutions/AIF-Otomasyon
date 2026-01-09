@@ -322,7 +322,7 @@ include __DIR__ . '/../includes/header.php';
                                 <i class="fas fa-search me-1"></i>Filtrele
                             </button>
                             <?php if ($search || $monthFilter || $yearFilter != date('Y')): ?>
-                                <a href="/uye/etkinlikler.php" class="btn btn-secondary w-100">
+                                <a href="/panel/uye_etkinlikler.php" class="btn btn-secondary w-100">
                                     <i class="fas fa-times me-1"></i>Temizle
                                 </a>
                             <?php endif; ?>

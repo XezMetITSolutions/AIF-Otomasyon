@@ -266,7 +266,7 @@ include __DIR__ . '/../includes/header.php';
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h3 class="mb-0"><?php echo $stats['bekleyen_izin']; ?></h3>
-                                <a href="/baskan/izin-talepleri.php?durum=beklemede" class="btn btn-sm btn-primary">
+                                <a href="/panel/baskan_izin-talepleri.php?durum=beklemede" class="btn btn-sm btn-primary">
                                     İncele <i class="fas fa-arrow-right ms-1"></i>
                                 </a>
                             </div>
@@ -284,7 +284,7 @@ include __DIR__ . '/../includes/header.php';
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h3 class="mb-0"><?php echo $stats['bekleyen_harcama']; ?></h3>
-                                <a href="/baskan/harcama-talepleri.php?durum=beklemede" class="btn btn-sm btn-primary">
+                                <a href="/panel/baskan_harcama-talepleri.php?durum=beklemede" class="btn btn-sm btn-primary">
                                     İncele <i class="fas fa-arrow-right ms-1"></i>
                                 </a>
                             </div>

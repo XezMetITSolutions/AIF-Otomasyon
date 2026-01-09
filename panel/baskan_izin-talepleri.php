@@ -117,7 +117,7 @@ include __DIR__ . '/../includes/header.php';
                 <a href="?durum=reddedildi" class="btn btn-outline-danger btn-sm <?php echo $durum === 'reddedildi' ? 'active' : ''; ?>">
                     <i class="fas fa-times me-1"></i>Reddedilenler
                 </a>
-                <a href="/baskan/izin-talepleri.php" class="btn btn-outline-secondary btn-sm <?php echo $durum === '' ? 'active' : ''; ?>">
+                <a href="/panel/baskan_izin-talepleri.php" class="btn btn-outline-secondary btn-sm <?php echo $durum === '' ? 'active' : ''; ?>">
                     <i class="fas fa-layer-group me-1"></i>Tümü
                 </a>
             </div>
@@ -211,7 +211,7 @@ include __DIR__ . '/../includes/header.php';
                                                     </button>
                                                 </div>
                                             <?php else: ?>
-                                                <a href="/baskan/izin-detay.php?id=<?php echo $izin['izin_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                                <a href="/panel/baskan_izin-detay.php?id=<?php echo $izin['izin_id']; ?>" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye me-1"></i>Detay
                                                 </a>
                                             <?php endif; ?>

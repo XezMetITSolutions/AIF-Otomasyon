@@ -279,7 +279,7 @@ include __DIR__ . '/../includes/header.php';
                     <a href="/api/export-calendar.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success">
                         <i class="fas fa-file-export me-2"></i>Takvime Aktar
                     </a>
-                    <a href="/baskan/etkinlik-ekle.php" class="btn btn-primary">
+                    <a href="/panel/baskan_etkinlik-ekle.php" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
                     </a>
                 </div>
@@ -327,7 +327,7 @@ include __DIR__ . '/../includes/header.php';
                                 <i class="fas fa-search me-1"></i>Filtrele
                             </button>
                             <?php if ($search || $monthFilter || $yearFilter != date('Y')): ?>
-                                <a href="/baskan/etkinlikler.php" class="btn btn-secondary">
+                                <a href="/panel/baskan_etkinlikler.php" class="btn btn-secondary">
                                     <i class="fas fa-times"></i>
                                 </a>
                             <?php endif; ?>

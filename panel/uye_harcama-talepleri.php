@@ -449,7 +449,7 @@ include __DIR__ . '/../includes/header.php';
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Toplam: <strong><?php echo count($talepler); ?></strong> talep</span>
                         <?php if ($selectedId): ?>
-                            <a href="/uye/harcama-talepleri.php" class="btn btn-sm btn-outline-secondary">Seçimi Temizle</a>
+                            <a href="/panel/uye_harcama-talepleri.php" class="btn btn-sm btn-outline-secondary">Seçimi Temizle</a>
                         <?php endif; ?>
                     </div>
                     <div class="card-body">
@@ -496,7 +496,7 @@ include __DIR__ . '/../includes/header.php';
                                                 </td>
                                                 <td><?php echo date('d.m.Y H:i', strtotime($talep['olusturma_tarihi'])); ?></td>
                                                 <td class="text-end">
-                                                    <a href="/uye/harcama-talepleri.php?id=<?php echo $talep['talep_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                                    <a href="/panel/uye_harcama-talepleri.php?id=<?php echo $talep['talep_id']; ?>" class="btn btn-sm btn-outline-primary">
                                                         Detay
                                                     </a>
                                                 </td>

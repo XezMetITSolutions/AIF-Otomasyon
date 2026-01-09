@@ -68,7 +68,7 @@ include __DIR__ . '/../includes/header.php';
                             <i class="fas fa-search me-1"></i>Filtrele
                         </button>
                         <?php if ($q !== ''): ?>
-                            <a href="/baskan/uyeler.php" class="btn btn-outline-secondary">
+                            <a href="/panel/baskan_uyeler.php" class="btn btn-outline-secondary">
                                 Temizle
                             </a>
                         <?php endif; ?>

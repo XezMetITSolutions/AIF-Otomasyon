@@ -52,7 +52,17 @@ $isUye = $user && $user['role'] === 'uye';
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1030; width: 100%;">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/<?php echo $user['role'] === 'super_admin' ? 'admin' : ($user['role'] === 'baskan' ? 'baskan' : 'uye'); ?>/dashboard.php">
+                <?php
+                $homeLink = '/index.php';
+                if ($user['role'] === 'super_admin') {
+                    $homeLink = '/admin/dashboard.php';
+                } elseif ($user['role'] === 'baskan') {
+                    $homeLink = '/panel/baskan_dashboard.php';
+                } elseif ($user['role'] === 'uye') {
+                    $homeLink = '/panel/uye_dashboard.php';
+                }
+                ?>
+                <a class="navbar-brand" href="<?php echo $homeLink; ?>">
                     <i class="fas fa-home me-2"></i><?php echo $appConfig['app_name']; ?>
                 </a>
                 
@@ -85,19 +95,19 @@ $isUye = $user && $user['role'] === 'uye';
                         <?php elseif ($isBaskan): ?>
                             <?php
                                 $baskanHeaderNav = [
-                                    'baskan_dashboard' => ['/baskan/dashboard.php', 'fas fa-tachometer-alt', 'Kontrol Paneli'],
-                                    'baskan_uyeler' => ['/baskan/uyeler.php', 'fas fa-users', 'Üyeler'],
-                                    'baskan_etkinlikler' => ['/baskan/etkinlikler.php', 'fas fa-calendar', 'Etkinlikler'],
-                                    'baskan_toplantilar' => ['/baskan/toplantilar.php', 'fas fa-users-cog', 'Toplantılar'],
-                                    'baskan_izin_talepleri' => ['/baskan/izin-talepleri.php', 'fas fa-calendar-check', 'İzin Talepleri'],
-                                    'baskan_harcama_talepleri' => ['/baskan/harcama-talepleri.php', 'fas fa-money-bill', 'Harcama Talepleri'],
-                                    'baskan_iade_formlari' => ['/baskan/iade-formlari.php', 'fas fa-hand-holding-usd', 'İade Formları'],
+                                    'baskan_dashboard' => ['/panel/baskan_dashboard.php', 'fas fa-tachometer-alt', 'Kontrol Paneli'],
+                                    'baskan_uyeler' => ['/panel/baskan_uyeler.php', 'fas fa-users', 'Üyeler'],
+                                    'baskan_etkinlikler' => ['/panel/baskan_etkinlikler.php', 'fas fa-calendar', 'Etkinlikler'],
+                                    'baskan_toplantilar' => ['/panel/baskan_toplantilar.php', 'fas fa-users-cog', 'Toplantılar'],
+                                    'baskan_izin_talepleri' => ['/panel/baskan_izin-talepleri.php', 'fas fa-calendar-check', 'İzin Talepleri'],
+                                    'baskan_harcama_talepleri' => ['/panel/baskan_harcama-talepleri.php', 'fas fa-money-bill', 'Harcama Talepleri'],
+                                    'baskan_iade_formlari' => ['/panel/baskan_iade-formlari.php', 'fas fa-hand-holding-usd', 'İade Formları'],
                                 ];
                                 $uyeHeaderNav = [
-                                    'uye_dashboard' => ['/uye/dashboard.php', 'fas fa-gauge', 'Üye Paneli'],
-                                    'uye_izin_talepleri' => ['/uye/izin-talepleri.php', 'fas fa-person-walking', 'Üye İzin Talepleri'],
-                                    'uye_harcama_talepleri' => ['/uye/harcama-talepleri.php', 'fas fa-wallet', 'Üye Harcama Talepleri'],
-                                    'uye_iade_formu' => ['/uye/iade-formu.php', 'fas fa-file-invoice-dollar', 'Üye İade Formu'],
+                                    'uye_dashboard' => ['/panel/uye_dashboard.php', 'fas fa-gauge', 'Üye Paneli'],
+                                    'uye_izin_talepleri' => ['/panel/uye_izin-talepleri.php', 'fas fa-person-walking', 'Üye İzin Talepleri'],
+                                    'uye_harcama_talepleri' => ['/panel/uye_harcama-talepleri.php', 'fas fa-wallet', 'Üye Harcama Talepleri'],
+                                    'uye_iade_formu' => ['/panel/uye_iade-formu.php', 'fas fa-file-invoice-dollar', 'Üye İade Formu'],
                                 ];
                                 $hasUyeHeaderNav = false;
                                 foreach ($uyeHeaderNav as $key => $data) {
@@ -130,25 +140,25 @@ $isUye = $user && $user['role'] === 'uye';
                             <?php endif; ?>
                         <?php elseif ($isUye): ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="/uye/dashboard.php"><i class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>
+                                <a class="nav-link" href="/panel/uye_dashboard.php"><i class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/uye/duyurular.php"><i class="fas fa-bullhorn me-1"></i>Duyurular</a>
+                                <a class="nav-link" href="/panel/uye_duyurular.php"><i class="fas fa-bullhorn me-1"></i>Duyurular</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/uye/etkinlikler.php"><i class="fas fa-calendar me-1"></i>Etkinlikler</a>
+                                <a class="nav-link" href="/panel/uye_etkinlikler.php"><i class="fas fa-calendar me-1"></i>Etkinlikler</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/uye/toplantilar.php"><i class="fas fa-users-cog me-1"></i>Toplantılar</a>
+                                <a class="nav-link" href="/panel/uye_toplantilar.php"><i class="fas fa-users-cog me-1"></i>Toplantılar</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/uye/izin-talepleri.php"><i class="fas fa-calendar-check me-1"></i>İzin Taleplerim</a>
+                                <a class="nav-link" href="/panel/uye_izin-talepleri.php"><i class="fas fa-calendar-check me-1"></i>İzin Taleplerim</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/uye/harcama-talepleri.php"><i class="fas fa-wallet me-1"></i>Harcama Taleplerim</a>
+                                <a class="nav-link" href="/panel/uye_harcama-talepleri.php"><i class="fas fa-wallet me-1"></i>Harcama Taleplerim</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/uye/iade-formu.php"><i class="fas fa-hand-holding-usd me-1"></i>İade Talebi</a>
+                                <a class="nav-link" href="/panel/uye_iade-formu.php"><i class="fas fa-hand-holding-usd me-1"></i>İade Talebi</a>
                             </li>
                         <?php endif; ?>
                     </ul>
@@ -173,7 +183,17 @@ $isUye = $user && $user['role'] === 'uye';
                                     <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($user['name']); ?>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="/<?php echo $user['role'] === 'super_admin' ? 'admin' : ($user['role'] === 'baskan' ? 'baskan' : 'uye'); ?>/profil.php"><i class="fas fa-user me-2"></i>Profil</a></li>
+                                    <?php
+                                    $profileLink = '/index.php';
+                                    if ($user['role'] === 'super_admin') {
+                                        $profileLink = '/admin/profil.php'; // Assuming admin has one
+                                    } elseif ($user['role'] === 'baskan') {
+                                        $profileLink = '/panel/baskan_profil.php';
+                                    } elseif ($user['role'] === 'uye') {
+                                        $profileLink = '/panel/uye_profil.php';
+                                    }
+                                    ?>
+                                    <li><a class="dropdown-item" href="<?php echo $profileLink; ?>"><i class="fas fa-user me-2"></i>Profil</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap</a></li>
                                 </ul>

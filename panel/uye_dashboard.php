@@ -255,7 +255,7 @@ include __DIR__ . '/../includes/header.php';
                                                 <!-- Time removed as per request -->
                                             </div>
                                         </div>
-                                        <a href="/uye/etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
+                                        <a href="/panel/uye_etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
                                             Detay
                                         </a>
                                     </div>
@@ -314,7 +314,7 @@ include __DIR__ . '/../includes/header.php';
                                                 </div>
                                             </div>
                                         </div>
-                                        <a href="/uye/toplantilar.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
+                                        <a href="/panel/uye_toplantilar.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
                                             Detay
                                         </a>
                                     </div>
@@ -336,7 +336,7 @@ include __DIR__ . '/../includes/header.php';
                         <div>
                             <i class="fas fa-calendar-check me-2 text-warning"></i>Son İzin Talepleri
                         </div>
-                        <a href="/uye/izin-talepleri.php" class="btn btn-sm btn-primary rounded-pill px-3">
+                        <a href="/panel/uye_izin-talepleri.php" class="btn btn-sm btn-primary rounded-pill px-3">
                             Yeni Talep <i class="fas fa-plus ms-1"></i>
                         </a>
                     </div>
@@ -388,7 +388,7 @@ include __DIR__ . '/../includes/header.php';
                                                     </span>
                                                 </td>
                                                 <td class="px-4 text-end">
-                                                    <a href="/uye/izin-talepleri.php?id=<?php echo $izin['izin_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
+                                                    <a href="/panel/uye_izin-talepleri.php?id=<?php echo $izin['izin_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
                                                         Detay
                                                     </a>
                                                 </td>

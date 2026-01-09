@@ -35,10 +35,10 @@ if ($user) {
             'links' => [
                 [
                     'key' => 'baskan_dashboard',
-                    'path' => '/baskan/dashboard.php',
+                    'path' => '/panel/baskan_dashboard.php',
                     'icon' => 'fas fa-tachometer-alt',
                     'label' => 'Yönetici Paneli', // Changed label to distinguish from Member Dashboard
-                    'match' => 'baskan/dashboard', // More specific match
+                    'match' => 'panel/baskan_dashboard', // More specific match
                 ],
             ],
         ],
@@ -47,10 +47,10 @@ if ($user) {
             'links' => [
                 [
                     'key' => 'baskan_uyeler',
-                    'path' => '/baskan/uyeler.php',
+                    'path' => '/panel/baskan_uyeler.php',
                     'icon' => 'fas fa-users',
                     'label' => 'Üye Yönetimi',
-                    'match' => 'uyeler',
+                    'match' => 'baskan_uyeler',
                 ],
             ],
         ],
@@ -59,24 +59,24 @@ if ($user) {
             'links' => [
                 [
                     'key' => 'baskan_etkinlikler',
-                    'path' => '/baskan/etkinlikler.php',
+                    'path' => '/panel/baskan_etkinlikler.php',
                     'icon' => 'fas fa-calendar',
                     'label' => 'Etkinlik Yönetimi',
-                    'match' => 'baskan/etkinlikler',
+                    'match' => 'panel/baskan_etkinlikler',
                 ],
                 [
                     'key' => 'baskan_toplantilar',
-                    'path' => '/baskan/toplantilar.php',
+                    'path' => '/panel/baskan_toplantilar.php',
                     'icon' => 'fas fa-users-cog',
                     'label' => 'Toplantı Yönetimi',
-                    'match' => 'baskan/toplantilar',
+                    'match' => 'panel/baskan_toplantilar',
                 ],
                 [
                     'key' => 'baskan_duyurular',
-                    'path' => '/baskan/duyurular.php',
+                    'path' => '/panel/baskan_duyurular.php',
                     'icon' => 'fas fa-bullhorn',
                     'label' => 'Duyuru Yönetimi',
-                    'match' => 'baskan/duyurular',
+                    'match' => 'panel/baskan_duyurular',
                 ],
             ],
         ],
@@ -85,40 +85,40 @@ if ($user) {
             'links' => [
                 [
                     'key' => 'baskan_izin_talepleri',
-                    'path' => '/baskan/izin-talepleri.php',
+                    'path' => '/panel/baskan_izin_talepleri.php',
                     'icon' => 'fas fa-calendar-check',
                     'label' => 'İzin Onayları',
-                    'match' => 'baskan/izin-talepleri',
+                    'match' => 'panel/baskan_izin_talepleri',
                     'badge' => ['id' => 'pendingIzinCount', 'class' => 'bg-danger'],
                 ],
                 [
                     'key' => 'baskan_harcama_talepleri',
-                    'path' => '/baskan/harcama-talepleri.php',
+                    'path' => '/panel/baskan_harcama-talepleri.php',
                     'icon' => 'fas fa-money-bill-wave',
                     'label' => 'Harcama Onayları',
-                    'match' => 'baskan/harcama-talepleri',
+                    'match' => 'panel/baskan_harcama-talepleri',
                     'badge' => ['id' => 'pendingHarcamaCount', 'class' => 'bg-warning'],
                 ],
                 [
                     'key' => 'baskan_iade_formlari',
-                    'path' => '/baskan/iade-formlari.php',
+                    'path' => '/panel/baskan_iade-formlari.php',
                     'icon' => 'fas fa-hand-holding-usd',
                     'label' => 'İade Onayları',
-                    'match' => 'baskan/iade-formlari',
+                    'match' => 'panel/baskan_iade-formlari',
                 ],
                 [
                     'key' => 'baskan_demirbas_talepleri',
-                    'path' => '/baskan/demirbas-talepleri.php',
+                    'path' => '/panel/baskan_demirbas-talepleri.php',
                     'icon' => 'fas fa-box',
                     'label' => 'Demirbaş Talepleri',
-                    'match' => 'baskan/demirbas-talepleri',
+                    'match' => 'panel/baskan_demirbas-talepleri',
                 ],
                 [
                     'key' => 'baskan_raggal_talepleri',
-                    'path' => '/baskan/raggal-talepleri.php',
+                    'path' => '/panel/baskan_raggal-talepleri.php',
                     'icon' => 'fas fa-calendar-check',
                     'label' => 'Raggal Talepleri',
-                    'match' => 'baskan/raggal-talepleri',
+                    'match' => 'panel/baskan_raggal-talepleri',
                 ],
             ],
         ],
@@ -127,7 +127,7 @@ if ($user) {
             'links' => [
                 [
                     'key' => 'baskan_raporlar',
-                    'path' => '/baskan/raporlar.php',
+                    'path' => '/panel/baskan_raporlar.php',
                     'icon' => 'fas fa-chart-bar',
                     'label' => 'Raporlar',
                     'match' => 'raporlar',
@@ -139,66 +139,66 @@ if ($user) {
     $uyeSidebarLinks = [
         [
             'key' => 'uye_dashboard',
-            'path' => '/uye/dashboard.php',
+            'path' => '/panel/uye_dashboard.php',
             'icon' => 'fas fa-gauge',
             'label' => 'Üye Kontrol Paneli',
-            'match' => 'uye/dashboard',
+            'match' => 'panel/uye_dashboard',
         ],
         [
             'key' => 'uye_duyurular',
-            'path' => '/uye/duyurular.php',
+            'path' => '/panel/uye_duyurular.php',
             'icon' => 'fas fa-bullhorn',
             'label' => 'Üye Duyuruları',
-            'match' => 'uye/duyurular',
+            'match' => 'panel/uye_duyurular',
         ],
         [
             'key' => 'uye_etkinlikler',
-            'path' => '/uye/etkinlikler.php',
+            'path' => '/panel/uye_etkinlikler.php',
             'icon' => 'fas fa-calendar',
             'label' => 'Çalışma Takvimi',
-            'match' => 'uye/etkinlikler',
+            'match' => 'panel/uye_etkinlikler',
         ],
         [
             'key' => 'uye_toplantilar',
-            'path' => '/uye/toplantilar.php',
+            'path' => '/panel/uye_toplantilar.php',
             'icon' => 'fas fa-users-cog',
             'label' => 'Üye Toplantıları',
-            'match' => 'uye/toplantilar',
+            'match' => 'panel/uye_toplantilar',
         ],
         [
             'key' => 'uye_izin_talepleri',
-            'path' => '/uye/izin-talepleri.php',
+            'path' => '/panel/uye_izin-talepleri.php',
             'icon' => 'fas fa-person-walking',
             'label' => 'Üye İzin Talepleri',
-            'match' => 'uye/izin-talepleri',
+            'match' => 'panel/uye_izin-talepleri',
         ],
         [
             'key' => 'uye_harcama_talepleri',
-            'path' => '/uye/harcama-talepleri.php',
+            'path' => '/panel/uye_harcama-talepleri.php',
             'icon' => 'fas fa-wallet',
             'label' => 'Üye Harcama Talepleri',
-            'match' => 'uye/harcama-talepleri',
+            'match' => 'panel/uye_harcama-talepleri',
         ],
         [
             'key' => 'uye_iade_formu',
-            'path' => '/uye/iade-formu.php',
+            'path' => '/panel/uye_iade-formu.php',
             'icon' => 'fas fa-file-invoice-dollar',
             'label' => 'Üye İade Formu',
-            'match' => 'uye/iade-formu',
+            'match' => 'panel/uye_iade-formu',
         ],
         [
             'key' => 'uye_demirbas_talep',
-            'path' => '/uye/demirbas-talep.php',
+            'path' => '/panel/uye_demirbas-talep.php',
             'icon' => 'fas fa-box',
             'label' => 'Demirbaş Talep',
-            'match' => 'uye/demirbas-talep',
+            'match' => 'panel/uye_demirbas-talep',
         ],
         [
             'key' => 'uye_raggal_talep',
-            'path' => '/uye/raggal-talep.php',
+            'path' => '/panel/uye_raggal-talep.php',
             'icon' => 'fas fa-calendar-plus',
             'label' => 'Raggal Rezervasyon',
-            'match' => 'uye/raggal-talep',
+            'match' => 'panel/uye_raggal-talep',
         ],
     ];
 
@@ -400,7 +400,7 @@ if ($user) {
 
             <!-- Section title removed -->
 
-            <a href="/uye/profil.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
+            <a href="/panel/uye_profil.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-user-circle me-2"></i>Profilim
             </a>
         <?php endif; ?>
