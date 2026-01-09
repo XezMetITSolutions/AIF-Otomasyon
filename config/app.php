@@ -5,7 +5,7 @@
  */
 
 return [
-    'app_name' => 'AIF Otomasyon Sistemi',
+    'app_name' => 'AIFNET',
     'app_version' => '1.0.1',
     'app_url' => 'http://aifnet.islamfederasyonu.at',
     'timezone' => 'Europe/Vienna',

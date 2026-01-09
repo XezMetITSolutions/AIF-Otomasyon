@@ -73,6 +73,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$bgImages = [
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque landscape
+    'https://images.unsplash.com/photo-1596404762512-da7d3536bf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque interior
+    'https://images.unsplash.com/photo-1564769662533-4f00a87b4056?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Quran
+    'https://images.unsplash.com/photo-1537178082695-1845112fa5b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Islamic architecture
+    'https://images.unsplash.com/photo-1588661730623-7a9359cde047?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Prayer beads
+    'https://images.unsplash.com/photo-1579294294021-d779f45d1607?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Blue Mosque
+    'https://images.unsplash.com/photo-1519817650390-64a93db51149?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque silhouette
+    'https://images.unsplash.com/photo-1564121211835-e88c852648ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Islamic Calligraphy
+];
+$randomBg = $bgImages[array_rand($bgImages)];
+
 $pageTitle = 'Giriş Yap';
 ?>
 <!DOCTYPE html>
@@ -80,7 +92,7 @@ $pageTitle = 'Giriş Yap';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?> - AIF Otomasyon Sistemi</title>
+    <title><?php echo $pageTitle; ?> - AIFNET</title>
     
     <!-- Bootstrap 5.3.0 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -96,13 +108,14 @@ $pageTitle = 'Giriş Yap';
     
     <style>
         body {
-            background: url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+            background: url('<?php echo $randomBg; ?>') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Inter', sans-serif;
+            transition: background-image 0.5s ease-in-out;
         }
         
         .overlay {
@@ -111,7 +124,7 @@ $pageTitle = 'Giriş Yap';
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0, 152, 114, 0.9) 0%, rgba(0, 50, 40, 0.8) 100%);
+            background: linear-gradient(135deg, rgba(0, 152, 114, 0.85) 0%, rgba(0, 50, 40, 0.95) 100%);
             z-index: 1;
         }
 
@@ -291,7 +304,7 @@ $pageTitle = 'Giriş Yap';
                             <div class="logo-container">
                                 <img src="/assets/img/AIF.png" alt="AIF Logo" class="logo-img">
                             </div>
-                            <h2>AIF Otomasyon</h2>
+                            <h2>AIFNET</h2>
                             <p class="text-white-50">Yönetim Paneli Girişi</p>
                         </div>
                         
@@ -347,7 +360,7 @@ $pageTitle = 'Giriş Yap';
                 </div>
                 
                 <div class="text-center copyright">
-                    <small>&copy; <?php echo date('Y'); ?> AIF Otomasyon Sistemi v1.0.1</small>
+                    <small>&copy; <?php echo date('Y'); ?> AIFNET v1.0.1</small>
                 </div>
             </div>
         </div>
