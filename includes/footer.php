@@ -57,9 +57,166 @@ $user = $auth->getUser();
         <?php endforeach; ?>
     <?php endif; ?>
     
-    <?php if ($user): ?>
+        <div id="page-loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; display: none; align-items: center; justify-content: center;">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+        </div>
+
         <script>
-            // Bildirimleri yükle
+            // Global AJAX Navigation (Simple SPA)
+            $(document).ready(function() {
+                
+                // 1. Link Interception
+                $(document).on('click', 'a', function(e) {
+                    const href = $(this).attr('href');
+                    const target = $(this).attr('target');
+                    
+                    // Skip if:
+                    // - No href, empty href, anchor link #
+                    // - External link (http/https starting) UNLESS it matches our domain (simplified check: starts with /)
+                    // - Target is _blank
+                    // - Has specific class 'no-ajax'
+                    // - Is a download link
+                    if (!href || href === '#' || href.startsWith('javascript:') || target === '_blank' || $(this).hasClass('no-ajax')) {
+                        return;
+                    }
+                    
+                    if (href.startsWith('/admin/') || href.startsWith('/panel/') || href.startsWith('?')) {
+                        e.preventDefault();
+                        loadPage(href);
+                    }
+                });
+
+                // 2. Form Interception
+                $(document).on('submit', 'form', function(e) {
+                    if ($(this).hasClass('no-ajax')) return;
+                    
+                    e.preventDefault();
+                    const form = $(this);
+                    const url = form.attr('action') || window.location.href;
+                    const method = form.attr('method') || 'POST';
+                    const formData = new FormData(this); // Supports file uploads too
+
+                    // Add submit button value if clicked (basic handling)
+                    // (For simple forms, this usually works. For complex multi-button forms, might need explicit monitoring)
+
+                    showLoader();
+
+                    fetch(url, {
+                        method: method.toUpperCase(),
+                        body: formData
+                    })
+                    .then(response => {
+                         // Check for redirect headers if possible (opaque in fetch unless handled)
+                         // But usually we just get the result HTML
+                         return response.text().then(html => ({ html, url: response.url }));
+                    })
+                    .then(data => {
+                        updateContent(data.html, data.url);
+                        hideLoader();
+                    })
+                    .catch(err => {
+                        console.error('Form Submit Error:', err);
+                        window.location.reload(); // Fallback
+                    });
+                });
+
+                // 3. History Handling
+                window.addEventListener('popstate', function(e) {
+                    if (e.state && e.state.path) {
+                        loadPage(e.state.path, false);
+                    } else {
+                        // Initial page or manual change
+                         window.location.reload();
+                    }
+                });
+            });
+
+            function loadPage(url, push = true) {
+                showLoader();
+                
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        updateContent(html, url);
+                        if (push) {
+                            window.history.pushState({path: url}, '', url);
+                        }
+                        hideLoader();
+                    })
+                    .catch(err => {
+                        console.error('Load Error:', err);
+                        hideLoader();
+                        // Optional: Show error toast
+                    });
+            }
+
+            function updateContent(html, url) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Replace Content
+                const newContent = doc.querySelector('.content-wrapper');
+                if (newContent) {
+                    const currentWrapper = document.querySelector('.content-wrapper');
+                    if(currentWrapper) currentWrapper.innerHTML = newContent.innerHTML;
+                } else {
+                    // Fallback if structure is different
+                    // document.body.innerHTML = doc.body.innerHTML;
+                    // Provide fallback reload if structure mismatch
+                    window.location.reload();
+                    return;
+                }
+                
+                // Update Title
+                document.title = doc.title;
+                
+                // Update specific layout parts if needed (e.g. user menu name?)
+                // Usually content-wrapper is enough for main admin pages.
+
+                // Update Active Sidebar Link
+                updateSidebarState(url);
+                
+                // Re-initialize specific JS plugins (like FullCalendar)
+                // This is tricky. Ideally, each page should check for its needs.
+                // Or we can trigger a custom event
+                $(document).trigger('page:loaded');
+                
+                // Re-run notifications update
+                loadNotifications();
+                loadSidebarCounts();
+            }
+
+            function updateSidebarState(url) {
+                // Remove active from all
+                $('.sidebar a').removeClass('active');
+                
+                // Simple matching strategy
+                // Try to find link with exact href
+                // Or href starting with...
+                
+                // Clean url from query params for basic matching if needed
+                const cleanUrl = url.split('?')[0];
+                
+                let match = $('.sidebar a[href="' + url + '"]');
+                if (match.length === 0) {
+                     match = $('.sidebar a[href^="' + cleanUrl + '"]');
+                }
+                
+                if (match.length > 0) {
+                    match.addClass('active');
+                }
+            }
+
+            function showLoader() {
+                $('#page-loading-overlay').fadeIn(200);
+            }
+            function hideLoader() {
+                $('#page-loading-overlay').fadeOut(200);
+            }
+
+            // Bildirimleri yükle (Existing function kept below)
             function loadNotifications() {
                 $.ajax({
                     url: '/api/bildirimler.php',
