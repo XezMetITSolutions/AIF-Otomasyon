@@ -145,21 +145,46 @@ include __DIR__ . '/../includes/header.php';
                     <div class="card-header">
                         <i class="fas fa-user-crown me-2 text-warning"></i>Başkanlar
                     </div>
-                    <div class="list-group list-group-flush">
+                    <div class="p-2 border-bottom">
+                         <input type="text" id="baskanSearch" class="form-control form-control-sm" placeholder="Başkan ara...">
+                    </div>
+                    <div class="list-group list-group-flush" id="baskanList" style="max-height: 600px; overflow-y: auto;">
                         <?php if (empty($baskans)): ?>
                             <div class="list-group-item text-muted">Sistemde atanan başkan bulunamadı.</div>
                         <?php else: ?>
                             <?php foreach ($baskans as $baskan): ?>
                                 <a href="/admin/baskan-yetkileri.php?id=<?php echo $baskan['kullanici_id']; ?>"
-                                   class="list-group-item list-group-item-action <?php echo $selectedId === (int)$baskan['kullanici_id'] ? 'active' : ''; ?>">
-                                    <div class="fw-semibold"><?php echo htmlspecialchars($baskan['ad'] . ' ' . $baskan['soyad']); ?></div>
-                                    <small class="text-muted"><?php echo htmlspecialchars($baskan['byk_adi'] ?? '-'); ?></small>
+                                   class="list-group-item list-group-item-action baskan-item <?php echo $selectedId === (int)$baskan['kullanici_id'] ? 'active' : ''; ?>">
+                                    <div class="fw-semibold baskan-name"><?php echo htmlspecialchars($baskan['ad'] . ' ' . $baskan['soyad']); ?></div>
+                                    <small class="text-muted baskan-byk"><?php echo htmlspecialchars($baskan['byk_adi'] ?? '-'); ?></small>
                                 </a>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('baskanSearch');
+                const listItems = document.querySelectorAll('.baskan-item');
+
+                searchInput.addEventListener('keyup', function(e) {
+                    const searchText = e.target.value.toLowerCase();
+
+                    listItems.forEach(item => {
+                        const name = item.querySelector('.baskan-name').textContent.toLowerCase();
+                        const byk = item.querySelector('.baskan-byk').textContent.toLowerCase();
+                        
+                        if (name.includes(searchText) || byk.includes(searchText)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            </script>
 
             <div class="col-lg-8 mb-4">
                 <?php if ($selectedBaskan): ?>
