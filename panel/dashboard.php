@@ -24,7 +24,6 @@ if ($user['role'] === 'super_admin') {
 $db = Database::getInstance();
 $pageTitle = 'Kontrol Paneli';
 
-$stats = [];
 $yaklasan_etkinlikler = [];
 $yaklasan_toplantilar = [];
 $son_izinler = [];
@@ -38,35 +37,6 @@ $kullanici = $db->fetch("
     INNER JOIN roller r ON k.rol_id = r.rol_id
     WHERE k.kullanici_id = ?
 ", [$user['id']]);
-
-$stats['aktif_izin'] = $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetch("
-    SELECT COUNT(*) as count 
-    FROM izin_talepleri 
-    WHERE kullanici_id = ? AND durum = 'onaylandi' 
-    AND baslangic_tarihi <= CURDATE() AND bitis_tarihi >= CURDATE()
-", [$user['id']])['count'] : 0;
-
-$stats['bekleyen_izin'] = $auth->hasModulePermission('uye_izin_talepleri') ? $db->fetch("
-    SELECT COUNT(*) as count 
-    FROM izin_talepleri 
-    WHERE kullanici_id = ? AND durum = 'beklemede'
-", [$user['id']])['count'] : 0;
-
-$stats['yaklasan_etkinlik'] = $auth->hasModulePermission('uye_etkinlikler') ? $db->fetch("
-    SELECT COUNT(*) as count 
-    FROM etkinlikler 
-    WHERE byk_id = ? AND baslangic_tarihi >= CURDATE() 
-    AND baslangic_tarihi <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))
-", [$user['byk_id']])['count'] : 0;
-
-$stats['yaklasan_toplanti'] = $auth->hasModulePermission('uye_toplantilar') ? $db->fetch("
-    SELECT COUNT(*) as count 
-    FROM toplanti_katilimcilar tk
-    INNER JOIN toplantilar t ON tk.toplanti_id = t.toplanti_id
-    WHERE tk.kullanici_id = ? AND t.toplanti_tarihi >= CURDATE()
-    AND t.toplanti_tarihi <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-    AND tk.katilim_durumu = 'katilacak'
-", [$user['id']])['count'] : 0;
 
 $yaklasan_etkinlikler = $auth->hasModulePermission('uye_etkinlikler') ? $db->fetchAll("
     SELECT e.*
@@ -205,71 +175,6 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
             
-            <!-- İstatistik Kartları -->
-            <div class="row g-4 mb-4">
-                <?php if ($auth->hasModulePermission('uye_izin_talepleri')): ?>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="card stat-card primary">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="stat-label">Aktif İzin</div>
-                                <div class="stat-value"><?php echo $stats['aktif_izin']; ?></div>
-                            </div>
-                            <div class="stat-icon-wrapper">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="card stat-card warning">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="stat-label">Bekleyen İzin</div>
-                                <div class="stat-value"><?php echo $stats['bekleyen_izin']; ?></div>
-                            </div>
-                            <div class="stat-icon-wrapper">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
-                <?php if ($auth->hasModulePermission('uye_etkinlikler')): ?>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="card stat-card info">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="stat-label">Yaklaşan Etkinlikler</div>
-                                <div class="stat-value"><?php echo $stats['yaklasan_etkinlik']; ?></div>
-                            </div>
-                            <div class="stat-icon-wrapper">
-                                <i class="fas fa-calendar-day"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
-                <?php if ($auth->hasModulePermission('uye_toplantilar')): ?>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="card stat-card success">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="stat-label">Yaklaşan Toplantılar</div>
-                                <div class="stat-value"><?php echo $stats['yaklasan_toplanti']; ?></div>
-                            </div>
-                            <div class="stat-icon-wrapper">
-                                <i class="fas fa-users"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-            </div>
-            
             <!-- Yaklaşan Etkinlikler ve Toplantılar -->
             <div class="row g-4 mb-4">
                 <?php if ($auth->hasModulePermission('uye_etkinlikler')): ?>
@@ -295,7 +200,6 @@ include __DIR__ . '/../includes/header.php';
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0 fw-semibold text-dark"><?php echo htmlspecialchars($etkinlik['baslik']); ?></h6>
-                                                    <!-- Time removed as per request -->
                                                 </div>
                                             </div>
                                             <a href="/panel/uye_etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
