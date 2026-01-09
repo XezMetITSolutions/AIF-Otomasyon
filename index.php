@@ -105,12 +105,21 @@ $pageTitle = 'Giriş Yap';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/style.css">
     
     <style>
+        :root {
+            --primary: #009872;
+            --primary-dark: #007a5e;
+            --primary-light: #e6f4f1;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
         body {
             background: url('<?php echo $randomBg; ?>') no-repeat center center fixed;
             background-size: cover;
@@ -118,8 +127,10 @@ $pageTitle = 'Giriş Yap';
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Inter', sans-serif;
-            transition: background-image 0.5s ease-in-out;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            transition: background-image 0.8s ease-in-out;
+            margin: 0;
+            overflow: hidden;
         }
         
         .overlay {
@@ -128,244 +139,310 @@ $pageTitle = 'Giriş Yap';
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0, 152, 114, 0.85) 0%, rgba(0, 50, 40, 0.95) 100%);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 50, 40, 0.85) 100%);
             z-index: 1;
+            backdrop-filter: blur(3px);
         }
 
-        .login-container {
+        .login-wrapper {
             position: relative;
             z-index: 2;
             width: 100%;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
         .login-card {
-            max-width: 450px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 420px;
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            animation: fadeIn 0.8s ease-out;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: slideUp 0.6s ease-out;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .card-body {
-            padding: 3rem !important;
+        .logo-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
         }
 
-        .logo-container {
-            background: white;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
+        .logo-circle {
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: rotate(-5deg);
+            transition: transform 0.3s ease;
+        }
+        
+        .login-card:hover .logo-circle {
+            transform: rotate(0deg) scale(1.05);
         }
 
         .logo-img {
-            max-width: 70%;
+            max-width: 65%;
             height: auto;
         }
 
-        h2 {
+        h1.app-title {
             color: white;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: 800;
+            font-size: 2rem;
+            margin: 0;
+            letter-spacing: -0.5px;
+            text-align: center;
+            background: linear-gradient(to right, #ffffff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        p.text-white-50 {
-            font-weight: 300;
+        p.app-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            font-weight: 400;
             letter-spacing: 0.5px;
         }
 
-        .form-control {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+        .form-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-left: 4px;
+        }
+
+        .input-group {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            padding: 12px 20px;
-            font-size: 0.95rem;
+            padding: 4px;
             transition: all 0.3s ease;
         }
 
+        .input-group:focus-within {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 152, 114, 0.15);
+        }
+
+        .input-group-text {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            padding-left: 15px;
+        }
+
+        .form-control {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px 15px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
         .form-control:focus {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+            background: transparent;
+            box-shadow: none;
             color: white;
         }
 
         .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .input-group-text {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.8);
-            border-radius: 12px;
-            border-right: none;
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 400;
         }
         
-        .input-group .form-control {
-            border-left: none;
+        /* Autocomplete background fix */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #2a2a2a inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
         }
 
         .btn-toggle-password {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-left: none;
-            color: rgba(255, 255, 255, 0.8);
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            padding-right: 15px;
+            transition: color 0.3s;
         }
 
         .btn-toggle-password:hover {
-            background: rgba(255, 255, 255, 0.2);
             color: white;
+            background: transparent;
         }
 
         .form-check-input {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.3);
+            width: 1.1em;
+            height: 1.1em;
+            cursor: pointer;
         }
 
         .form-check-input:checked {
-            background-color: #ffffff;
-            border-color: #ffffff;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23009872' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
-        }
-
-        .btn-login {
-            background: white;
-            color: #009872;
-            font-weight: 700;
-            padding: 12px;
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .btn-login:hover {
-            background: #f0fdf4;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            color: #007a5e;
+            background-color: var(--primary);
+            border-color: var(--primary);
         }
 
         .forgot-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
             font-weight: 500;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .forgot-link:hover {
             color: white;
-            text-decoration: underline;
+            text-decoration: none;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #009872 0%, #00bc8c 100%);
+            border: none;
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 152, 114, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 152, 114, 0.4);
+            background: linear-gradient(135deg, #00ad82 0%, #00d49e 100%);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
         }
 
         .copyright {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.85rem;
-            margin-top: 1.5rem;
+            margin-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.75rem;
+            font-weight: 400;
         }
 
-        /* Alert overrides */
+        /* Alerts */
         .alert {
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            color: #333;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.9rem;
         }
+        
         .alert-danger {
-            border-left: 4px solid #dc3545;
+            background: rgba(220, 53, 69, 0.2);
+            border-left: 3px solid #dc3545;
+            color: #ffdae0;
         }
+        
         .alert-success {
-            border-left: 4px solid #198754;
+            background: rgba(25, 135, 84, 0.2);
+            border-left: 3px solid #198754;
+            color: #d1e7dd;
         }
     </style>
 </head>
 <body>
     <div class="overlay"></div>
 
-    <div class="container login-container">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card login-card">
-                    <div class="card-body">
-                        <div class="text-center mb-4">
-                            <div class="logo-container">
-                                <img src="/assets/img/AIF.png" alt="AIF Logo" class="logo-img">
-                            </div>
-                            <h2>AIFNET</h2>
-                            <p class="text-white-50">Yönetim Paneli Girişi</p>
-                        </div>
-                        
-                        <?php if ($error): ?>
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle me-2 text-danger"></i><?php echo htmlspecialchars($error); ?>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if ($success): ?>
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle me-2 text-success"></i><?php echo htmlspecialchars($success); ?>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <form method="POST" action="">
-                            <div class="mb-4">
-                                <label for="email" class="form-label text-white small text-uppercase fw-bold" style="opacity: 0.8">E-posta Adresi</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" class="form-control" id="email" name="email" placeholder="ornek@domain.com" required autofocus>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="password" class="form-label text-white small text-uppercase fw-bold" style="opacity: 0.8">Şifre</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
-                                    <button class="btn btn-toggle-password" type="button" id="togglePassword">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                                    <label class="form-check-label text-white" for="remember">
-                                        Beni hatırla
-                                    </label>
-                                </div>
-                                <a href="/forgot-password.php" class="forgot-link">Şifremi Unuttum?</a>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-login w-100 mb-3">
-                                GİRİŞ YAP <i class="fas fa-arrow-right ms-2"></i>
-                            </button>
-                        </form>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="logo-area">
+                <div class="logo-circle">
+                    <img src="/assets/img/AIF.png" alt="AIF" class="logo-img">
+                </div>
+                <h1 class="app-title">AIFNET</h1>
+                <p class="app-subtitle">Yönetim Paneli Girişi</p>
+            </div>
+            
+            <?php if ($error): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($success): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+            
+            <form method="POST" action="">
+                <div class="mb-4">
+                    <label for="email" class="form-label">E-Posta</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="E-posta adresiniz" required autofocus autocomplete="username">
                     </div>
                 </div>
                 
-                <div class="text-center copyright">
-                    <small>&copy; <?php echo date('Y'); ?> AIFNET v1.0.1</small>
+                <div class="mb-4">
+                    <label for="password" class="form-label">Şifre</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Şifreniz" required autocomplete="current-password">
+                        <button class="btn btn-toggle-password" type="button" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label text-white-50" for="remember">
+                            Beni hatırla
+                        </label>
+                    </div>
+                    <a href="/forgot-password.php" class="forgot-link">Şifremi unuttum</a>
+                </div>
+                
+                <button type="submit" class="btn btn-login">
+                    Giriş Yap
+                </button>
+            </form>
+            
+            <div class="copyright">
+                &copy; <?php echo date('Y'); ?> AIFNET Otomasyon Sistemi<br>v1.0.1
             </div>
         </div>
     </div>
