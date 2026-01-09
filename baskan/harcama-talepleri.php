@@ -7,25 +7,11 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-// Custom authorization: Allow Baskan, SuperAdmin OR Accounting Head
+Middleware::requireModulePermission('baskan_harcama_talepleri');
+
 $auth = new Auth();
 $user = $auth->getUser();
 if (!$user) { header('Location: /login.php'); exit; }
-
-$isAuthorized = ($user['role'] === 'super_admin' || $user['role'] === 'baskan');
-if (!$isAuthorized) {
-    // Check if accounting head
-    if ($auth->isAccountingHead($user['id'])) {
-        $isAuthorized = true;
-    }
-}
-
-if (!$isAuthorized) {
-    header('Location: /access-denied.php');
-    exit;
-}
-
-Middleware::requireModulePermission('baskan_harcama_talepleri');
 
 $auth = new Auth();
 $user = $auth->getUser();
