@@ -177,6 +177,14 @@ include __DIR__ . '/../includes/header.php';
             
             <!-- Yaklaşan Etkinlikler ve Toplantılar -->
             <div class="row g-4 mb-4">
+                <?php
+                // Türkçe ay isimleri
+                $aylar = [
+                    '01' => 'Oca', '02' => 'Şub', '03' => 'Mar', '04' => 'Nis', '05' => 'May', '06' => 'Haz',
+                    '07' => 'Tem', '08' => 'Ağu', '09' => 'Eyl', '10' => 'Eki', '11' => 'Kas', '12' => 'Ara'
+                ];
+                ?>
+                
                 <?php if ($auth->hasModulePermission('uye_etkinlikler')): ?>
                 <div class="col-12 col-lg-6">
                     <div class="card h-100">
@@ -192,14 +200,26 @@ include __DIR__ . '/../includes/header.php';
                             <?php else: ?>
                                 <div class="list-group list-group-flush">
                                     <?php foreach ($yaklasan_etkinlikler as $etkinlik): ?>
+                                        <?php 
+                                            // Etkinlik birimini bul (kullanıcının BYK'sı dışındaysa belirtmek için)
+                                            // Şimdilik sadece user byk'sını biliyoruz, etkinlik kendi byk'sında ise göstermeyebiliriz veya her zaman gösterebiliriz.
+                                            // Kullanıcı isteği: "hangi birimin programiysa ona göre onun isareti de olsun"
+                                            // Mevcut sorgu sadece BYK id ile çekiyor, dolayısıyla BYK adı join edilmeli.
+                                            // Ancak yukarıdaki sorguda join yok. Şimdilik $kullanici['byk_adi'] kullanabiliriz çünkü sadece kendi BYK'sındaki etkinlikleri görüyor.
+                                            $birimAdi = $kullanici['byk_adi'] ?? 'Genel';
+                                            $ayKodu = date('m', strtotime($etkinlik['baslangic_tarihi']));
+                                        ?>
                                         <div class="list-group-item d-flex align-items-center justify-content-between">
                                             <div class="d-flex align-items-center">
                                                 <div class="bg-light rounded p-2 text-center me-3" style="min-width: 50px;">
                                                     <div class="fw-bold text-dark"><?php echo date('d', strtotime($etkinlik['baslangic_tarihi'])); ?></div>
-                                                    <div class="small text-muted text-uppercase" style="font-size: 0.65rem;"><?php echo date('M', strtotime($etkinlik['baslangic_tarihi'])); ?></div>
+                                                    <div class="small text-muted text-uppercase" style="font-size: 0.65rem;"><?php echo $aylar[$ayKodu] ?? date('M', strtotime($etkinlik['baslangic_tarihi'])); ?></div>
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0 fw-semibold text-dark"><?php echo htmlspecialchars($etkinlik['baslik']); ?></h6>
+                                                    <small class="text-muted d-block mt-1">
+                                                        <i class="fas fa-sitemap me-1 text-primary" style="font-size: 0.8em;"></i> <?php echo htmlspecialchars($birimAdi); ?>
+                                                    </small>
                                                 </div>
                                             </div>
                                             <a href="/panel/uye_etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
@@ -229,35 +249,48 @@ include __DIR__ . '/../includes/header.php';
                             <?php else: ?>
                                 <div class="list-group list-group-flush">
                                     <?php foreach ($yaklasan_toplantilar as $toplanti): ?>
+                                        <?php 
+                                            // Toplantı birimini bul
+                                            // Toplantılar da kullanıcının BYK'sına veya katılımcı olduğu toplantılara göre geliyor.
+                                            // Şimdilik yine $kullanici['byk_adi'] varsayıyoruz kısıtlı join nedeniyle.
+                                            // İleride join eklenirse $toplanti['byk_adi'] kullanılabilir.
+                                            $birimAdi = $kullanici['byk_adi'] ?? 'Genel';
+                                            $ayKodu = date('m', strtotime($toplanti['toplanti_tarihi']));
+                                        ?>
                                         <div class="list-group-item d-flex align-items-center justify-content-between">
                                             <div class="d-flex align-items-center">
                                                 <div class="bg-light rounded p-2 text-center me-3" style="min-width: 50px;">
                                                     <div class="fw-bold text-dark"><?php echo date('d', strtotime($toplanti['toplanti_tarihi'])); ?></div>
-                                                    <div class="small text-muted text-uppercase" style="font-size: 0.65rem;"><?php echo date('M', strtotime($toplanti['toplanti_tarihi'])); ?></div>
+                                                    <div class="small text-muted text-uppercase" style="font-size: 0.65rem;"><?php echo $aylar[$ayKodu] ?? date('M', strtotime($toplanti['toplanti_tarihi'])); ?></div>
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-1 fw-semibold text-dark"><?php echo htmlspecialchars($toplanti['baslik']); ?></h6>
-                                                    <div class="d-flex gap-2">
-                                                        <span class="badge bg-light text-dark border fw-normal py-1">
-                                                            <i class="far fa-clock me-1 small"></i><?php echo date('H:i', strtotime($toplanti['toplanti_tarihi'])); ?>
-                                                        </span>
-                                                        <?php 
-                                                        $statusClass = match($toplanti['katilim_durumu']) {
-                                                            'katilacak' => 'success',
-                                                            'katilmayacak' => 'danger',
-                                                            'mazeret' => 'warning',
-                                                            default => 'secondary'
-                                                        };
-                                                        $statusText = match($toplanti['katilim_durumu']) {
-                                                            'katilacak' => 'Katılacak',
-                                                            'katilmayacak' => 'Katılmayacak',
-                                                            'mazeret' => 'Mazeretli',
-                                                            default => 'Beklemede'
-                                                        };
-                                                        ?>
-                                                        <span class="badge bg-<?php echo $statusClass; ?> bg-opacity-10 text-<?php echo $statusClass; ?> border border-<?php echo $statusClass; ?> border-opacity-10 py-1">
-                                                            <?php echo $statusText; ?>
-                                                        </span>
+                                                     <div class="d-flex flex-column gap-1">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-sitemap me-1 text-success" style="font-size: 0.8em;"></i> <?php echo htmlspecialchars($birimAdi); ?>
+                                                        </small>
+                                                        <div class="d-flex gap-2">
+                                                            <span class="badge bg-light text-dark border fw-normal py-1">
+                                                                <i class="far fa-clock me-1 small"></i><?php echo date('H:i', strtotime($toplanti['toplanti_tarihi'])); ?>
+                                                            </span>
+                                                            <?php 
+                                                            $statusClass = match($toplanti['katilim_durumu']) {
+                                                                'katilacak' => 'success',
+                                                                'katilmayacak' => 'danger',
+                                                                'mazeret' => 'warning',
+                                                                default => 'secondary'
+                                                            };
+                                                            $statusText = match($toplanti['katilim_durumu']) {
+                                                                'katilacak' => 'Katılacak',
+                                                                'katilmayacak' => 'Katılmayacak',
+                                                                'mazeret' => 'Mazeretli',
+                                                                default => 'Beklemede'
+                                                            };
+                                                            ?>
+                                                            <span class="badge bg-<?php echo $statusClass; ?> bg-opacity-10 text-<?php echo $statusClass; ?> border border-<?php echo $statusClass; ?> border-opacity-10 py-1">
+                                                                <?php echo $statusText; ?>
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
