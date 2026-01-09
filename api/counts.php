@@ -27,46 +27,19 @@ $bykId = $user['byk_id'];
 
 // --- 1. İzin Onayları ---
 try {
-    if($isSuperAdmin) {
-        $c = $db->fetch("SELECT COUNT(*) as cnt FROM izin_talepleri WHERE durum = 'bekliyor'");
-    } else {
-        $c = $db->fetch("
-            SELECT COUNT(*) as cnt 
-            FROM izin_talepleri i
-            INNER JOIN kullanicilar k ON i.kullanici_id = k.kullanici_id
-            WHERE i.durum = 'bekliyor' AND k.byk_id = ?
-        ", [$bykId]);
-    }
+    $c = $db->fetch("SELECT COUNT(*) as cnt FROM izin_talepleri WHERE durum = 'bekliyor'");
     $counts['pendingIzinCount'] = (int)($c['cnt'] ?? 0);
 } catch (Exception $e) {}
 
 // --- 2. Harcama Onayları ---
 try {
-    if($isSuperAdmin) {
-        $c = $db->fetch("SELECT COUNT(*) as cnt FROM harcama_talepleri WHERE durum = 'bekliyor'");
-    } else {
-         $c = $db->fetch("
-            SELECT COUNT(*) as cnt 
-            FROM harcama_talepleri h
-            INNER JOIN kullanicilar k ON h.kullanici_id = k.kullanici_id
-            WHERE h.durum = 'bekliyor' AND k.byk_id = ?
-        ", [$bykId]);
-    }
+    $c = $db->fetch("SELECT COUNT(*) as cnt FROM harcama_talepleri WHERE durum = 'bekliyor'");
     $counts['pendingHarcamaCount'] = (int)($c['cnt'] ?? 0);
 } catch (Exception $e) {}
 
 // --- 3. İade Onayları ---
 try {
-    if($isSuperAdmin) {
-         $c = $db->fetch("SELECT COUNT(*) as cnt FROM iade_formlari WHERE durum = 'bekliyor'");
-    } else {
-        $c = $db->fetch("
-            SELECT COUNT(*) as cnt 
-            FROM iade_formlari f
-            INNER JOIN kullanicilar k ON f.kullanici_id = k.kullanici_id
-            WHERE f.durum = 'bekliyor' AND k.byk_id = ?
-        ", [$bykId]);
-    }
+    $c = $db->fetch("SELECT COUNT(*) as cnt FROM iade_formlari WHERE durum = 'bekliyor'");
     $counts['pendingIadeCount'] = (int)($c['cnt'] ?? 0);
 } catch (Exception $e) {}
 
