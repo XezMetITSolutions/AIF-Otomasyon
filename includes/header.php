@@ -62,8 +62,9 @@ $isUye = $user && $user['role'] === 'uye';
                     $homeLink = '/panel/uye_dashboard.php';
                 }
                 ?>
-                <a class="navbar-brand" href="<?php echo $homeLink; ?>">
-                    <i class="fas fa-home me-2"></i><?php echo $appConfig['app_name']; ?>
+                <a class="navbar-brand d-flex align-items-center" href="<?php echo $homeLink; ?>">
+                    <img src="/assets/img/AIF.png" alt="AIF Logo" class="me-2" style="height: 30px; width: auto;">
+                    <?php echo $appConfig['app_name']; ?>
                 </a>
                 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
