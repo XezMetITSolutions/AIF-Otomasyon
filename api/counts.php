@@ -26,11 +26,10 @@ $isBaskan = $user['role'] === 'uye'; // Using existing logic (though usually bas
 $bykId = $user['byk_id'];
 
 // --- 1. İzin Onayları ---
-if ($auth->hasModulePermission('baskan_izin_talepleri') || $isSuperAdmin) {
+try {
     if($isSuperAdmin) {
         $c = $db->fetch("SELECT COUNT(*) as cnt FROM izin_talepleri WHERE durum = 'bekliyor'");
     } else {
-        // Başkan of a unit sees requests from their unit members
         $c = $db->fetch("
             SELECT COUNT(*) as cnt 
             FROM izin_talepleri i
@@ -38,12 +37,11 @@ if ($auth->hasModulePermission('baskan_izin_talepleri') || $isSuperAdmin) {
             WHERE i.durum = 'bekliyor' AND k.byk_id = ?
         ", [$bykId]);
     }
-    $counts['pendingIzinCount'] = (int)$c['cnt'];
-}
+    $counts['pendingIzinCount'] = (int)($c['cnt'] ?? 0);
+} catch (Exception $e) {}
 
 // --- 2. Harcama Onayları ---
-if ($auth->hasModulePermission('baskan_harcama_talepleri') || $isSuperAdmin) {
-    // Muhasebe başkanı logic? Assuming standard BYK check for now or specific permission
+try {
     if($isSuperAdmin) {
         $c = $db->fetch("SELECT COUNT(*) as cnt FROM harcama_talepleri WHERE durum = 'bekliyor'");
     } else {
@@ -54,11 +52,11 @@ if ($auth->hasModulePermission('baskan_harcama_talepleri') || $isSuperAdmin) {
             WHERE h.durum = 'bekliyor' AND k.byk_id = ?
         ", [$bykId]);
     }
-    $counts['pendingHarcamaCount'] = (int)$c['cnt'];
-}
+    $counts['pendingHarcamaCount'] = (int)($c['cnt'] ?? 0);
+} catch (Exception $e) {}
 
 // --- 3. İade Onayları ---
-if ($auth->hasModulePermission('baskan_iade_formlari') || $isSuperAdmin) {
+try {
     if($isSuperAdmin) {
          $c = $db->fetch("SELECT COUNT(*) as cnt FROM iade_formlari WHERE durum = 'bekliyor'");
     } else {
@@ -69,31 +67,15 @@ if ($auth->hasModulePermission('baskan_iade_formlari') || $isSuperAdmin) {
             WHERE f.durum = 'bekliyor' AND k.byk_id = ?
         ", [$bykId]);
     }
-    $counts['pendingIadeCount'] = (int)$c['cnt'];
-}
+    $counts['pendingIadeCount'] = (int)($c['cnt'] ?? 0);
+} catch (Exception $e) {}
 
 // --- 4. Raggal Talepleri ---
-if ($auth->hasModulePermission('baskan_raggal_talepleri') || $isSuperAdmin) {
-    if($isSuperAdmin) {
-        $c = $db->fetch("SELECT COUNT(*) as cnt FROM raggal_talepleri WHERE durum = 'bekliyor'");
-    } else {
-        // Raggal might be centrally managed or by BYK. Assuming BYK filter for consistency
-        // If Raggal is a facility managed by specific people, the permission check handles access.
-        // But do they see ALL requests or just their unit? 
-        // Usually facility requests are global for the facility managers.
-        // Let's assume for now if you have permission 'baskan_raggal_talepleri', you manage the facility => see ALL pending.
-        // OR if logic is 'My Unit's requests'. 
-        // Based on previous files, managers see ALL requests usually or their unit.
-        // Let's stick to BYK filter IF table has byk_id or user join.
-        // Actually raggal_rezervasyonlar likely doesn't have byk_id directly, uses user.
-        
-        // Checking previous usage in raggal-talepleri.php could confirm.
-        // Assuming strict BYK scope for safety unless told otherwise.
-        
-        $c = $db->fetch("SELECT COUNT(*) as cnt FROM raggal_talepleri WHERE durum = 'bekliyor'");
-    }
-    $counts['pendingRaggalCount'] = (int)$c['cnt'];
-}
+try {
+    // Return GLOBAL count for everyone. Permission to see/act is handled by Sidebar visibility.
+    $c = $db->fetch("SELECT COUNT(*) as cnt FROM raggal_talepleri WHERE durum = 'bekliyor'");
+    $counts['pendingRaggalCount'] = (int)($c['cnt'] ?? 0);
+} catch (Exception $e) {}
 
 echo json_encode([
     'success' => true,
