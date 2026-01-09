@@ -75,13 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $bgImages = [
     'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque landscape
-    'https://images.unsplash.com/photo-1596404762512-da7d3536bf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque interior
-    'https://images.unsplash.com/photo-1564769662533-4f00a87b4056?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Quran
+    'https://images.unsplash.com/photo-1596404762512-da7d3536bf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque interior (Architecture)
     'https://images.unsplash.com/photo-1537178082695-1845112fa5b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Islamic architecture
-    'https://images.unsplash.com/photo-1588661730623-7a9359cde047?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Prayer beads
     'https://images.unsplash.com/photo-1579294294021-d779f45d1607?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Blue Mosque
     'https://images.unsplash.com/photo-1519817650390-64a93db51149?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque silhouette
-    'https://images.unsplash.com/photo-1564121211835-e88c852648ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Islamic Calligraphy
+    'https://images.unsplash.com/photo-1518005052357-e98719a066d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // General Islamic Architecture
+    'https://images.unsplash.com/photo-1469248679196-1c221ac149ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Nature/Architecture mix (Cordoba?)
 ];
 $randomBg = $bgImages[array_rand($bgImages)];
 
