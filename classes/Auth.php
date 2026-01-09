@@ -195,17 +195,22 @@ class Auth {
             return true;
         }
 
+        // DB'deki yetkileri kontrol et
+        $modulePermissions = $this->getCachedModulePermissions($user['id']);
+
+        // Eğer veritabanında bu modül için explicit (açıkça) bir yetki tanımlanmışsa,
+        // ROL KONTROLÜNDEN ÖNCE bunu dikkate al.
+        // Bu sayede normal bir üyeye 'baskan' modülü yetkisi verilebilir.
+        if (array_key_exists($moduleKey, $modulePermissions)) {
+            return (bool)$modulePermissions[$moduleKey];
+        }
+
+        // Veritabanında özel yetki yoksa, standart rol kısıtlamasına bak
         if ($user['role'] !== self::ROLE_BASKAN) {
             return false;
         }
 
         $default = (bool)($moduleConfig['default'] ?? true);
-        $modulePermissions = $this->getCachedModulePermissions($user['id']);
-
-        if (array_key_exists($moduleKey, $modulePermissions)) {
-            return (bool)$modulePermissions[$moduleKey];
-        }
-
         return $default;
     }
 
