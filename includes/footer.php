@@ -118,7 +118,7 @@ $user = $auth->getUser();
                 loadSidebarCounts();
                 
                 setInterval(loadNotifications, 30000); // 30 saniyede bir güncelle
-                setInterval(loadSidebarCounts, 60000); // 1 dakikada bir sayıları güncelle
+                setInterval(loadSidebarCounts, 15000); // 15 saniyede bir sayıları güncelle (Daha hızlı)
             });
 
             function loadSidebarCounts() {
