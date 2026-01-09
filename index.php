@@ -74,13 +74,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $bgImages = [
-    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque landscape
-    'https://images.unsplash.com/photo-1596404762512-da7d3536bf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque interior (Architecture)
-    'https://images.unsplash.com/photo-1537178082695-1845112fa5b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Islamic architecture
-    'https://images.unsplash.com/photo-1579294294021-d779f45d1607?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Blue Mosque
-    'https://images.unsplash.com/photo-1519817650390-64a93db51149?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque silhouette
-    'https://images.unsplash.com/photo-1518005052357-e98719a066d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // General Islamic Architecture
-    'https://images.unsplash.com/photo-1469248679196-1c221ac149ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Nature/Architecture mix (Cordoba?)
+    'https://images.unsplash.com/photo-1519817650390-64a93db51149?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque Silhouette Sunset
+    'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Sheikh Zayed Mosque
+    'https://images.unsplash.com/photo-1579294294021-d779f45d1607?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Blue Mosque Istanbul
+    'https://images.unsplash.com/photo-1537178082695-1845112fa5b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Islamic Arches
+    'https://images.unsplash.com/photo-1580820716655-22d732c525f6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Dome Detail
+    'https://images.unsplash.com/photo-1596404762512-da7d3536bf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque Interior
+    'https://images.unsplash.com/photo-1518005052357-e98719a066d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // White Marble Mosque
+    'https://images.unsplash.com/photo-1558584876-0f8c32d6657e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Qutub Minar / Architecture
+    'https://images.unsplash.com/photo-1565552629477-09be335541a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Islamic Geometric Pattern
+    'https://images.unsplash.com/photo-1601625463687-25541e46da8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Lanterns / Ramadan
+    'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80', // Mosque Courtyard
+    'https://images.unsplash.com/photo-1551041777-ed02d7ef14fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'  // Great Mosque of Mecca (General View)
 ];
 $randomBg = $bgImages[array_rand($bgImages)];
 
