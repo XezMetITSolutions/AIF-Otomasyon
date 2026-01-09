@@ -39,172 +39,34 @@ include __DIR__ . '/../includes/header.php';
 
         <style>
             :root {
-                --bg: #ffffff;
-                --card: #ffffff;
-                --muted: #6b7280;
-                --text: #000000;
                 --primary: #009872;
                 --primary-600: #007a5e;
-                --accent: #009872;
-                --danger: #dc2626;
-                --warning: #d97706;
                 --border: #e5e7eb;
-                --input: #ffffff;
             }
-            #iade-form-wrapper * { box-sizing: border-box; }
-            #iade-form-wrapper {
-                font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-                background: radial-gradient(1200px 600px at 20% 0%, rgba(0,152,114,.05), transparent 60%),
-                            radial-gradient(900px 500px at 80% 0%, rgba(0,152,114,.03), transparent 60%),
-                            var(--bg);
-                color: var(--text);
-                margin: 0;
-                padding: 0;
-            }
-            #iade-form-wrapper .container {
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 24px;
-                background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9));
-                border: 2px solid var(--primary);
-                border-radius: 16px;
-                box-shadow: 0 10px 30px rgba(0,152,114,.1), inset 0 1px 0 rgba(255,255,255,.9);
-                backdrop-filter: blur(8px);
-            }
-            #iade-form-wrapper h2 {
-                margin: 0 0 16px;
-                text-align: center;
-                font-weight: 700;
-                letter-spacing: .3px;
-                color: var(--primary);
-                font-size: 28px;
-            }
-            #iade-form-wrapper .subtitle {
-                text-align: center;
-                color: var(--muted);
-                margin-bottom: 24px;
-                font-size: 14px;
-            }
-            #iade-form-wrapper .form-row {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 16px;
-            }
-            #iade-form-wrapper .form-group {
-                margin-bottom: 14px;
-            }
-            #iade-form-wrapper .form-group label {
-                display: block;
-                margin-bottom: 6px;
-                font-size: 13px;
-                color: var(--muted);
-            }
-            #iade-form-wrapper .form-group input,
-            #iade-form-wrapper .form-group select,
-            #iade-form-wrapper .form-group textarea {
-                width: 100%;
-                padding: 10px 12px;
-                background: var(--input);
-                color: var(--text);
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                outline: none;
-                transition: border-color .15s, box-shadow .15s;
-            }
-            #iade-form-wrapper .form-group input:focus,
-            #iade-form-wrapper .form-group select:focus,
-            #iade-form-wrapper .form-group textarea:focus {
-                border-color: var(--primary);
-                box-shadow: 0 0 0 3px rgba(0,152,114,.15);
-            }
-            #iade-form-wrapper .form-group textarea {
-                resize: vertical;
-                min-height: 70px;
-            }
-            #iade-form-wrapper .items-container { margin: 8px 0 16px; }
-            #iade-form-wrapper .item {
-                border: 1px solid var(--border);
-                padding: 14px;
-                border-radius: 12px;
-                margin-bottom: 12px;
-                background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(248,250,252,.7));
-                border: 1px solid var(--primary);
-            }
-            #iade-form-wrapper .add-item-button {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                padding: 10px 14px;
-                background-color: var(--primary);
-                color: white;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                font-weight: 600;
-            }
-            #iade-form-wrapper .add-item-button:hover { background-color: var(--primary-600); }
-            #iade-form-wrapper .remove-item-button {
-                padding: 6px 10px;
-                background-color: var(--danger);
-                color: white;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                float: right;
-            }
-            #iade-form-wrapper .button-container { text-align: right; margin-top: 16px; }
-            #iade-form-wrapper button[type="submit"] {
-                padding: 10px 16px;
-                background-color: var(--accent);
-                color: white;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                font-weight: 600;
-            }
-            #iade-form-wrapper button[type="submit"]:hover { filter: brightness(1.05); }
-            #spinner {
-                display: none;
-                margin: 12px auto 0;
-                width: 40px; height: 40px;
-                border: 4px solid rgba(255,255,255,.2);
-                border-top-color: var(--primary);
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-            }
-            @keyframes spin { to { transform: rotate(360deg); } }
-            .error-message { color: #fca5a5; font-weight: 600; margin-top: 10px; }
-            .route-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .calculate-km-btn {
-                background-color: var(--accent);
-                color: white;
-                padding: 8px 12px;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                margin-top: 6px;
-                font-weight: 600;
-            }
-            .calculate-km-btn:hover { filter: brightness(1.05); }
-            .km-loading { display: none; color: var(--accent); font-size: 12px; margin-top: 6px; }
+            
+            /* Autocomplete Suggestions */
             .suggestions {
                 position: absolute;
                 left: 0; right: 0;
-                z-index: 10;
+                top: 100%;
+                z-index: 1050;
                 background: #ffffff;
                 border: 1px solid var(--border);
-                border-radius: 10px;
+                border-radius: 0 0 10px 10px;
                 display: none;
-                overflow: hidden;
-                box-shadow: 0 10px 20px rgba(0,0,0,.15);
+                max-height: 200px;
+                overflow-y: auto;
+                box-shadow: 0 4px 6px rgba(0,0,0,.1);
             }
             .suggestion-item {
                 padding: 10px 12px;
                 cursor: pointer;
-                border-bottom: 1px solid rgba(226,232,240,.6);
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 0.9rem;
             }
             .suggestion-item:last-child { border-bottom: 0; }
-            .suggestion-item:hover { background: rgba(0,152,114,.08); }
+            .suggestion-item:hover { background: rgba(0,152,114,.08); color: var(--primary); }
+
 
             /* CSS Overrides for Mobile Layout Fix */
             .dashboard-layout {
@@ -275,48 +137,63 @@ include __DIR__ . '/../includes/header.php';
                         Ücretini kendisi ödeyen üyeler, belgeleriyle birlikte geri ödeme talebini bu form üzerinden gönderebilir.
                     </p>
                 </div>
-                <div class="text-end">
-                    <a href="<?php echo $formBasePath; ?>/index.html" target="_blank" rel="noopener" class="btn btn-outline-success">
-                        <i class="fas fa-external-link-alt me-1"></i>Yedek Tam Ekran
-                    </a>
-                </div>
                 </div>
             </div>
         </div>
 
-        <div id="iade-form-wrapper">
-            <div class="container" id="mainContent">
-                <h2>AİF Gider Formu</h2>
-                <div class="subtitle">Gider kalemlerinizi ekleyin, belgeleri yükleyin ve gönderin.</div>
+        <div class="card">
+            <div class="card-body">
                 <form id="expenseForm" onsubmit="handleSubmit(event)">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="name">İsim</label>
-                            <input type="text" id="name" name="name" placeholder="Adınızı giriniz" value="<?php echo htmlspecialchars($uyeAd); ?>" required>
+                    <h5 class="card-title mb-4 pb-2 border-bottom text-primary">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>AİF Gider Formu
+                    </h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">İsim</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Adınızı giriniz" value="<?php echo htmlspecialchars($uyeAd); ?>" required>
                         </div>
-                        <div class="form-group">
-                            <label for="surname">Soyisim</label>
-                            <input type="text" id="surname" name="surname" placeholder="Soyadınızı giriniz" value="<?php echo htmlspecialchars($uyeSoyad); ?>" required>
-                        </div>
-                    </div>
-                    <div class="items-container" id="itemsContainer"></div>
-                    <button type="button" class="add-item-button" onclick="addItem()">+ Kalem ekle</button>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="iban">IBAN</label>
-                            <input type="text" id="iban" name="iban" placeholder="AT.. (4’lü bloklarla)" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="total">Toplam Tutar (€)</label>
-                            <input type="number" id="total" name="total" readonly>
+                        <div class="col-md-6">
+                            <label for="surname" class="form-label">Soyisim</label>
+                            <input type="text" class="form-control" id="surname" name="surname" placeholder="Soyadınızı giriniz" value="<?php echo htmlspecialchars($uyeSoyad); ?>" required>
                         </div>
                     </div>
-                    <div class="button-container">
-                        <button type="submit">Gideri bildir</button>
+
+                    <div id="itemsContainer"></div>
+                    
+                    <div class="d-grid gap-2 mb-4">
+                        <button type="button" class="btn btn-outline-primary" onclick="addItem()">
+                            <i class="fas fa-plus me-1"></i>Yeni Kalem Ekle
+                        </button>
+                    </div>
+
+                    <div class="row g-3 align-items-end border-top pt-3">
+                        <div class="col-md-8">
+                            <label for="iban" class="form-label">IBAN (TR/AT)</label>
+                            <input type="text" class="form-control font-monospace" id="iban" name="iban" placeholder="AT.. (4’lü bloklarla)" required>
+                            <div class="form-text">Ödemenin yapılacağı banka hesabı.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="total" class="form-label fw-bold">Toplam Tutar (€)</label>
+                            <input type="number" class="form-control form-control-lg text-end fw-bold text-success" id="total" name="total" readonly value="0.00">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-paper-plane me-2"></i>Gideri Bildir
+                        </button>
                     </div>
                 </form>
-                <div id="spinner"></div>
-                <div id="errorMessage" class="error-message"></div>
+                
+                <div id="spinner" class="text-center mt-3" style="display:none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <p class="mt-2 text-muted">İşlem yapılıyor, lütfen bekleyin...</p>
+                </div>
+                
+                <div id="errorMessage" class="alert alert-danger mt-3" style="display:none;"></div>
             </div>
         </div>
     </div>
@@ -498,97 +375,109 @@ include __DIR__ . '/../includes/header.php';
     function addItem() {
         const container = document.getElementById('itemsContainer');
         const newItem = document.createElement('div');
-        newItem.className = 'item';
+        newItem.className = 'card mb-3 border bg-light';
         const itemId = itemCounter++;
 
         newItem.innerHTML = `
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Tarih</label>
-                    <input type="date" name="position-datum[]" required>
-                </div>
-                <div class="form-group">
-                    <label>Bölge Yönetim Kurulu</label>
-                    <select name="region[]" required>
-                        <option value="AT" ${DEFAULT_BYK === 'AT' ? 'selected' : ''}>AT</option>
-                        <option value="KT" ${DEFAULT_BYK === 'KT' ? 'selected' : ''}>KT</option>
-                        <option value="GT" ${DEFAULT_BYK === 'GT' ? 'selected' : ''}>GT</option>
-                        <option value="KGT" ${DEFAULT_BYK === 'KGT' ? 'selected' : ''}>KGT</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Birim</label>
-                    <select name="birim[]" required>
-                        <option value="baskan">Başkan</option>
-                        <option value="byk">BYK Üyesi</option>
-                        <option value="egitim">Eğitim</option>
-                        <option value="fuar">Fuar</option>
-                        <option value="gob">Spor/Gezi (GOB)</option>
-                        <option value="hacumre">Hac/Umre</option>
-                        <option value="idair">İdari İşler</option>
-                        <option value="irsad">İrşad</option>
-                        <option value="kurumsal">Kurumsal İletişim</option>
-                        <option value="muhasebe">Muhasebe</option>
-                        <option value="ortaogretim">Orta Öğretim</option>
-                        <option value="raggal">Raggal</option>
-                        <option value="sosyal">Sosyal Hizmetler</option>
-                        <option value="tanitma">Tanıtma</option>
-                        <option value="teftis">Teftiş</option>
-                        <option value="teskilatlanma">Teşkilatlanma</option>
-                        <option value="universiteler">Üniversiteler</option>
-                        <option value="baska">Başka</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Kategori</label>
-                    <select name="gider-turu[]" required onchange="handleGiderTuruChange(this)">
-                        <option value="">Lütfen seçin</option>
-                        <option value="genel">Genel</option>
-                        <option value="ikram">İkram</option>
-                        <option value="ulasim">Ulaşım</option>
-                        <option value="yakit">Yakıt</option>
-                        <option value="malzeme">Malzeme</option>
-                        <option value="konaklama">Konaklama</option>
-                        <option value="buro">Büro</option>
-                        <option value="diger">Diğer</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group yakit-fields" style="display:none;">
-                <label>Rota (Otomatik Mesafe)</label>
-                <div class="route-inputs">
-                    <div style="position:relative;">
-                        <input type="text" class="route-start" placeholder="Amberggsse 10, 6800 Feldkirch" data-item="${itemId}">
-                        <div class="suggestions"></div>
+            <div class="card-body position-relative">
+                <button type="button" class="btn btn-close position-absolute top-0 end-0 m-2" aria-label="Kaldır" onclick="removeItem(this)"></button>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Tarih</label>
+                        <input type="date" class="form-control" name="position-datum[]" required>
                     </div>
-                    <div style="position:relative;">
-                        <input type="text" class="route-end" placeholder="Sterzingerstraße 6, 6020 Innsbruck" data-item="${itemId}">
-                        <div class="suggestions"></div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Bölge Yönetim Kurulu</label>
+                        <select class="form-select" name="region[]" required>
+                            <option value="AT" ${DEFAULT_BYK === 'AT' ? 'selected' : ''}>AT</option>
+                            <option value="KT" ${DEFAULT_BYK === 'KT' ? 'selected' : ''}>KT</option>
+                            <option value="GT" ${DEFAULT_BYK === 'GT' ? 'selected' : ''}>GT</option>
+                            <option value="KGT" ${DEFAULT_BYK === 'KGT' ? 'selected' : ''}>KGT</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Birim</label>
+                        <select class="form-select" name="birim[]" required>
+                            <option value="baskan">Başkan</option>
+                            <option value="byk">BYK Üyesi</option>
+                            <option value="egitim">Eğitim</option>
+                            <option value="fuar">Fuar</option>
+                            <option value="gob">Spor/Gezi (GOB)</option>
+                            <option value="hacumre">Hac/Umre</option>
+                            <option value="idair">İdari İşler</option>
+                            <option value="irsad">İrşad</option>
+                            <option value="kurumsal">Kurumsal İletişim</option>
+                            <option value="muhasebe">Muhasebe</option>
+                            <option value="ortaogretim">Orta Öğretim</option>
+                            <option value="raggal">Raggal</option>
+                            <option value="sosyal">Sosyal Hizmetler</option>
+                            <option value="tanitma">Tanıtma</option>
+                            <option value="teftis">Teftiş</option>
+                            <option value="teskilatlanma">Teşkilatlanma</option>
+                            <option value="universiteler">Üniversiteler</option>
+                            <option value="baska">Başka</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Kategori</label>
+                        <select class="form-select" name="gider-turu[]" required onchange="handleGiderTuruChange(this)">
+                            <option value="">Lütfen seçin</option>
+                            <option value="genel">Genel</option>
+                            <option value="ikram">İkram</option>
+                            <option value="ulasim">Ulaşım</option>
+                            <option value="yakit">Yakıt</option>
+                            <option value="malzeme">Malzeme</option>
+                            <option value="konaklama">Konaklama</option>
+                            <option value="buro">Büro</option>
+                            <option value="diger">Diğer</option>
+                        </select>
                     </div>
                 </div>
-                <button type="button" class="calculate-km-btn" onclick="calculateDistance(${itemId})">🗺️ Mesafeyi Hesapla</button>
-                <div class="km-loading" id="loading-${itemId}">Hesaplanıyor...</div>
-                <input type="text" name="route" class="route-full" placeholder="Tam rota açıklaması" style="margin-top:10px;">
+
+                <div class="yakit-fields mt-3 p-3 bg-white border rounded" style="display:none;">
+                    <label class="form-label fw-bold text-primary">Rota & Mesafe Hesaplama</label>
+                    <div class="row g-2 mb-2 route-inputs">
+                        <div class="col-md-5 position-relative">
+                            <input type="text" class="form-control form-control-sm route-start" placeholder="Başlangıç: Örn. Viyana" data-item="${itemId}">
+                            <div class="suggestions list-group position-absolute w-100 shadow-sm" style="z-index:1050; display:none;"></div>
+                        </div>
+                        <div class="col-md-2 text-center align-self-center">
+                            <i class="fas fa-arrow-right text-muted"></i>
+                        </div>
+                        <div class="col-md-5 position-relative">
+                            <input type="text" class="form-control form-control-sm route-end" placeholder="Bitiş: Örn. Salzburg" data-item="${itemId}">
+                            <div class="suggestions list-group position-absolute w-100 shadow-sm" style="z-index:1050; display:none;"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-sm btn-outline-primary mb-2 w-100" onclick="calculateDistance(${itemId})">
+                        <i class="fas fa-map-marked-alt me-1"></i>Mesafeyi Hesapla
+                    </button>
+                    <div class="km-loading text-center small text-primary fst-italic" id="loading-${itemId}" style="display:none;">Hesaplanıyor...</div>
+                    <input type="text" name="route" class="form-control form-control-sm mb-2 route-full bg-light" placeholder="Tam rota bilgisi" readonly>
+                    
+                    <label class="form-label small text-muted">Toplam Kilometre</label>
+                    <div class="input-group input-group-sm">
+                        <input type="number" name="kilometer" class="form-control kilometer-field" placeholder="0.00" step="0.01" onchange="calculateYakitAmount(this)" data-item="${itemId}">
+                        <span class="input-group-text">km</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Tutar (€)</label>
+                        <input type="text" class="form-control" name="gider-miktari[]" required onchange="calculateTotal()" oninput="formatToDecimal(this)" placeholder="0.00">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label text-muted">Açıklama</label>
+                        <input type="text" class="form-control" name="beschreibung[]" placeholder="Harcama detayı...">
+                    </div>
+                    <div class="col-12">
+                         <label class="form-label text-muted">Belgeler (Görsel/PDF)</label>
+                         <input type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.heic,image/webp,.pdf,application/pdf" multiple>
+                    </div>
+                </div>
             </div>
-            <div class="form-group yakit-fields" style="display:none;">
-                <label>Toplam Kilometre</label>
-                <input type="number" name="kilometer" class="kilometer-field" placeholder="Toplam km" step="0.01" onchange="calculateYakitAmount(this)" data-item="${itemId}">
-            </div>
-            <div class="form-group">
-                <label>Gider Miktarı (€)</label>
-                <input type="text" name="gider-miktari[]" required onchange="calculateTotal()" oninput="formatToDecimal(this)">
-            </div>
-            <div class="form-group">
-                <label>Açıklama (Opsiyonel)</label>
-                <textarea name="beschreibung[]" rows="2" placeholder="Kısa açıklama"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Belgeler (Görsel/PDF)</label>
-                <input type="file" class="item-documents" accept=".jpg,.jpeg,.png,.webp,.heic,image/webp,.pdf,application/pdf" multiple>
-            </div>
-            <button type="button" class="remove-item-button" onclick="removeItem(this)">Kaldır</button>
         `;
 
         container.appendChild(newItem);
