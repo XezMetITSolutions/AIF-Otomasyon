@@ -9,6 +9,9 @@ require_once __DIR__ . '/../classes/Database.php';
 
 
 // Permission check for viewing sensitive info (management view)
+$auth = new Auth();
+$user = $auth->getUser();
+$db = Database::getInstance();
 $canManage = $auth->hasModulePermission('baskan_uyeler');
 
 // Note: We allow everyone to VIEW the list (Basic Info), but only managers see Details (Email, Phone, etc.)

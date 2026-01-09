@@ -9,7 +9,16 @@ require_once __DIR__ . '/../classes/Database.php';
 
 
 // Permission check for management actions
+$auth = new Auth();
+$user = $auth->getUser();
+$db = Database::getInstance();
 $canManage = $auth->hasModulePermission('baskan_duyurular');
+
+$appConfig = require __DIR__ . '/../config/app.php';
+$csrfTokenName = $appConfig['security']['csrf_token_name'];
+$csrfToken = Middleware::generateCSRF();
+$message = null;
+$messageType = 'success';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$canManage) {
