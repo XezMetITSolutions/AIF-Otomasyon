@@ -23,6 +23,7 @@ if ($auth->checkAuth()) {
     }
     
     if ($redirectPath) {
+        session_write_close();
         header('Location: ' . $redirectPath);
         exit;
     } else {
@@ -56,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if ($redirectPath) {
+                session_write_close();
                 header('Location: ' . $redirectPath);
                 exit;
             } else {

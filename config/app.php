@@ -7,7 +7,7 @@
 return [
     'app_name' => 'AIF Otomasyon Sistemi',
     'app_version' => '1.0.1',
-    'app_url' => 'http://localhost',
+    'app_url' => 'http://aifnet.islamfederasyonu.at',
     'timezone' => 'Europe/Vienna',
     'locale' => 'tr_TR',
     'date_format' => 'd.m.Y',
