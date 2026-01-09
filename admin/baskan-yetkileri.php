@@ -60,6 +60,46 @@ if (!$selectedBaskan && $selectedId !== 0) {
     exit;
 }
 
+// BULK ACTION: Grant ALL 'uye' permissions to ALL users
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_update_uye'])) {
+    if (!Middleware::verifyCSRF()) {
+        $message = 'Güvenlik doğrulaması başarısız (Bulk).';
+        $messageType = 'danger';
+    } else {
+        try {
+             // 1. Identify "Uye" Modules
+             $uyeModules = [];
+             foreach ($moduleDefinitions as $key => $def) {
+                 if (isset($def['category']) && $def['category'] === 'uye') {
+                     $uyeModules[] = $key;
+                 }
+             }
+
+             if (!empty($uyeModules)) {
+                 // 2. Get All Users (reuse $baskans list which is already filtered != super_admin)
+                 foreach ($baskans as $bUser) {
+                     $uId = $bUser['kullanici_id'];
+                     foreach ($uyeModules as $modKey) {
+                         $db->query("
+                            INSERT INTO baskan_modul_yetkileri (kullanici_id, module_key, can_view)
+                            VALUES (?, ?, 1)
+                            ON DUPLICATE KEY UPDATE can_view = 1
+                         ", [$uId, $modKey]);
+                     }
+                 }
+                 $message = 'Tüm üyelere varsayılan Üye yetkileri tanımlandı.';
+                 $messageType = 'success';
+             } else {
+                 $message = 'Üye modülü tanımı bulunamadı.';
+                 $messageType = 'warning';
+             }
+        } catch (Exception $e) {
+            $message = 'Hata: ' . $e->getMessage();
+            $messageType = 'danger';
+        }
+    }
+}
+
 // Mevcut izinleri oku
 $existingPermissions = [];
 if ($selectedBaskan) {
@@ -214,6 +254,19 @@ include __DIR__ . '/../includes/header.php';
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
+
+        <!-- Toplu İşlemler -->
+        <div class="row mb-4">
+            <div class="col-12 text-end">
+                <form method="POST" class="d-inline-block" onsubmit="return confirm('Tüm üyelere varsayılan üye yetkileri tanımlanacak. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?');">
+                    <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
+                    <input type="hidden" name="bulk_update_uye" value="1">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-users-cog me-2"></i>Tüm Üyelere Üye Yetkilerini Tanımla (Toplu)
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <div class="row">
             <!-- Sol: Başkan Listesi -->
