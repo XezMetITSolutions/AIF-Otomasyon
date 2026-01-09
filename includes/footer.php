@@ -57,6 +57,7 @@ $user = $auth->getUser();
         <?php endforeach; ?>
     <?php endif; ?>
     
+    <?php if ($user): ?>
         <div id="page-loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; display: none; align-items: center; justify-content: center;">
             <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                 <span class="visually-hidden">Yükleniyor...</span>
@@ -69,23 +70,31 @@ $user = $auth->getUser();
                 
                 // 1. Link Interception
                 $(document).on('click', 'a', function(e) {
-                    const href = $(this).attr('href');
-                    const target = $(this).attr('target');
+                    const el = $(this);
+                    const href = el.attr('href');
+                    const target = el.attr('target');
                     
-                    // Skip if:
-                    // - No href, empty href, anchor link #
-                    // - External link (http/https starting) UNLESS it matches our domain (simplified check: starts with /)
-                    // - Target is _blank
-                    // - Has specific class 'no-ajax'
-                    // - Is a download link
-                    if (!href || href === '#' || href.startsWith('javascript:') || target === '_blank' || $(this).hasClass('no-ajax')) {
+                    // Basic exclusions
+                    if (!href || href === '#' || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || target === '_blank' || el.hasClass('no-ajax')) {
                         return;
                     }
-                    
-                    if (href.startsWith('/admin/') || href.startsWith('/panel/') || href.startsWith('?')) {
-                        e.preventDefault();
-                        loadPage(href);
+
+                    // Check if external
+                    const isAbsolute = href.indexOf('://') > 0 || href.indexOf('//') === 0;
+                    if (isAbsolute) {
+                        // Allow if it matches current origin
+                        const linkUrl = new URL(href, window.location.origin);
+                        if (linkUrl.origin !== window.location.origin) {
+                             return;
+                        }
                     }
+
+                    // Determine if we should handle it
+                    // effectively handle virtually all other links as internal SPA links
+                    e.preventDefault();
+                    
+                    // Normalize URL for loadPage (keep relative or full, loadPage/fetch handles it)
+                    loadPage(href);
                 });
 
                 // 2. Form Interception
