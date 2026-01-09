@@ -85,10 +85,10 @@ if ($user) {
             'links' => [
                 [
                     'key' => 'baskan_izin_talepleri',
-                    'path' => '/panel/baskan_izin_talepleri.php',
+                    'path' => '/panel/baskan_izin-talepleri.php',
                     'icon' => 'fas fa-calendar-check',
                     'label' => 'İzin Onayları',
-                    'match' => 'panel/baskan_izin_talepleri',
+                    'match' => 'panel/baskan_izin-talepleri',
                     'badge' => ['id' => 'pendingIzinCount', 'class' => 'bg-danger'],
                 ],
                 [

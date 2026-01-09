@@ -199,13 +199,13 @@ class Auth {
 
         // Eğer veritabanında bu modül için explicit (açıkça) bir yetki tanımlanmışsa,
         // ROL KONTROLÜNDEN ÖNCE bunu dikkate al.
-        // Bu sayede normal bir üyeye 'uye' modülü yetkisi verilebilir.
         if (array_key_exists($moduleKey, $modulePermissions)) {
             return (bool)$modulePermissions[$moduleKey];
         }
 
-        // Veritabanında özel yetki yoksa, standart rol kısıtlamasına bak
-        if ($user['role'] !== self::ROLE_BASKAN) {
+        // Eğer modül kategorisi 'baskan' ise ve özel yetki verilmemişse, 
+        // varsayılan olarak ENGELLE. (Çünkü herkes 'uye' rolünde)
+        if (($moduleConfig['category'] ?? '') === 'baskan') {
             return false;
         }
 
