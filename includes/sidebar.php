@@ -138,11 +138,11 @@ if ($user) {
 
     $uyeSidebarLinks = [
         [
-            'key' => 'uye_dashboard',
-            'path' => '/panel/uye_dashboard.php',
+            'key' => 'baskan_dashboard', // Unified permission
+            'path' => '/panel/dashboard.php',
             'icon' => 'fas fa-gauge',
-            'label' => 'Üye Kontrol Paneli',
-            'match' => 'panel/uye_dashboard',
+            'label' => 'Kontrol Paneli',
+            'match' => 'panel/dashboard',
         ],
         [
             'key' => 'uye_duyurular',

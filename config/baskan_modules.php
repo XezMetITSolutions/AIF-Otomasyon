@@ -7,10 +7,10 @@ return [
     // Başkan paneli modülleri (varsayılan: açık)
     'baskan_dashboard' => [
         'label' => 'Kontrol Paneli',
-        'group' => 'Baskan Paneli',
+        'group' => 'Genel',
         'category' => 'baskan',
         'default' => true,
-        'description' => 'BYK istatistikleri, son aktiviteler ve hızlı erişim kartları.',
+        'description' => 'Tüm kullanıcılar için ortak kontrol paneli.',
         'icon' => 'fas fa-gauge-high',
     ],
     'baskan_uyeler' => [
@@ -103,14 +103,6 @@ return [
     ],
 
     // Üye paneli modülleri (varsayılan: kapalı)
-    'uye_dashboard' => [
-        'label' => 'Üye Kontrol Paneli',
-        'group' => 'Üye Modülleri',
-        'category' => 'uye',
-        'default' => false,
-        'description' => 'Üyelerin kişisel özet paneli.',
-        'icon' => 'fas fa-house',
-    ],
     'uye_duyurular' => [
         'label' => 'Üye Duyuruları',
         'group' => 'Üye Modülleri',
