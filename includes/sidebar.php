@@ -95,6 +95,7 @@ if ($user) {
                     'icon' => 'fas fa-hand-holding-usd',
                     'label' => 'İade Onayları',
                     'match' => 'panel/iade-formlari',
+                    'badge' => ['id' => 'pendingIadeCount', 'class' => 'bg-info'],
                 ],
                 [
                     'key' => 'baskan_demirbas_talepleri',
@@ -109,6 +110,7 @@ if ($user) {
                     'icon' => 'fas fa-calendar-check',
                     'label' => 'Raggal Talepleri',
                     'match' => 'panel/raggal-talepleri',
+                    'badge' => ['id' => 'pendingRaggalCount', 'class' => 'bg-primary'],
                 ],
             ],
         ],

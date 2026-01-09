@@ -112,11 +112,44 @@ $user = $auth->getUser();
                 });
             }
             
-            // Sayfa yüklendiğinde bildirimleri yükle
+            // Sayfa yüklendiğinde bildirimleri ve sayıları yükle
             $(document).ready(function() {
                 loadNotifications();
+                loadSidebarCounts();
+                
                 setInterval(loadNotifications, 30000); // 30 saniyede bir güncelle
+                setInterval(loadSidebarCounts, 60000); // 1 dakikada bir sayıları güncelle
             });
+
+            function loadSidebarCounts() {
+                $.ajax({
+                    url: '/api/counts.php',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.counts) {
+                            updateBadge('pendingIzinCount', response.counts.pendingIzinCount);
+                            updateBadge('pendingHarcamaCount', response.counts.pendingHarcamaCount);
+                            updateBadge('pendingIadeCount', response.counts.pendingIadeCount);
+                            updateBadge('pendingRaggalCount', response.counts.pendingRaggalCount);
+                        }
+                    }
+                });
+            }
+
+            function updateBadge(id, count) {
+                const badge = $('#' + id);
+                if (badge.length) {
+                    badge.text(count);
+                    if (count > 0) {
+                        badge.show();
+                    } else {
+                        // Seçimsel: 0 ise gizle veya gri yap
+                        badge.text('0'); 
+                        // badge.hide(); 
+                    }
+                }
+            }
         </script>
     <?php endif; ?>
 </body>
