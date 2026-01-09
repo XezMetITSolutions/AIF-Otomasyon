@@ -12,7 +12,8 @@ $success = '';
 // Zaten giriş yapılmışsa yönlendir
 if ($auth->checkAuth()) {
     $user = $auth->getUser();
-    $redirectPath = '/';
+    $redirectPath = null;
+    
     if ($user['role'] === 'super_admin') {
         $redirectPath = '/admin/dashboard.php';
     } elseif ($user['role'] === 'baskan') {
@@ -20,8 +21,15 @@ if ($auth->checkAuth()) {
     } elseif ($user['role'] === 'uye') {
         $redirectPath = '/uye/dashboard.php';
     }
-    header('Location: ' . $redirectPath);
-    exit;
+    
+    if ($redirectPath) {
+        header('Location: ' . $redirectPath);
+        exit;
+    } else {
+        // Tanımsız rol durumunda döngüye girmemek için oturumu kapat
+        $auth->logout();
+        $error = 'Kullanıcı rolü tanımlanamadı. Lütfen yönetici ile iletişime geçin.';
+    }
 }
 
 // Form işleme
@@ -37,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($result === true) {
             $user = $auth->getUser();
-            $redirectPath = '/';
+            $redirectPath = null;
+            
             if ($user['role'] === 'super_admin') {
                 $redirectPath = '/admin/dashboard.php';
             } elseif ($user['role'] === 'baskan') {
@@ -45,8 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($user['role'] === 'uye') {
                 $redirectPath = '/uye/dashboard.php';
             }
-            header('Location: ' . $redirectPath);
-            exit;
+            
+            if ($redirectPath) {
+                header('Location: ' . $redirectPath);
+                exit;
+            } else {
+                $auth->logout();
+                $error = 'Kullanıcı rolü için yönlendirme bulunamadı.';
+            }
         } elseif ($result === 'password_change_required') {
             header('Location: /change-password.php');
             exit;
