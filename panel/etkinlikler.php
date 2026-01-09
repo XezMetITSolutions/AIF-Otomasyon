@@ -1,6 +1,6 @@
 <?php
 /**
- * Başkan - Çalışma Takvimi
+ * Çalışma Takvimi (Ortak Panel)
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
@@ -8,8 +8,8 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 
-// Module permission check if needed (Assuming 'baskan_etkinlikler' covers viewing)
-// Middleware::requireModulePermission('baskan_etkinlikler');
+// Everyone can view, but managing requires permission
+// Middleware::requireModulePermission('baskan_etkinlikler'); 
 
 $auth = new Auth();
 $user = $auth->getUser();
@@ -22,8 +22,10 @@ $search = $_GET['search'] ?? '';
 $monthFilter = $_GET['ay'] ?? '';
 $yearFilter = $_GET['yil'] ?? '';
 
-// Force BYK filter for security
-// Force BYK filter for security
+// Permission check for management actions
+$canManage = $auth->hasModulePermission('baskan_etkinlikler');
+
+// Force BYK filter for security / Regional Logic
 $userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
 $isAT = ($userByk && $userByk['byk_kodu'] === 'AT');
 $regionPrefix = '';
@@ -44,11 +46,10 @@ if ($isAT) {
     $regionPrefix = $regionName;
     
     // Find all related BYK IDs with a looser search
-    // We search for BYKs that start with the region name
     $relatedByks = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_adi LIKE ?", ["$regionName%"]);
     $relatedBykIds = array_column($relatedByks, 'byk_id');
     
-    // Fallback: If stripping resulted in empty string (unlikely) or no matches
+    // Fallback
     if (empty($relatedBykIds) || empty($regionName)) {
         $relatedBykIds = [$user['byk_id']];
     }
@@ -79,11 +80,7 @@ if ($yearFilter) {
 // Birim Filtresi (Sadece AT için)
 $birimFilter = $_GET['birim'] ?? '';
 if ($isAT && $birimFilter) {
-    // Filter by creating a subquery or join? No, e.byk_id must match the selected unit type's byk_id
-    // We need to find the specific BYK ID for the selected unit code within this region
-    // Or simpler: Join BYK table and filter by byk_kodu
-    // We already do a left join below.
-    // NOTE: We can't add this to $where easily because the JOIN happens in the main query.
+    // Note: We can't add this to $where easily because the JOIN happens in the main query.
     // Let's add the condition to the WHERE clause using the alias 'b'
     $where[] = "b.byk_kodu = ?";
     $params[] = $birimFilter;
@@ -106,10 +103,6 @@ try {
         ORDER BY e.baslangic_tarihi ASC
         LIMIT 500
     ", $params);
-    
-    // Process colors logic similar to admin (simplified or full copy)
-    // For Baskan, mostly just their own colors matter, which likely fall back to default or BYK color.
-    // I'll preserve the robust color logic just in case.
     
     if (!empty($etkinlikler)) {
         try {
@@ -143,20 +136,11 @@ try {
     $etkinlikler = [];
 }
 
-// Ensure array
 if (!is_array($etkinlikler)) {
     $etkinlikler = [];
 }
 
 // Calendar Events mapping
-$bykDefaultColors = [
-    'AT' => '#dc3545',
-    'KT' => '#6f42c1',
-    'KGT' => '#198754',
-    'GT' => '#0d6efd'
-];
-$bykColorMap = []; // Simplified
-
 $calendarEvents = [];
 foreach ($etkinlikler as $etkinlik) {
     if (empty($etkinlik['baslangic_tarihi']) || empty($etkinlik['bitis_tarihi']) || empty($etkinlik['baslik'])) {
@@ -169,7 +153,6 @@ foreach ($etkinlikler as $etkinlik) {
     } catch (Exception $e) { continue; }
     
     $bykRenk = $etkinlik['byk_renk'] ?? '#009872';
-    // Simplified color logic
     if (empty($bykRenk) || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
          $bykRenk = '#009872';
     }
@@ -317,9 +300,11 @@ include __DIR__ . '/../includes/header.php';
                     <a href="/api/export-calendar.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success">
                         <i class="fas fa-file-export me-2"></i>Takvime Aktar
                     </a>
+                    <?php if ($canManage): ?>
                     <a href="/panel/baskan_etkinlik-ekle.php" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
             
@@ -365,7 +350,7 @@ include __DIR__ . '/../includes/header.php';
                                 <i class="fas fa-search me-1"></i>Filtrele
                             </button>
                             <?php if ($search || $monthFilter || $yearFilter != date('Y') || ($isAT && $birimFilter)): ?>
-                                <a href="/panel/baskan_etkinlikler.php" class="btn btn-secondary">
+                                <a href="/panel/etkinlikler.php" class="btn btn-secondary">
                                     <i class="fas fa-times"></i>
                                 </a>
                             <?php endif; ?>
@@ -377,7 +362,6 @@ include __DIR__ . '/../includes/header.php';
                             <div class="btn-group" role="group">
                                 <a href="?<?php echo http_build_query(array_merge($_GET, ['birim' => ''])); ?>" class="btn btn-sm btn-outline-secondary <?php echo $birimFilter == '' ? 'active' : ''; ?>">Tümü</a>
                                 <?php
-                                // Get available unit types in this region
                                 $availableTypes = $db->fetchAll("SELECT DISTINCT byk_kodu FROM byk WHERE byk_adi LIKE ? ORDER BY byk_kodu", ["$regionPrefix%"]);
                                 foreach ($availableTypes as $type):
                                     if(empty($type['byk_kodu'])) continue;
@@ -432,12 +416,13 @@ include __DIR__ . '/../includes/header.php';
                                     <th>Başlık</th>
                                     <th>Konum</th>
                                     <th>Oluşturan</th>
+                                    <?php if ($canManage): ?><th>İşlemler</th><?php endif; ?>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($etkinlikler)): ?>
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted">Henüz etkinlik eklenmemiş.</td>
+                                        <td colspan="<?php echo $canManage ? 5 : 4; ?>" class="text-center text-muted">Henüz etkinlik eklenmemiş.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($etkinlikler as $etkinlik): ?>
@@ -468,6 +453,22 @@ include __DIR__ . '/../includes/header.php';
                                             <td>
                                                 <?php echo !empty($etkinlik['olusturan']) ? htmlspecialchars($etkinlik['olusturan']) : '<span class="text-muted">-</span>'; ?>
                                             </td>
+                                            <?php if ($canManage): ?>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="/panel/baskan_etkinlik-ekle.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" 
+                                                            data-id="<?php echo $etkinlik['etkinlik_id']; ?>" 
+                                                            data-type="etkinlik" 
+                                                            data-name="<?php echo htmlspecialchars($etkinlik['baslik']); ?>" 
+                                                            title="Sil">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <?php endif; ?>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -560,6 +561,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (extendedProps.konum) html += '<div class="mb-3"><strong>Konum:</strong> ' + extendedProps.konum + '</div>';
                 if (extendedProps.aciklama) html += '<div class="mb-3"><strong>Açıklama:</strong><br>' + extendedProps.aciklama + '</div>';
                 if (extendedProps.olusturan) html += '<div class="mb-3"><strong>Oluşturan:</strong> ' + extendedProps.olusturan + '</div>';
+                
+                // Add Edit/Delete buttons if authorized
+                if (<?php echo $canManage ? 'true' : 'false'; ?>) {
+                    html += '<div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">';
+                    html += '<a href="/panel/baskan_etkinlik-ekle.php?id=' + event.id + '" class="btn btn-primary btn-sm"><i class="fas fa-edit me-1"></i>Düzenle</a>';
+                    html += '</div>';
+                }
                 
                 modalBody.innerHTML = html;
                 new bootstrap.Modal(document.getElementById('eventModal')).show();

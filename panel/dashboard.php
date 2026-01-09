@@ -185,7 +185,7 @@ include __DIR__ . '/../includes/header.php';
                 ];
                 ?>
                 
-                <?php if ($auth->hasModulePermission('uye_etkinlikler')): ?>
+                <?php if ($auth->hasModulePermission('uye_etkinlikler') || $auth->hasModulePermission('baskan_etkinlikler')): ?>
                 <div class="col-12 col-lg-6">
                     <div class="card h-100">
                         <div class="card-header">
@@ -201,11 +201,7 @@ include __DIR__ . '/../includes/header.php';
                                 <div class="list-group list-group-flush">
                                     <?php foreach ($yaklasan_etkinlikler as $etkinlik): ?>
                                         <?php 
-                                            // Etkinlik birimini bul (kullanıcının BYK'sı dışındaysa belirtmek için)
-                                            // Şimdilik sadece user byk'sını biliyoruz, etkinlik kendi byk'sında ise göstermeyebiliriz veya her zaman gösterebiliriz.
-                                            // Kullanıcı isteği: "hangi birimin programiysa ona göre onun isareti de olsun"
-                                            // Mevcut sorgu sadece BYK id ile çekiyor, dolayısıyla BYK adı join edilmeli.
-                                            // Ancak yukarıdaki sorguda join yok. Şimdilik $kullanici['byk_adi'] kullanabiliriz çünkü sadece kendi BYK'sındaki etkinlikleri görüyor.
+                                            // Etkinlik birimini bul
                                             $birimAdi = $kullanici['byk_adi'] ?? 'Genel';
                                             $ayKodu = date('m', strtotime($etkinlik['baslangic_tarihi']));
                                         ?>
@@ -222,7 +218,7 @@ include __DIR__ . '/../includes/header.php';
                                                     </small>
                                                 </div>
                                             </div>
-                                            <a href="/panel/uye_etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
+                                            <a href="/panel/etkinlikler.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
                                                 Detay
                                             </a>
                                         </div>
@@ -234,7 +230,7 @@ include __DIR__ . '/../includes/header.php';
                 </div>
                 <?php endif; ?>
                 
-                <?php if ($auth->hasModulePermission('uye_toplantilar')): ?>
+                <?php if ($auth->hasModulePermission('uye_toplantilar') || $auth->hasModulePermission('baskan_toplantilar')): ?>
                 <div class="col-12 col-lg-6">
                     <div class="card h-100">
                         <div class="card-header">
@@ -251,9 +247,6 @@ include __DIR__ . '/../includes/header.php';
                                     <?php foreach ($yaklasan_toplantilar as $toplanti): ?>
                                         <?php 
                                             // Toplantı birimini bul
-                                            // Toplantılar da kullanıcının BYK'sına veya katılımcı olduğu toplantılara göre geliyor.
-                                            // Şimdilik yine $kullanici['byk_adi'] varsayıyoruz kısıtlı join nedeniyle.
-                                            // İleride join eklenirse $toplanti['byk_adi'] kullanılabilir.
                                             $birimAdi = $kullanici['byk_adi'] ?? 'Genel';
                                             $ayKodu = date('m', strtotime($toplanti['toplanti_tarihi']));
                                         ?>
@@ -294,7 +287,7 @@ include __DIR__ . '/../includes/header.php';
                                                     </div>
                                                 </div>
                                             </div>
-                                            <a href="/panel/uye_toplantilar.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
+                                            <a href="/panel/toplantilar.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-light rounded-pill px-3">
                                                 Detay
                                             </a>
                                         </div>

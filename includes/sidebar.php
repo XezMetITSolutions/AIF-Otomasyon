@@ -28,97 +28,87 @@ if ($user) {
 
 <div class="sidebar bg-light border-end">
     <?php
-    // Define Baskan Sidebar Sections globally so they can be used by both Baskan and Uye (if granted)
+// Define Common Links (Visible to ALL 'uye' and 'baskan')
+    $commonLinks = [
+        [
+            'path' => '/panel/dashboard.php',
+            'icon' => 'fas fa-gauge',
+            'label' => 'Kontrol Paneli',
+            'match' => 'panel/dashboard',
+        ],
+        [
+            'path' => '/panel/duyurular.php',
+            'icon' => 'fas fa-bullhorn',
+            'label' => 'Duyurular',
+            'match' => 'panel/duyurular',
+        ],
+        [
+            'path' => '/panel/etkinlikler.php',
+            'icon' => 'fas fa-calendar',
+            'label' => 'Çalışma Takvimi',
+            'match' => 'panel/etkinlikler',
+        ],
+        [
+            'path' => '/panel/toplantilar.php',
+            'icon' => 'fas fa-users-cog',
+            'label' => 'Toplantılar',
+            'match' => 'panel/toplantilar',
+        ],
+        [
+            'path' => '/panel/uyeler.php',
+            'icon' => 'fas fa-users',
+            'label' => 'Üyeler',
+            'match' => 'panel/uyeler',
+        ],
+    ];
+
+    // Define Management Sections (Requires strictly 'baskan' permissions)
     $baskanSidebarSections = [
         [
-            'title' => null,
+            'title' => 'YÖNETİM', // Empty now if we remove uyeler, or we can remove the title logic if empty
             'links' => [
-                [
-                    'key' => 'baskan_dashboard',
-                    'path' => '/panel/baskan_dashboard.php',
-                    'icon' => 'fas fa-tachometer-alt',
-                    'label' => 'Yönetici Paneli', // Changed label to distinguish from Member Dashboard
-                    'match' => 'panel/baskan_dashboard', // More specific match
-                ],
+                // 'baskan_uyeler' moved to common
             ],
         ],
         [
-            'title' => 'YÖNETİM',
-            'links' => [
-                [
-                    'key' => 'baskan_uyeler',
-                    'path' => '/panel/baskan_uyeler.php',
-                    'icon' => 'fas fa-users',
-                    'label' => 'Üye Yönetimi',
-                    'match' => 'baskan_uyeler',
-                ],
-            ],
-        ],
-        [
-            'title' => 'İÇERİK',
-            'links' => [
-                [
-                    'key' => 'baskan_etkinlikler',
-                    'path' => '/panel/baskan_etkinlikler.php',
-                    'icon' => 'fas fa-calendar',
-                    'label' => 'Etkinlik Yönetimi',
-                    'match' => 'panel/baskan_etkinlikler',
-                ],
-                [
-                    'key' => 'baskan_toplantilar',
-                    'path' => '/panel/baskan_toplantilar.php',
-                    'icon' => 'fas fa-users-cog',
-                    'label' => 'Toplantı Yönetimi',
-                    'match' => 'panel/baskan_toplantilar',
-                ],
-                [
-                    'key' => 'baskan_duyurular',
-                    'path' => '/panel/baskan_duyurular.php',
-                    'icon' => 'fas fa-bullhorn',
-                    'label' => 'Duyuru Yönetimi',
-                    'match' => 'panel/baskan_duyurular',
-                ],
-            ],
-        ],
-        [
-            'title' => 'İŞLEMLER',
+            'title' => 'İŞLEMLER (ONAY)',
             'links' => [
                 [
                     'key' => 'baskan_izin_talepleri',
-                    'path' => '/panel/baskan_izin-talepleri.php',
+                    'path' => '/panel/izin-talepleri.php?tab=onay',
                     'icon' => 'fas fa-calendar-check',
                     'label' => 'İzin Onayları',
-                    'match' => 'panel/baskan_izin-talepleri',
+                    'match' => 'panel/izin-talepleri',
                     'badge' => ['id' => 'pendingIzinCount', 'class' => 'bg-danger'],
                 ],
                 [
                     'key' => 'baskan_harcama_talepleri',
-                    'path' => '/panel/baskan_harcama-talepleri.php',
+                    'path' => '/panel/harcama-talepleri.php?tab=onay',
                     'icon' => 'fas fa-money-bill-wave',
                     'label' => 'Harcama Onayları',
-                    'match' => 'panel/baskan_harcama-talepleri',
+                    'match' => 'panel/harcama-talepleri',
                     'badge' => ['id' => 'pendingHarcamaCount', 'class' => 'bg-warning'],
                 ],
                 [
                     'key' => 'baskan_iade_formlari',
-                    'path' => '/panel/baskan_iade-formlari.php',
+                    'path' => '/panel/iade-formlari.php?tab=yonetim',
                     'icon' => 'fas fa-hand-holding-usd',
                     'label' => 'İade Onayları',
-                    'match' => 'panel/baskan_iade-formlari',
+                    'match' => 'panel/iade-formlari',
                 ],
                 [
                     'key' => 'baskan_demirbas_talepleri',
-                    'path' => '/panel/baskan_demirbas-talepleri.php',
+                    'path' => '/panel/demirbas-talepleri.php?tab=onay',
                     'icon' => 'fas fa-box',
                     'label' => 'Demirbaş Talepleri',
-                    'match' => 'panel/baskan_demirbas-talepleri',
+                    'match' => 'panel/demirbas-talepleri',
                 ],
                 [
                     'key' => 'baskan_raggal_talepleri',
-                    'path' => '/panel/baskan_raggal-talepleri.php',
+                    'path' => '/panel/raggal-talepleri.php?tab=yonetim',
                     'icon' => 'fas fa-calendar-check',
                     'label' => 'Raggal Talepleri',
-                    'match' => 'panel/baskan_raggal-talepleri',
+                    'match' => 'panel/raggal-talepleri',
                 ],
             ],
         ],
@@ -136,88 +126,57 @@ if ($user) {
         ],
     ];
 
+    // Personal / Member Modules
     $uyeSidebarLinks = [
         [
-            'key' => 'baskan_dashboard', // Unified permission
-            'path' => '/panel/dashboard.php',
-            'icon' => 'fas fa-gauge',
-            'label' => 'Kontrol Paneli',
-            'match' => 'panel/dashboard',
-        ],
-        [
-            'key' => 'uye_duyurular',
-            'path' => '/panel/uye_duyurular.php',
-            'icon' => 'fas fa-bullhorn',
-            'label' => 'Üye Duyuruları',
-            'match' => 'panel/uye_duyurular',
-        ],
-        [
-            'key' => 'uye_etkinlikler',
-            'path' => '/panel/uye_etkinlikler.php',
-            'icon' => 'fas fa-calendar',
-            'label' => 'Çalışma Takvimi',
-            'match' => 'panel/uye_etkinlikler',
-        ],
-        [
-            'key' => 'uye_toplantilar',
-            'path' => '/panel/uye_toplantilar.php',
-            'icon' => 'fas fa-users-cog',
-            'label' => 'Üye Toplantıları',
-            'match' => 'panel/uye_toplantilar',
-        ],
-        [
             'key' => 'uye_izin_talepleri',
-            'path' => '/panel/uye_izin-talepleri.php',
+            'path' => '/panel/izin-talepleri.php?tab=talebim',
             'icon' => 'fas fa-person-walking',
-            'label' => 'Üye İzin Talepleri',
-            'match' => 'panel/uye_izin-talepleri',
+            'label' => 'İzin Taleplerim',
+            'match' => 'panel/izin-talepleri',
         ],
         [
             'key' => 'uye_harcama_talepleri',
-            'path' => '/panel/uye_harcama-talepleri.php',
+            'path' => '/panel/harcama-talepleri.php?tab=talebim',
             'icon' => 'fas fa-wallet',
-            'label' => 'Üye Harcama Talepleri',
-            'match' => 'panel/uye_harcama-talepleri',
+            'label' => 'Harcama Taleplerim',
+            'match' => 'panel/harcama-talepleri',
         ],
         [
             'key' => 'uye_iade_formu',
-            'path' => '/panel/uye_iade-formu.php',
+            'path' => '/panel/iade-formlari.php?tab=form',
             'icon' => 'fas fa-file-invoice-dollar',
-            'label' => 'Üye İade Formu',
-            'match' => 'panel/uye_iade-formu',
+            'label' => 'İade Talebi Oluştur',
+            'match' => 'panel/iade-formlari',
         ],
         [
             'key' => 'uye_demirbas_talep',
-            'path' => '/panel/uye_demirbas-talep.php',
+            'path' => '/panel/demirbas-talepleri.php?tab=talep',
             'icon' => 'fas fa-box',
             'label' => 'Demirbaş Talep',
-            'match' => 'panel/uye_demirbas-talep',
+            'match' => 'panel/demirbas-talepleri',
         ],
         [
             'key' => 'uye_raggal_talep',
-            'path' => '/panel/uye_raggal-talep.php',
+            'path' => '/panel/raggal-talepleri.php?tab=takvim',
             'icon' => 'fas fa-calendar-plus',
             'label' => 'Raggal Rezervasyon',
-            'match' => 'panel/uye_raggal-talep',
+            'match' => 'panel/raggal-talepleri',
         ],
     ];
 
     // Map of Uye modules to hide if corresponding Baskan module is active
-    $exclusionMap = [
-        'uye_dashboard' => 'baskan_dashboard',
-        'uye_duyurular' => 'baskan_duyurular',
-        'uye_etkinlikler' => 'baskan_etkinlikler',
-        'uye_toplantilar' => 'baskan_toplantilar',
-        'uye_izin_talepleri' => 'baskan_izin_talepleri',
-        'uye_harcama_talepleri' => 'baskan_harcama_talepleri',
-        'uye_iade_formu' => 'baskan_iade_formlari',
-        'uye_demirbas_talep' => 'baskan_demirbas_talepleri',
-        'uye_raggal_talep' => 'baskan_raggal_talepleri',
-    ];
+    // (This might be redundant if we want them to see both their requests and approvals, 
+    // but usually Baskan can see their own requests in Baskan panel? 
+    // Actually no, Baskan panel is for approvals. Baskan also needs to make requests.
+    // So excluding "Request" modules if you have "Approval" permission is WRONG.
+    // You should be able to make requests AND approve others.
+    // I will remove the Exclusion Map logic for the unified approach so Baskans can see "My Requests" too.)
+    
     ?>
     <div class="list-group list-group-flush sidebar-scroll">
         <?php if ($isSuperAdmin): ?>
-            <!-- Ana Yönetici Menüsü -->
+            <!-- Ana Yönetici Menüsü (Existing Code for Super Admin) -->
             <a href="/admin/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
             </a>
@@ -284,38 +243,37 @@ if ($user) {
                 <i class="fas fa-cog me-2"></i>Sistem Ayarları
             </a>
             
-        <?php elseif ($isBaskan): ?>
+        <?php else: // Normal Users & Baskans ?>
+            
+            <!-- ORTAK ALAN (Everyone sees these) -->
+            <?php foreach ($commonLinks as $link): 
+                $isActive = strpos($currentPath, $link['match']) !== false;
+            ?>
+                <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?>">
+                    <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
+                </a>
+            <?php endforeach; ?>
+
+            <!-- MANAGE / BASKAN ALANI (Only if authorized/permissioned) -->
             <?php
-                // Baskan sidebar logic uses the global $baskanSidebarSections defined above
-                foreach ($baskanSidebarSections as $section) {
-                    $visibleLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani) {
-                        // Dashboard link update
-                        if ($link['key'] === 'baskan_dashboard') {
-                             $link['path'] = '/panel/dashboard.php';
-                        }
-                        
-                        // Muhasebe başkanı ise harcama ve iade modüllerini görsün
-                        if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
-                            return true;
-                        }
-                        return $auth->hasModulePermission($link['key']);
-                    });
-
-                    if (empty($visibleLinks)) {
-                        continue;
+            $hasAnyManagement = false;
+            foreach ($baskanSidebarSections as $section) {
+                // Check if user has ANY permission in this section
+                $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani) {
+                    if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
+                        return true;
                     }
+                    return $auth->hasModulePermission($link['key']);
+                });
 
-                    // Section titles removed as per user request
-
-                    foreach ($visibleLinks as $link) {
-                        // Manual update for dashboard path in display loop if needed, though we updated filtering above, likely need to update $link structure or just hardcode checking.
-                        if ($link['key'] === 'baskan_dashboard') {
-                            $link['path'] = '/panel/dashboard.php';
-                        }
-                        
+                if (!empty($visibleManageLinks)) {
+                    $hasAnyManagement = true;
+                    // Render Section Title Removed
+                    foreach ($visibleManageLinks as $link) {
                         $isActive = strpos($currentPath, $link['match']) !== false;
                         ?>
-                        <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?>">
+                        <!-- Management Links styled slightly differently or normal? Normal is fine -->
+                         <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action list-group-item-warning <?php echo $isActive ? 'active' : ''; ?>">
                             <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
                             <?php if (!empty($link['badge'])): ?>
                                 <span class="badge <?php echo $link['badge']['class']; ?> float-end" id="<?php echo $link['badge']['id']; ?>">0</span>
@@ -324,118 +282,28 @@ if ($user) {
                         <?php
                     }
                 }
-
-                $hasUyeLinks = false;
-                foreach ($uyeSidebarLinks as $link) {
-                    // EXCLUSION CHECK FOR BASKAN: Hide Uye links if Baskan has equivalent permissions or simply hide redundant ones.
-                    if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
-                        continue;
-                    }
-                    
-                    if ($auth->hasModulePermission($link['key'])) {
-                        $hasUyeLinks = true;
-                        break;
-                    }
-                }
-
-                if ($hasUyeLinks): ?>
-                    <!-- Section title removed -->
-                    <?php foreach ($uyeSidebarLinks as $link): ?>
-                        <?php 
-                        // EXCLUSION CHECK REPEATED
-                        if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
-                            continue;
-                        }
-
-                        if ($link['key'] === 'uye_dashboard') {
-                            $link['path'] = '/panel/dashboard.php';
-                        }
-                        
-                        if ($auth->hasModulePermission($link['key'])): ?>
-                            <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo strpos($currentPath, $link['match']) !== false ? 'active' : ''; ?>">
-                                <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
-                            </a>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-        <?php elseif ($isUye): ?>
-            <!-- Üye Menüsü -->
-
-            <?php
-            // Render Authorized Baskan Modules for Uye
-            foreach ($baskanSidebarSections as $section) {
-                $visibleLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani) {
-                    if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
-                        return true;
-                    }
-                    return $auth->hasModulePermission($link['key']);
-                });
-
-                if (empty($visibleLinks)) {
-                    continue;
-                }
-
-                // Section titles removed
-
-                foreach ($visibleLinks as $link) {
-                    if ($link['key'] === 'baskan_dashboard') {
-                        $link['path'] = '/panel/dashboard.php';
-                    }
-                    
-                    $isActive = strpos($currentPath, $link['match']) !== false;
-                    ?>
-                    <!-- Baskan modules for Uye get 'list-group-item-warning' for distinct color -->
-                    <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?> list-group-item-warning">
-                        <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
-                        <?php if (!empty($link['badge'])): ?>
-                            <span class="badge <?php echo $link['badge']['class']; ?> float-end" id="<?php echo $link['badge']['id']; ?>">0</span>
-                        <?php endif; ?>
-                    </a>
-                    <?php
-                }
             }
             ?>
+            
+            <!-- KIŞISEL / UYE ALANI (Everyone sees their own request modules if authorized/default) -->
+            <?php 
+            $hasAnyPersonal = false;
+            foreach ($uyeSidebarLinks as $link): 
+                // Basic check if module exists/allowed for viewing personal
+                if ($auth->hasModulePermission($link['key'])):
+                    $hasAnyPersonal = true;
+                     $isActive = strpos($currentPath, $link['match']) !== false;
+                ?>
+                    <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?>">
+                        <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
+                    </a>
+                <?php endif; ?>
+            <?php endforeach; ?>
 
-            <?php
-            $hasUyeLinks = false;
-            foreach ($uyeSidebarLinks as $link) {
-                // Check exclusion
-                if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
-                    continue;
-                }
-                if ($auth->hasModulePermission($link['key'])) {
-                    $hasUyeLinks = true;
-                    break;
-                }
-            }
-
-            if ($hasUyeLinks): ?>
-                <!-- Section title removed -->
-                <?php foreach ($uyeSidebarLinks as $link): ?>
-                    <?php 
-                    // Re-check exclusion for rendering
-                    if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
-                        continue;
-                    }
-
-                    if ($link['key'] === 'uye_dashboard') {
-                        $link['path'] = '/panel/dashboard.php';
-                    }
-                    
-                    if ($auth->hasModulePermission($link['key'])): 
-                    ?>
-                        <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo strpos($currentPath, $link['match']) !== false ? 'active' : ''; ?>">
-                            <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
-                        </a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            <?php endif; ?>
-
-            <!-- Section title removed -->
-
-            <a href="/panel/uye_profil.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
+            <a href="/panel/profil.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-user-circle me-2"></i>Profilim
             </a>
+            
         <?php endif; ?>
     </div>
 </div>

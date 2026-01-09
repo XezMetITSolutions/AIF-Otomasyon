@@ -8,15 +8,12 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 
-Middleware::requireModulePermission('baskan_uyeler');
+// Permission check for viewing sensitive info (management view)
+$canManage = $auth->hasModulePermission('baskan_uyeler');
 
-$auth = new Auth();
-$user = $auth->getUser();
-$db = Database::getInstance();
+// Note: We allow everyone to VIEW the list (Basic Info), but only managers see Details (Email, Phone, etc.)
 
-$pageTitle = 'Üyeler';
 $q = trim($_GET['q'] ?? '');
-
 $params = [$user['byk_id']];
 $where = 'WHERE k.byk_id = ?';
 
@@ -48,7 +45,7 @@ include __DIR__ . '/../includes/header.php';
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
             <div>
                 <h1 class="h3 mb-1"><i class="fas fa-users me-2"></i>Üyeler</h1>
-                <p class="text-muted mb-0">BYK’nıza bağlı aktif tüm üyeleri görüntüleyin ve iletişime geçin.</p>
+                <p class="text-muted mb-0">BYK’nıza bağlı aktif tüm üyeleri görüntüleyin.</p>
             </div>
             <div class="text-muted">
                 <span class="badge bg-success me-2">Aktif: <?php echo $aktifSayisi; ?></span>
@@ -61,14 +58,14 @@ include __DIR__ . '/../includes/header.php';
                 <form class="row g-3" method="get">
                     <div class="col-md-8">
                         <label class="form-label">Arama</label>
-                        <input type="text" name="q" class="form-control" placeholder="İsim, e-posta veya telefon" value="<?php echo htmlspecialchars($q); ?>">
+                        <input type="text" name="q" class="form-control" placeholder="İsim<?php echo $canManage ? ', e-posta veya telefon' : ''; ?>" value="<?php echo htmlspecialchars($q); ?>">
                     </div>
                     <div class="col-md-4 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="fas fa-search me-1"></i>Filtrele
                         </button>
                         <?php if ($q !== ''): ?>
-                            <a href="/panel/baskan_uyeler.php" class="btn btn-outline-secondary">
+                            <a href="/panel/uyeler.php" class="btn btn-outline-secondary">
                                 Temizle
                             </a>
                         <?php endif; ?>
@@ -102,6 +99,7 @@ include __DIR__ . '/../includes/header.php';
                                     </span>
                                 </div>
                                 <ul class="list-unstyled small mb-0">
+                                    <?php if ($canManage): ?>
                                     <li class="mb-1">
                                         <i class="fas fa-envelope me-2 text-muted"></i><?php echo htmlspecialchars($uye['email']); ?>
                                     </li>
@@ -114,6 +112,9 @@ include __DIR__ . '/../includes/header.php';
                                         <li class="mb-1 text-muted">
                                             <i class="fas fa-sign-in-alt me-2"></i>Son giriş: <?php echo date('d.m.Y H:i', strtotime($uye['son_giris'])); ?>
                                         </li>
+                                    <?php endif; ?>
+                                    <?php else: ?>
+                                        <li class="text-muted fst-italic">İletişim bilgileri gizli</li>
                                     <?php endif; ?>
                                 </ul>
                             </div>

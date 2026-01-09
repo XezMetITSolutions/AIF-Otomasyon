@@ -30,6 +30,9 @@ function formatTextAsList($text) {
     return $formatted;
 }
 
+// Permission check for management actions
+$canManage = $auth->hasModulePermission('baskan_toplantilar');
+
 // Toplantılar (Sadece Kendi BYK'sı) + Katılım İstatistikleri
 $toplantilar = $db->fetchAll("
     SELECT t.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as olusturan,
@@ -52,6 +55,7 @@ include __DIR__ . '/../includes/header.php';
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+/* ... (existing styles) ... */
     :root {
         --primary: #009872;
         --primary-light: rgba(0, 152, 114, 0.1);
@@ -60,7 +64,7 @@ include __DIR__ . '/../includes/header.php';
         --card-bg: rgba(255, 255, 255, 0.9);
         --glass-border: 1px solid rgba(255, 255, 255, 0.5);
     }
-
+/* ... rest of styles ... */
     body {
         font-family: 'Inter', sans-serif;
         background: radial-gradient(circle at 0% 0%, rgba(0, 152, 114, 0.08) 0%, transparent 50%),
@@ -158,9 +162,11 @@ include __DIR__ . '/../includes/header.php';
                 </h1>
                 <p class="text-muted mb-0">Bölge Yürütme Kurulu toplantılarını yönetin.</p>
             </div>
+            <?php if ($canManage): ?>
             <a href="/panel/baskan_toplanti-ekle.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
                 <i class="fas fa-plus me-2"></i>Yeni Toplantı Ekle
             </a>
+            <?php endif; ?>
         </div>
 
         <?php if (empty($toplantilar)): ?>
@@ -192,6 +198,12 @@ include __DIR__ . '/../includes/header.php';
                         // Visual cues
                         $cardClass = $isCancelled ? 'border-danger bg-light' : ($isPast ? 'border-secondary' : 'border-primary');
                         $opacityClass = $isCancelled || $isPast ? 'opacity-75' : '';
+                        
+                        // Link is only active for managing or viewing details. The previous code had edit link.
+                        // We will keep the link active but maybe direct to a view page for non-managers if we had one.
+                        // For now, let's allow clicking to Edit only if manager.
+                        $linkUrl = $canManage ? "/panel/baskan_toplanti-duzenle.php?id=" . $toplanti['toplanti_id'] : "#";
+                        $linkClass = $canManage ? "text-dark text-decoration-none stretched-link" : "text-dark text-decoration-none";
                     ?>
                     <div class="col-md-6 col-xl-4">
                         <div class="card h-100 shadow-sm <?php echo $cardClass; ?> hover-shadow transition-all <?php echo $opacityClass; ?>">
@@ -206,7 +218,7 @@ include __DIR__ . '/../includes/header.php';
                                     <!-- Title & Actions -->
                                     <div class="flex-grow-1">
                                         <h5 class="card-title fw-bold mb-1 text-truncate-2">
-                                            <a href="/panel/baskan_toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none stretched-link">
+                                            <a href="<?php echo $linkUrl; ?>" class="<?php echo $linkClass; ?>">
                                                 <?php echo htmlspecialchars($toplanti['baslik']); ?>
                                             </a>
                                         </h5>
@@ -252,6 +264,7 @@ include __DIR__ . '/../includes/header.php';
                                     <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($toplanti['olusturan']); ?>
                                 </small>
                                 
+                                <?php if ($canManage): ?>
                                 <div class="btn-group" style="position: relative; z-index: 2;">
                                     <a href="/panel/baskan_toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                         <i class="fas fa-edit"></i>
@@ -271,6 +284,7 @@ include __DIR__ . '/../includes/header.php';
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

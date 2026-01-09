@@ -8,21 +8,14 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 
-Middleware::requireModulePermission('baskan_duyurular');
-
-$auth = new Auth();
-$user = $auth->getUser();
-$db = Database::getInstance();
-$appConfig = require __DIR__ . '/../config/app.php';
-
-$pageTitle = 'Duyurular';
-$csrfTokenName = $appConfig['security']['csrf_token_name'];
-$csrfToken = Middleware::generateCSRF();
-$message = null;
-$messageType = 'success';
+// Permission check for management actions
+$canManage = $auth->hasModulePermission('baskan_duyurular');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!Middleware::verifyCSRF()) {
+    if (!$canManage) {
+        $message = 'Bu işlem için yetkiniz bulunmamaktadır.';
+        $messageType = 'danger';
+    } elseif (!Middleware::verifyCSRF()) {
         $message = 'Güvenlik doğrulaması başarısız.';
         $messageType = 'danger';
     } else {
@@ -61,13 +54,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Filter logic: Managers see all, others see only active
+$whereClause = "byk_id = " . (int)$user['byk_id'];
+if (!$canManage) {
+    $whereClause .= " AND aktif = 1";
+}
+
 $duyurular = $db->fetchAll("
     SELECT d.*, CONCAT(k.ad, ' ', k.soyad) as olusturan
     FROM duyurular d
     LEFT JOIN kullanicilar k ON d.olusturan_id = k.kullanici_id
-    WHERE d.byk_id = ?
+    WHERE $whereClause
     ORDER BY d.olusturma_tarihi DESC
-", [$user['byk_id']]);
+");
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -93,6 +92,7 @@ include __DIR__ . '/../includes/header.php';
         <?php endif; ?>
 
         <div class="row g-4">
+            <?php if ($canManage): ?>
             <div class="col-lg-4">
                 <div class="card h-100">
                     <div class="card-header">
@@ -119,8 +119,9 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
-            <div class="col-lg-8">
+            <div class="<?php echo $canManage ? 'col-lg-8' : 'col-12'; ?>">
                 <div class="card">
                     <div class="card-header">
                         Yayında Olan Duyurular
@@ -147,6 +148,7 @@ include __DIR__ . '/../includes/header.php';
                                                 </div>
                                                 <p class="mb-0"><?php echo nl2br(htmlspecialchars($duyuru['icerik'])); ?></p>
                                             </div>
+                                            <?php if ($canManage): ?>
                                             <form method="post">
                                                 <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                                 <input type="hidden" name="action" value="toggle">
@@ -155,6 +157,7 @@ include __DIR__ . '/../includes/header.php';
                                                     <?php echo $duyuru['aktif'] ? 'Taslağa Al' : 'Yayınla'; ?>
                                                 </button>
                                             </form>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
