@@ -75,7 +75,7 @@ if ($auth->hasModulePermission('baskan_iade_formlari') || $isSuperAdmin) {
 // --- 4. Raggal Talepleri ---
 if ($auth->hasModulePermission('baskan_raggal_talepleri') || $isSuperAdmin) {
     if($isSuperAdmin) {
-        $c = $db->fetch("SELECT COUNT(*) as cnt FROM raggal_rezervasyonlar WHERE durum = 'bekliyor'");
+        $c = $db->fetch("SELECT COUNT(*) as cnt FROM raggal_talepleri WHERE durum = 'bekliyor'");
     } else {
         // Raggal might be centrally managed or by BYK. Assuming BYK filter for consistency
         // If Raggal is a facility managed by specific people, the permission check handles access.
@@ -90,12 +90,7 @@ if ($auth->hasModulePermission('baskan_raggal_talepleri') || $isSuperAdmin) {
         // Checking previous usage in raggal-talepleri.php could confirm.
         // Assuming strict BYK scope for safety unless told otherwise.
         
-         $c = $db->fetch("
-            SELECT COUNT(*) as cnt 
-            FROM raggal_rezervasyonlar r
-            INNER JOIN kullanicilar k ON r.kullanici_id = k.kullanici_id
-            WHERE r.durum = 'bekliyor' AND k.byk_id = ?
-        ", [$bykId]);
+        $c = $db->fetch("SELECT COUNT(*) as cnt FROM raggal_talepleri WHERE durum = 'bekliyor'");
     }
     $counts['pendingRaggalCount'] = (int)$c['cnt'];
 }
