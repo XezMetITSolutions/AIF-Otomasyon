@@ -194,8 +194,8 @@ if ($user) {
             <a href="/admin/alt-birimler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'alt-birimler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-sitemap me-2"></i>Alt Birimler
             </a>
-            <a href="/admin/panel-yetkileri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'panel-yetkileri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-sliders me-2"></i>Panel Yetkilendirme
+            <a href="/admin/baskan-yetkileri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'baskan-yetkileri') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-sliders me-2"></i>Başkan Yetkileri
             </a>
             
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
