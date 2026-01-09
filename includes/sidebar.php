@@ -155,7 +155,7 @@ if ($user) {
             'key' => 'uye_etkinlikler',
             'path' => '/uye/etkinlikler.php',
             'icon' => 'fas fa-calendar',
-            'label' => 'Üye Etkinlikleri',
+            'label' => 'Çalışma Takvimi',
             'match' => 'uye/etkinlikler',
         ],
         [

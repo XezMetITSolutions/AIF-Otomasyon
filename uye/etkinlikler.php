@@ -14,7 +14,7 @@ $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
 
-$pageTitle = 'Takvim ve Etkinlikler';
+$pageTitle = 'Çalışma Takvimi';
 $userBykId = $user['byk_id'];
 
 // Eğer üyenin BYK kaydı yoksa uyarı ver
@@ -239,7 +239,7 @@ include __DIR__ . '/../includes/header.php';
         <div class="content-wrapper">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0 text-dark fw-bold">
-                    <i class="fas fa-calendar-alt me-2 text-primary"></i>Etkinlik Takvimi
+                    <i class="fas fa-calendar-alt me-2 text-primary"></i>Çalışma Takvimi
                 </h1>
                 <a href="/api/export-calendar.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success">
                     <i class="fas fa-file-export me-2"></i>Takvime Aktar
