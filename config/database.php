@@ -6,8 +6,8 @@
 
 return [
     'host' => 'localhost',
-    'dbname' => 'd0451622',
-    'username' => 'd0451622',
+    'dbname' => 'd045d2b0',
+    'username' => 'd045d2b0',
     'password' => '01528797Mb##',
     'charset' => 'utf8mb4',
     'options' => [
