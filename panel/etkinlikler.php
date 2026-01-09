@@ -31,30 +31,8 @@ $isAT = ($userByk && $userByk['byk_kodu'] === 'AT');
 $regionPrefix = '';
 
 if ($isAT) {
-    // Extract region name by removing all known unit types and suffixes
-    $removals = [
-        ' Ana Teşkilat', ' AT', '(AT)', ' (AT)',
-        ' Kadınlar Teşkilatı', ' KT', '(KT)', ' (KT)',
-        ' Gençlik Teşkilatı', ' GT', '(GT)', ' (GT)',
-        ' Kadınlar Gençlik Teşkilatı', ' KGT', '(KGT)', ' (KGT)',
-        ' Üniversiteliler', ' ÜNİ', '(ÜNİ)', ' (ÜNİ)'
-    ];
-    
-    // Case insensitive replace might be safer but standard replace is fine if data is consistent
-    $regionName = str_ireplace($removals, '', $userByk['byk_adi']);
-    $regionName = trim($regionName); // Clean whitespace
-    $regionPrefix = $regionName;
-    
-    // Find all related BYK IDs with a looser search
-    $relatedByks = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_adi LIKE ?", ["$regionName%"]);
-    $relatedBykIds = array_column($relatedByks, 'byk_id');
-    
-    // Fallback
-    if (empty($relatedBykIds) || empty($regionName)) {
-        $relatedBykIds = [$user['byk_id']];
-    }
-    
-    $where = ["e.byk_id IN (" . implode(',', $relatedBykIds) . ")"];
+    // AT kullanıcıları bütün birimlerin etkinliklerini görebilir (Global Görünüm)
+    $where = [];
     $params = [];
 } else {
     $where = ["e.byk_id = ?"];
@@ -358,13 +336,12 @@ include __DIR__ . '/../includes/header.php';
                         
                         <?php if ($isAT): ?>
                         <div class="col-12 border-top pt-3 mt-3">
-                            <label class="form-label d-block text-muted small fw-bold mb-2">BİRİM GÖSTERİMİ (Bölge: <?php echo htmlspecialchars($regionName); ?>)</label>
+                            <label class="form-label d-block text-muted small fw-bold mb-2">BİRİM FİLTRESİ (Tüm Birimler)</label>
                             <div class="btn-group" role="group">
                                 <a href="?<?php echo http_build_query(array_merge($_GET, ['birim' => ''])); ?>" class="btn btn-sm btn-outline-secondary <?php echo $birimFilter == '' ? 'active' : ''; ?>">Tümü</a>
                                 <?php
-                                $availableTypes = $db->fetchAll("SELECT DISTINCT byk_kodu FROM byk WHERE byk_adi LIKE ? ORDER BY byk_kodu", ["$regionPrefix%"]);
+                                $availableTypes = $db->fetchAll("SELECT DISTINCT byk_kodu FROM byk WHERE byk_kodu IS NOT NULL AND byk_kodu != '' ORDER BY byk_kodu");
                                 foreach ($availableTypes as $type):
-                                    if(empty($type['byk_kodu'])) continue;
                                     $label = $type['byk_kodu'];
                                     $isActive = ($birimFilter == $type['byk_kodu']);
                                 ?>
