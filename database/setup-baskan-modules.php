@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 FROM kullanicilar k
                 INNER JOIN roller r ON k.rol_id = r.rol_id
                 WHERE r.rol_adi = ?
-            ", [Auth::ROLE_BASKAN]);
+            ", [Auth::ROLE_UYE]);
 
             foreach ($baskans as $baskan) {
                 foreach ($moduleDefinitions as $moduleKey => $info) {

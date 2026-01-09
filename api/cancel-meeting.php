@@ -42,7 +42,7 @@ try {
 
     // Check if user is super admin or baskan
     $user = $auth->getUser();
-    if ($user['role'] !== 'super_admin' && $user['role'] !== 'baskan') {
+    if ($user['role'] !== 'super_admin' && $user['role'] !== 'uye') {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'Yetkisiz erişim']);
         exit;

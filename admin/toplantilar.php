@@ -8,7 +8,7 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 // Allow both super_admin and baskan roles
-Middleware::requireRole(['super_admin', 'baskan']);
+Middleware::requireRole(['super_admin', 'uye']);
 
 $auth = new Auth();
 $user = $auth->getUser();

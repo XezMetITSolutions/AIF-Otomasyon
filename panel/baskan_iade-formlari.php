@@ -13,7 +13,7 @@ $auth = new Auth();
 $user = $auth->getUser();
 if (!$user) { header('Location: /login.php'); exit; }
 
-$isAuthorized = ($user['role'] === 'super_admin' || $user['role'] === 'baskan');
+$isAuthorized = ($user['role'] === 'super_admin' || $user['role'] === 'uye');
 if (!$isAuthorized) {
     // Check if accounting head
     if ($auth->isAccountingHead($user['id'])) {

@@ -10,13 +10,13 @@ require_once __DIR__ . '/../classes/Database.php';
 header('Content-Type: application/json');
 
 try {
-    Middleware::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_BASKAN]);
+    Middleware::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_UYE]);
     
     $auth = new Auth();
     $user = $auth->getUser();
     
     // Başkan sadece kendi BYK'sını görebilir
-    if ($user['role'] === Auth::ROLE_BASKAN) {
+    if ($user['role'] === Auth::ROLE_UYE) {
         if (isset($_GET['byk_id']) && $_GET['byk_id'] != $user['byk_id']) {
             throw new Exception('Kendi BYK\'nız dışındaki üyeleri görüntüleyemezsiniz.');
         }

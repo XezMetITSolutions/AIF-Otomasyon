@@ -7,7 +7,7 @@ $user = $auth->getUser();
 if (!$user) return;
 
 $isSuperAdmin = $user['role'] === 'super_admin';
-$isBaskan = $user['role'] === 'baskan';
+$isBaskan = $user['role'] === 'uye';
 $isUye = $user['role'] === 'uye';
 $currentPath = $_SERVER['PHP_SELF'];
 

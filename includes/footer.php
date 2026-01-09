@@ -21,7 +21,7 @@ $user = $auth->getUser();
                         <small class="text-muted">
                             <?php echo htmlspecialchars($user['name']); ?> (<?php 
                             echo $user['role'] === 'super_admin' ? 'Ana Yönetici' : 
-                                ($user['role'] === 'baskan' ? 'Başkan' : 'Üye'); 
+                                ($user['role'] === 'uye' ? 'Başkan' : 'Üye'); 
                             ?>)
                         </small>
                     </div>

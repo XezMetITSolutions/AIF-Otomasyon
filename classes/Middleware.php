@@ -42,17 +42,10 @@ class Middleware {
     }
     
     /**
-     * Başkan erişimi
-     */
-    public static function requireBaskan() {
-        self::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_BASKAN]);
-    }
-    
-    /**
-     * Üye erişimi
+     * Üye erişimi (Tüm yetkili roller)
      */
     public static function requireUye() {
-        self::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_BASKAN, Auth::ROLE_UYE]);
+        self::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_UYE]);
     }
     
     /**

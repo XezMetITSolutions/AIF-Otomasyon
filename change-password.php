@@ -11,7 +11,7 @@ $success = '';
 // Şifre değiştirme zorunluluğu kontrolü
 if (!isset($_SESSION['requires_password_change']) || $_SESSION['requires_password_change'] !== true) {
     if ($auth->checkAuth()) {
-        header('Location: /' . ($auth->getUser()['role'] === 'super_admin' ? 'admin' : ($auth->getUser()['role'] === 'baskan' ? 'baskan' : 'uye')) . '/dashboard.php');
+        header('Location: /' . ($auth->getUser()['role'] === 'super_admin' ? 'admin' : ($auth->getUser()['role'] === 'uye' ? 'uye' : 'uye')) . '/dashboard.php');
         exit;
     } else {
         header('Location: /index.php');
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($auth->changePasswordFirstLogin($userId, $newPassword)) {
             $success = 'Şifreniz başarıyla değiştirildi. Yönlendiriliyorsunuz...';
             // 2 saniye sonra dashboard'a yönlendir
-            header('refresh:2;url=/' . ($auth->getUser()['role'] === 'super_admin' ? 'admin' : ($auth->getUser()['role'] === 'baskan' ? 'baskan' : 'uye')) . '/dashboard.php');
+            header('refresh:2;url=/' . ($auth->getUser()['role'] === 'super_admin' ? 'admin' : ($auth->getUser()['role'] === 'uye' ? 'uye' : 'uye')) . '/dashboard.php');
         } else {
             $error = 'Şifre değiştirme sırasında bir hata oluştu.';
         }

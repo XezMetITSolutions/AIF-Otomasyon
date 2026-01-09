@@ -21,7 +21,7 @@ if ($user['role'] === 'super_admin') {
     exit;
 }
 
-$isBaskan = $user['role'] === 'baskan';
+$isBaskan = $user['role'] === 'uye';
 $isUye = $user['role'] === 'uye';
 
 if (!$isBaskan && !$isUye) {

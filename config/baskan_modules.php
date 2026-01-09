@@ -8,7 +8,7 @@ return [
     'baskan_dashboard' => [
         'label' => 'Kontrol Paneli',
         'group' => 'Genel',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Tüm kullanıcılar için ortak kontrol paneli.',
         'icon' => 'fas fa-gauge-high',
@@ -16,7 +16,7 @@ return [
     'baskan_uyeler' => [
         'label' => 'Üye Yönetimi',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'BYK’nıza bağlı üyeleri görüntüleyin ve filtreleyin.',
         'icon' => 'fas fa-people-group',
@@ -24,7 +24,7 @@ return [
     'baskan_etkinlikler' => [
         'label' => 'Etkinlikler',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'BYK etkinliklerini oluşturun, düzenleyin ve takip edin.',
         'icon' => 'fas fa-calendar-day',
@@ -32,7 +32,7 @@ return [
     'baskan_toplantilar' => [
         'label' => 'Toplantılar',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Toplantıları planlayın, gündem ve katılımcıları yönetin.',
         'icon' => 'fas fa-handshake-simple',
@@ -40,7 +40,7 @@ return [
     'baskan_duyurular' => [
         'label' => 'Duyurular',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'BYK üyeleri ile paylaşılacak duyuruları hazırlayın.',
         'icon' => 'fas fa-bullhorn',
@@ -48,7 +48,7 @@ return [
     'baskan_izin_talepleri' => [
         'label' => 'İzin Talepleri',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Üyelerden gelen izin taleplerini inceleyin ve yanıtlayın.',
         'icon' => 'fas fa-calendar-check',
@@ -56,7 +56,7 @@ return [
     'baskan_harcama_talepleri' => [
         'label' => 'Harcama Talepleri',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Masraf taleplerini inceleyip onaylayın.',
         'icon' => 'fas fa-receipt',
@@ -64,7 +64,7 @@ return [
     'baskan_iade_formlari' => [
         'label' => 'İade Formları',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Gönderilen iade formlarını görüntüleyin ve yönetin.',
         'icon' => 'fas fa-file-invoice-dollar',
@@ -72,7 +72,7 @@ return [
     'baskan_raporlar' => [
         'label' => 'Raporlar',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'BYK performans raporlarını görüntüleyin.',
         'icon' => 'fas fa-chart-line',
@@ -80,7 +80,7 @@ return [
     'baskan_demirbas_yonetimi' => [
         'label' => 'Demirbaş Yönetimi',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Demirbaş envanterini yönetin (Ekle/Sil/Düzenle).',
         'icon' => 'fas fa-boxes-stacked',
@@ -88,7 +88,7 @@ return [
     'baskan_demirbas_talepleri' => [
         'label' => 'Demirbaş Talepleri',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Demirbaş taleplerini yönetin.',
         'icon' => 'fas fa-box',
@@ -96,7 +96,7 @@ return [
     'baskan_raggal_talepleri' => [
         'label' => 'Raggal Talepleri',
         'group' => 'Baskan Paneli',
-        'category' => 'baskan',
+        'category' => 'uye',
         'default' => true,
         'description' => 'Raggal rezervasyon taleplerini yönetin.',
         'icon' => 'fas fa-calendar-check',

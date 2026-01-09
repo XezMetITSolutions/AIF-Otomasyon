@@ -28,8 +28,8 @@ try {
         $db->query("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('super_admin', 'Ana Yönetici', 3)");
         echo "   ✓ super_admin rolü eklendi\n";
     }
-    if (!in_array('baskan', $existingRoleNames)) {
-        $db->query("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('baskan', 'Başkan', 2)");
+    if (!in_array('uye', $existingRoleNames)) {
+        $db->query("INSERT INTO roller (rol_adi, rol_aciklama, rol_yetki_seviyesi) VALUES ('uye', 'Başkan', 2)");
         echo "   ✓ baskan rolü eklendi\n";
     }
     if (!in_array('uye', $existingRoleNames)) {

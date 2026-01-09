@@ -11,7 +11,7 @@ $enableAnimations = $enableAnimations ?? false;
 
 // Rol bazlı menü görünürlüğü
 $isSuperAdmin = $user && $user['role'] === 'super_admin';
-$isBaskan = $user && $user['role'] === 'baskan';
+$isBaskan = $user && $user['role'] === 'uye';
 $isUye = $user && $user['role'] === 'uye';
 ?>
 <!DOCTYPE html>
@@ -56,7 +56,7 @@ $isUye = $user && $user['role'] === 'uye';
                 $homeLink = '/index.php';
                 if ($user['role'] === 'super_admin') {
                     $homeLink = '/admin/dashboard.php';
-                } elseif ($user['role'] === 'baskan') {
+                } elseif ($user['role'] === 'uye') {
                     $homeLink = '/panel/baskan_dashboard.php';
                 } elseif ($user['role'] === 'uye') {
                     $homeLink = '/panel/uye_dashboard.php';
@@ -187,7 +187,7 @@ $isUye = $user && $user['role'] === 'uye';
                                     $profileLink = '/index.php';
                                     if ($user['role'] === 'super_admin') {
                                         $profileLink = '/admin/profil.php'; // Assuming admin has one
-                                    } elseif ($user['role'] === 'baskan') {
+                                    } elseif ($user['role'] === 'uye') {
                                         $profileLink = '/panel/baskan_profil.php';
                                     } elseif ($user['role'] === 'uye') {
                                         $profileLink = '/panel/uye_profil.php';

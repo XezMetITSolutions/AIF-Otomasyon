@@ -9,7 +9,7 @@ $mainAppUserName = $_SESSION['user_name'] ?? null;
 if (!isset($_SESSION['user']) && $mainAppRole) {
     if ($mainAppRole === 'super_admin') {
         $_SESSION['user'] = 'UserB'; // tam yetki
-    } elseif ($mainAppRole === 'baskan') {
+    } elseif ($mainAppRole === 'uye') {
         $_SESSION['user'] = 'UserA'; // onaylayıcı
     }
 }
@@ -36,7 +36,7 @@ if ($mainAppUserId) {
     $defaultRegion = strtoupper($uyeDetay['byk_kodu'] ?? '');
 }
 
-if ($mainAppRole === 'baskan' && $defaultRegion && empty($_GET['region'])) {
+if ($mainAppRole === 'uye' && $defaultRegion && empty($_GET['region'])) {
     $_GET['region'] = $defaultRegion;
 }
 
@@ -495,7 +495,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
             }
 
             $birimMap = [
-                'baskan' => 'Başkan', 'byk' => 'BYK Üyesi', 'egitim' => 'Eğitim', 'fuar' => 'Fuar',
+                'uye' => 'Başkan', 'byk' => 'BYK Üyesi', 'egitim' => 'Eğitim', 'fuar' => 'Fuar',
                 'gob' => 'Spor/Gezi (GOB)', 'hacumre' => 'Hac/Umre', 'idair' => 'İdari İşler', 'irsad' => 'İrşad',
                 'kurumsal' => 'Kurumsal İletişim', 'muhasebe' => 'Muhasebe', 'ortaogretim' => 'Orta Öğretim',
                 'raggal' => 'Raggal', 'sosyal' => 'Sosyal Hizmetler', 'tanitma' => 'Tanıtma', 'teftis' => 'Teftiş',
@@ -1142,7 +1142,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
                         <div>
                             <label style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: 600;">Birim</label>
                             <select name="edit_items[${index}][birim]" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" required>
-                                <option value="baskan" ${item.birim === 'baskan' ? 'selected' : ''}>Başkan</option>
+                                <option value="baskan" ${item.birim === 'uye' ? 'selected' : ''}>Başkan</option>
                                 <option value="byk" ${item.birim === 'byk' ? 'selected' : ''}>BYK Üyesi</option>
                                 <option value="egitim" ${item.birim === 'egitim' ? 'selected' : ''}>Eğitim</option>
                                 <option value="fuar" ${item.birim === 'fuar' ? 'selected' : ''}>Fuar</option>

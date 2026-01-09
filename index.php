@@ -18,7 +18,7 @@ if ($auth->checkAuth()) {
         session_write_close();
         header('Location: /admin/dashboard.php');
         exit;
-    } elseif ($user['role'] === 'baskan' || $user['role'] === 'uye') {
+    } elseif ($user['role'] === 'uye' || $user['role'] === 'uye') {
         session_write_close();
         header('Location: /panel/dashboard.php');
         exit;
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if ($user['role'] === 'super_admin') {
                 $redirectPath = '/admin/dashboard.php';
-            } elseif ($user['role'] === 'baskan' || $user['role'] === 'uye') {
+            } elseif ($user['role'] === 'uye' || $user['role'] === 'uye') {
                 $redirectPath = '/panel/dashboard.php';
             } else {
                 $error = 'Geçersiz kullanıcı rolü.'; // Added from instruction

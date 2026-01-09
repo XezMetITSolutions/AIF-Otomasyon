@@ -12,7 +12,6 @@ class Auth {
     
     // Rol sabitleri
     const ROLE_SUPER_ADMIN = 'super_admin';
-    const ROLE_BASKAN = 'baskan';
     const ROLE_UYE = 'uye';
     
     public function __construct() {
@@ -200,7 +199,7 @@ class Auth {
 
         // Eğer veritabanında bu modül için explicit (açıkça) bir yetki tanımlanmışsa,
         // ROL KONTROLÜNDEN ÖNCE bunu dikkate al.
-        // Bu sayede normal bir üyeye 'baskan' modülü yetkisi verilebilir.
+        // Bu sayede normal bir üyeye 'uye' modülü yetkisi verilebilir.
         if (array_key_exists($moduleKey, $modulePermissions)) {
             return (bool)$modulePermissions[$moduleKey];
         }

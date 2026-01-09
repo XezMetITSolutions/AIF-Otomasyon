@@ -58,7 +58,7 @@ $pageTitle = 'Erişim Reddedildi';
                                 $dashboardUrl = '/';
                                 if ($user['role'] === 'super_admin') {
                                     $dashboardUrl = '/admin/dashboard.php';
-                                } elseif ($user['role'] === 'baskan') {
+                                } elseif ($user['role'] === 'uye') {
                                     $dashboardUrl = '/panel/baskan_dashboard.php';
                                 } elseif ($user['role'] === 'uye') {
                                     $dashboardUrl = '/panel/uye_dashboard.php';
