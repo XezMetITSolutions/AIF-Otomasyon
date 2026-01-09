@@ -30,26 +30,26 @@
     --gray-700: #374151;
     --gray-800: #1f2937;
     --gray-900: #111827;
-    
+
     /* Glassmorphism */
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(255, 255, 255, 0.18);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    
+
     /* Shadows */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
     --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.2);
-    
+
     /* Border Radius */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 20px;
     --radius-2xl: 24px;
-    
+
     /* Transitions */
     --transition-fast: 0.15s ease;
     --transition-base: 0.3s ease;
@@ -57,7 +57,8 @@
 }
 
 /* Genel Stiller */
-html, body {
+html,
+body {
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
@@ -70,7 +71,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-top: 56px;
+    padding-top: 76px;
     color: var(--dark-color);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -78,7 +79,8 @@ body {
 
 main {
     flex: 1;
-    margin-top: 0; /* Navbar zaten fixed, margin gerekmez */
+    margin-top: 0;
+    /* Navbar zaten fixed, margin gerekmez */
 }
 
 /* Sidebar Stilleri - Tamamen Yenilendi */
@@ -86,10 +88,10 @@ main {
     width: 280px !important;
     min-width: 280px !important;
     max-width: 280px !important;
-    min-height: calc(100vh - 56px);
-    height: calc(100vh - 56px);
+    min-height: calc(100vh - 76px);
+    height: calc(100vh - 76px);
     position: fixed !important;
-    top: 56px;
+    top: 76px;
     left: 0;
     z-index: 1000;
     overflow: hidden;
@@ -104,7 +106,7 @@ main {
 }
 
 .sidebar-scroll {
-    max-height: calc(100vh - 56px);
+    max-height: calc(100vh - 76px);
     overflow-y: auto;
     overflow-x: hidden;
     padding: 16px 0;
@@ -229,7 +231,7 @@ main {
     overflow: hidden;
 }
 
-.sidebar .list-group-item.list-group-item-action > *:not(i):not(.badge) {
+.sidebar .list-group-item.list-group-item-action>*:not(i):not(.badge) {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -260,16 +262,16 @@ main.container-fluid {
         transition: left var(--transition-base);
         z-index: 1050;
     }
-    
+
     .sidebar.show {
         left: 0;
     }
-    
+
     .content-wrapper {
         margin-left: 0;
         padding: 16px;
     }
-    
+
     /* Sidebar toggle button (mobil için) */
     .sidebar-toggle {
         display: block;
@@ -281,7 +283,7 @@ main.container-fluid {
     .sidebar {
         width: 280px;
     }
-    
+
     .content-wrapper {
         margin-left: 280px;
     }
@@ -340,13 +342,22 @@ main.container-fluid {
     right: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     animation: pulse 3s ease-in-out infinite;
 }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
 }
 
 .stat-card:hover {
@@ -594,7 +605,12 @@ main.container-fluid {
 }
 
 /* Başlık Stilleri - Modern */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-weight: 700;
     color: var(--gray-800);
     letter-spacing: -0.5px;
@@ -624,15 +640,15 @@ footer {
         position: relative !important;
         min-height: auto !important;
     }
-    
+
     .stat-card .stat-value {
         font-size: 2.5rem;
     }
-    
+
     .stat-card .stat-icon {
         font-size: 2.5rem;
     }
-    
+
     .content-wrapper {
         padding: 16px;
     }
@@ -676,6 +692,7 @@ footer {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -687,6 +704,7 @@ footer {
         opacity: 0;
         transform: translateX(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -698,6 +716,7 @@ footer {
         opacity: 0;
         transform: scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -717,14 +736,25 @@ footer {
 }
 
 /* Page Load Animation */
-.content-wrapper > * {
+.content-wrapper>* {
     animation: fadeIn 0.6s ease-out backwards;
 }
 
-.content-wrapper > *:nth-child(1) { animation-delay: 0.1s; }
-.content-wrapper > *:nth-child(2) { animation-delay: 0.2s; }
-.content-wrapper > *:nth-child(3) { animation-delay: 0.3s; }
-.content-wrapper > *:nth-child(4) { animation-delay: 0.4s; }
+.content-wrapper>*:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.content-wrapper>*:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.content-wrapper>*:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.content-wrapper>*:nth-child(4) {
+    animation-delay: 0.4s;
+}
 
 /* Scrollbar Stilleri (Webkit tarayıcılar için) - Modern */
 ::-webkit-scrollbar {
@@ -749,16 +779,16 @@ footer {
 
 /* Print Stilleri */
 @media print {
+
     .navbar,
     .sidebar,
     .btn,
     footer {
         display: none !important;
     }
-    
+
     .card {
         box-shadow: none;
         border: 1px solid #dee2e6;
     }
 }
-
