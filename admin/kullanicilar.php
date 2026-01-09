@@ -25,6 +25,40 @@ $search = $_GET['search'] ?? '';
 $roleFilter = $_GET['rol'] ?? '';
 $bykFilter = $_GET['byk'] ?? '';
 
+// === ROLE MIGRATION LOGIC ===
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'migrate_roles') {
+    try {
+        // 1. Get Role IDs
+        $rolesData = $db->fetchAll("SELECT * FROM roller");
+        $roleMap = [];
+        foreach ($rolesData as $r) {
+            $roleMap[strtolower(trim($r['rol_adi']))] = $r['rol_id'];
+        }
+
+        $superAdminId = $roleMap['super_admin'] ?? null;
+        $uyeId = $roleMap['uye'] ?? null;
+        $baskanId = $roleMap['baskan'] ?? null;
+
+        if ($superAdminId && $uyeId) {
+            // 2. Update Users (non-super_admin -> uye)
+            $db->query("UPDATE kullanicilar SET rol_id = ? WHERE rol_id != ?", [$uyeId, $superAdminId]);
+            
+            // 3. Remove 'baskan' role if exists
+            if ($baskanId) {
+                $db->query("DELETE FROM roller WHERE rol_id = ?", [$baskanId]);
+            }
+            
+            header('Location: /admin/kullanicilar.php?success=1');
+            exit;
+        } else {
+             header('Location: /admin/kullanicilar.php?error=migration_failed_missing_roles');
+             exit;
+        }
+    } catch (Exception $e) {
+        die("Hata: " . $e->getMessage());
+    }
+}
+
 $where = ["k.aktif = 1"];
 $params = [];
 
@@ -139,6 +173,18 @@ include __DIR__ . '/../includes/header.php';
                 <a href="/admin/kullanici-ekle.php" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>Yeni Kullanıcı Ekle
                 </a>
+            </div>
+            
+            <!-- Migration Button -->
+            <div class="row mb-3">
+                <div class="col-12 text-end">
+                    <form method="POST" onsubmit="return confirm('UYARI: Süper Admin dışındaki TÜM kullanıcılar \'Üye\' rolüne geçirilecek ve \'Başkan\' rolü silinecektir. Bu işlem geri alınamaz. Onaylıyor musunuz?');" class="d-inline-block">
+                         <input type="hidden" name="action" value="migrate_roles">
+                         <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Rolleri Sıfırla (Herkesi Üye Yap)
+                         </button>
+                    </form>
+                </div>
             </div>
             
             <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
