@@ -24,33 +24,37 @@ $yearFilter = $_GET['yil'] ?? '';
 
 // Force BYK filter for security
 // Force BYK filter for security
-// CUSTOM LOGIC: If user is AT (Ana Teşkilat), allow seeing events from related units (KT, KGT, GT) in the same region
 $userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
 $isAT = ($userByk && $userByk['byk_kodu'] === 'AT');
 $regionPrefix = '';
 
 if ($isAT) {
-    // Extract region name (remove 'AT' or 'Ana Teşkilat' from the end)
-    // Assuming format "RegionName AT" or "RegionName Ana Teşkilat"
-    // Heuristic: Take the part before the last word if it contains AT/Ana Teşkilat, 
-    // OR simply match by region name if we had one.
-    // Let's assume the BYK Name starts with the Region Name.
-    // Simplest: Find all BYKs that start with the same first word? No, could be "Viyana" vs "Villach".
-    // Better: Remove "Ana Teşkilat" or "AT" from the name.
-    $regionName = str_replace([' Ana Teşkilat', ' AT'], '', $userByk['byk_adi']);
-    $regionName = trim($regionName);
-    $regionPrefix = $regionName; // Store for valid usage
+    // Extract region name by removing all known unit types and suffixes
+    $removals = [
+        ' Ana Teşkilat', ' AT', '(AT)', ' (AT)',
+        ' Kadınlar Teşkilatı', ' KT', '(KT)', ' (KT)',
+        ' Gençlik Teşkilatı', ' GT', '(GT)', ' (GT)',
+        ' Kadınlar Gençlik Teşkilatı', ' KGT', '(KGT)', ' (KGT)',
+        ' Üniversiteliler', ' ÜNİ', '(ÜNİ)', ' (ÜNİ)'
+    ];
     
-    // Find all related BYK IDs
+    // Case insensitive replace might be safer but standard replace is fine if data is consistent
+    $regionName = str_ireplace($removals, '', $userByk['byk_adi']);
+    $regionName = trim($regionName); // Clean whitespace
+    $regionPrefix = $regionName;
+    
+    // Find all related BYK IDs with a looser search
+    // We search for BYKs that start with the region name
     $relatedByks = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_adi LIKE ?", ["$regionName%"]);
     $relatedBykIds = array_column($relatedByks, 'byk_id');
     
-    if (empty($relatedBykIds)) {
+    // Fallback: If stripping resulted in empty string (unlikely) or no matches
+    if (empty($relatedBykIds) || empty($regionName)) {
         $relatedBykIds = [$user['byk_id']];
     }
     
     $where = ["e.byk_id IN (" . implode(',', $relatedBykIds) . ")"];
-    $params = []; // Reset params because we hardcoded IDs in IN clause (safe integers usually, but cleaning recommended if inputs were dynamic)
+    $params = [];
 } else {
     $where = ["e.byk_id = ?"];
     $params = [$user['byk_id']];
