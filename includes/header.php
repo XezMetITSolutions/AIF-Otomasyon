@@ -63,8 +63,7 @@ $isUye = $user && $user['role'] === 'uye';
                 }
                 ?>
                 <a class="navbar-brand d-flex align-items-center" href="<?php echo $homeLink; ?>">
-                    <img src="/assets/img/AIF.png" alt="AIF Logo" class="me-2" style="height: 30px; width: auto;">
-                    <?php echo $appConfig['app_name']; ?>
+                    <img src="/assets/img/AIF.png" alt="AIF Logo" style="height: 40px; width: auto;">
                 </a>
                 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
