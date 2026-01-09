@@ -300,9 +300,7 @@ if ($user) {
                         continue;
                     }
 
-                    if (!empty($section['title'])) {
-                        echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">' . htmlspecialchars($section['title']) . '</div>';
-                    }
+                    // Section titles removed as per user request
 
                     foreach ($visibleLinks as $link) {
                         $isActive = strpos($currentPath, $link['match']) !== false;
@@ -317,8 +315,6 @@ if ($user) {
                     }
                 }
 
-
-
                 $hasUyeLinks = false;
                 foreach ($uyeSidebarLinks as $link) {
                     if ($auth->hasModulePermission($link['key'])) {
@@ -328,7 +324,7 @@ if ($user) {
                 }
 
                 if ($hasUyeLinks): ?>
-                    <div class="list-group-item fw-bold text-muted small" style="cursor: default;">ÜYE MODÜLLERİ</div>
+                    <!-- Section title removed -->
                     <?php foreach ($uyeSidebarLinks as $link): ?>
                         <?php if ($auth->hasModulePermission($link['key'])): ?>
                             <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo strpos($currentPath, $link['match']) !== false ? 'active' : ''; ?>">
@@ -339,7 +335,6 @@ if ($user) {
                 <?php endif; ?>
         <?php elseif ($isUye): ?>
             <!-- Üye Menüsü -->
-
 
             <?php
             // Render Authorized Baskan Modules for Uye
@@ -355,16 +350,12 @@ if ($user) {
                     continue;
                 }
 
-                // Add a separator/header if not present
-                if (!empty($section['title'])) {
-                    echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">' . htmlspecialchars($section['title']) . ' (YETKİLİ)</div>';
-                } else {
-                     echo '<div class="list-group-item fw-bold text-muted small" style="cursor: default;">YÖNETİM</div>';
-                }
+                // Section titles removed
 
                 foreach ($visibleLinks as $link) {
                     $isActive = strpos($currentPath, $link['match']) !== false;
                     ?>
+                    <!-- Baskan modules for Uye get 'list-group-item-warning' for distinct color -->
                     <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?> list-group-item-warning">
                         <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
                         <?php if (!empty($link['badge'])): ?>
@@ -390,7 +381,7 @@ if ($user) {
             }
 
             if ($hasUyeLinks): ?>
-                <div class="list-group-item fw-bold text-muted small" style="cursor: default;">GÜNCEL</div>
+                <!-- Section title removed -->
                 <?php foreach ($uyeSidebarLinks as $link): ?>
                     <?php 
                     // Re-check exclusion for rendering
@@ -407,7 +398,7 @@ if ($user) {
                 <?php endforeach; ?>
             <?php endif; ?>
 
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">HESAP</div>
+            <!-- Section title removed -->
 
             <a href="/uye/profil.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-user-circle me-2"></i>Profilim
