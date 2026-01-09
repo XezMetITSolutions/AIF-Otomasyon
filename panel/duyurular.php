@@ -64,9 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Filter logic: Managers see all, others see only active
-$whereClause = "byk_id = " . (int)$user['byk_id'];
+// Filter logic: Managers see all, others see only active
+$whereClause = "d.byk_id = " . (int)$user['byk_id'];
 if (!$canManage) {
-    $whereClause .= " AND aktif = 1";
+    $whereClause .= " AND d.aktif = 1";
 }
 
 $duyurular = $db->fetchAll("
