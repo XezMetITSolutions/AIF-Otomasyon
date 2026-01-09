@@ -12,19 +12,15 @@ $success = '';
 // Zaten giriş yapılmışsa yönlendir
 if ($auth->checkAuth()) {
     $user = $auth->getUser();
-    $redirectPath = null;
     
+    // Rolüne göre yönlendir & Session check
     if ($user['role'] === 'super_admin') {
-        $redirectPath = '/admin/dashboard.php';
-    } elseif ($user['role'] === 'baskan') {
-        $redirectPath = '/panel/baskan_dashboard.php';
-    } elseif ($user['role'] === 'uye') {
-        $redirectPath = '/panel/uye_dashboard.php';
-    }
-    
-    if ($redirectPath) {
         session_write_close();
-        header('Location: ' . $redirectPath);
+        header('Location: /admin/dashboard.php');
+        exit;
+    } elseif ($user['role'] === 'baskan' || $user['role'] === 'uye') {
+        session_write_close();
+        header('Location: /panel/dashboard.php');
         exit;
     } else {
         // Tanımsız rol durumunda döngüye girmemek için oturumu kapat
@@ -50,10 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if ($user['role'] === 'super_admin') {
                 $redirectPath = '/admin/dashboard.php';
-            } elseif ($user['role'] === 'baskan') {
-                $redirectPath = '/panel/baskan_dashboard.php';
-            } elseif ($user['role'] === 'uye') {
-                $redirectPath = '/panel/uye_dashboard.php';
+            } elseif ($user['role'] === 'baskan' || $user['role'] === 'uye') {
+                $redirectPath = '/panel/dashboard.php';
+            } else {
+                $error = 'Geçersiz kullanıcı rolü.'; // Added from instruction
             }
             
             if ($redirectPath) {
@@ -62,7 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             } else {
                 $auth->logout();
-                $error = 'Kullanıcı rolü için yönlendirme bulunamadı.';
+                // The error message from the instruction takes precedence if set
+                if (empty($error)) {
+                    $error = 'Kullanıcı rolü için yönlendirme bulunamadı.';
+                }
             }
         } elseif ($result === 'password_change_required') {
             header('Location: /change-password.php');

@@ -289,6 +289,11 @@ if ($user) {
                 // Baskan sidebar logic uses the global $baskanSidebarSections defined above
                 foreach ($baskanSidebarSections as $section) {
                     $visibleLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani) {
+                        // Dashboard link update
+                        if ($link['key'] === 'baskan_dashboard') {
+                             $link['path'] = '/panel/dashboard.php';
+                        }
+                        
                         // Muhasebe başkanı ise harcama ve iade modüllerini görsün
                         if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
                             return true;
@@ -303,6 +308,11 @@ if ($user) {
                     // Section titles removed as per user request
 
                     foreach ($visibleLinks as $link) {
+                        // Manual update for dashboard path in display loop if needed, though we updated filtering above, likely need to update $link structure or just hardcode checking.
+                        if ($link['key'] === 'baskan_dashboard') {
+                            $link['path'] = '/panel/dashboard.php';
+                        }
+                        
                         $isActive = strpos($currentPath, $link['match']) !== false;
                         ?>
                         <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $isActive ? 'active' : ''; ?>">
@@ -317,6 +327,11 @@ if ($user) {
 
                 $hasUyeLinks = false;
                 foreach ($uyeSidebarLinks as $link) {
+                    // EXCLUSION CHECK FOR BASKAN: Hide Uye links if Baskan has equivalent permissions or simply hide redundant ones.
+                    if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
+                        continue;
+                    }
+                    
                     if ($auth->hasModulePermission($link['key'])) {
                         $hasUyeLinks = true;
                         break;
@@ -326,7 +341,17 @@ if ($user) {
                 if ($hasUyeLinks): ?>
                     <!-- Section title removed -->
                     <?php foreach ($uyeSidebarLinks as $link): ?>
-                        <?php if ($auth->hasModulePermission($link['key'])): ?>
+                        <?php 
+                        // EXCLUSION CHECK REPEATED
+                        if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
+                            continue;
+                        }
+
+                        if ($link['key'] === 'uye_dashboard') {
+                            $link['path'] = '/panel/dashboard.php';
+                        }
+                        
+                        if ($auth->hasModulePermission($link['key'])): ?>
                             <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo strpos($currentPath, $link['match']) !== false ? 'active' : ''; ?>">
                                 <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
                             </a>
@@ -353,6 +378,10 @@ if ($user) {
                 // Section titles removed
 
                 foreach ($visibleLinks as $link) {
+                    if ($link['key'] === 'baskan_dashboard') {
+                        $link['path'] = '/panel/dashboard.php';
+                    }
+                    
                     $isActive = strpos($currentPath, $link['match']) !== false;
                     ?>
                     <!-- Baskan modules for Uye get 'list-group-item-warning' for distinct color -->
@@ -387,6 +416,10 @@ if ($user) {
                     // Re-check exclusion for rendering
                     if (isset($exclusionMap[$link['key']]) && $auth->hasModulePermission($exclusionMap[$link['key']])) {
                         continue;
+                    }
+
+                    if ($link['key'] === 'uye_dashboard') {
+                        $link['path'] = '/panel/dashboard.php';
                     }
                     
                     if ($auth->hasModulePermission($link['key'])): 
