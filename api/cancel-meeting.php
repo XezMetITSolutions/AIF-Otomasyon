@@ -13,7 +13,7 @@ error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 
 // Shutdown handler to catch fatal errors
-register_shutdown_function(function() {
+register_shutdown_function(function () {
     $error = error_get_last();
     if ($error && ($error['type'] === E_ERROR || $error['type'] === E_PARSE || $error['type'] === E_COMPILE_ERROR)) {
         http_response_code(500);
@@ -56,7 +56,7 @@ try {
 
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
-    
+
     if (json_last_error() !== JSON_ERROR_NONE) {
         throw new Exception('Geçersiz JSON verisi');
     }
@@ -79,16 +79,16 @@ try {
         INNER JOIN byk b ON t.byk_id = b.byk_id
         WHERE t.toplanti_id = ?
     ", [$toplanti_id]);
-    
+
     if (!$toplanti) {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Toplantı bulunamadı']);
         exit;
     }
-    
+
     // Toplantıyı iptal et
     $db->query("UPDATE toplantilar SET durum = 'iptal' WHERE toplanti_id = ?", [$toplanti_id]);
-    
+
     // Katılımcıları al
     $katilimcilar = $db->fetchAll("
         SELECT k.email, CONCAT(k.ad, ' ', k.soyad) as ad_soyad
@@ -96,11 +96,11 @@ try {
         INNER JOIN kullanicilar k ON tk.kullanici_id = k.kullanici_id
         WHERE tk.toplanti_id = ?
     ", [$toplanti_id]);
-    
+
     // E-posta gönder
     $emailsSent = 0;
     $emailsFailed = 0;
-    
+
     foreach ($katilimcilar as $katilimci) {
         if (!empty($katilimci['email'])) {
             $emailData = [
@@ -110,10 +110,11 @@ try {
                 'ad_soyad' => $katilimci['ad_soyad'],
                 'iptal_nedeni' => $iptal_nedeni
             ];
-            
-            $emailBody = Mail::getMeetingCancellationTemplate($emailData);
-            $subject = "❌ Toplantı İptali: " . $toplanti['baslik'];
-            
+
+            $template = Mail::getMeetingCancellationTemplate($emailData);
+            $subject = $template['subject'];
+            $emailBody = $template['body'];
+
             if (Mail::send($katilimci['email'], $subject, $emailBody)) {
                 $emailsSent++;
             } else {
@@ -121,18 +122,18 @@ try {
             }
         }
     }
-    
+
     echo json_encode([
-        'success' => true, 
+        'success' => true,
         'message' => "Toplantı iptal edildi. $emailsSent e-posta gönderildi" . ($emailsFailed > 0 ? ", $emailsFailed başarısız" : ""),
         'emails_sent' => $emailsSent,
         'emails_failed' => $emailsFailed
     ]);
-    
+
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
-        'success' => false, 
+        'success' => false,
         'message' => 'Hata: ' . $e->getMessage()
     ]);
 }

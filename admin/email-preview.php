@@ -13,4 +13,5 @@ $data = [
     'token' => 'sample_token_123'
 ];
 
-echo Mail::getMeetingInvitationTemplate($data);
+$template = Mail::getMeetingInvitationTemplate($data);
+echo $template['body'];

@@ -4,7 +4,8 @@
  */
 $auth = new Auth();
 $user = $auth->getUser();
-if (!$user) return;
+if (!$user)
+    return;
 
 $isSuperAdmin = $user['role'] === 'super_admin';
 $isBaskan = $user['role'] === 'uye';
@@ -182,80 +183,101 @@ if ($user) {
     <div class="list-group list-group-flush sidebar-scroll">
         <?php if ($isSuperAdmin): ?>
             <!-- Ana Yönetici Menüsü (Existing Code for Super Admin) -->
-            <a href="/admin/dashboard.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
+            <a href="/admin/dashboard.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
             </a>
-            
+
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">YÖNETİM</div>
-            
-            <a href="/admin/kullanicilar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'kullanicilar') !== false ? 'active' : ''; ?>">
+
+            <a href="/admin/kullanicilar.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'kullanicilar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-users me-2"></i>Kullanıcı Yönetimi
             </a>
-            <a href="/admin/byk.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'byk') !== false ? 'active' : ''; ?>">
+            <a href="/admin/byk.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'byk') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-building me-2"></i>BYK Yönetimi
             </a>
-            <a href="/admin/alt-birimler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'alt-birimler') !== false ? 'active' : ''; ?>">
+            <a href="/admin/alt-birimler.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'alt-birimler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-sitemap me-2"></i>Alt Birimler
             </a>
-            <a href="/admin/baskan-yetkileri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'baskan-yetkileri') !== false ? 'active' : ''; ?>">
+            <a href="/admin/baskan-yetkileri.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'baskan-yetkileri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-sliders me-2"></i>Üye Yetkileri
             </a>
-            
+
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
-            
-            <a href="/admin/etkinlikler.php" class="list-group-item list-group-item-action no-ajax <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
+
+            <a href="/admin/etkinlikler.php"
+                class="list-group-item list-group-item-action no-ajax <?php echo strpos($currentPath, 'etkinlikler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi
             </a>
-            <a href="/admin/toplantilar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'toplantilar') !== false ? 'active' : ''; ?>">
+            <a href="/admin/toplantilar.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'toplantilar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-users-cog me-2"></i>Toplantı Yönetimi
             </a>
-            <a href="/admin/projeler.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'projeler') !== false ? 'active' : ''; ?>">
+            <a href="/admin/projeler.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'projeler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-project-diagram me-2"></i>Proje Takibi
             </a>
-            <a href="/admin/duyurular.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
+            <a href="/admin/duyurular.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-bullhorn me-2"></i>Duyurular
             </a>
-            
+
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
-            
-            <a href="/admin/izin-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">
+
+            <a href="/admin/izin-talepleri.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'izin-talepleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-check me-2"></i>İzin Talepleri
                 <span class="badge bg-danger float-end" id="pendingIzinCount">0</span>
             </a>
-            <a href="/admin/harcama-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'harcama-talepleri') !== false ? 'active' : ''; ?>">
+            <a href="/admin/harcama-talepleri.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'harcama-talepleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-money-bill-wave me-2"></i>Harcama Talepleri
                 <span class="badge bg-warning float-end" id="pendingHarcamaCount">0</span>
             </a>
-            <a href="/admin/demirbaslar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'demirbaslar') !== false ? 'active' : ''; ?>">
+            <a href="/admin/demirbaslar.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'demirbaslar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-box me-2"></i>Demirbaş Yönetimi
             </a>
-            <a href="/admin/demirbas-talepleri.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'demirbas-talepleri') !== false ? 'active' : ''; ?>">
+            <a href="/admin/demirbas-talepleri.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'demirbas-talepleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-box-open me-2"></i>Demirbaş Talepleri
             </a>
-            <a href="/admin/raggal-talepleri.php" class="list-group-item list-group-item-action no-ajax <?php echo strpos($currentPath, 'raggal-talepleri') !== false ? 'active' : ''; ?>">
+            <a href="/admin/raggal-talepleri.php"
+                class="list-group-item list-group-item-action no-ajax <?php echo strpos($currentPath, 'raggal-talepleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-check me-2"></i>Raggal Talepleri
             </a>
-            
+
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">RAPORLAR</div>
-            
-            <a href="/admin/raporlar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'raporlar') !== false ? 'active' : ''; ?>">
+
+            <a href="/admin/raporlar.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'raporlar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-chart-bar me-2"></i>Raporlar & Analiz
             </a>
-            
+
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">AYARLAR</div>
-            
-            <a href="/admin/ayarlar.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'ayarlar') !== false ? 'active' : ''; ?>">
+
+            <a href="/admin/ayarlar.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'ayarlar') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-cog me-2"></i>Sistem Ayarları
             </a>
-            
+            <a href="/admin/email-sablonlari.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'email-sablonlari') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-envelope-open-text me-2"></i>E-posta Şablonları
+            </a>
+
         <?php else: // Normal Users & Baskans ?>
-            
+
             <!-- ORTAK ALAN (Everyone sees these) -->
-            <?php foreach ($commonLinks as $link): 
+            <?php foreach ($commonLinks as $link):
                 $isActive = strpos($currentPath, $link['match']) !== false;
                 $extraClass = $link['class'] ?? '';
-            ?>
-                <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $extraClass; ?> <?php echo $isActive ? 'active' : ''; ?>">
+                ?>
+                <a href="<?php echo $link['path']; ?>"
+                    class="list-group-item list-group-item-action <?php echo $extraClass; ?> <?php echo $isActive ? 'active' : ''; ?>">
                     <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
                 </a>
             <?php endforeach; ?>
@@ -280,10 +302,12 @@ if ($user) {
                         $extraClass = $link['class'] ?? '';
                         ?>
                         <!-- Management Links styled slightly differently or normal? Normal is fine -->
-                         <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action list-group-item-warning <?php echo $extraClass; ?> <?php echo $isActive ? 'active' : ''; ?>">
+                        <a href="<?php echo $link['path']; ?>"
+                            class="list-group-item list-group-item-action list-group-item-warning <?php echo $extraClass; ?> <?php echo $isActive ? 'active' : ''; ?>">
                             <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
                             <?php if (!empty($link['badge'])): ?>
-                                <span class="badge <?php echo $link['badge']['class']; ?> float-end" id="<?php echo $link['badge']['id']; ?>">0</span>
+                                <span class="badge <?php echo $link['badge']['class']; ?> float-end"
+                                    id="<?php echo $link['badge']['id']; ?>">0</span>
                             <?php endif; ?>
                         </a>
                         <?php
@@ -291,28 +315,29 @@ if ($user) {
                 }
             }
             ?>
-            
+
             <!-- KIŞISEL / UYE ALANI (Everyone sees their own request modules if authorized/default) -->
-            <?php 
+            <?php
             $hasAnyPersonal = false;
-            foreach ($uyeSidebarLinks as $link): 
+            foreach ($uyeSidebarLinks as $link):
                 // Basic check if module exists/allowed for viewing personal
                 if ($auth->hasModulePermission($link['key'])):
                     $hasAnyPersonal = true;
-                     $isActive = strpos($currentPath, $link['match']) !== false;
-                     $extraClass = $link['class'] ?? '';
-                ?>
-                    <a href="<?php echo $link['path']; ?>" class="list-group-item list-group-item-action <?php echo $extraClass; ?> <?php echo $isActive ? 'active' : ''; ?>">
+                    $isActive = strpos($currentPath, $link['match']) !== false;
+                    $extraClass = $link['class'] ?? '';
+                    ?>
+                    <a href="<?php echo $link['path']; ?>"
+                        class="list-group-item list-group-item-action <?php echo $extraClass; ?> <?php echo $isActive ? 'active' : ''; ?>">
                         <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
                     </a>
                 <?php endif; ?>
             <?php endforeach; ?>
 
-            <a href="/panel/profil.php" class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
+            <a href="/panel/profil.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'profil') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-user-circle me-2"></i>Profilim
             </a>
-            
+
         <?php endif; ?>
     </div>
 </div>
-

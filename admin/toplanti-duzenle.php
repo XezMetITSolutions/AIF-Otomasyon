@@ -79,7 +79,7 @@ $success = $_GET['success'] ?? '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $action = $_POST['action'] ?? '';
-        
+
         if ($action === 'update_toplanti') {
             $baslik = trim($_POST['baslik'] ?? '');
             $aciklama = trim($_POST['aciklama'] ?? '');
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $konum = trim($_POST['konum'] ?? '');
             $toplanti_turu = $_POST['toplanti_turu'] ?? 'normal';
             $durum = $_POST['durum'] ?? 'planlandi';
-            
+
             $db->query("
                 UPDATE toplantilar SET
                     baslik = ?,
@@ -109,56 +109,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $durum,
                 $toplanti_id
             ]);
-            
+
             $success = 'Toplantı bilgileri güncellendi!';
 
             // Auto-Sync: Description to Agenda
             if (!empty($aciklama)) {
                 // 1. Get existing agenda items to prevent duplicates
                 $existing_items = $db->fetchAll("SELECT baslik FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
-                $existing_titles = array_map(function($item) { return mb_strtolower(trim($item['baslik'])); }, $existing_items);
-                
+                $existing_titles = array_map(function ($item) {
+                    return mb_strtolower(trim($item['baslik'])); }, $existing_items);
+
                 // 2. Parse description
                 $lines = explode("\n", $aciklama);
                 $new_items = [];
-                
+
                 foreach ($lines as $line) {
                     $line = trim($line);
-                    if (empty($line)) continue;
-                    
+                    if (empty($line))
+                        continue;
+
                     // Remove bullets/numbers (e.g., "1.", "1-", "-", "*", "•")
                     // Supports unicode bullets and various separators
                     $clean_line = preg_replace('/^(\d+[\.\-\)]|[\-\*•])\s+/u', '', $line);
                     $clean_line = trim($clean_line);
-                    
-                    if (empty($clean_line)) continue;
-                    
+
+                    if (empty($clean_line))
+                        continue;
+
                     // Check if exists (case-insensitive)
                     if (!in_array(mb_strtolower($clean_line), $existing_titles)) {
                         $new_items[] = $clean_line;
                     }
                 }
-                
+
                 // 3. Insert new items
                 if (!empty($new_items)) {
                     // Get current max sort order
                     $max_sort = $db->fetch("SELECT MAX(sira_no) as max_sira FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
                     $current_sort = ($max_sort['max_sira'] ?? 0) + 1;
-                    
+
                     $insert_sql = "INSERT INTO toplanti_gundem (toplanti_id, baslik, sira_no, durum) VALUES (?, ?, ?, 'beklemede')";
                     $stmt = $db->getConnection()->prepare($insert_sql);
-                    
+
                     foreach ($new_items as $item) {
                         $stmt->execute([$toplanti_id, $item, $current_sort]);
                         $current_sort++;
                     }
-                    
+
                     $success .= " (" . count($new_items) . " yeni gündem maddesi eklendi)";
                 }
             }
         } elseif ($action === 'send_invitations') {
             require_once __DIR__ . '/../classes/Mail.php';
-            
+
             $selected_ids = $_POST['selected_participants'] ?? [];
             if (empty($selected_ids)) {
                 throw new Exception('Lütfen en az bir katılımcı seçin.');
@@ -170,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Seçilen katılımcıların detaylarını getir
             $placeholders = implode(',', array_fill(0, count($selected_ids), '?'));
             $params = array_merge([$toplanti_id], $selected_ids);
-            
+
             $targets = $db->fetchAll("
                 SELECT k.ad, k.soyad, k.email, tk.token
                 FROM toplanti_katilimcilar tk
@@ -183,8 +186,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (empty($target['token'])) {
                     $target['token'] = bin2hex(random_bytes(32));
                     $db->query("UPDATE toplanti_katilimcilar SET token = ? WHERE toplanti_id = ? AND kullanici_id = (SELECT kullanici_id FROM kullanicilar WHERE email = ?)", [
-                        $target['token'], 
-                        $toplanti_id, 
+                        $target['token'],
+                        $toplanti_id,
                         $target['email']
                     ]);
                 }
@@ -198,8 +201,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'token' => $target['token']
                 ];
 
-                $subject = 'Toplantı Daveti: ' . $toplanti['baslik'];
-                $message = Mail::getMeetingInvitationTemplate($mailData);
+                $template = Mail::getMeetingInvitationTemplate($mailData);
+                $subject = $template['subject'];
+                $message = $template['body'];
 
                 if (Mail::send($target['email'], $subject, $message)) {
                     $success_count++;
@@ -210,25 +214,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $success = "İşlem tamamlandı: $success_count başarılı, $fail_count başarısız gönderim.";
         }
-        
+
         // Sayfayı yenile
         header("Location: /admin/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
         exit;
-        
+
     } catch (Exception $e) {
         $msg = $e->getMessage();
-        
+
         // Self-Healing for missing columns
         if (strpos($msg, 'Unknown column') !== false) {
-            
+
             // Handle 'token' column missing (common in invitation flow)
             if (strpos($msg, 'token') !== false) {
                 $db->query("ALTER TABLE toplanti_katilimcilar ADD COLUMN token VARCHAR(64) NULL AFTER katilim_durumu");
-                
+
                 // Retry sending invitations if that was the action
                 if ($action === 'send_invitations') {
-                     header("Location: /admin/toplanti-duzenle.php?id={$toplanti_id}&error=" . urlencode("Sistem güncellendi ('token' sütunu eklendi). Lütfen işlemi tekrar deneyin."));
-                     exit;
+                    header("Location: /admin/toplanti-duzenle.php?id={$toplanti_id}&error=" . urlencode("Sistem güncellendi ('token' sütunu eklendi). Lütfen işlemi tekrar deneyin."));
+                    exit;
                 }
             }
 
@@ -243,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olaganüstü') DEFAULT 'normal' AFTER gundem");
                     $healed = true;
                 }
-                
+
                 if ($healed) {
                     // Retry Update
                     $db->query("
@@ -272,7 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
-        
+
         $error = $msg;
     }
 }
@@ -291,12 +295,13 @@ foreach ($katilimcilar as $k) {
 include __DIR__ . '/../includes/header.php';
 ?>
 <!-- ... (skipping unchanged content) ... -->
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#katilimcilar">
-                    <i class="fas fa-users me-2"></i>Katılımcılar
-                    <span class="badge bg-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
-                </a>
-            </li>
+<li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#katilimcilar">
+        <i class="fas fa-users me-2"></i>Katılımcılar
+        <span
+            class="badge bg-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
+    </a>
+</li>
 ?>
 
 <link rel="stylesheet" href="/assets/css/toplanti-yonetimi.css?v=<?php echo time(); ?>">
@@ -344,7 +349,8 @@ include __DIR__ . '/../includes/header.php';
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#katilimcilar">
                     <i class="fas fa-users me-2"></i>Katılımcılar
-                    <span class="badge bg-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
+                    <span
+                        class="badge bg-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
                 </a>
             </li>
             <li class="nav-item">
