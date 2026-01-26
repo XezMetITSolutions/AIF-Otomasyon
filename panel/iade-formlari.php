@@ -615,7 +615,7 @@ include __DIR__ . '/../includes/header.php';
         newItem.innerHTML = getItemHtml(itemId);
         container.appendChild(newItem);
 
-        // Autocomplete Bağla
+        // Autocomplete Bağla (Simple Mode)
         const startInput = newItem.querySelector('.route-start');
         const endInput = newItem.querySelector('.route-end');
         const startSug = newItem.querySelector('.suggestions-start');
@@ -623,6 +623,13 @@ include __DIR__ . '/../includes/header.php';
 
         if(startInput && startSug) attachAutocomplete(startInput, startSug);
         if(endInput && endSug) attachAutocomplete(endInput, endSug);
+        
+        // Autocomplete Bağla (Multi Mode - İlk 2 durak)
+        const multiStops = newItem.querySelectorAll('.route-stop-input');
+        const multiSuggs = newItem.querySelectorAll('.multi-route-mode .suggestions');
+        multiStops.forEach((input, idx) => {
+            if(multiSuggs[idx]) attachAutocomplete(input, multiSuggs[idx]);
+        });
     };
 
     function getItemHtml(itemId) {
@@ -994,8 +1001,13 @@ include __DIR__ . '/../includes/header.php';
             // Koordinatları bul
             var coords = [];
             for(var place of points) {
+                // Burst limitleri için çok kısa bir bekleme
+                if (coords.length > 0) await new Promise(r => setTimeout(r, 150));
+                
                 var c = await window.geocodeCity(place);
-                if(!c) throw new Error(`"${place}" bulunamadı.`);
+                if(!c) {
+                    throw new Error(`Durak "${place}" için adres bulunamadı. Lütfen listeden bir öneri seçerek veya adresi değiştirerek tekrar deneyin.`);
+                }
                 coords.push(c);
             }
             
