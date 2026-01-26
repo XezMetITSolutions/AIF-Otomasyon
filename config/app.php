@@ -6,7 +6,7 @@
 
 // Versiyon kontrolü
 $appVersion = (class_exists('Config')) ? Config::get('app_version', '1.0.1') : '1.0.1';
-$appName = (class_exists('Config')) ? Config::get('app_name', 'AIF Otomasyon Sistemi') : 'AIF Otomasyon Sistemi';
+$appName = (class_exists('Config')) ? Config::get('app_name', 'AIFNET') : 'AIFNET';
 $appUrl = (class_exists('Config')) ? Config::get('app_url', 'https://aifnet.islamfederasyonu.at') : 'https://aifnet.islamfederasyonu.at';
 
 return [
@@ -22,11 +22,11 @@ return [
     'smtp' => [
         'host' => (class_exists('Config')) ? Config::get('smtp_host', 'w0072b78.kasserver.com') : 'w0072b78.kasserver.com',
         'port' => (class_exists('Config')) ? Config::get('smtp_port', 587) : 587,
-        'username' => (class_exists('Config')) ? Config::get('smtp_user', 'sitzung@islamischefoederation.at') : 'sitzung@islamischefoederation.at',
+        'username' => (class_exists('Config')) ? Config::get('smtp_user', 'aifnet@islamischefoederation.at') : 'aifnet@islamischefoederation.at',
         'password' => getenv('MAIL_PASS') ?: '', // Hassas bilgi .env'den
         'secure' => (class_exists('Config')) ? Config::get('smtp_secure', 'tls') : 'tls',
-        'from_email' => (class_exists('Config')) ? Config::get('smtp_from_email', 'sitzung@islamischefoederation.at') : 'sitzung@islamischefoederation.at',
-        'from_name' => (class_exists('Config')) ? Config::get('smtp_from_name', 'AİF Otomasyon') : 'AİF Otomasyon'
+        'from_email' => (class_exists('Config')) ? Config::get('smtp_from_email', 'aifnet@islamischefoederation.at') : 'aifnet@islamischefoederation.at',
+        'from_name' => (class_exists('Config')) ? Config::get('smtp_from_name', 'AIFNET') : 'AIFNET'
     ],
 
     // Güvenlik Ayarları

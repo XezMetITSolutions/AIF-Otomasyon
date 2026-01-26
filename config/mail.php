@@ -6,5 +6,5 @@ return [
     'port' => getenv('MAIL_PORT') ?: 587,
     'secure' => getenv('MAIL_SECURE') ?: 'tls', // tls or ssl
     'from_email' => getenv('MAIL_FROM_EMAIL') ?: 'aifnet@islamischefoederation.at',
-    'from_name' => getenv('MAIL_FROM_NAME') ?: 'AİF Otomasyon'
+    'from_name' => getenv('MAIL_FROM_NAME') ?: 'AIFNET'
 ];
