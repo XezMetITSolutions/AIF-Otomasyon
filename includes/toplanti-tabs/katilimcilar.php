@@ -133,26 +133,48 @@
                     </script>
                 <!-- Mail Debug Sonuç Modal -->
 <div class="modal fade" id="mailDebugModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-fullscreen-sm-down modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title"><i class="fas fa-bug me-2"></i>Mail Debug Sonuçları</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div id="mailDebugResults" class="accordion">
-                    <div class="text-center p-4">
-                        <div class="spinner-border text-warning mb-2"></div>
-                        <p>E-postalar test ediliyor, lütfen bekleyin...</p>
+            <div class="modal-body p-0 p-sm-3">
+                <div id="mailDebugResults" class="accordion accordion-flush">
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-warning mb-3"></div>
+                        <p class="text-muted">E-postalar test ediliyor, lütfen bekleyin...</p>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-secondary w-100 w-sm-auto" data-bs-dismiss="modal">Kapat</button>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+#mailDebugResults .accordion-body {
+    padding: 0;
+}
+#mailDebugResults pre {
+    margin: 0;
+    padding: 1rem;
+    max-height: 400px;
+    overflow: auto;
+    font-size: 0.8rem;
+    background: #212529;
+    color: #f8f9fa;
+    border-radius: 0;
+}
+@media (max-width: 576px) {
+    #mailDebugResults pre {
+        font-size: 0.7rem;
+        padding: 0.5rem;
+    }
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

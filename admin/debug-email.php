@@ -134,38 +134,40 @@ include __DIR__ . '/../includes/header.php';
 
                 <div class="card shadow-sm mt-4">
                     <div class="card-header bg-info text-white">
-                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>SMTP Ayarları</h5>
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Aktif SMTP Ayarları (Veritabanı + Config)</h5>
                     </div>
                     <div class="card-body">
                         <?php
                         $config = require __DIR__ . '/../config/mail.php';
                         ?>
-                        <table class="table table-sm">
-                            <tr>
-                                <th>Host:</th>
-                                <td><?php echo htmlspecialchars($config['host']); ?></td>
-                            </tr>
-                            <tr>
-                                <th>Port:</th>
-                                <td><?php echo htmlspecialchars($config['port']); ?></td>
-                            </tr>
-                            <tr>
-                                <th>Username:</th>
-                                <td><?php echo htmlspecialchars($config['username']); ?></td>
-                            </tr>
-                            <tr>
-                                <th>Security:</th>
-                                <td><?php echo htmlspecialchars(strtoupper($config['secure'])); ?></td>
-                            </tr>
-                            <tr>
-                                <th>From Email:</th>
-                                <td><?php echo htmlspecialchars($config['from_email']); ?></td>
-                            </tr>
-                            <tr>
-                                <th>From Name:</th>
-                                <td><?php echo htmlspecialchars($config['from_name']); ?></td>
-                            </tr>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Host:</th>
+                                    <td class="text-break"><?php echo htmlspecialchars(Config::get('smtp_host', $config['host'])); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Port:</th>
+                                    <td><?php echo htmlspecialchars(Config::get('smtp_port', $config['port'])); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Username:</th>
+                                    <td class="text-break"><?php echo htmlspecialchars(Config::get('smtp_user', $config['username'])); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Security:</th>
+                                    <td><?php echo htmlspecialchars(strtoupper(Config::get('smtp_secure', $config['secure']))); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>From Email:</th>
+                                    <td class="text-break"><?php echo htmlspecialchars(Config::get('smtp_from_email', $config['from_email'])); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>From Name:</th>
+                                    <td><?php echo htmlspecialchars(Config::get('smtp_from_name', $config['from_name'])); ?></td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
