@@ -20,6 +20,9 @@
                             <button type="submit" class="btn btn-primary" onclick="return confirm('Seçili katılımcılara davetiye e-postası gönderilecek. Emin misiniz?')">
                                 <i class="fas fa-paper-plane me-2"></i>Seçilenlere Davetiye Gönder
                             </button>
+                            <button type="button" class="btn btn-warning ms-2" id="btnMailDebug">
+                                <i class="fas fa-bug me-2"></i>Mail Debug (Test)
+                            </button>
                             <button type="button" class="btn btn-outline-secondary ms-2" id="btnSelectAll">
                                 <i class="fas fa-check-double me-2"></i>Tümünü Seç
                             </button>
@@ -113,7 +116,102 @@
                                 '<i class="fas fa-check-double me-2"></i>Tümünü Seç';
                         });
                     </script>
-                <?php endif; ?>
+                <!-- Mail Debug Sonuç Modal -->
+<div class="modal fade" id="mailDebugModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="fas fa-bug me-2"></i>Mail Debug Sonuçları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="mailDebugResults" class="accordion">
+                    <div class="text-center p-4">
+                        <div class="spinner-border text-warning mb-2"></div>
+                        <p>E-postalar test ediliyor, lütfen bekleyin...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnMailDebug = document.getElementById('btnMailDebug');
+    if (btnMailDebug) {
+        btnMailDebug.addEventListener('click', function() {
+            const selectedIds = Array.from(document.querySelectorAll('.katilimci-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedIds.length === 0) {
+                alert('Lütfen en az bir katılımcı seçin.');
+                return;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('mailDebugModal'));
+            const resultsContainer = document.getElementById('mailDebugResults');
+            resultsContainer.innerHTML = `
+                <div class="text-center p-4">
+                    <div class="spinner-border text-warning mb-2"></div>
+                    <p>E-postalar test ediliyor, lütfen bekleyin...</p>
+                </div>`;
+            modal.show();
+
+            const toplantiId = new URLSearchParams(window.location.search).get('id');
+
+            fetch('/admin/api-mail-debug.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    toplanti_id: toplantiId,
+                    katilimci_ids: selectedIds
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    let html = '';
+                    data.results.forEach((res, index) => {
+                        const statusClass = res.success ? 'text-success' : 'text-danger';
+                        const icon = res.success ? 'fa-check-circle' : 'fa-exclamation-triangle';
+                        
+                        html += `
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#debug-${index}">
+                                        <i class="fas ${icon} ${statusClass} me-2"></i>
+                                        <strong>${res.name}</strong> (${res.email})
+                                        <span class="ms-2 badge ${res.success ? 'bg-success' : 'bg-danger'}">${res.success ? 'BAŞARILI' : 'HATA'}</span>
+                                    </button>
+                                </h2>
+                                <div id="debug-${index}" class="accordion-collapse collapse">
+                                    <div class="accordion-body bg-light">
+                                        <pre class="small mb-0"><code>${res.log || 'Log bilgisi yok.'}</code></pre>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                    resultsContainer.innerHTML = html;
+                } else {
+                    resultsContainer.innerHTML = `<div class="alert alert-danger">${data.error || 'Bir hata oluştu.'}</div>`;
+                }
+            })
+            .catch(err => {
+                resultsContainer.innerHTML = `<div class="alert alert-danger">Bağlantı hatası: ${err.message}</div>`;
+            });
+        });
+    }
+});
+</script>
+<?php endif; ?>
+<?php
+// Note: If adding more script blocks, ensure they are inside the conditional or correctly managed.
+?>
+
             </div>
         </div>
     </div>

@@ -2,6 +2,7 @@
 class Mail
 {
     public static $lastError = null;
+    public static $lastLog = null;
 
     public static function send($to, $subject, $message)
     {
@@ -17,6 +18,8 @@ class Mail
             $config['from_email'],
             $config['from_name']
         );
+
+        self::$lastLog = $smtp->getLogs();
 
         if (!$result) {
             self::$lastError = $smtp->getLastError();

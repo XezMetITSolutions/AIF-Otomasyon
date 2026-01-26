@@ -8,11 +8,20 @@ class SimpleSMTP {
     private $secure;
     private $timeout = 30;
     private $debug = false;
+    private $logBuffer = [];
     private $socket;
     private $lastError = null;
 
     public function getLastError() {
         return $this->lastError;
+    }
+
+    public function getLogs() {
+        return implode("\n", $this->logBuffer);
+    }
+
+    public function clearLogs() {
+        $this->logBuffer = [];
     }
 
     public function __construct($config) {
@@ -28,6 +37,7 @@ class SimpleSMTP {
     }
 
     private function log($message) {
+        $this->logBuffer[] = "[" . date('H:i:s') . "] " . $message;
         if ($this->debug) {
             echo htmlspecialchars($message) . "<br>\n";
         }
