@@ -38,7 +38,7 @@ try {
         ");
 
         $varsayilanAyarlar = [
-            ['app_name', 'AİF Otomasyon Sistemi', 'genel', 'Uygulama Adı'],
+            ['app_name', 'AİFNET', 'genel', 'Uygulama Adı'],
             ['app_url', 'https://aifnet.islamfederasyonu.at', 'genel', 'Uygulama URL'],
             ['app_version', '1.0.1', 'genel', 'Versiyon'],
             ['smtp_host', 'w0072b78.kasserver.com', 'smtp', 'SMTP Sunucu'],
@@ -46,7 +46,7 @@ try {
             ['smtp_user', 'sitzung@islamischefoederation.at', 'smtp', 'SMTP Kullanıcı'],
             ['smtp_secure', 'tls', 'smtp', 'SMTP Güvenlik'],
             ['smtp_from_email', 'sitzung@islamischefoederation.at', 'smtp', 'Gönderen E-posta'],
-            ['smtp_from_name', 'AİF Otomasyon', 'smtp', 'Gönderen Adı'],
+            ['smtp_from_name', 'AİFNET', 'smtp', 'Gönderen Adı'],
             ['session_lifetime', '7200', 'guvenlik', 'Oturum Süresi'],
             ['min_password_length', '8', 'guvenlik', 'Min. Şifre Uzunluğu'],
             ['theme_color', '#00936F', 'tema', 'Tema Rengi']

@@ -54,7 +54,7 @@ try {
     // Test için içeriği manuel parse edip Mail::send kullanalım.
 
     // Add common global variables
-    $data['app_name'] = Config::get('app_name', 'AİF Otomasyon Sistemi');
+    $data['app_name'] = Config::get('app_name', 'AİFNET');
     $data['app_url'] = Config::get('app_url', 'https://aifnet.islamfederasyonu.at');
     $data['year'] = date('Y');
     $data['panel_url'] = $data['app_url'] . '/panel/dashboard.php';
