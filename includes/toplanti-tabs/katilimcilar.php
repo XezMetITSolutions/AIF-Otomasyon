@@ -242,135 +242,148 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const bykSelect = document.getElementById('modal_byk_select');
-    const userListContainer = document.getElementById('modal_user_list');
-    const searchInput = document.getElementById('modal_user_search');
-    const selectAllCheck = document.getElementById('modal_select_all_users');
-    const countBadge = document.getElementById('selected_count_badge');
-    const ekleBtn = document.getElementById('katilimciEkleBtn');
-    
-    // Existing participants array (js version)
-    const existingUserIds = <?php echo json_encode(array_column($katilimcilar, 'kullanici_id')); ?>.map(String);
-
-    // Initial Load if BYK is selected
-    if(bykSelect.value) {
-        loadUsers(bykSelect.value);
-    }
-
-    // Change BYK
-    bykSelect.addEventListener('change', function() {
-        loadUsers(this.value);
-    });
-
-    // Search Filter
-    searchInput.addEventListener('input', function() {
-        const term = this.value.toLowerCase();
-        const items = userListContainer.querySelectorAll('.list-group-item');
+    try {
+        const bykSelect = document.getElementById('modal_byk_select');
+        const userListContainer = document.getElementById('modal_user_list');
+        const searchInput = document.getElementById('modal_user_search');
+        const selectAllCheck = document.getElementById('modal_select_all_users');
+        const countBadge = document.getElementById('selected_count_badge');
         
-        items.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            if(text.includes(term)) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    });
+        // Robust PHP to JS conversion
+        let rawIds = <?php echo !empty($katilimcilar) ? json_encode(array_column($katilimcilar, 'kullanici_id')) : '[]'; ?>;
+        // Ensure rawIds is an array (handle case where PHP associative array turns into JS object)
+        if (rawIds && typeof rawIds === 'object' && !Array.isArray(rawIds)) {
+            rawIds = Object.values(rawIds);
+        }
+        const existingUserIds = Array.isArray(rawIds) ? rawIds.map(String) : [];
 
-    // Select All
-    selectAllCheck.addEventListener('change', function() {
-        const visibleCheckboxes = Array.from(userListContainer.querySelectorAll('input[type="checkbox"]'))
-            .filter(cb => cb.closest('.list-group-item').style.display !== 'none');
+        // Initial Load if BYK is selected (and script runs after render)
+        if (bykSelect && bykSelect.value) {
+            loadUsers(bykSelect.value);
+        }
+
+        // Change BYK
+        if (bykSelect) {
+            bykSelect.addEventListener('change', function() {
+                loadUsers(this.value);
+            });
+        }
+
+        // Search Filter
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                const items = userListContainer.querySelectorAll('.list-group-item');
+                
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if(text.includes(term)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Select All
+        if (selectAllCheck) {
+            selectAllCheck.addEventListener('change', function() {
+                const visibleCheckboxes = Array.from(userListContainer.querySelectorAll('input[type="checkbox"]'))
+                    .filter(cb => cb.closest('.list-group-item').style.display !== 'none');
+                    
+                visibleCheckboxes.forEach(cb => {
+                    if(!cb.disabled) cb.checked = this.checked;
+                });
+                updateCount();
+            });
+        }
+
+        // Update Count on individual check
+        if (userListContainer) {
+            userListContainer.addEventListener('change', function(e) {
+                if(e.target.matches('input[type="checkbox"]')) {
+                    updateCount();
+                }
+            });
+        }
+        
+        // Helper: Update count text
+        function updateCount() {
+            const count = userListContainer.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)').length;
+            if (countBadge) countBadge.textContent = count + ' kişi seçildi';
             
-        visibleCheckboxes.forEach(cb => cb.checked = this.checked);
-        updateCount();
-    });
+            // Update Select All state
+            const allCheckable = userListContainer.querySelectorAll('input[type="checkbox"]:not(:disabled)');
+            if (selectAllCheck) {
+                if(allCheckable.length > 0 && count === allCheckable.length) selectAllCheck.checked = true;
+                else if(count === 0) selectAllCheck.checked = false;
+                else selectAllCheck.indeterminate = true;
+            }
+        }
 
-    // Update Count on individual check
-    userListContainer.addEventListener('change', function(e) {
-        if(e.target.matches('input[type="checkbox"]')) {
+        // Load Users Function
+        function loadUsers(bykId) {
+            if(!bykId) {
+                userListContainer.innerHTML = '<div class="text-center p-4 text-muted">Lütfen BYK seçiniz.</div>';
+                return;
+            }
+
+            userListContainer.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div><div class="mt-2">Yükleniyor...</div></div>';
+            
+            fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        renderUsers(data.uyeler);
+                    } else {
+                        userListContainer.innerHTML = `<div class="text-center p-4 text-danger">Hata: ${data.error}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    userListContainer.innerHTML = '<div class="text-center p-4 text-danger">Bağlantı hatası!</div>';
+                });
+        }
+
+        function renderUsers(users) {
+            if(!users || users.length === 0) {
+                userListContainer.innerHTML = '<div class="text-center p-4 text-muted">Bu birimde üye bulunamadı.</div>';
+                return;
+            }
+
+            let html = '';
+            users.forEach(u => {
+                // Check if already added
+                const isAlreadyAdded = existingUserIds.includes(String(u.kullanici_id));
+                const disabledAttr = isAlreadyAdded ? 'disabled checked' : '';
+                const statusBadge = isAlreadyAdded ? '<span class="badge bg-success ms-2">Eklendi</span>' : '';
+                const opacityClass = isAlreadyAdded ? 'opacity-75 bg-light' : '';
+
+                // Role Badge
+                const roleBadge = u.rol_adi ? `<span class="badge bg-secondary ms-1" style="font-size:0.7em">${u.rol_adi}</span>` : '';
+                const unitBadge = u.alt_birim_adi ? `<span class="badge bg-info text-dark ms-1" style="font-size:0.7em">${u.alt_birim_adi}</span>` : '';
+
+                html += `
+                    <label class="list-group-item list-group-item-action d-flex align-items-center justify-content-between cursor-pointer ${opacityClass}">
+                        <div class="d-flex align-items-center">
+                            <input class="form-check-input me-3" type="checkbox" value="${u.kullanici_id}" ${disabledAttr} ${isAlreadyAdded ? '' : 'name="new_participants[]"'}>
+                            <div>
+                                <span class="fw-bold">${u.ad} ${u.soyad}</span>
+                                ${roleBadge} ${unitBadge}
+                                <div class="small text-muted">${u.email}</div>
+                            </div>
+                        </div>
+                        ${statusBadge}
+                    </label>
+                `;
+            });
+            userListContainer.innerHTML = html;
             updateCount();
         }
-    });
-    
-    // Helper: Update count text
-    function updateCount() {
-        const count = userListContainer.querySelectorAll('input[type="checkbox"]:checked').length;
-        countBadge.textContent = count + ' kişi seçildi';
         
-        // Update Select All state
-        const all = userListContainer.querySelectorAll('input[type="checkbox"]');
-        if(all.length > 0 && count === all.length) selectAllCheck.checked = true;
-        else if(count === 0) selectAllCheck.checked = false;
-        else selectAllCheck.indeterminate = true;
+    } catch(e) {
+        console.error("Katılımcı modal script hatası:", e);
     }
-
-    // Load Users Function
-    function loadUsers(bykId) {
-        if(!bykId) {
-            userListContainer.innerHTML = '<div class="text-center p-4 text-muted">Lütfen BYK seçiniz.</div>';
-            return;
-        }
-
-        userListContainer.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div><div class="mt-2">Yükleniyor...</div></div>';
-        
-        fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}`)
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    renderUsers(data.uyeler);
-                } else {
-                    userListContainer.innerHTML = `<div class="text-center p-4 text-danger">Hata: ${data.error}</div>`;
-                }
-            })
-            .catch(err => {
-                userListContainer.innerHTML = '<div class="text-center p-4 text-danger">Bağlantı hatası!</div>';
-            });
-    }
-
-    function renderUsers(users) {
-        if(users.length === 0) {
-            userListContainer.innerHTML = '<div class="text-center p-4 text-muted">Bu birimde üye bulunamadı.</div>';
-            return;
-        }
-
-        let html = '';
-        users.forEach(u => {
-            // Check if already added
-            const isAlreadyAdded = existingUserIds.includes(String(u.kullanici_id));
-            const disabledAttr = isAlreadyAdded ? 'disabled checked' : '';
-            const statusBadge = isAlreadyAdded ? '<span class="badge bg-success ms-2">Eklendi</span>' : '';
-            const opacityClass = isAlreadyAdded ? 'opacity-75 bg-light' : '';
-
-            // Role Badge
-            const roleBadge = u.rol_adi ? `<span class="badge bg-secondary ms-1" style="font-size:0.7em">${u.rol_adi}</span>` : '';
-            const unitBadge = u.alt_birim_adi ? `<span class="badge bg-info text-dark ms-1" style="font-size:0.7em">${u.alt_birim_adi}</span>` : '';
-
-            html += `
-                <label class="list-group-item list-group-item-action d-flex align-items-center justify-content-between cursor-pointer ${opacityClass}">
-                    <div class="d-flex align-items-center">
-                        <input class="form-check-input me-3" type="checkbox" value="${u.kullanici_id}" ${disabledAttr} ${isAlreadyAdded ? '' : 'name="new_participants[]"'}>
-                        <div>
-                            <span class="fw-bold">${u.ad} ${u.soyad}</span>
-                            ${roleBadge} ${unitBadge}
-                            <div class="small text-muted">${u.email}</div>
-                        </div>
-                    </div>
-                    ${statusBadge}
-                </label>
-            `;
-        });
-        userListContainer.innerHTML = html;
-        updateCount();
-    }
-
-    // Override Default Ekle Button Action
-    // Note: We use the ID 'katilimciEkleBtn' which is also listened by toplanti-yonetimi.js
-    // We need to modify toplanti-yonetimi.js OR handle it here and stop propagation if we want to bypass it.
-    // Better strategy: Update toplanti-yonetimi.js to use the new multi-select logic.
-    // BUT, for now, let's attach a listener here that GATHERS data and calls the shared ToplantiYonetimi method
-    // However, ToplantiYonetimi.katilimciEkle() reads from 'yeni_katilimci_id' which is gone.
-    
-    // So we must REPLACE the handler in toplanti-yonetimi.js
 });
 </script>
