@@ -107,9 +107,27 @@ class SimpleSMTP {
             $headers[] = "X-Priority: 3"; // Normal priority
             
             if ($isHtml) {
-                $headers[] = "Content-Type: text/html; charset=UTF-8";
-                $headers[] = "Content-Transfer-Encoding: base64";
-                $body = chunk_split(base64_encode($body));
+                $boundary = "=_" . md5(uniqid(time()));
+                $headers[] = "Content-Type: multipart/alternative; boundary=\"$boundary\"";
+                $headers[] = "MIME-Version: 1.0";
+
+                // Plain text version
+                $plainText = strip_tags(str_replace(['<br>', '<br/>', '</p>'], ["\n", "\n", "\n\n"], $body));
+                
+                $messageBody = "--$boundary\r\n";
+                $messageBody .= "Content-Type: text/plain; charset=UTF-8\r\n";
+                $messageBody .= "Content-Transfer-Encoding: base64\r\n\r\n";
+                $messageBody .= chunk_split(base64_encode($plainText)) . "\r\n";
+
+                // HTML version
+                $messageBody .= "--$boundary\r\n";
+                $messageBody .= "Content-Type: text/html; charset=UTF-8\r\n";
+                $messageBody .= "Content-Transfer-Encoding: base64\r\n\r\n";
+                $messageBody .= chunk_split(base64_encode($body)) . "\r\n";
+
+                $messageBody .= "--$boundary--";
+                
+                $body = $messageBody;
             } else {
                 $headers[] = "Content-Type: text/plain; charset=UTF-8";
             }

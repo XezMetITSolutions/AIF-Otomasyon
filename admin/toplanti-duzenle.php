@@ -216,10 +216,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $success_count++;
                 } else {
                     $fail_count++;
+                    $last_error = Mail::$lastError;
                 }
             }
 
             $success = "İşlem tamamlandı: $success_count başarılı, $fail_count başarısız gönderim.";
+            if ($fail_count > 0 && !empty($last_error)) {
+                $error = "Son hata detayı: " . $last_error;
+                // Append to success message as well so it's visible even if we redirect with success param
+                $success .= " (Hata: " . $last_error . ")";
+            }
         }
 
         // Sayfayı yenile
