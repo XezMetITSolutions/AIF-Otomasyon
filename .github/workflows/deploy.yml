@@ -46,3 +46,6 @@ jobs:
             **/*.sql
             **/*.sql.gz
             **/*.sql.bak
+            **/uploads/**
+            **/Hesaplama/uploads/**
+            **/.ftp-deploy-sync-state.json
