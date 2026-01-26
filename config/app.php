@@ -6,7 +6,7 @@
 
 // Versiyon kontrolü
 $appVersion = (class_exists('Config')) ? Config::get('app_version', '1.0.1') : '1.0.1';
-$appName = (class_exists('Config')) ? Config::get('app_name', 'AIFNET') : 'AIFNET';
+$appName = (class_exists('Config')) ? Config::get('app_name', 'AİFNET') : 'AİFNET';
 $appUrl = (class_exists('Config')) ? Config::get('app_url', 'https://aifnet.islamfederasyonu.at') : 'https://aifnet.islamfederasyonu.at';
 
 return [
@@ -26,7 +26,7 @@ return [
         'password' => getenv('MAIL_PASS') ?: '', // Hassas bilgi .env'den
         'secure' => (class_exists('Config')) ? Config::get('smtp_secure', 'tls') : 'tls',
         'from_email' => (class_exists('Config')) ? Config::get('smtp_from_email', 'aifnet@islamischefoederation.at') : 'aifnet@islamischefoederation.at',
-        'from_name' => (class_exists('Config')) ? Config::get('smtp_from_name', 'AIFNET') : 'AIFNET'
+        'from_name' => (class_exists('Config')) ? Config::get('smtp_from_name', 'AİFNET') : 'AİFNET'
     ],
 
     // Güvenlik Ayarları

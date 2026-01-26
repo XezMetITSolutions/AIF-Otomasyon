@@ -12,7 +12,7 @@ $success = '';
 // Zaten giriş yapılmışsa yönlendir
 if ($auth->checkAuth()) {
     $user = $auth->getUser();
-    
+
     // Rolüne göre yönlendir & Session check
     if ($user['role'] === 'super_admin') {
         session_write_close();
@@ -34,16 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
     $remember = isset($_POST['remember']);
-    
+
     if (empty($email) || empty($password)) {
         $error = 'E-posta ve şifre alanları boş bırakılamaz.';
     } else {
         $result = $auth->login($email, $password, $remember);
-        
+
         if ($result === true) {
             $user = $auth->getUser();
             $redirectPath = null;
-            
+
             if ($user['role'] === 'super_admin') {
                 $redirectPath = '/admin/dashboard.php';
             } elseif ($user['role'] === 'uye' || $user['role'] === 'uye') {
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $error = 'Geçersiz kullanıcı rolü.'; // Added from instruction
             }
-            
+
             if ($redirectPath) {
                 session_write_close();
                 header('Location: ' . $redirectPath);
@@ -92,23 +92,26 @@ $pageTitle = 'Giriş Yap';
 ?>
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?> - AIFNET</title>
-    
+
     <!-- Bootstrap 5.3.0 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome 6.4.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/style.css">
-    
+
     <style>
         :root {
             --primary: #009872;
@@ -131,7 +134,7 @@ $pageTitle = 'Giriş Yap';
             margin: 0;
             overflow: hidden;
         }
-        
+
         .overlay {
             position: fixed;
             top: 0;
@@ -167,10 +170,17 @@ $pageTitle = 'Giriş Yap';
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: slideUp 0.6s ease-out;
         }
-        
+
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .logo-area {
@@ -193,7 +203,7 @@ $pageTitle = 'Giriş Yap';
             transform: rotate(-5deg);
             transition: transform 0.3s ease;
         }
-        
+
         .login-card:hover .logo-circle {
             transform: rotate(0deg) scale(1.05);
         }
@@ -213,7 +223,7 @@ $pageTitle = 'Giriş Yap';
             background: linear-gradient(to right, #ffffff, #e0e0e0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         p.app-subtitle {
@@ -271,12 +281,12 @@ $pageTitle = 'Giriş Yap';
             color: rgba(255, 255, 255, 0.3);
             font-weight: 400;
         }
-        
+
         /* Autocomplete background fix */
         input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active{
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
             -webkit-box-shadow: 0 0 0 30px #2a2a2a inset !important;
             -webkit-text-fill-color: white !important;
             transition: background-color 5000s ease-in-out 0s;
@@ -342,7 +352,7 @@ $pageTitle = 'Giriş Yap';
             box-shadow: 0 15px 30px rgba(0, 152, 114, 0.4);
             background: linear-gradient(135deg, #00ad82 0%, #00d49e 100%);
         }
-        
+
         .btn-login:active {
             transform: translateY(0);
         }
@@ -364,13 +374,13 @@ $pageTitle = 'Giriş Yap';
             border-radius: 12px;
             font-size: 0.9rem;
         }
-        
+
         .alert-danger {
             background: rgba(220, 53, 69, 0.2);
             border-left: 3px solid #dc3545;
             color: #ffdae0;
         }
-        
+
         .alert-success {
             background: rgba(25, 135, 84, 0.2);
             border-left: 3px solid #198754;
@@ -378,6 +388,7 @@ $pageTitle = 'Giriş Yap';
         }
     </style>
 </head>
+
 <body>
     <div class="overlay"></div>
 
@@ -387,44 +398,46 @@ $pageTitle = 'Giriş Yap';
                 <div class="logo-circle">
                     <img src="/assets/img/AIF.png" alt="AIF" class="logo-img">
                 </div>
-                <h1 class="app-title">AIFNET</h1>
+                <h1 class="app-title">AİFNET</h1>
                 <p class="app-subtitle">Yönetim Paneli Girişi</p>
             </div>
-            
+
             <?php if ($error): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
-            
+
             <?php if ($success): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success); ?>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
-            
+
             <form method="POST" action="">
                 <div class="mb-4">
                     <label for="email" class="form-label">E-Posta</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" placeholder="E-posta adresiniz" required autofocus autocomplete="username">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="E-posta adresiniz"
+                            required autofocus autocomplete="username">
                     </div>
                 </div>
-                
+
                 <div class="mb-4">
                     <label for="password" class="form-label">Şifre</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Şifreniz" required autocomplete="current-password">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Şifreniz"
+                            required autocomplete="current-password">
                         <button class="btn btn-toggle-password" type="button" id="togglePassword">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="remember" name="remember">
@@ -434,27 +447,27 @@ $pageTitle = 'Giriş Yap';
                     </div>
                     <a href="/forgot-password.php" class="forgot-link">Şifremi unuttum</a>
                 </div>
-                
+
                 <button type="submit" class="btn btn-login">
                     Giriş Yap
                 </button>
             </form>
-            
+
             <div class="copyright">
-                &copy; <?php echo date('Y'); ?> AIFNET Otomasyon Sistemi<br>v1.0.1
+                &copy; <?php echo date('Y'); ?> AİFNET<br>v1.0.1
             </div>
         </div>
     </div>
-    
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+
     <!-- Bootstrap 5.3.0 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
         // Şifre göster/gizle
-        $('#togglePassword').click(function() {
+        $('#togglePassword').click(function () {
             const password = $('#password');
             const icon = $(this).find('i');
             if (password.attr('type') === 'password') {
@@ -467,5 +480,5 @@ $pageTitle = 'Giriş Yap';
         });
     </script>
 </body>
-</html>
 
+</html>

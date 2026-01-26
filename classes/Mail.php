@@ -44,7 +44,7 @@ class Mail
             'baslik' => htmlspecialchars($data['baslik'] ?? ''),
             'tarih' => date('d.m.Y H:i', strtotime($data['toplanti_tarihi'] ?? 'now')),
             'konum' => htmlspecialchars($data['konum'] ?? ''),
-            'app_name' => Config::get('app_name', 'AIF Otomasyon Sistemi'),
+            'app_name' => Config::get('app_name', 'AİFNET'),
             'app_url' => Config::get('app_url', 'https://aifnet.islamfederasyonu.at'),
             'year' => date('Y')
         ];
@@ -90,7 +90,7 @@ HTML;
             'tarih' => date('d.m.Y H:i', strtotime($data['toplanti_tarihi'] ?? 'now')),
             'konum' => htmlspecialchars($data['konum'] ?? '-'),
             'iptal_nedeni' => !empty($data['iptal_nedeni']) ? nl2br(htmlspecialchars($data['iptal_nedeni'])) : 'Belirtilmemiş',
-            'app_name' => Config::get('app_name', 'AIF Otomasyon Sistemi'),
+            'app_name' => Config::get('app_name', 'AİFNET'),
             'app_url' => Config::get('app_url', 'https://aifnet.islamfederasyonu.at'),
             'year' => date('Y')
         ];
@@ -113,7 +113,7 @@ HTML;
 
         // Add common global variables
         if (!isset($data['app_name']))
-            $data['app_name'] = Config::get('app_name', 'AIF Otomasyon Sistemi');
+            $data['app_name'] = Config::get('app_name', 'AİFNET');
         if (!isset($data['app_url']))
             $data['app_url'] = Config::get('app_url', 'https://aifnet.islamfederasyonu.at');
         if (!isset($data['year']))

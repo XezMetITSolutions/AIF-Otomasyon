@@ -56,7 +56,7 @@ try {
     $newRequestToAdmin = $emailLayoutStart . str_replace('{{title}}', 'Onay Bekleyen Talep', $headerBlue) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın Yetkili,<br><br>Sistemde onayınızı bekleyen yeni bir <strong>{{talep_turu}}</strong> kaydı bulunmaktadır.</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><p style="margin-top:0;"><strong>Talep Sahibi:</strong> {{ad_soyad}}</p><p style="margin-bottom:0;color:#64748b;">{{detay}}</p></div><div style="text-align:center;"><a href="{{panel_url}}" style="background:#6c5ce7;color:#fff;padding:16px 35px;text-decoration:none;border-radius:14px;display:inline-block;font-weight:600;box-shadow:0 10px 20px rgba(108,92,231,0.2);">İşlemleri Görüntüle</a></div></td></tr>' . $emailLayoutEnd;
     $requestResultToUser = $emailLayoutStart . str_replace('{{title}}', 'Talep Sonucu', $headerGreen) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>Yapmış olduğunuz <strong>{{talep_turu}}</strong> talebi sonuçlanmıştır:</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><p style="margin-top:0;"><strong>Durum:</strong> <span style="color:#00b894;font-weight:600;">{{durum}}</span></p><p style="margin-bottom:0;color:#64748b;">{{aciklama}}</p></div></td></tr>' . $emailLayoutEnd;
     $passwordReset = $emailLayoutStart . str_replace('{{title}}', 'Şifre Yenileme', $headerBlue) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Merhaba,<br><br>Hesabınız için şifre sıfırlama talebinde bulundunuz. Yeni şifrenizi belirlemek için aşağıya tıklayın:</p><div style="text-align:center;margin:40px 0;"><a href="{{reset_url}}" style="background:#6c5ce7;color:#fff;padding:16px 35px;text-decoration:none;border-radius:14px;display:inline-block;font-weight:600;">Şifremi Sıfırla</a></div><p style="color:#94a3b8;font-size:12px;text-align:center;">Bu talebi siz yapmadıysanız bu e-postayı dikkate almayınız. Güvenliğiniz için bu bağlantı 2 saat geçerlidir.</p></td></tr>' . $emailLayoutEnd;
-    $welcomeEmail = $emailLayoutStart . str_replace('{{title}}', 'Hoş Geldiniz', $headerGreen) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>AİF Otomasyon Ailesine hoş geldiniz! Hesabınız başarıyla oluşturuldu.</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><p style="margin-top:0;"><strong>Kullanıcı Adınız:</strong><br>{{email}}</p><p style="margin-top:15px;"><strong>Geçici Şifreniz:</strong><br><code style="font-size:18px;color:#00b894;">AIF571#</code></p><p style="margin-bottom:0;margin-top:15px;"><strong>Erişim Paneli:</strong><br><a href="{{panel_url}}" style="color:#00b894;">{{panel_url}}</a></p></div><p style="color:#64748b;font-size:14px;">Güvenliğiniz için ilk girişte şifrenizi değiştirmeniz istenecektir.</p></td></tr>' . $emailLayoutEnd;
+    $welcomeEmail = $emailLayoutStart . str_replace('{{title}}', 'Hoş Geldiniz', $headerGreen) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>AİFNET Ailesine hoş geldiniz! Hesabınız başarıyla oluşturuldu.</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><p style="margin-top:0;"><strong>Kullanıcı Adınız:</strong><br>{{email}}</p><p style="margin-top:15px;"><strong>Geçici Şifreniz:</strong><br><code style="font-size:18px;color:#00b894;">AIF571#</code></p><p style="margin-bottom:0;margin-top:15px;"><strong>Erişim Paneli:</strong><br><a href="{{panel_url}}" style="color:#00b894;">{{panel_url}}</a></p></div><p style="color:#64748b;font-size:14px;">Güvenliğiniz için ilk girişte şifrenizi değiştirmeniz istenecektir.</p></td></tr>' . $emailLayoutEnd;
     $announcementBody = $emailLayoutStart . str_replace('{{title}}', 'Duyuru', $headerRed) . '<tr><td style="padding:50px 40px;"><h2 style="margin:0 0 20px 0;color:#1e293b;font-size:22px;">{{baslik}}</h2><div style="color:#475569;line-height:1.8;font-size:15px;">{{icerik}}</div><div style="text-align:center;margin-top:40px;"><a href="{{duyuru_url}}" style="background:#dc3545;color:#fff;padding:16px 35px;text-decoration:none;border-radius:14px;display:inline-block;font-weight:600;">Hemen İncele</a></div></td></tr>' . $emailLayoutEnd;
 
     $varsayilanSablonlar = [
@@ -65,7 +65,7 @@ try {
         ['talep_yeni', 'Yeni Onay Bekleyen Talep (Admin)', 'Yeni Talep: {{talep_turu}} - {{ad_soyad}}', $newRequestToAdmin, '{{ad_soyad}}, {{talep_turu}}, {{detay}}, {{panel_url}}, {{app_name}}, {{year}}'],
         ['talep_sonuc', 'Talep Sonucu (Üye)', 'Talebiniz Sonuçlandı: {{talep_turu}}', $requestResultToUser, '{{ad_soyad}}, {{talep_turu}}, {{durum}}, {{aciklama}}, {{app_name}}, {{year}}'],
         ['sifre_sifirlama', 'Şifre Sıfırlama', 'Şifre Sıfırlama Talebi', $passwordReset, '{{reset_url}}, {{app_name}}, {{year}}'],
-        ['yeni_kullanici', 'Yeni Üye Hoş Geldiniz', 'AİF Otomasyon Hesabınız Oluşturuldu', $welcomeEmail, '{{ad_soyad}}, {{email}}, {{panel_url}}, {{app_name}}, {{year}}'],
+        ['yeni_kullanici', 'Yeni Üye Hoş Geldiniz', 'AİFNET Hesabınız Oluşturuldu', $welcomeEmail, '{{ad_soyad}}, {{email}}, {{panel_url}}, {{app_name}}, {{year}}'],
         ['duyuru_yeni', 'Yeni Duyuru Bildirimi', 'Önemli Duyuru: {{baslik}}', $announcementBody, '{{baslik}}, {{icerik}}, {{duyuru_url}}, {{app_name}}, {{year}}']
     ];
 
@@ -144,8 +144,7 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                     <div class="list-group list-group-flush">
                         <?php foreach ($sablonlar as $s): ?>
-                            <a href="?kod=<?php echo $s['kod']; ?>"
-                                data-kod="<?php echo $s['kod']; ?>"
+                            <a href="?kod=<?php echo $s['kod']; ?>" data-kod="<?php echo $s['kod']; ?>"
                                 class="list-group-item list-group-item-action load-template <?php echo (isset($_GET['kod']) && $_GET['kod'] == $s['kod']) ? 'active' : ''; ?>">
                                 <div class="d-flex w-100 justify-content-between align-items-center">
                                     <h6 class="mb-1">
@@ -357,12 +356,12 @@ include __DIR__ . '/../includes/header.php';
                 success: function (response) {
                     if (response.success) {
                         const data = response.data;
-                        
+
                         // Update hidden field and inputs
                         $('input[name="kod"]').val(data.kod);
                         $('input[name="konu"]').val(data.konu);
                         $('#templateEditor').val(data.icerik);
-                        
+
                         // Update Header Text
                         $('.card-header h6.mb-0').first().text(data.baslik + ' Düzenle');
                         $('.badge.bg-light.text-dark.border').text('Kod: ' + data.kod);
@@ -376,13 +375,22 @@ include __DIR__ . '/../includes/header.php';
                         });
 
                         // Update URL without reload
-                        window.history.pushState({path: url}, '', url);
-                        
+                        window.history.pushState({ path: url }, '', url);
+
                         // If it's the first load (from placeholder), we might need to refresh the whole right side
                         // But since we already have the editor container, just showing it is enough if it was hidden
                         if ($('.card.shadow-sm.text-center.p-5').length) {
-                             window.location.reload(); // Simple fallback for placeholder to editor transition
+                            window.location.reload(); // Simple fallback for placeholder to editor transition
                         }
+                    } else {
+                        alert('Hata: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('Şablon yüklenirken bir sistem hatası oluştu.');
+                },
+                complete: function () {
+                    hideLoader();
                 }
             });
         });

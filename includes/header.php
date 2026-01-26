@@ -21,7 +21,7 @@ $isUye = $user && $user['role'] === 'uye';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>
-        <?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?><?php echo Config::get('app_name', 'AIF Otomasyon Sistemi'); ?>
+        <?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?><?php echo Config::get('app_name', 'AİFNET'); ?>
     </title>
 
     <!-- Bootstrap 5.3.0 CSS -->

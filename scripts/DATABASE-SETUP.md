@@ -18,7 +18,7 @@
 3. Script'i çalıştırın:
 
 ```bash
-cd C:\Users\IT Admin\Documents\Otomasyon
+cd C:\Users\IT Admin\Documents\AİFNET
 php scripts\setup-database.php
 ```
 
