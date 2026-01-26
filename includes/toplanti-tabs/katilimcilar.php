@@ -14,10 +14,10 @@
                         <i class="fas fa-info-circle me-2"></i>Henüz katılımcı eklenmemiş
                     </p>
                 <?php else: ?>
-                    <form method="POST" id="davetiyeForm">
+                    <form method="POST" id="davetiyeForm" action="/admin/toplanti-duzenle.php?id=<?php echo $toplanti_id; ?>">
                         <input type="hidden" name="action" value="send_invitations">
                         <div class="mb-3">
-                            <button type="submit" class="btn btn-primary" onclick="return confirm('Seçili katılımcılara davetiye e-postası gönderilecek. Emin misiniz?')">
+                            <button type="submit" class="btn btn-primary" id="btnSendInvitations">
                                 <i class="fas fa-paper-plane me-2"></i>Seçilenlere Davetiye Gönder
                             </button>
                             <button type="button" class="btn btn-warning ms-2" id="btnMailDebug">
@@ -93,27 +93,42 @@
                     </form>
                     
                     <script>
-                        // Existing checkbox listener
-                        document.getElementById('selectAll').addEventListener('change', function() {
-                            const checkboxes = document.querySelectorAll('.katilimci-checkbox');
-                            checkboxes.forEach(cb => cb.checked = this.checked);
-                        });
-                        
-                        // New Button listener
-                        document.getElementById('btnSelectAll').addEventListener('click', function() {
-                            const masterCheckbox = document.getElementById('selectAll');
-                            const checkboxes = document.querySelectorAll('.katilimci-checkbox');
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Select All Checkbox
+                            const selectAllCheck = document.getElementById('selectAll');
+                            if (selectAllCheck) {
+                                selectAllCheck.addEventListener('change', function() {
+                                    const checkboxes = document.querySelectorAll('.katilimci-checkbox');
+                                    checkboxes.forEach(cb => cb.checked = this.checked);
+                                });
+                            }
                             
-                            // Toggle based on master or check all if unchecked
-                            const newState = !masterCheckbox.checked;
-                            
-                            masterCheckbox.checked = newState;
-                            checkboxes.forEach(cb => cb.checked = newState);
-                            
-                            // Update button text logic (Optional)
-                            this.innerHTML = newState ? 
-                                '<i class="fas fa-times me-2"></i>Seçimi Kaldır' : 
-                                '<i class="fas fa-check-double me-2"></i>Tümünü Seç';
+                            // Select All Button
+                            const btnSelectAll = document.getElementById('btnSelectAll');
+                            if (btnSelectAll) {
+                                btnSelectAll.addEventListener('click', function() {
+                                    const masterCheckbox = document.getElementById('selectAll');
+                                    const checkboxes = document.querySelectorAll('.katilimci-checkbox');
+                                    const newState = masterCheckbox ? !masterCheckbox.checked : true;
+                                    
+                                    if (masterCheckbox) masterCheckbox.checked = newState;
+                                    checkboxes.forEach(cb => cb.checked = newState);
+                                    
+                                    this.innerHTML = newState ? 
+                                        '<i class="fas fa-times me-2"></i>Seçimi Kaldır' : 
+                                        '<i class="fas fa-check-double me-2"></i>Tümünü Seç';
+                                });
+                            }
+
+                            // Confirm Form Submission
+                            const davetiyeForm = document.getElementById('davetiyeForm');
+                            if (davetiyeForm) {
+                                davetiyeForm.addEventListener('submit', function(e) {
+                                    if (!confirm('Seçili katılımcılara davetiye e-postası gönderilecek. Emin misiniz?')) {
+                                        e.preventDefault();
+                                    }
+                                });
+                            }
                         });
                     </script>
                 <!-- Mail Debug Sonuç Modal -->
@@ -152,7 +167,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const modal = new bootstrap.Modal(document.getElementById('mailDebugModal'));
+            const modalElement = document.getElementById('mailDebugModal');
+            if (!modalElement) return;
+            
+            const modal = new bootstrap.Modal(modalElement);
             const resultsContainer = document.getElementById('mailDebugResults');
             resultsContainer.innerHTML = `
                 <div class="text-center p-4">
@@ -161,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>`;
             modal.show();
 
-            const toplantiId = new URLSearchParams(window.location.search).get('id');
+            const toplantiId = '<?php echo $toplanti_id; ?>';
 
             fetch('/admin/api-mail-debug.php', {
                 method: 'POST',
@@ -190,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </h2>
                                 <div id="debug-${index}" class="accordion-collapse collapse">
                                     <div class="accordion-body bg-light">
-                                        <pre class="small mb-0"><code>${res.log || 'Log bilgisi yok.'}</code></pre>
+                                        <pre class="small mb-0" style="white-space: pre-wrap; word-break: break-all;"><code>${res.log || 'Log bilgisi yok.'}</code></pre>
                                     </div>
                                 </div>
                             </div>`;
