@@ -23,23 +23,36 @@ try {
     switch ($action) {
         case 'add':
             $toplanti_id = $input['toplanti_id'] ?? null;
-            $kullanici_id = $input['kullanici_id'] ?? null;
-            $katilim_durumu = $input['katilim_durumu'] ?? 'katildi';
+            $kullanici_ids = $input['kullanici_id'] ?? null; // Can be array or single
+            $katilim_durumu = $input['katilim_durumu'] ?? 'beklemede';
             
-            if (!$toplanti_id || !$kullanici_id) {
-                throw new Exception('Toplantı ID ve Kullanıcı ID gereklidir');
+            if (!$toplanti_id || empty($kullanici_ids)) {
+                throw new Exception('Toplantı ID ve Kullanıcı(lar) gereklidir');
             }
             
-            $db->query("
-                INSERT INTO toplanti_katilimcilar (toplanti_id, kullanici_id, katilim_durumu)
-                VALUES (?, ?, ?)
-            ", [$toplanti_id, $kullanici_id, $katilim_durumu]);
+            // Normalize to array
+            if (!is_array($kullanici_ids)) {
+                $kullanici_ids = [$kullanici_ids];
+            }
+
+            $added_count = 0;
+            foreach ($kullanici_ids as $kid) {
+                // Check duplicate
+                $exists = $db->fetch("SELECT katilimci_id FROM toplanti_katilimcilar WHERE toplanti_id = ? AND kullanici_id = ?", [$toplanti_id, $kid]);
+                if (!$exists) {
+                    $db->query("
+                        INSERT INTO toplanti_katilimcilar (toplanti_id, kullanici_id, katilim_durumu)
+                        VALUES (?, ?, ?)
+                    ", [$toplanti_id, $kid, $katilim_durumu]);
+                    $added_count++;
+                }
+            }
             
             // Katılımcı sayısını güncelle
             $count = $db->fetch("SELECT COUNT(*) as total FROM toplanti_katilimcilar WHERE toplanti_id = ?", [$toplanti_id]);
             $db->query("UPDATE toplantilar SET katilimci_sayisi = ? WHERE toplanti_id = ?", [$count['total'], $toplanti_id]);
             
-            echo json_encode(['success' => true, 'message' => 'Katılımcı eklendi']);
+            echo json_encode(['success' => true, 'message' => "$added_count katılımcı başarıyla eklendi"]);
             break;
             
         case 'update':

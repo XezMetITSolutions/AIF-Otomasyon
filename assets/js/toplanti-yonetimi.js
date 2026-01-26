@@ -177,18 +177,32 @@ const ToplantiYonetimi = {
     // ==================== KATILIMCI İŞLEMLERİ ====================
 
     katilimciEkle: function () {
-        const kullaniciId = document.getElementById('yeni_katilimci_id').value;
+        const checkboxes = document.querySelectorAll('input[name="new_participants[]"]:checked');
         const katilimDurumu = document.getElementById('yeni_katilim_durumu').value;
+        let ids = [];
 
-        if (!kullaniciId) {
-            this.showAlert('warning', 'Lütfen bir kullanıcı seçiniz');
+        checkboxes.forEach(cb => ids.push(cb.value));
+
+        // Fallback for old single select if it ever exists
+        const singleSelect = document.getElementById('yeni_katilimci_id');
+        if (singleSelect && singleSelect.value) {
+            ids.push(singleSelect.value);
+        }
+
+        if (ids.length === 0) {
+            this.showAlert('warning', 'Lütfen en az bir katılımcı seçiniz');
             return;
         }
+
+        const btn = document.getElementById('katilimciEkleBtn');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Ekleniyor...';
 
         const data = {
             action: 'add',
             toplanti_id: this.toplanti_id,
-            kullanici_id: kullaniciId,
+            kullanici_id: ids,
             katilim_durumu: katilimDurumu
         };
 
@@ -198,8 +212,14 @@ const ToplantiYonetimi = {
                     this.showAlert('success', result.message);
                     setTimeout(() => location.reload(), 1000);
                 } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
                     this.showAlert('danger', result.error);
                 }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             });
     },
 

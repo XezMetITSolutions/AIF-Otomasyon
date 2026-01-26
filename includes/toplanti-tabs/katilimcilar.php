@@ -167,34 +167,73 @@
 
 <!-- Katılımcı Ekle Modal -->
 <div class="modal fade" id="katilimciEkleModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg"> <!-- Large modal for better list view -->
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Katılımcı Ekle</h5>
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>Katılımcı Ekle
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Kullanıcı Seç</label>
-                    <select class="form-select" id="yeni_katilimci_id">
-                        <option value="">Seçiniz...</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Katılım Durumu</label>
-                    <select class="form-select" id="yeni_katilim_durumu">
-                        <option value="beklemede">Davet Edildi</option>
-                        <option value="katildi">Katıldı</option>
-                        <option value="ozur_diledi">Özür Diledi</option>
-                        <option value="izinli">İzinli</option>
-                        <option value="katilmadi">Katılmadı</option>
-                    </select>
+                <div class="row g-3">
+                    <!-- Filters -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Bölge (BYK) Seçimi</label>
+                        <select class="form-select" id="modal_byk_select">
+                            <option value="">Lütfen BYK seçiniz...</option>
+                            <?php foreach ($bykler as $byk): ?>
+                                <option value="<?php echo $byk['byk_id']; ?>" <?php echo ($byk['byk_id'] == $toplanti['byk_id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($byk['byk_adi'] . ' (' . $byk['byk_kodu'] . ')'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Katılım Durumu</label>
+                        <select class="form-select" id="yeni_katilim_durumu">
+                            <option value="beklemede">Davet Edildi (Varsayılan)</option>
+                            <option value="katildi">Katıldı</option>
+                            <option value="katilacak">Katılacak</option>
+                            <option value="ozur_diledi">Özür Diledi</option>
+                            <option value="izinli">İzinli</option>
+                            <option value="katilmadi">Katılmadı</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Search & List -->
+                     <div class="col-12 mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                             <label class="form-label fw-bold mb-0">Üye Listesi</label>
+                             <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="modal_select_all_users">
+                                <label class="form-check-label small" for="modal_select_all_users">Tümünü Seç</label>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded p-2 bg-light mb-2">
+                            <input type="text" class="form-control form-control-sm" id="modal_user_search" placeholder="İsim veya e-posta ara...">
+                        </div>
+
+                        <div class="user-list-container border rounded bg-white p-0" style="height: 300px; overflow-y: auto;">
+                            <!-- Users will be loaded here -->
+                            <div id="modal_user_list" class="list-group list-group-flush">
+                                <div class="text-center p-4 text-muted">
+                                    <i class="fas fa-search fa-2x mb-2"></i><br>
+                                    Lütfen önce yukarıdan bir Bölge (BYK) seçiniz.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-1 text-end">
+                            <small class="text-muted" id="selected_count_badge">0 kişi seçildi</small>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                <button type="button" class="btn btn-primary" id="katilimciEkleBtn">
-                    <i class="fas fa-plus me-2"></i>Ekle
+                <button type="button" class="btn btn-primary px-4" id="katilimciEkleBtn">
+                    <i class="fas fa-plus-circle me-2"></i>Seçilenleri Ekle
                 </button>
             </div>
         </div>
@@ -202,24 +241,136 @@
 </div>
 
 <script>
-// Modal açıldığında BYK üyelerini yükle
-document.getElementById('katilimciEkleModal').addEventListener('show.bs.modal', function() {
-    const bykId = <?php echo $toplanti['byk_id']; ?>;
-    const select = document.getElementById('yeni_katilimci_id');
+document.addEventListener('DOMContentLoaded', function() {
+    const bykSelect = document.getElementById('modal_byk_select');
+    const userListContainer = document.getElementById('modal_user_list');
+    const searchInput = document.getElementById('modal_user_search');
+    const selectAllCheck = document.getElementById('modal_select_all_users');
+    const countBadge = document.getElementById('selected_count_badge');
+    const ekleBtn = document.getElementById('katilimciEkleBtn');
     
-    fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                select.innerHTML = '<option value="">Seçiniz...</option>';
-                data.uyeler.forEach(uye => {
-                    // Zaten katılımcı olmayanları göster
-                    const mevcutKatilimci = <?php echo json_encode(array_column($katilimcilar, 'kullanici_id')); ?>;
-                    if (!mevcutKatilimci.includes(uye.kullanici_id)) {
-                        select.innerHTML += `<option value="${uye.kullanici_id}">${uye.ad} ${uye.soyad}</option>`;
-                    }
-                });
+    // Existing participants array (js version)
+    const existingUserIds = <?php echo json_encode(array_column($katilimcilar, 'kullanici_id')); ?>.map(String);
+
+    // Initial Load if BYK is selected
+    if(bykSelect.value) {
+        loadUsers(bykSelect.value);
+    }
+
+    // Change BYK
+    bykSelect.addEventListener('change', function() {
+        loadUsers(this.value);
+    });
+
+    // Search Filter
+    searchInput.addEventListener('input', function() {
+        const term = this.value.toLowerCase();
+        const items = userListContainer.querySelectorAll('.list-group-item');
+        
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if(text.includes(term)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
             }
         });
+    });
+
+    // Select All
+    selectAllCheck.addEventListener('change', function() {
+        const visibleCheckboxes = Array.from(userListContainer.querySelectorAll('input[type="checkbox"]'))
+            .filter(cb => cb.closest('.list-group-item').style.display !== 'none');
+            
+        visibleCheckboxes.forEach(cb => cb.checked = this.checked);
+        updateCount();
+    });
+
+    // Update Count on individual check
+    userListContainer.addEventListener('change', function(e) {
+        if(e.target.matches('input[type="checkbox"]')) {
+            updateCount();
+        }
+    });
+    
+    // Helper: Update count text
+    function updateCount() {
+        const count = userListContainer.querySelectorAll('input[type="checkbox"]:checked').length;
+        countBadge.textContent = count + ' kişi seçildi';
+        
+        // Update Select All state
+        const all = userListContainer.querySelectorAll('input[type="checkbox"]');
+        if(all.length > 0 && count === all.length) selectAllCheck.checked = true;
+        else if(count === 0) selectAllCheck.checked = false;
+        else selectAllCheck.indeterminate = true;
+    }
+
+    // Load Users Function
+    function loadUsers(bykId) {
+        if(!bykId) {
+            userListContainer.innerHTML = '<div class="text-center p-4 text-muted">Lütfen BYK seçiniz.</div>';
+            return;
+        }
+
+        userListContainer.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div><div class="mt-2">Yükleniyor...</div></div>';
+        
+        fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    renderUsers(data.uyeler);
+                } else {
+                    userListContainer.innerHTML = `<div class="text-center p-4 text-danger">Hata: ${data.error}</div>`;
+                }
+            })
+            .catch(err => {
+                userListContainer.innerHTML = '<div class="text-center p-4 text-danger">Bağlantı hatası!</div>';
+            });
+    }
+
+    function renderUsers(users) {
+        if(users.length === 0) {
+            userListContainer.innerHTML = '<div class="text-center p-4 text-muted">Bu birimde üye bulunamadı.</div>';
+            return;
+        }
+
+        let html = '';
+        users.forEach(u => {
+            // Check if already added
+            const isAlreadyAdded = existingUserIds.includes(String(u.kullanici_id));
+            const disabledAttr = isAlreadyAdded ? 'disabled checked' : '';
+            const statusBadge = isAlreadyAdded ? '<span class="badge bg-success ms-2">Eklendi</span>' : '';
+            const opacityClass = isAlreadyAdded ? 'opacity-75 bg-light' : '';
+
+            // Role Badge
+            const roleBadge = u.rol_adi ? `<span class="badge bg-secondary ms-1" style="font-size:0.7em">${u.rol_adi}</span>` : '';
+            const unitBadge = u.alt_birim_adi ? `<span class="badge bg-info text-dark ms-1" style="font-size:0.7em">${u.alt_birim_adi}</span>` : '';
+
+            html += `
+                <label class="list-group-item list-group-item-action d-flex align-items-center justify-content-between cursor-pointer ${opacityClass}">
+                    <div class="d-flex align-items-center">
+                        <input class="form-check-input me-3" type="checkbox" value="${u.kullanici_id}" ${disabledAttr} ${isAlreadyAdded ? '' : 'name="new_participants[]"'}>
+                        <div>
+                            <span class="fw-bold">${u.ad} ${u.soyad}</span>
+                            ${roleBadge} ${unitBadge}
+                            <div class="small text-muted">${u.email}</div>
+                        </div>
+                    </div>
+                    ${statusBadge}
+                </label>
+            `;
+        });
+        userListContainer.innerHTML = html;
+        updateCount();
+    }
+
+    // Override Default Ekle Button Action
+    // Note: We use the ID 'katilimciEkleBtn' which is also listened by toplanti-yonetimi.js
+    // We need to modify toplanti-yonetimi.js OR handle it here and stop propagation if we want to bypass it.
+    // Better strategy: Update toplanti-yonetimi.js to use the new multi-select logic.
+    // BUT, for now, let's attach a listener here that GATHERS data and calls the shared ToplantiYonetimi method
+    // However, ToplantiYonetimi.katilimciEkle() reads from 'yeni_katilimci_id' which is gone.
+    
+    // So we must REPLACE the handler in toplanti-yonetimi.js
 });
 </script>
