@@ -65,7 +65,8 @@ try {
     if (Mail::send($targetUser['email'], $parsedSubject, $parsedBody)) {
         echo json_encode(['success' => true]);
     } else {
-        throw new Exception('E-posta gönderilemedi. SMTP ayarlarını kontrol edin.');
+        $error = Mail::$lastError ? ': ' . Mail::$lastError : '.';
+        throw new Exception('E-posta gönderilemedi. SMTP ayarlarını kontrol edin' . $error);
     }
 
 } catch (Exception $e) {

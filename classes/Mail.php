@@ -1,6 +1,8 @@
 <?php
 class Mail
 {
+    public static $lastError = null;
+
     public static function send($to, $subject, $message)
     {
         $config = require __DIR__ . '/../config/mail.php';
@@ -8,13 +10,19 @@ class Mail
         require_once __DIR__ . '/SimpleSMTP.php';
         $smtp = new SimpleSMTP($config);
 
-        return $smtp->send(
+        $result = $smtp->send(
             $to,
             $subject,
             $message,
             $config['from_email'],
             $config['from_name']
         );
+
+        if (!$result) {
+            self::$lastError = $smtp->getLastError();
+        }
+
+        return $result;
     }
 
     public static function getTemplate($kod)

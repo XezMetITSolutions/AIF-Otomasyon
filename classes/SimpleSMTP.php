@@ -9,6 +9,11 @@ class SimpleSMTP {
     private $timeout = 30;
     private $debug = false;
     private $socket;
+    private $lastError = null;
+
+    public function getLastError() {
+        return $this->lastError;
+    }
 
     public function __construct($config) {
         $this->host = $config['host'];
@@ -68,7 +73,14 @@ class SimpleSMTP {
 
             if ($this->secure === 'tls') {
                 $this->sendCommand("STARTTLS", 220);
-                stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+                $cryptoMethod = STREAM_CRYPTO_METHOD_TLS_CLIENT;
+                if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
+                    $cryptoMethod |= STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+                }
+                if (defined('STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT')) {
+                    $cryptoMethod |= STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT;
+                }
+                stream_socket_enable_crypto($this->socket, true, $cryptoMethod);
                 $this->sendCommand("EHLO " . gethostname());
             }
 
@@ -112,6 +124,7 @@ class SimpleSMTP {
 
         } catch (Exception $e) {
             if ($this->socket) fclose($this->socket);
+            $this->lastError = $e->getMessage();
             $this->log("ERROR: " . $e->getMessage());
             // Log error to file system for debugging if needed
             error_log($e->getMessage());
