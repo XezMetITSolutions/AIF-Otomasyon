@@ -14,24 +14,53 @@ $result = null;
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $test_email = $_POST['test_email'] ?? '';
-    
-    if (!empty($test_email)) {
-        // Test basic SMTP connection
-        $data = [
-            'ad_soyad' => 'Test Kullanıcı',
-            'email' => $test_email,
-            'baslik' => 'Test Toplantısı',
-            'toplanti_tarihi' => date('Y-m-d H:i:s'),
-            'konum' => 'Test Lokasyon',
-            'aciklama' => 'Bu bir test davetiyesidir.',
-            'token' => 'test-token-' . time()
-        ];
+    // Handle database update
+    if (isset($_POST['update_db_settings'])) {
+        require_once __DIR__ . '/../classes/Database.php';
+        $db = Database::getInstance()->getConnection();
         
-        if (Mail::sendMeetingInvitation($data)) {
-            $result = "✅ Test e-postası başarıyla gönderildi: $test_email";
-        } else {
-            $error = "❌ E-posta gönderilemedi!\n\nHata: " . (Mail::$lastError ?? 'Bilinmeyen hata');
+        try {
+            // Update SMTP user
+            $stmt = $db->prepare("UPDATE settings SET value = ? WHERE key_name = 'smtp_user'");
+            $stmt->execute(['aifnet@islamischefoederation.at']);
+            
+            // Update SMTP from email
+            $stmt = $db->prepare("UPDATE settings SET value = ? WHERE key_name = 'smtp_from_email'");
+            $stmt->execute(['aifnet@islamischefoederation.at']);
+            
+            // Update SMTP from name
+            $stmt = $db->prepare("UPDATE settings SET value = ? WHERE key_name = 'smtp_from_name'");
+            $stmt->execute(['AİFNET']);
+            
+            $result = "✅ Veritabanı ayarları başarıyla güncellendi!\n\n" .
+                      "• smtp_user: aifnet@islamischefoederation.at\n" .
+                      "• smtp_from_email: aifnet@islamischefoederation.at\n" .
+                      "• smtp_from_name: AİFNET";
+        } catch (Exception $e) {
+            $error = "❌ Veritabanı güncellenirken hata oluştu: " . $e->getMessage();
+        }
+    }
+    // Handle test email
+    elseif (isset($_POST['test_email'])) {
+        $test_email = $_POST['test_email'] ?? '';
+        
+        if (!empty($test_email)) {
+            // Test basic SMTP connection
+            $data = [
+                'ad_soyad' => 'Test Kullanıcı',
+                'email' => $test_email,
+                'baslik' => 'Test Toplantısı',
+                'toplanti_tarihi' => date('Y-m-d H:i:s'),
+                'konum' => 'Test Lokasyon',
+                'aciklama' => 'Bu bir test davetiyesidir.',
+                'token' => 'test-token-' . time()
+            ];
+            
+            if (Mail::sendMeetingInvitation($data)) {
+                $result = "✅ Test e-postası başarıyla gönderildi: $test_email";
+            } else {
+                $error = "❌ E-posta gönderilemedi!\n\nHata: " . (Mail::$lastError ?? 'Bilinmeyen hata');
+            }
         }
     }
 }
@@ -63,6 +92,25 @@ include __DIR__ . '/../includes/header.php';
 
         <div class="row">
             <div class="col-md-8">
+                <div class="card shadow-sm mb-4 border-warning">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="fas fa-database me-2"></i>Veritabanı Ayarlarını Güncelle</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">
+                            <i class="fas fa-info-circle text-info me-2"></i>
+                            Veritabanındaki SMTP ayarlarını <strong>sitzung@islamischefoederation.at</strong> 
+                            adresinden <strong>aifnet@islamischefoederation.at</strong> adresine güncelleyin.
+                        </p>
+                        <form method="POST" onsubmit="return confirm('Veritabanı ayarlarını güncellemek istediğinize emin misiniz?');">
+                            <input type="hidden" name="update_db_settings" value="1">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-sync-alt me-2"></i>Veritabanını Güncelle
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Test E-postası Gönder</h5>
