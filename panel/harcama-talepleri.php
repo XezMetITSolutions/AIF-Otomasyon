@@ -8,6 +8,8 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
+require_once __DIR__ . '/../classes/Mail.php';
+
 Middleware::requireUye();
 
 $auth = new Auth();
@@ -134,6 +136,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $aciklamaFinal,
                     number_format((float)$tutar, 2, '.', '')
                 ]);
+
+                // Birim Muhasebe Başkanına Bildirim Gönder
+                $bykInfo = $db->fetch("SELECT muhasebe_baskani_id FROM byk WHERE byk_id = ?", [$user['byk_id']]);
+                if ($bykInfo && $bykInfo['muhasebe_baskani_id']) {
+                    $adminUser = $db->fetch("SELECT email FROM kullanicilar WHERE kullanici_id = ?", [$bykInfo['muhasebe_baskani_id']]);
+                    if ($adminUser) {
+                        Mail::sendWithTemplate($adminUser['email'], 'talep_yeni', [
+                            'ad_soyad' => 'Muhasebe Başkanı',
+                            'talep_turu' => 'Harcama Talebi',
+                            'detay' => htmlspecialchars($user['name']) . " tarafından yeni bir harcama talebi oluşturuldu: " . htmlspecialchars($baslik) . " (" . number_format($tutar, 2, ',', '.') . " €)",
+                        ]);
+                    }
+                }
+
                 $messages[] = 'Harcama talebiniz başarıyla oluşturuldu.';
                 $activeTab = 'talebim';
             }

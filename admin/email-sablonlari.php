@@ -34,121 +34,41 @@ try {
     // Varsayılan şablonları kontrol et ve ekle
     $check = $db->fetch("SELECT count(*) as cnt FROM email_sablonlari");
     if ($check['cnt'] == 0) {
-        $invitationBody = '<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Toplantı Daveti</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f6f9; font-family: \'Segoe UI\', sans-serif;">
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td align="center" style="padding: 40px 0;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                    <tr>
-                        <td align="center" style="background-color: #00936F; padding: 35px 20px;">
-                            <img src="{{app_url}}/assets/img/AIF.png" alt="Logo" style="height: 48px; filter: brightness(0) invert(1);">
-                            <h1 style="color: #ffffff; margin: 20px 0 0 0; font-size: 24px;">Toplantı Daveti</h1>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 40px;">
-                            <p style="color: #495057; font-size: 16px;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>Aşağıda detayları yer alan toplantıya katılımınız beklenmektedir.</p>
-                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 30px;">
-                                <tr>
-                                    <td style="padding: 20px;">
-                                        <strong>Konu:</strong> {{baslik}}<br>
-                                        <strong>Tarih:</strong> {{tarih}}<br>
-                                        <strong>Konum:</strong> {{konum}}
-                                    </td>
-                                </tr>
-                            </table>
-                            {{gundem_html}}
-                            <div style="text-align: center; margin-top: 30px;">
-                                <a href="{{accept_url}}" style="background-color: #198754; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">✅ Katılıyorum</a>
-                                <br><br>
-                                <a href="{{reject_url}}" style="color: #dc3545; text-decoration: none; font-size: 14px;">Katılamayacağım (Reddet)</a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="center" style="background-color: #f8f9fa; padding: 25px; border-top: 1px solid #e9ecef;">
-                            <p style="color: #adb5bd; font-size: 12px;">© {{year}} {{app_name}}</p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>';
+        $emailLayoutStart = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@import url(\'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap\');</style></head><body style="margin:0;padding:0;background-color:#f0f4f8;font-family:\'Outfit\',\'Segoe UI\',sans-serif;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" style="padding:40px 10px;"><table role="presentation" width="100%" max-width="600" style="width:100%;max-width:600px;background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.08);">';
+        $emailLayoutEnd = '<tr><td align="center" style="background-color:#ffffff;padding:40px;border-top:1px solid #f1f5f9;"><div style="margin-bottom:20px;"><img src="{{app_url}}/assets/img/logo.png" alt="Logo" style="height:30px;opacity:0.6;"></div><p style="color:#94a3b8;font-size:13px;margin:0;">Bu e-posta <strong>{{app_name}}</strong> tarafından otomatik olarak gönderilmiştir.<br>© {{year}} Tüm Hakları Saklıdır.</p></td></tr></table></td></tr></table></body></html>';
 
-        $cancellationBody = '<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Toplantı İptali</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f6f9; font-family: \'Segoe UI\', sans-serif;">
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td align="center" style="padding: 40px 0;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                    <tr>
-                        <td align="center" style="background-color: #DC3545; padding: 35px 20px;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Toplantı İptal Edildi</h1>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 40px;">
-                            <p style="color: #495057; font-size: 16px;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>Daha önce planlanan aşağıdaki toplantı ne yazık ki <strong>iptal edilmiştir</strong>.</p>
-                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #DC3545; margin-bottom: 30px;">
-                                <tr>
-                                    <td style="padding: 20px;">
-                                        <strong>Konu:</strong> {{baslik}}<br>
-                                        <strong>Tarih:</strong> {{tarih}}<br>
-                                        <strong>Konum:</strong> {{konum}}
-                                    </td>
-                                </tr>
-                            </table>
-                            <div style="background-color: #fff3cd; border: 1px solid #ffeeba; padding: 20px; border-radius: 8px;">
-                                <strong>İptal Nedeni:</strong><br>{{iptal_nedeni}}
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="center" style="background-color: #f8f9fa; padding: 25px; border-top: 1px solid #e9ecef;">
-                            <p style="color: #adb5bd; font-size: 12px;">© {{year}} {{app_name}}</p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>';
+        $headerGreen = '<tr><td align="center" style="background:linear-gradient(135deg, #00b894 0%, #00936F 100%);padding:60px 40px;"><div style="background:rgba(255,255,255,0.2);width:60px;height:60px;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:white;font-size:30px;">✓</div><h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:600;letter-spacing:-0.5px;">{{title}}</h1></td></tr>';
+        $headerBlue = '<tr><td align="center" style="background:linear-gradient(135deg, #6c5ce7 0%, #0d6efd 100%);padding:60px 40px;"><div style="background:rgba(255,255,255,0.2);width:60px;height:60px;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:white;font-size:30px;">ℹ</div><h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:600;letter-spacing:-0.5px;">{{title}}</h1></td></tr>';
+        $headerRed = '<tr><td align="center" style="background:linear-gradient(135deg, #ff7675 0%, #dc3545 100%);padding:60px 40px;"><div style="background:rgba(255,255,255,0.2);width:60px;height:60px;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:white;font-size:30px;">!</div><h1 style="color:#ffffff;margin:0;font-size:28px;font-weight:600;letter-spacing:-0.5px;">{{title}}</h1></td></tr>';
+
+        $invitationBody = $emailLayoutStart . str_replace('{{title}}', 'Toplantı Daveti', $headerGreen) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>Sizin katılımınız bizim için değerlidir. Aşağıdaki toplantıya davetlisiniz:</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><table width="100%"><tr><td width="30" valign="top" style="padding-top:2px;">📅</td><td><strong style="color:#1e293b;">Konu:</strong><br><span style="color:#64748b;">{{baslik}}</span></td></tr><tr><td height="15"></td></tr><tr><td>⏰</td><td><strong style="color:#1e293b;">Tarih:</strong><br><span style="color:#64748b;">{{tarih}}</span></td></tr><tr><td height="15"></td></tr><tr><td>📍</td><td><strong style="color:#1e293b;">Konum:</strong><br><span style="color:#64748b;">{{konum}}</span></td></tr></table></div>{{gundem_html}}<div style="text-align:center;margin-top:40px;"><a href="{{accept_url}}" style="background:#00b894;color:#fff;padding:16px 35px;text-decoration:none;border-radius:14px;display:inline-block;font-weight:600;box-shadow:0 10px 20px rgba(0,184,148,0.2);">Toplantıya Katıl</a><br><br><a href="{{reject_url}}" style="color:#94a3b8;text-decoration:none;font-size:14px;">Katılamayacağım</a></div></td></tr>' . $emailLayoutEnd;
+
+        $cancellationBody = $emailLayoutStart . str_replace('{{title}}', 'Toplantı İptali', $headerRed) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>Planlanan aşağıdaki toplantı maalesef iptal edilmiştir:</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><strong>Konu:</strong> {{baslik}}<br><strong>Tarih:</strong> {{tarih}}</div><div style="background:#fff1f1;padding:20px;border-radius:16px;color:#e11d48;border:1px solid #fee2e2;"><strong>İptal Nedeni:</strong><br>{{iptal_nedeni}}</div></td></tr>' . $emailLayoutEnd;
+
+        $newRequestToAdmin = $emailLayoutStart . str_replace('{{title}}', 'Onay Bekleyen Talep', $headerBlue) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın Yetkili,<br><br>Sistemde onayınızı bekleyen yeni bir <strong>{{talep_turu}}</strong> kaydı bulunmaktadır.</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><p style="margin-top:0;"><strong>Talep Sahibi:</strong> {{ad_soyad}}</p><p style="margin-bottom:0;color:#64748b;">{{detay}}</p></div><div style="text-align:center;"><a href="{{panel_url}}" style="background:#6c5ce7;color:#fff;padding:16px 35px;text-decoration:none;border-radius:14px;display:inline-block;font-weight:600;box-shadow:0 10px 20px rgba(108,92,231,0.2);">İşlemleri Görüntüle</a></div></td></tr>' . $emailLayoutEnd;
+
+        $requestResultToUser = $emailLayoutStart . str_replace('{{title}}', 'Talep Sonucu', $headerGreen) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>Yapmış olduğunuz <strong>{{talep_turu}}</strong> talebi sonuçlanmıştır:</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><p style="margin-top:0;"><strong>Durum:</strong> <span style="color:#00b894;font-weight:600;">{{durum}}</span></p><p style="margin-bottom:0;color:#64748b;">{{aciklama}}</p></div></td></tr>' . $emailLayoutEnd;
+
+        $passwordReset = $emailLayoutStart . str_replace('{{title}}', 'Şifre Yenileme', $headerBlue) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Merhaba,<br><br>Hesabınız için şifre sıfırlama talebinde bulundunuz. Yeni şifrenizi belirlemek için aşağıya tıklayın:</p><div style="text-align:center;margin:40px 0;"><a href="{{reset_url}}" style="background:#6c5ce7;color:#fff;padding:16px 35px;text-decoration:none;border-radius:14px;display:inline-block;font-weight:600;">Şifremi Sıfırla</a></div><p style="color:#94a3b8;font-size:12px;text-align:center;">Bu talebi siz yapmadıysanız bu e-postayı dikkate almayınız. Güvenliğiniz için bu bağlantı 2 saat geçerlidir.</p></td></tr>' . $emailLayoutEnd;
+
+        $welcomeEmail = $emailLayoutStart . str_replace('{{title}}', 'Hoş Geldiniz', $headerGreen) . '<tr><td style="padding:50px 40px;"><p style="font-size:16px;color:#475569;line-height:1.6;">Sayın <strong>{{ad_soyad}}</strong>,<br><br>AİF Otomasyon Ailesine hoş geldiniz! Hesabınız başarıyla oluşturuldu.</p><div style="background:#f8fafc;padding:30px;border-radius:20px;margin:30px 0;border:1px solid #f1f5f9;"><p style="margin-top:0;"><strong>Kullanıcı Adınız:</strong><br>{{email}}</p><p style="margin-bottom:0;"><strong>Erişim Paneli:</strong><br><a href="{{panel_url}}" style="color:#00b894;">{{panel_url}}</a></p></div><p style="color:#64748b;font-size:14px;">Güvenliğiniz için ilk girişten sonra şifrenizi değiştirmenizi öneririz.</p></td></tr>' . $emailLayoutEnd;
+
+        $announcementBody = $emailLayoutStart . str_replace('{{title}}', 'Duyuru', $headerRed) . '<tr><td style="padding:50px 40px;"><h2 style="margin:0 0 20px 0;color:#1e293b;font-size:22px;">{{baslik}}</h2><div style="color:#475569;line-height:1.8;font-size:15px;">{{icerik}}</div><div style="text-align:center;margin-top:40px;"><a href="{{duyuru_url}}" style="background:#dc3545;color:#fff;padding:16px 35px;text-decoration:none;border-radius:14px;display:inline-block;font-weight:600;">Hemen İncele</a></div></td></tr>' . $emailLayoutEnd;
 
         $varsayilanSablonlar = [
-            [
-                'kod' => 'toplanti_daveti',
-                'baslik' => 'Toplantı Davetiyesi',
-                'konu' => 'Toplantı Daveti: {{baslik}}',
-                'icerik' => $invitationBody,
-                'degiskenler' => '{{ad_soyad}}, {{baslik}}, {{tarih}}, {{konum}}, {{gundem_html}}, {{accept_url}}, {{reject_url}}, {{app_name}}, {{app_url}}, {{year}}'
-            ],
-            [
-                'kod' => 'toplanti_iptali',
-                'baslik' => 'Toplantı İptal Bildirimi',
-                'konu' => 'Toplantı İptal Edildi: {{baslik}}',
-                'icerik' => $cancellationBody,
-                'degiskenler' => '{{ad_soyad}}, {{baslik}}, {{tarih}}, {{konum}}, {{iptal_nedeni}}, {{app_name}}, {{app_url}}, {{year}}'
-            ]
+            ['toplanti_daveti', 'Toplantı Davetiyesi', 'Toplantı Daveti: {{baslik}}', $invitationBody, '{{ad_soyad}}, {{baslik}}, {{tarih}}, {{konum}}, {{gundem_html}}, {{accept_url}}, {{reject_url}}, {{app_name}}, {{app_url}}, {{year}}'],
+            ['toplanti_iptali', 'Toplantı İptal Bildirimi', 'Toplantı İptal Edildi: {{baslik}}', $cancellationBody, '{{ad_soyad}}, {{baslik}}, {{tarih}}, {{konum}}, {{iptal_nedeni}}, {{app_name}}, {{app_url}}, {{year}}'],
+            ['talep_yeni', 'Yeni Onay Bekleyen Talep (Admin)', 'Yeni Talep: {{talep_turu}} - {{ad_soyad}}', $newRequestToAdmin, '{{ad_soyad}}, {{talep_turu}}, {{detay}}, {{panel_url}}, {{app_name}}, {{year}}'],
+            ['talep_sonuc', 'Talep Sonucu (Üye)', 'Talebiniz Sonuçlandı: {{talep_turu}}', $requestResultToUser, '{{ad_soyad}}, {{talep_turu}}, {{durum}}, {{aciklama}}, {{app_name}}, {{year}}'],
+            ['sifre_sifirlama', 'Şifre Sıfırlama', 'Şifre Sıfırlama Talebi', $passwordReset, '{{reset_url}}, {{app_name}}, {{year}}'],
+            ['yeni_kullanici', 'Yeni Üye Hoş Geldiniz', 'AİF Otomasyon Hesabınız Oluşturuldu', $welcomeEmail, '{{ad_soyad}}, {{email}}, {{panel_url}}, {{app_name}}, {{year}}'],
+            ['duyuru_yeni', 'Yeni Duyuru Bildirimi', 'Önemli Duyuru: {{baslik}}', $announcementBody, '{{baslik}}, {{icerik}}, {{duyuru_url}}, {{app_name}}, {{year}}']
         ];
 
         foreach ($varsayilanSablonlar as $s) {
             $db->query(
-                "INSERT INTO email_sablonlari (kod, baslik, konu, icerik, degiskenler) VALUES (?, ?, ?, ?, ?)",
-                [$s['kod'], $s['baslik'], $s['konu'], $s['icerik'], $s['degiskenler']]
+                "INSERT IGNORE INTO email_sablonlari (kod, baslik, konu, icerik, degiskenler) VALUES (?, ?, ?, ?, ?)",
+                [$s[0], $s[1], $s[2], $s[3], $s[4]]
             );
         }
     }
@@ -169,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_template'])) {
 }
 
 $sablonlar = $db->fetchAll("SELECT * FROM email_sablonlari");
+$kullanicilar = $db->fetchAll("SELECT kullanici_id, ad, soyad, email FROM kullanicilar WHERE aktif = 1 ORDER BY ad, soyad");
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -280,7 +201,34 @@ include __DIR__ . '/../includes/header.php';
                                         değiştirecektir.</small>
                                 </div>
 
-                                <div class="text-end">
+                                <div class="card bg-light border-0 mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold mb-3"><i class="fas fa-vial me-2"></i>Test Gönderimi
+                                        </h6>
+                                        <div class="row align-items-end g-2">
+                                            <div class="col-sm-8">
+                                                <label class="form-label small text-muted">Test Alıcısı Seçin</label>
+                                                <select id="testUserSelect" class="form-select">
+                                                    <option value="">Lütfen kullanıcı seçin...</option>
+                                                    <?php foreach ($kullanicilar as $ku): ?>
+                                                        <option value="<?php echo $ku['kullanici_id']; ?>"
+                                                            data-email="<?php echo $ku['email']; ?>"
+                                                            data-name="<?php echo $ku['ad'] . ' ' . $ku['soyad']; ?>">
+                                                            <?php echo htmlspecialchars($ku['ad'] . ' ' . $ku['soyad'] . ' (' . $ku['email'] . ')'); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <button type="button" id="btnSendTest" class="btn btn-dark w-100">
+                                                    <i class="fas fa-paper-plane me-2"></i>Test Gönder
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="text-end border-top pt-3">
                                     <button type="button" id="btnPreview" class="btn btn-outline-info px-4 me-2">
                                         <i class="fas fa-eye me-2"></i>Önizleme
                                     </button>
@@ -363,6 +311,50 @@ include __DIR__ . '/../includes/header.php';
             },
             complete: function () {
                 btn.prop('disabled', false).html('<i class="fas fa-eye me-2"></i>Önizleme');
+          }
+        });
+    });
+
+    $(document).on('click', '#btnSendTest', function () {
+        const userId = $('#testUserSelect').val();
+        const kod = $('input[name="kod"]').val();
+        const content = $('#templateEditor').val();
+        const subject = $('input[name="konu"]').val();
+        const btn = $(this);
+
+        if (!userId) {
+            alert('Lütfen bir test alıcısı seçin.');
+            return;
+        }
+
+        if (!confirm('Bu şablonu seçili kullanıcıya test e-postası olarak göndermek istiyor musunuz?')) {
+            return;
+        }
+
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Gönderiliyor...');
+
+        $.ajax({
+            url: '/admin/ajax_send_test_email.php',
+            method: 'POST',
+            data: { 
+                user_id: userId, 
+                kod: kod,
+                content: content,
+                subject: subject
+            },
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    alert('Test e-postası başarıyla gönderildi.');
+                } else {
+                    alert('Hata: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('E-posta gönderilirken bir sistem hatası oluştu.');
+            },
+            complete: function () {
+                btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Test Gönder');
             }
         });
     });

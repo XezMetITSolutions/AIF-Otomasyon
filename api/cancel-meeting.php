@@ -111,11 +111,16 @@ try {
                 'iptal_nedeni' => $iptal_nedeni
             ];
 
-            $template = Mail::getMeetingCancellationTemplate($emailData);
-            $subject = $template['subject'];
-            $emailBody = $template['body'];
-
-            if (Mail::send($katilimci['email'], $subject, $emailBody)) {
+            if (
+                Mail::sendMeetingCancellation([
+                    'email' => $katilimci['email'],
+                    'ad_soyad' => $katilimci['ad_soyad'],
+                    'baslik' => $toplanti['baslik'],
+                    'toplanti_tarihi' => $toplanti['toplanti_tarihi'],
+                    'konum' => $toplanti['konum'] ?? '-',
+                    'iptal_nedeni' => $iptal_nedeni
+                ])
+            ) {
                 $emailsSent++;
             } else {
                 $emailsFailed++;

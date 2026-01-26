@@ -10,6 +10,8 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
+require_once __DIR__ . '/../classes/Mail.php';
+
 Middleware::requireUye();
 
 $auth = new Auth();
@@ -113,6 +115,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hasPermissionBaskan) {
                      $message = 'Geçersiz işlem.';
                      $messageType = 'danger';
                 }
+
+                if (isset($message) && $messageType === 'success') {
+                    // Kullanıcı e-postasını bul
+                    $uyeInfo = $db->fetch("SELECT k.email, CONCAT(k.ad, ' ', k.soyad) as ad_soyad FROM kullanicilar k INNER JOIN harcama_talepleri ht ON k.kullanici_id = ht.kullanici_id WHERE ht.talep_id = ?", [$talepId]);
+                    
+                    if ($uyeInfo) {
+                        $statusMap = [
+                            'approve' => 'Onaylandı',
+                            'reject' => 'Reddedildi',
+                            'mark_paid' => 'Ödendi',
+                            'mark_unpaid' => 'Beklemede'
+                        ];
+                        
+                        Mail::sendWithTemplate($uyeInfo['email'], 'talep_sonuc', [
+                            'ad_soyad' => $uyeInfo['ad_soyad'],
+                            'talep_turu' => 'İade/Harcama Talebi',
+                            'durum' => $statusMap[$action] ?? 'Güncellendi',
+                            'aciklama' => $note ?: 'Talebiniz yönetici tarafından güncellenmiştir.'
+                        ]);
+                    }
+                }
+
                 $activeTab = 'yonetim';
             }
         }

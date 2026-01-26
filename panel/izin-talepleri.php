@@ -11,6 +11,8 @@ require_once __DIR__ . '/../classes/Database.php';
 // Temel Uye kontrolü
 Middleware::requireUye();
 
+require_once __DIR__ . '/../classes/Mail.php';
+
 $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
@@ -83,6 +85,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $izinNedeni ?: null,
                     $aciklama ?: null
                 ]);
+
+                // Birim Muhasebe Başkanına Bildirim Gönder
+                $bykInfo = $db->fetch("SELECT muhasebe_baskani_id FROM byk WHERE byk_id = ?", [$user['byk_id']]);
+                if ($bykInfo && $bykInfo['muhasebe_baskani_id']) {
+                    $adminUser = $db->fetch("SELECT email FROM kullanicilar WHERE kullanici_id = ?", [$bykInfo['muhasebe_baskani_id']]);
+                    if ($adminUser) {
+                        Mail::sendWithTemplate($adminUser['email'], 'talep_yeni', [
+                            'ad_soyad' => 'Muhasebe Başkanı',
+                            'talep_turu' => 'İzin Talebi',
+                            'detay' => htmlspecialchars($user['name']) . " tarafından yeni bir izin talebi oluşturuldu. Tarihler: {$baslangic} - {$bitis}",
+                        ]);
+                    }
+                }
+
                 $messages[] = 'İzin talebiniz başarıyla oluşturuldu.';
                 $activeTab = 'talebim'; // Talep sonrası sekmeye dön
             }
@@ -115,6 +131,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     WHERE izin_id = ?
                 ", [$yeniDurum, $user['id'], $aciklama ?: null, $izinId]);
                 
+                // Kullanıcıya Bildirim Gönder
+                Mail::sendWithTemplate($izin['email'], 'talep_sonuc', [
+                    'ad_soyad' => $izin['kullanici_adi'],
+                    'talep_turu' => 'İzin Talebi',
+                    'durum' => ($yeniDurum === 'onaylandi' ? 'Onaylandı' : 'Reddedildi'),
+                    'aciklama' => $aciklama ?: 'Talebiniz yönetici tarafından sonuçlandırılmıştır.'
+                ]);
+
                 $messages[] = 'İşlem başarıyla gerçekleşti: ' . ucfirst($yeniDurum);
                 $activeTab = 'onay';
             }

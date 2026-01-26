@@ -117,7 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // 1. Get existing agenda items to prevent duplicates
                 $existing_items = $db->fetchAll("SELECT baslik FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
                 $existing_titles = array_map(function ($item) {
-                    return mb_strtolower(trim($item['baslik'])); }, $existing_items);
+                    return mb_strtolower(trim($item['baslik']));
+                }, $existing_items);
 
                 // 2. Parse description
                 $lines = explode("\n", $aciklama);
@@ -201,11 +202,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'token' => $target['token']
                 ];
 
-                $template = Mail::getMeetingInvitationTemplate($mailData);
-                $subject = $template['subject'];
-                $message = $template['body'];
-
-                if (Mail::send($target['email'], $subject, $message)) {
+                if (
+                    Mail::sendMeetingInvitation([
+                        'email' => $target['email'],
+                        'ad_soyad' => $target['ad'] . ' ' . $target['soyad'],
+                        'baslik' => $toplanti['baslik'],
+                        'toplanti_tarihi' => $toplanti['toplanti_tarihi'],
+                        'konum' => $toplanti['konum'],
+                        'aciklama' => $toplanti['aciklama'],
+                        'token' => $target['token']
+                    ])
+                ) {
                     $success_count++;
                 } else {
                     $fail_count++;
