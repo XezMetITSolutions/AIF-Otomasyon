@@ -21,15 +21,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         try {
             // Update SMTP user
-            $stmt = $db->prepare("UPDATE settings SET value = ? WHERE key_name = 'smtp_user'");
+            $stmt = $db->prepare("UPDATE sistem_ayarlari SET ayar_value = ? WHERE ayar_key = 'smtp_user'");
             $stmt->execute(['aifnet@islamischefoederation.at']);
             
             // Update SMTP from email
-            $stmt = $db->prepare("UPDATE settings SET value = ? WHERE key_name = 'smtp_from_email'");
+            $stmt = $db->prepare("UPDATE sistem_ayarlari SET ayar_value = ? WHERE ayar_key = 'smtp_from_email'");
             $stmt->execute(['aifnet@islamischefoederation.at']);
             
             // Update SMTP from name
-            $stmt = $db->prepare("UPDATE settings SET value = ? WHERE key_name = 'smtp_from_name'");
+            $stmt = $db->prepare("UPDATE sistem_ayarlari SET ayar_value = ? WHERE ayar_key = 'smtp_from_name'");
             $stmt->execute(['AİFNET']);
             
             $result = "✅ Veritabanı ayarları başarıyla güncellendi!\n\n" .
