@@ -191,6 +191,21 @@ include __DIR__ . '/../includes/header.php';
                                 <input type="text" class="form-control" name="smtp_from_name"
                                     value="<?php echo htmlspecialchars($allSettings['smtp_from_name'] ?? ''); ?>">
                             </div>
+
+                            <hr class="my-4">
+                            <h5 class="mb-3">SMTP Testi</h5>
+                            <div class="p-3 bg-light rounded-3 border">
+                                <p class="small text-muted mb-3">Ayarlarınızı kaydetmeden önce test etmek için bir
+                                    e-posta adresi girin.</p>
+                                <div class="input-group mb-2">
+                                    <input type="email" id="testEmailAddr" class="form-control"
+                                        placeholder="test@example.com">
+                                    <button class="btn btn-outline-primary" type="button" id="btnTestMail">
+                                        <i class="fas fa-paper-plane me-2"></i>Test Gönder
+                                    </button>
+                                </div>
+                                <div id="testMailStatus" class="mt-2 small" style="display: none;"></div>
+                            </div>
                         </div>
 
                         <div class="tab-pane fade" id="guvenlik">
@@ -227,6 +242,55 @@ include __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </main>
+
+<script>
+$(document).ready(function() {
+    $(document).on('click', '#btnTestMail', function() {
+        const email = $('#testEmailAddr').val();
+        const statusDiv = $('#testMailStatus');
+        const btn = $(this);
+
+        if (!email) {
+            statusDiv.html('<span class="text-danger">Lütfen bir e-posta adresi girin.</span>').show();
+            return;
+        }
+
+        const formData = {
+            test_email: email,
+            smtp_host: $('input[name="smtp_host"]').val(),
+            smtp_port: $('input[name="smtp_port"]').val(),
+            smtp_user: $('input[name="smtp_user"]').val(),
+            smtp_pass: $('input[name="smtp_pass"]').val(),
+            smtp_secure: $('select[name="smtp_secure"]').val(),
+            smtp_from_email: $('input[name="smtp_from_email"]').val(),
+            smtp_from_name: $('input[name="smtp_from_name"]').val()
+        };
+
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Gönderiliyor...');
+        statusDiv.html('<span class="text-info">Bağlantı kuruluyor...</span>').show();
+
+        $.ajax({
+            url: '/admin/ajax_test_mail.php',
+            method: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    statusDiv.html('<span class="text-success"><i class="fas fa-check-circle me-1"></i> ' + response.message + '</span>');
+                } else {
+                    statusDiv.html('<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> ' + response.message + '</span>');
+                }
+            },
+            error: function() {
+                statusDiv.html('<span class="text-danger"><i class="fas fa-times-circle me-1"></i> Sistem hatası!</span>');
+            },
+            complete: function() {
+                btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Test Gönder');
+            }
+        });
+    });
+});
+</script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
