@@ -163,68 +163,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($action === 'send_invitations') {
             require_once __DIR__ . '/../classes/Mail.php';
 
+            error_log("AIF: Send invitations action triggered");
+            
             $selected_ids = $_POST['selected_participants'] ?? [];
+            
+            error_log("AIF: Selected participant IDs: " . print_r($selected_ids, true));
+            
             if (empty($selected_ids)) {
+                error_log("AIF: No participants selected");
                 throw new Exception('Lütfen en az bir katılımcı seçin.');
             }
 
             $success_count = 0;
             $fail_count = 0;
+            $last_error = '';
+            $failed_recipients = [];
 
             // Seçilen katılımcıların detaylarını getir
             $placeholders = implode(',', array_fill(0, count($selected_ids), '?'));
             $params = array_merge([$toplanti_id], $selected_ids);
 
             $targets = $db->fetchAll("
-                SELECT k.ad, k.soyad, k.email, tk.token
+                SELECT k.ad, k.soyad, k.email, tk.token, tk.katilimci_id
                 FROM toplanti_katilimcilar tk
                 INNER JOIN kullanicilar k ON tk.kullanici_id = k.kullanici_id
                 WHERE tk.toplanti_id = ? AND tk.katilimci_id IN ($placeholders)
             ", $params);
 
+            error_log("AIF: Found " . count($targets) . " participants to send invitations to");
+
+            if (empty($targets)) {
+                error_log("AIF: No valid participants found for selected IDs");
+                throw new Exception('Seçili katılımcılar bulunamadı.');
+            }
+
             foreach ($targets as $target) {
+                error_log("AIF: Sending invitation to: " . $target['email']);
+                
                 // Token yoksa oluştur ve kaydet
                 if (empty($target['token'])) {
                     $target['token'] = bin2hex(random_bytes(32));
-                    $db->query("UPDATE toplanti_katilimcilar SET token = ? WHERE toplanti_id = ? AND kullanici_id = (SELECT kullanici_id FROM kullanicilar WHERE email = ?)", [
+                    $db->query("UPDATE toplanti_katilimcilar SET token = ? WHERE katilimci_id = ?", [
                         $target['token'],
-                        $toplanti_id,
-                        $target['email']
+                        $target['katilimci_id']
                     ]);
+                    error_log("AIF: Generated new token for participant " . $target['katilimci_id']);
                 }
 
                 $mailData = [
+                    'email' => $target['email'],
+                    'ad_soyad' => $target['ad'] . ' ' . $target['soyad'],
                     'baslik' => $toplanti['baslik'],
                     'toplanti_tarihi' => $toplanti['toplanti_tarihi'],
                     'konum' => $toplanti['konum'],
                     'aciklama' => $toplanti['aciklama'],
-                    'ad_soyad' => $target['ad'] . ' ' . $target['soyad'],
                     'token' => $target['token']
                 ];
 
-                if (
-                    Mail::sendMeetingInvitation([
-                        'email' => $target['email'],
-                        'ad_soyad' => $target['ad'] . ' ' . $target['soyad'],
-                        'baslik' => $toplanti['baslik'],
-                        'toplanti_tarihi' => $toplanti['toplanti_tarihi'],
-                        'konum' => $toplanti['konum'],
-                        'aciklama' => $toplanti['aciklama'],
-                        'token' => $target['token']
-                    ])
-                ) {
+                if (Mail::sendMeetingInvitation($mailData)) {
                     $success_count++;
+                    error_log("AIF: Successfully sent invitation to: " . $target['email']);
                 } else {
                     $fail_count++;
-                    $last_error = Mail::$lastError;
+                    $last_error = Mail::$lastError ?? 'Bilinmeyen hata';
+                    $failed_recipients[] = $target['ad'] . ' ' . $target['soyad'] . ' (' . $target['email'] . ')';
+                    error_log("AIF: Failed to send invitation to: " . $target['email'] . " - Error: " . $last_error);
                 }
             }
 
+            error_log("AIF: Invitation sending complete. Success: $success_count, Failed: $fail_count");
+
             $success = "İşlem tamamlandı: $success_count başarılı, $fail_count başarısız gönderim.";
-            if ($fail_count > 0 && !empty($last_error)) {
-                $error = "Son hata detayı: " . $last_error;
-                // Append to success message as well so it's visible even if we redirect with success param
-                $success .= " (Hata: " . $last_error . ")";
+            
+            if ($fail_count > 0) {
+                $error = "E-posta gönderilemedi: " . implode(', ', $failed_recipients) . "\n";
+                if (!empty($last_error)) {
+                    $error .= "Hata detayı: " . $last_error;
+                }
+                error_log("AIF: Invitation errors: " . $error);
             }
         }
 
