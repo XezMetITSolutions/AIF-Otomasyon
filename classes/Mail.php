@@ -85,6 +85,7 @@ HTML;
             return self::sendWithTemplate($data['email'], 'toplanti_daveti', $data);
         }
 
+        self::$lastError = "Toplantı daveti şablonu bulunamadı.";
         return false;
     }
 
@@ -116,6 +117,7 @@ HTML;
     {
         $sablon = self::getTemplate($templateCode);
         if (!$sablon) {
+            self::$lastError = "E-posta şablonu bulunamadı: $templateCode";
             return false;
         }
 
