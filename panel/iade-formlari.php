@@ -330,7 +330,7 @@ include __DIR__ . '/../includes/header.php';
 
                                 <div id="itemsContainer"></div>
                                 
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="addItemBtn" onclick="if(typeof window.addItem === 'function') window.addItem();">
+                                <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="addItemBtn">
                                     <i class="fas fa-plus me-1"></i>Yeni Kalem Ekle
                                 </button>
 
@@ -1103,11 +1103,21 @@ include __DIR__ . '/../includes/header.php';
     // Sayfa başlatma fonksiyonu
     function initExpenseForm() {
         var container = document.getElementById('itemsContainer');
+        if (!container) return;
+
         // Sadece container varsa ve içi boşsa ilk kalemi ekle
-        if (container && container.children.length === 0) {
+        if (container.children.length === 0) {
             window.addItem();
         }
         
+        // Ekleme butonu dinleyicisi
+        var btn = document.getElementById('addItemBtn');
+        if (btn) {
+            // Eski dinleyicileri temizlemek için (bazı AJAX yüklemelerinde çift çalışma riski)
+            btn.removeEventListener('click', window.addItem);
+            btn.addEventListener('click', window.addItem);
+        }
+
         // Format initial IBAN if exists
         var ibanInput = document.getElementById('iban');
         if(ibanInput && ibanInput.value) {
@@ -1115,20 +1125,18 @@ include __DIR__ . '/../includes/header.php';
         }
     }
 
-    // Normal sayfa yüklemesi
-    document.addEventListener('DOMContentLoaded', initExpenseForm);
-    
-    // AJAX navigation sonrası (jQuery ve jQuery olmayan durumlar için)
-    if (typeof jQuery !== 'undefined') {
-        $(document).on('page:loaded', initExpenseForm);
+    // Yükleme kontrolü
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initExpenseForm);
     } else {
-        // jQuery yoksa alternatif bir çözüm veya sadece load
-        window.addEventListener('load', initExpenseForm);
+        initExpenseForm();
     }
-    
-    // Eğer sayfa zaten yüklenmişse hemen çalıştır
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(initExpenseForm, 100);
+
+    // AJAX navigation desteği (jQuery varsa)
+    if (typeof jQuery !== 'undefined') {
+        $(document).on('page:loaded ajax:success', function() {
+            setTimeout(initExpenseForm, 200);
+        });
     }
 </script>
 <?php endif; ?>
