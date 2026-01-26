@@ -1,0 +1,64 @@
+# AIF Otomasyon Sistemi - Apache Yapılandırması
+
+# Rewrite Engine'i etkinleştir
+RewriteEngine On
+
+# HTTPS yönlendirmesi (isteğe bağlı - production için)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Dizin listelemeyi kapat
+Options -Indexes
+
+# Güvenlik başlıkları
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# PHP ayarları
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+# Gzip sıkıştırma
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Cache kontrolü
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# Dosya ve dizin erişim koruması
+<FilesMatch "^(config|classes|includes|database|scripts|storage|vendor|tests)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Hassas dosyaları koru
+<FilesMatch "\.(sql|log|env|json|lock|ps1|bat|sh|md|docx|pdf|txt)$">
+    # Bazı PDF'lerin erişilebilir olması gerekebilir (Hesaplama/uploads gibi)
+    # Bu yüzden bu kuralı biraz daha spesifik hale getirebiliriz veya alt dizinlerde override edebiliriz.
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# .git ve diğer gizli dosyaları engelle
+RedirectMatch 404 /\.git
+RedirectMatch 404 /\.env
+
+# Hata sayfaları (isteğe bağlı)
+# ErrorDocument 404 /404.php
+# ErrorDocument 500 /500.php
+

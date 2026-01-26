@@ -1,0 +1,93 @@
+[
+    {
+        "id": "sub_697547349f04f2.12410633",
+        "isim": "Muhammed Umut",
+        "soyisim": "Burçak",
+        "iban": "AT492060403100711815",
+        "total": "364.87",
+        "status": "Eingereicht",
+        "pdf_link": "uploads\/spesenformular_1769293620_697547349efb0.pdf",
+        "created_at": "2026-01-24T23:27:00+01:00",
+        "items": [
+            {
+                "tarih": "2026-01-23",
+                "region": "AT",
+                "birim": "irsad",
+                "birim_label": "İrşad",
+                "gider_turu": "genel",
+                "gider_turu_label": "Genel",
+                "odeme_sekli": "faturalı",
+                "netto": 13,
+                "kdv": 0,
+                "tutar": 13,
+                "aciklama": "-"
+            },
+            {
+                "tarih": "2026-01-23",
+                "region": "AT",
+                "birim": "irsad",
+                "birim_label": "İrşad",
+                "gider_turu": "yakit",
+                "gider_turu_label": "Ulaşım - Faturali\/Kasabon",
+                "odeme_sekli": "faturasız",
+                "netto": 0,
+                "kdv": 0,
+                "tutar": 153,
+                "aciklama": "Feldkirch - München - Zirl - Feldkirch + Park"
+            },
+            {
+                "tarih": "2026-01-07",
+                "region": "AT",
+                "birim": "hacumre",
+                "birim_label": "Hac\/Umre",
+                "gider_turu": "yakit",
+                "gider_turu_label": "Ulaşım - Faturali\/Kasabon",
+                "odeme_sekli": "faturalı",
+                "netto": 78.3900000000000005684341886080801486968994140625,
+                "kdv": 0,
+                "tutar": 78.3900000000000005684341886080801486968994140625,
+                "aciklama": "Umrecileri karşılama Mazot"
+            },
+            {
+                "tarih": "2026-01-07",
+                "region": "AT",
+                "birim": "hacumre",
+                "birim_label": "Hac\/Umre",
+                "gider_turu": "genel",
+                "gider_turu_label": "Genel",
+                "odeme_sekli": "faturalı",
+                "netto": 15,
+                "kdv": 0,
+                "tutar": 15,
+                "aciklama": "Park Havalimanı"
+            },
+            {
+                "tarih": "2026-01-11",
+                "region": "AT",
+                "birim": "sosyal",
+                "birim_label": "Sosyal Hizmetler",
+                "gider_turu": "yakit",
+                "gider_turu_label": "Ulaşım - Faturali\/Kasabon",
+                "odeme_sekli": "faturalı",
+                "netto": 45.780000000000001136868377216160297393798828125,
+                "kdv": 0,
+                "tutar": 45.780000000000001136868377216160297393798828125,
+                "aciklama": "Zürich Havalimanından Altstättene Tren Bileti"
+            },
+            {
+                "tarih": "2026-01-15",
+                "region": "AT",
+                "birim": "sosyal",
+                "birim_label": "Sosyal Hizmetler",
+                "gider_turu": "yakit",
+                "gider_turu_label": "Ulaşım - Faturali\/Kasabon",
+                "odeme_sekli": "faturalı",
+                "netto": 59.7000000000000028421709430404007434844970703125,
+                "kdv": 0,
+                "tutar": 59.7000000000000028421709430404007434844970703125,
+                "aciklama": "Feldkirch Innsbruck Tren Biletleri ve gelecek seferleri ucuza almak adına ÖBB Vorteilskarte"
+            }
+        ],
+        "gider_no": 115
+    }
+]

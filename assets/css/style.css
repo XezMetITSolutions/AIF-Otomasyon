@@ -1,0 +1,869 @@
+/**
+ * AIF Otomasyon Sistemi - Modern Ana Stil Dosyası
+ * Bootstrap 5.3.0 ile uyumlu
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    /* Modern Renk Paleti - Yeşil, Siyah, Beyaz Teması */
+    --primary-color: #009872;
+    --primary-gradient: linear-gradient(135deg, #009872 0%, #007a5e 100%);
+    --secondary-color: #009872;
+    --success-color: #009872;
+    --success-gradient: linear-gradient(135deg, #009872 0%, #007a5e 100%);
+    --danger-color: #dc3545;
+    --danger-gradient: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    --warning-color: #ffc107;
+    --warning-gradient: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    --info-color: #009872;
+    --info-gradient: linear-gradient(135deg, #009872 0%, #007a5e 100%);
+    --light-color: #ffffff;
+    --dark-color: #000000;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+    --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.2);
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* Genel Stiller */
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 76px;
+    color: var(--dark-color);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+main {
+    flex: 1;
+    margin-top: 0;
+    /* Navbar zaten fixed, margin gerekmez */
+}
+
+/* Sidebar Stilleri - Tamamen Yenilendi */
+.sidebar {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    min-height: calc(100vh - 76px);
+    height: calc(100vh - 76px);
+    position: fixed !important;
+    top: 76px;
+    left: 0;
+    z-index: 1000;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: #ffffff;
+    border-right: 1px solid var(--gray-200);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar * {
+    box-sizing: border-box;
+}
+
+.sidebar-scroll {
+    max-height: calc(100vh - 76px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 0;
+}
+
+/* Sidebar scrollbar özelleştirme */
+.sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 152, 114, 0.2);
+    border-radius: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 152, 114, 0.4);
+}
+
+/* List Group Reset */
+.sidebar .list-group {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.sidebar .list-group-flush {
+    border: none;
+}
+
+/* Menu Items - Temiz ve Düzenli */
+.sidebar .list-group-item {
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    display: block;
+    width: 100%;
+}
+
+.sidebar .list-group-item.list-group-item-action {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    margin: 2px 8px;
+    border-radius: 8px;
+    color: var(--dark-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 44px;
+}
+
+.sidebar .list-group-item.list-group-item-action:hover {
+    background: rgba(0, 152, 114, 0.08);
+    color: var(--primary-color);
+}
+
+.sidebar .list-group-item.list-group-item-action.active {
+    background: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 152, 114, 0.2);
+}
+
+.sidebar .list-group-item.list-group-item-action.active:hover {
+    background: #007a5e;
+    color: #ffffff;
+}
+
+/* Icon Stilleri */
+.sidebar .list-group-item i {
+    width: 20px;
+    min-width: 20px;
+    font-size: 16px;
+    text-align: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.sidebar .list-group-item.active i {
+    color: #ffffff;
+}
+
+/* Badge Stilleri (Sidebar içinde) */
+.sidebar .list-group-item .badge {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 4px 8px;
+}
+
+/* Section Headers (Başlıklar) */
+.sidebar .list-group-item.fw-bold {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    padding: 16px 20px 8px;
+    margin: 16px 8px 4px;
+    cursor: default;
+    pointer-events: none;
+    background: transparent !important;
+    border: none;
+    line-height: 1.2;
+    display: block;
+}
+
+.sidebar .list-group-item.fw-bold:first-child {
+    margin-top: 8px;
+}
+
+/* İçerik Metin */
+.sidebar .list-group-item.list-group-item-action {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar .list-group-item.list-group-item-action>*:not(i):not(.badge) {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ana içerik alanı için margin (sidebar için alan bırak) */
+.content-wrapper {
+    margin-left: 280px;
+    padding: 24px 32px;
+    width: calc(100% - 280px);
+    min-width: calc(100% - 280px);
+}
+
+main.container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Responsive - mobil için */
+@media (max-width: 991.98px) {
+
+    /* Body mobil padding */
+    body {
+        padding-top: 60px;
+    }
+
+    /* Sidebar mobilde tamamen gizle */
+    .sidebar {
+        display: none !important;
+    }
+
+    .content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        padding: 16px;
+    }
+
+    /* Sidebar toggle button (mobil için) */
+    .sidebar-toggle {
+        display: block;
+    }
+
+    /* Hamburger menü ikonu yeşil renk */
+    .navbar-toggler {
+        border-color: #008E6B !important;
+    }
+
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23008E6B' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+    }
+
+    /* Mobilde "Özelleştir" ve "Son güncelleme" kısımlarını gizle */
+    .customize-section,
+    .last-update-section,
+    #customize-btn,
+    .dashboard-customize,
+    .son-guncelleme,
+    .update-info,
+    [data-section="customize"],
+    [data-section="last-update"] {
+        display: none !important;
+    }
+
+    /* Mobil tablo ve kart düzeni */
+    .card {
+        margin-bottom: 16px;
+    }
+
+    .card-body {
+        padding: 16px;
+    }
+
+    .table-responsive {
+        margin: 0 -16px;
+        padding: 0 16px;
+    }
+
+    /* Form elemanları mobil uyumu */
+    .row.g-3>.col-md-1,
+    .row.g-3>.col-md-2,
+    .row.g-3>.col-md-3,
+    .row.g-3>.col-md-4 {
+        margin-bottom: 12px;
+    }
+
+    /* Başlık ve buton düzeni */
+    .d-flex.justify-content-between {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .d-flex.justify-content-between h1 {
+        font-size: 1.5rem;
+        width: 100%;
+    }
+
+    /* Buton grupları mobilde */
+    .btn-group {
+        flex-wrap: wrap;
+    }
+}
+
+/* Büyük ekranlarda sidebar genişliği kontrolü */
+@media (min-width: 992px) {
+    .sidebar {
+        width: 280px;
+    }
+
+    .content-wrapper {
+        margin-left: 280px;
+    }
+}
+
+/* Kart Stilleri - Modern Glassmorphism */
+.card {
+    border: none;
+    border-radius: var(--radius-xl);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-base);
+    border: 1px solid var(--glass-border);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-2xl);
+    border-color: rgba(0, 152, 114, 0.3);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--gray-200);
+    font-weight: 600;
+    padding: 20px 24px;
+    font-size: 16px;
+    color: var(--gray-800);
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* İstatistik Kartları - Modern Gradient */
+.stat-card {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: var(--radius-xl);
+    padding: 28px 24px;
+    margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-base);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+.stat-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-2xl);
+}
+
+.stat-card.success {
+    background: var(--success-gradient);
+}
+
+.stat-card.warning {
+    background: var(--warning-gradient);
+}
+
+.stat-card.info {
+    background: var(--info-gradient);
+}
+
+.stat-card .stat-value {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 12px 0;
+    letter-spacing: -1px;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card .stat-label {
+    font-size: 0.95rem;
+    opacity: 0.95;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card .stat-icon {
+    font-size: 3.5rem;
+    opacity: 0.25;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 0;
+}
+
+/* Tablo Stilleri - Modern */
+.table {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.table thead {
+    background: linear-gradient(135deg, rgba(0, 152, 114, 0.1) 0%, rgba(0, 122, 94, 0.1) 100%);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--dark-color);
+}
+
+.table thead th {
+    padding: 16px;
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.table tbody tr {
+    transition: all var(--transition-fast);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.table tbody tr:hover {
+    background: rgba(0, 152, 114, 0.05);
+    transform: scale(1.01);
+}
+
+.table tbody td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+/* Badge Stilleri - Modern */
+.badge {
+    padding: 6px 12px;
+    font-weight: 600;
+    font-size: 11px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Buton Stilleri - Modern */
+.btn {
+    border-radius: var(--radius-md);
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all var(--transition-base);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #007a5e 0%, #005d47 100%);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger-gradient);
+    color: white;
+}
+
+.btn-warning {
+    background: var(--warning-gradient);
+    color: white;
+}
+
+.btn-info {
+    background: var(--info-gradient);
+    color: white;
+}
+
+/* Form Stilleri - Modern */
+.form-control,
+.form-select {
+    border-radius: var(--radius-md);
+    border: 2px solid var(--gray-200);
+    padding: 10px 16px;
+    font-size: 14px;
+    transition: all var(--transition-base);
+    background: white;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    outline: none;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--gray-700);
+    font-size: 14px;
+}
+
+.input-group-text {
+    border-radius: var(--radius-md);
+    border: 2px solid var(--gray-200);
+    background: var(--gray-50);
+}
+
+/* Alert Stilleri - Modern */
+.alert {
+    border-radius: var(--radius-md);
+    border: none;
+    padding: 16px 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    font-weight: 500;
+}
+
+/* Navbar Stilleri - Modern Glassmorphism */
+.navbar {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-md);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 12px 0;
+}
+
+/* Hamburger menü ikonu - Yeşil renk (tüm ekranlarda) */
+.navbar-toggler {
+    border-color: #008E6B !important;
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 142, 107, 0.25);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23008E6B' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    color: var(--gray-700);
+}
+
+.navbar-nav .nav-link:hover {
+    background: rgba(0, 152, 114, 0.1);
+    color: var(--primary-color);
+}
+
+.navbar-nav .nav-link.active {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+/* Başlık Stilleri - Modern */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+    color: var(--gray-800);
+    letter-spacing: -0.5px;
+}
+
+h1 {
+    font-size: 2rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Footer Stilleri */
+footer {
+    border-top: 1px solid var(--glass-border);
+    margin-top: auto;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Responsive Düzenlemeler */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100% !important;
+        position: relative !important;
+        min-height: auto !important;
+    }
+
+    .stat-card .stat-value {
+        font-size: 2.5rem;
+    }
+
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
+    }
+
+    .content-wrapper {
+        padding: 16px;
+    }
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Durum Badge Renkleri */
+.badge-status-beklemede {
+    background-color: var(--warning-color);
+    color: #000;
+}
+
+.badge-status-onaylandi {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-status-reddedildi {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.badge-status-aktif {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-status-pasif {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Animasyonlar - Modern */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+}
+
+.scale-in {
+    animation: scaleIn 0.5s ease-out;
+}
+
+/* Page Load Animation */
+.content-wrapper>* {
+    animation: fadeIn 0.6s ease-out backwards;
+}
+
+.content-wrapper>*:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.content-wrapper>*:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.content-wrapper>*:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.content-wrapper>*:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+/* Scrollbar Stilleri (Webkit tarayıcılar için) - Modern */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 152, 114, 0.4);
+    border-radius: 10px;
+    transition: background var(--transition-base);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 152, 114, 0.6);
+}
+
+/* Print Stilleri */
+@media print {
+
+    .navbar,
+    .sidebar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+}

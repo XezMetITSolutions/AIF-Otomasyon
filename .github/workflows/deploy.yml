@@ -1,0 +1,48 @@
+name: 🚀 FTP Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+      
+      - name: 📂 List files
+        run: ls -R
+      
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: w0072b78.kasserver.com
+          username: f017f010
+          password: ${{ secrets.FTP_PASSWORD }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github*/**
+            **/node_modules/**
+            **/vendor/**
+            **/.env*
+            **/README.md
+            **/DEPLOYMENT.md
+            **/FTP-UPLOAD.md
+            **/GITHUB-ACTIONS-SETUP.md
+            **/IMPORT-TALIMATLARI.md
+            **/ADMIN-BILGILERI.md
+            **/KONTROL_LISTESI.md
+            **/database/schema.sql
+            **/tests/**
+            **/.vscode/**
+            **/.idea/**
+            **/*.log
+            **/*.tmp
+            **/*.sql
+            **/*.sql.gz
+            **/*.sql.bak

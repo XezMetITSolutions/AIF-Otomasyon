@@ -1,0 +1,1105 @@
+{
+    "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
+    "version": "1.0.0",
+    "generatedTime": 1769343952655,
+    "data": [
+        {
+            "type": "file",
+            "name": ".ftp-deploy-sync-state.json",
+            "size": 91019,
+            "hash": "c750bd851f73ca94ae6f5e6ed3b3d0e67b1a950968f01edaf5e1dc1f5bf298e6"
+        },
+        {
+            "type": "file",
+            "name": ".htaccess",
+            "size": 1557,
+            "hash": "e48ad85894569ac0cf5c871b54bdf77136699fc233aa429217faf9aced6358c7"
+        },
+        {
+            "type": "file",
+            "name": "2000.01.01_ Divan Toplantisi_ BOS FORM.docx",
+            "size": 68169,
+            "hash": "f76a46c53dc8ed4ea05267114160805f46089b3ba29b1b9cc0882f17b7cdc98d"
+        },
+        {
+            "type": "file",
+            "name": "2000.01.01_ Divan Toplantisi_ BOS FORM.pdf",
+            "size": 391747,
+            "hash": "1b85df078b46cc5e71be372e7b8e10a2c665a8b3d20489bf90a32ff454547227"
+        },
+        {
+            "type": "file",
+            "name": "AT_birimler.json",
+            "size": 10057,
+            "hash": "d1c4986170bf37b279ca47ddcd24c8075ae3d95cdaf8b37d3ca380404cabd337"
+        },
+        {
+            "type": "file",
+            "name": "GT_birimler.json",
+            "size": 5812,
+            "hash": "5437a29ff149019278e8dd97b7354a968f4c7694b37ee3c2392fe035604350b4"
+        },
+        {
+            "type": "folder",
+            "name": "Hesaplama"
+        },
+        {
+            "type": "file",
+            "name": "KGT_birimler.json",
+            "size": 6808,
+            "hash": "48f15bd26bab559b3d8a6ef8fe0053804c070c517815b2195ff3a77f399b8c7f"
+        },
+        {
+            "type": "file",
+            "name": "KT_birimler.json",
+            "size": 8911,
+            "hash": "6ad11db3370b07927b8d6c0556bc8bf520cf9025661cd47e71be4186921090fe"
+        },
+        {
+            "type": "file",
+            "name": "access-denied.php",
+            "size": 3525,
+            "hash": "46402fa42235feb7f221260ddf492cd03038986812083257c3700a4baf4dda51"
+        },
+        {
+            "type": "folder",
+            "name": "admin"
+        },
+        {
+            "type": "folder",
+            "name": "api"
+        },
+        {
+            "type": "folder",
+            "name": "assets"
+        },
+        {
+            "type": "file",
+            "name": "change-password.php",
+            "size": 8079,
+            "hash": "cbeeed069f7fd9a87260b35c1cea3308bdf0b97b06679640fa2e0281f7b99129"
+        },
+        {
+            "type": "folder",
+            "name": "classes"
+        },
+        {
+            "type": "file",
+            "name": "composer.json",
+            "size": 62,
+            "hash": "d4fe310a87a62459f0b96b2873233467ad1623f657c6e6330f1f1c6c4486a477"
+        },
+        {
+            "type": "file",
+            "name": "composer.lock",
+            "size": 3189,
+            "hash": "b9731b687209cc8ac0c1eea14c1ba33fee70d4ceaae9981624cc1d4dd5b8e8bd"
+        },
+        {
+            "type": "folder",
+            "name": "config"
+        },
+        {
+            "type": "folder",
+            "name": "database"
+        },
+        {
+            "type": "file",
+            "name": "debug_byk.php",
+            "size": 638,
+            "hash": "1455e37e8cdfa25d090439ba6e5bd298e82a8dc9fda212d675e7b51dfbc659f5"
+        },
+        {
+            "type": "folder",
+            "name": "includes"
+        },
+        {
+            "type": "file",
+            "name": "index.php",
+            "size": 16745,
+            "hash": "846f9f9df53d5dd02a7da5d2ba77f9131189456bc94c564f305cb29b25b9dbce"
+        },
+        {
+            "type": "file",
+            "name": "logout.php",
+            "size": 120,
+            "hash": "07ef819d9b3b4067a7eac757cf9f678f04a1f1d18727622931d3281afe3060d7"
+        },
+        {
+            "type": "folder",
+            "name": "panel"
+        },
+        {
+            "type": "folder",
+            "name": "scripts"
+        },
+        {
+            "type": "file",
+            "name": "read_pdf.py",
+            "size": 1388,
+            "hash": "c0b7b554d9618dfc2905da9d56706d114b7558c8fb9091e90495ad4ec4f1c223"
+        },
+        {
+            "type": "folder",
+            "name": "storage"
+        },
+        {
+            "type": "file",
+            "name": "toplanti-yanit.php",
+            "size": 8005,
+            "hash": "68d17e4bc0fa56a437a5a646ef26b497b22a3b0ccdc3d78a00e26520ffd6e686"
+        },
+        {
+            "type": "file",
+            "name": "update_db_iban.php",
+            "size": 527,
+            "hash": "c0561b4c23cccfdd86c0880fe15bfb62c0e297893a0fc04e33c85f7bfd20d220"
+        },
+        {
+            "type": "file",
+            "name": "update_db_iban_direct.php",
+            "size": 868,
+            "hash": "d693bd3bf243078ca82124993711e7061ddf0f249bfd621ffd4ac584a98d1bd7"
+        },
+        {
+            "type": "file",
+            "name": "update_permissions_bulk.php",
+            "size": 2002,
+            "hash": "a5c55aa7c8365cf2028ecea776abb984ef78fe0be0ee9fcd238bc6bf14a4581f"
+        },
+        {
+            "type": "file",
+            "name": "update_roles.php",
+            "size": 1878,
+            "hash": "a4bedaab74fb0705a154fea4c8e7fabcefe16ad6b3681af3ea1614e5579f7406"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/.htaccess",
+            "size": 891,
+            "hash": "304dc252816b64fd48ebe184da9518f3bfc19f2df43803271833e0d020f30dde"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/GUVENLIK_NOTLARI.md",
+            "size": 5048,
+            "hash": "4e7783faa155b60dabd17dd5515a029733683046a25bb473b9fda5ec268d1c45"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/admin_config.php",
+            "size": 876,
+            "hash": "66c623ac805869de38f7699c3133806f2029c721ece14ba4eb26843bc76b27ff"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/admin_dashboard.php",
+            "size": 73116,
+            "hash": "193949aa9117e71e864cb7ce7df6a527f875b2ffd5efcbdaa0e22b0d11c2ee1e"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/admin_users.json",
+            "size": 393,
+            "hash": "d7572f22a17a17d673089a38cd2f193e41d065524a548c769ef84618e3c7b122"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/change_password.php",
+            "size": 8736,
+            "hash": "2e7e369f9a2c943cffa3ca863952a77dbe3e13d4e78f4727a8b8c192d4e54b5f"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/check_password.php",
+            "size": 1396,
+            "hash": "e23cc75bd59f1fdfdc43f16740dc152c3be7fae7a32a57ea8b296094830dddd9"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/delete_submission.php",
+            "size": 2450,
+            "hash": "94be030ee2f294a3f678c2213d157c68b85fc6625c64733edc60c5107cebc8ae"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/form-script.js",
+            "size": 51923,
+            "hash": "085151e9c9d53c926cd8c36069bc5b7e23064b075d5ef024d1561eb01da9f4e5"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/generate_pdf_pdfmake.js",
+            "size": 9613,
+            "hash": "a71cf80e4ef4186457fcc7037becb51db6926ddd63b52b6c57133bb42d860930"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/get_submission_data.php",
+            "size": 1222,
+            "hash": "6a2a2b9b549c1a1beb3097dbb49a5f18db120caf1d68b83f0b2882445e885bb1"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/index-elementor.html",
+            "size": 9517,
+            "hash": "fee3352afe0cbf29eaf35aeef1cb731d8a493d6629f2467f8acfdf06c41c08e7"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/index.html",
+            "size": 61448,
+            "hash": "e1b29440d8c8b1aa26d26d7358fc41088274c4c7210bfe36429f79a2157c6b95"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/login.php",
+            "size": 7413,
+            "hash": "f24ea30eeab26b7d442a331c25c41f1e318708bc0a4b33de2d0fec4ec319e608"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/logout.php",
+            "size": 82,
+            "hash": "53d29adf06152b2ddfed4418ab073c6a6aa39ba8037509178f546d77105617f1"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/pageviews.json",
+            "size": 14747,
+            "hash": "7bff84135dde893eef23314f591f0db201faea84131244b08a804b0a3509f453"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/receive_pdf.php",
+            "size": 5706,
+            "hash": "47979e2ea4b7c944d819873af159fe3ef463151d61834875389070967b547714"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/regenerate_pdfs.php",
+            "size": 4743,
+            "hash": "21c5d41dbc3f404ad6854e773facbf14b0489c455415f377ded89841c2944bb8"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/regenerate_single_pdf.php",
+            "size": 3127,
+            "hash": "ab23455eb0cdd8f65740f68d56a784c498911fcf759db4af25ac553c06fbcaa9"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/submissions.json",
+            "size": 3550,
+            "hash": "89edbee00f4ab042feb05357505de00f008aa00ffac0096bbf95c7a2f94edc33"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/submit_spesen.php",
+            "size": 404,
+            "hash": "0e84c67aa11e7eaaadafa8823b6a9ea103eaaba7b0ff4723e47d5085153cd405"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/success.html",
+            "size": 7351,
+            "hash": "1203d45367a7861301ef6c4a16f0f37f25b9f60e916a3540751615300cb2da81"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/test_pdf.html",
+            "size": 18633,
+            "hash": "e7cdbb073e1eead8cc68451efd0337ba0a5518aae51b2037209ed3d2dca05bca"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/test_permissions.php",
+            "size": 1630,
+            "hash": "995da7af0a880d47f30b1a3334a93d1bba91af6cce14294022000262de2afde6"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/test_setup.php",
+            "size": 10067,
+            "hash": "4e4916460d3c42bb99d4e55b2fa0e75095ad7cb643be51d4a19266e7fc73f07b"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/update_pdf.php",
+            "size": 3440,
+            "hash": "e16a5c79ba7b0e798f7bfbe368717953d896d5cf7ef1d15df75f51ca809e47bf"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/update_submission.php",
+            "size": 2338,
+            "hash": "426234c7db5c1f5d492f9b33c795e325bd1e500449834733af91c1ea1d41aad5"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/update_submission_with_attachments.php",
+            "size": 4199,
+            "hash": "6c204a70496eb3c0ce2d84961a0fba5fcec02af5edd089c21590b70c6db55c53"
+        },
+        {
+            "type": "folder",
+            "name": "Hesaplama/uploads"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/verify_session.php",
+            "size": 1015,
+            "hash": "2349926119d85a1f1eff3bdfe70572c75c6bdb2a3f0c1fd4a546be6ad9ae1633"
+        },
+        {
+            "type": "file",
+            "name": "admin/alt-birim-sil.php",
+            "size": 2974,
+            "hash": "dcd91becee0595414603dd3306e0964bd335977955293c809c83d400ac000595"
+        },
+        {
+            "type": "file",
+            "name": "admin/alt-birimler.php",
+            "size": 12396,
+            "hash": "301af716895cf7b298bd9171e96e13808772662ebf5f5b75e4e442ee8d52c83e"
+        },
+        {
+            "type": "file",
+            "name": "admin/api-byk-uyeler.php",
+            "size": 1972,
+            "hash": "c938349393b09ea1430b5fe34ffa5b25cb853f411fbbb2c86a7c018718887d4e"
+        },
+        {
+            "type": "file",
+            "name": "admin/api-toplanti-gundem.php",
+            "size": 3578,
+            "hash": "0a7b892a7a2ba7dca976eff8be16d85108d3c47f22400c4c169408d323f7ed45"
+        },
+        {
+            "type": "file",
+            "name": "admin/api-toplanti-karar.php",
+            "size": 5401,
+            "hash": "774cca362f522366f2a731ebb98f05ffd1228c03f0ca097bb2d6555d7fe2bc93"
+        },
+        {
+            "type": "file",
+            "name": "admin/api-toplanti-katilimci.php",
+            "size": 3577,
+            "hash": "070ba532024e262afc58b234268c81a965a93e7f24ec22894c565030cbcbfbd1"
+        },
+        {
+            "type": "file",
+            "name": "admin/api-toplanti-tutanak.php",
+            "size": 3315,
+            "hash": "2f2d006dc822b05e6724f6875c1787f858a90f7aee6b4eb7632c15252561efe0"
+        },
+        {
+            "type": "file",
+            "name": "admin/ayarlar.php",
+            "size": 6609,
+            "hash": "9ac4ee0b17accbeb8f27212add694a718a9daccf83cfe3a61e8578aa44e73eb0"
+        },
+        {
+            "type": "file",
+            "name": "admin/baskan-yetkileri.php",
+            "size": 21538,
+            "hash": "fb6a8113bef9bcd7e27935f3fd078dd5d9b7b1151b45695c770edec8345dcf13"
+        },
+        {
+            "type": "file",
+            "name": "admin/byk-duzenle.php",
+            "size": 7087,
+            "hash": "d97467b942f7eb22ccebda718bd675f1be29854b57b81eb20fe642088968fba6"
+        },
+        {
+            "type": "file",
+            "name": "admin/byk-ekle.php",
+            "size": 6769,
+            "hash": "d7725027c6f611f630f51462be84494d15029da4cc726985684f229942223ad5"
+        },
+        {
+            "type": "file",
+            "name": "admin/byk-sil.php",
+            "size": 2154,
+            "hash": "b9810a2492d7ab1f5eb30d8becf625fafc9ea32615b7e7527eafbc407014b3c6"
+        },
+        {
+            "type": "file",
+            "name": "admin/byk.php",
+            "size": 7164,
+            "hash": "04244a6ccb8c072b97fd4966e254251e2959efba9c71b9ca9ad5c900c8eaddfc"
+        },
+        {
+            "type": "file",
+            "name": "admin/dashboard.php",
+            "size": 13524,
+            "hash": "b3d2791a4e8bc5c87c22c4b0f73299277a27188738c832534d0ed2e4bc5e1934"
+        },
+        {
+            "type": "file",
+            "name": "admin/database-setup.php",
+            "size": 14881,
+            "hash": "4be1a530cc27c2a823d63a429115bb94b985619dfbbc6574382c1eeb6064d3b2"
+        },
+        {
+            "type": "file",
+            "name": "admin/demirbaslar.php",
+            "size": 20973,
+            "hash": "062eecf1948e4d713c642821221e00ae05a11c67c83d4c6f1f38802bdb725c12"
+        },
+        {
+            "type": "file",
+            "name": "admin/demirbas-talepleri.php",
+            "size": 6775,
+            "hash": "a531990c3b400b28c654290935ae15fb7c8480e4a7a3137afca6bb48536947bd"
+        },
+        {
+            "type": "file",
+            "name": "admin/duyurular.php",
+            "size": 4150,
+            "hash": "ef35a8f4347cad1e5bd76bf46857cebce3789857f603d2b5709f50c71af7b36e"
+        },
+        {
+            "type": "file",
+            "name": "admin/email-preview.php",
+            "size": 626,
+            "hash": "7e1bb230c67f723c66c383594aba69558fe9a03c24430b96469a26266f79da38"
+        },
+        {
+            "type": "file",
+            "name": "admin/etkinlikler.php",
+            "size": 28108,
+            "hash": "55e197917621a9cfed8ab497a5ada3f458c389867124a4d91d6e8609baa3b818"
+        },
+        {
+            "type": "file",
+            "name": "admin/harcama-detay.php",
+            "size": 14652,
+            "hash": "b474ad010859ee49dc39c742ec81eb9c501317adc6ec8edc8081062ae2be08ed"
+        },
+        {
+            "type": "file",
+            "name": "admin/harcama-talepleri.php",
+            "size": 5981,
+            "hash": "67847f133150367cb2df19d0a9c94779ca2ae777c9abc61eec1f95d92263b1b7"
+        },
+        {
+            "type": "file",
+            "name": "admin/izin-talepleri.php",
+            "size": 4941,
+            "hash": "9cef8087cd67ea5b37384286415fe6c01e4ff0820ce55c99f3255486bb0eef35"
+        },
+        {
+            "type": "file",
+            "name": "admin/kayit-sil.php",
+            "size": 997,
+            "hash": "104167036afb828488aa2b6ddda581fdc9b29a132f9ea5cbb58b401d3caa3686"
+        },
+        {
+            "type": "file",
+            "name": "admin/kullanici-duzenle.php",
+            "size": 11487,
+            "hash": "d3c1c7f71bc63304e710006af7b173ab4a6255e80e09496cc3ffa74742e7d881"
+        },
+        {
+            "type": "file",
+            "name": "admin/kullanici-ekle.php",
+            "size": 8503,
+            "hash": "bec14fe62ee723d26443c44f9a5332d3cd6a99065c5b0bc2f8197c25d8a3cd76"
+        },
+        {
+            "type": "file",
+            "name": "admin/kullanici-sil.php",
+            "size": 1347,
+            "hash": "2081fca8e0176f53158f3a8174c4cb301cd3e9f94ba411318f4c8a77a8beed04"
+        },
+        {
+            "type": "file",
+            "name": "admin/kullanicilar.php",
+            "size": 17124,
+            "hash": "2658742df1872426e2972ec1a08613fa4742e6077c6cb36e24422b9b7f56c961"
+        },
+        {
+            "type": "file",
+            "name": "admin/muhasebe-yapilandirma.php",
+            "size": 8370,
+            "hash": "19f717e31496a88ef26a1b3809e3eff4fe9a26c9e7e286a2d292c22407abd560"
+        },
+        {
+            "type": "file",
+            "name": "admin/panel-yetkileri.php",
+            "size": 13913,
+            "hash": "5e7cfa2fe59c9239718c072aa67f7dc9595cae9a155b283520bdd166c277aa64"
+        },
+        {
+            "type": "file",
+            "name": "admin/projeler.php",
+            "size": 4416,
+            "hash": "f33b3c1516eb377bc48b3547937465eec273347636775d9a6549a2d77ca20353"
+        },
+        {
+            "type": "file",
+            "name": "admin/raggal-talepleri.php",
+            "size": 5647,
+            "hash": "502138491b865147b0f2a41197c3bc2ed5c7df8034705d88134b1c88f12612a2"
+        },
+        {
+            "type": "file",
+            "name": "admin/raporlar.php",
+            "size": 5580,
+            "hash": "7c6f9175a966cd45a9fc2f15e0f2ad534da74713959dd0dc3e628e08b35fa61c"
+        },
+        {
+            "type": "file",
+            "name": "admin/roller.php",
+            "size": 9654,
+            "hash": "29d7f2811898b61cb37c15e2ca01f9bce57a6a8eb1391f73919e667430f6ca73"
+        },
+        {
+            "type": "file",
+            "name": "admin/toplanti-duzenle.php",
+            "size": 15197,
+            "hash": "40aff218457e3d3120b3379d1888cc0bf44cf2c22f4d13713d291d03a829b986"
+        },
+        {
+            "type": "file",
+            "name": "admin/toplanti-ekle.php",
+            "size": 17825,
+            "hash": "84ecc90655c89812b8e11d860a7307952c6cb2e78c2e5435c73cb9cfa8afa9c3"
+        },
+        {
+            "type": "file",
+            "name": "admin/toplanti-pdf.php",
+            "size": 7645,
+            "hash": "1c29d1d18b603ab9db5ce60b2b1f279542fb74b81130d3d7516c58d81f6a5aa9"
+        },
+        {
+            "type": "file",
+            "name": "admin/toplantilar.php",
+            "size": 9935,
+            "hash": "7206b962ab4118d2a85519e1a1f9dbedbbea0190fab8af46bf85385fb2776558"
+        },
+        {
+            "type": "file",
+            "name": "admin/update-db.php",
+            "size": 14881,
+            "hash": "4be1a530cc27c2a823d63a429115bb94b985619dfbbc6574382c1eeb6064d3b2"
+        },
+        {
+            "type": "file",
+            "name": "admin/update-divan-members.php",
+            "size": 4463,
+            "hash": "1eb56e0abf9fafc43e65b689e11ccfe25fb2792f72c4ad8a685f43297d1995ab"
+        },
+        {
+            "type": "file",
+            "name": "api/bildirimler.php",
+            "size": 895,
+            "hash": "832f9e185ea856a128213a2cb1b6af890173e2873899744c347e659361c28940"
+        },
+        {
+            "type": "file",
+            "name": "api/cancel-meeting.php",
+            "size": 4319,
+            "hash": "d27f1ae9831e1066810280cd6d763a339b92f247c43f6e2dda54728b015baaa6"
+        },
+        {
+            "type": "file",
+            "name": "api/counts.php",
+            "size": 1691,
+            "hash": "08e174d830e7f9bf08cf06de7b501aabd8db7f516c6f98e4a686784823a156dc"
+        },
+        {
+            "type": "file",
+            "name": "api/delete-meeting.php",
+            "size": 2890,
+            "hash": "ef06394fd65db51574b321731df41a1ddfff410595379aabdc9505f8bbc014b8"
+        },
+        {
+            "type": "file",
+            "name": "api/export-calendar.php",
+            "size": 4203,
+            "hash": "2546797ea6681d4e6be7e87741b9ece8eed3b3022ad6cd5e40cc4daae910c8c5"
+        },
+        {
+            "type": "file",
+            "name": "api/gundem-islem.php",
+            "size": 2359,
+            "hash": "b9d82c5c71a78adcf2044a7ba763a72a09187ba8422e18e0b2dae2741eb473ea"
+        },
+        {
+            "type": "file",
+            "name": "api/save_dashboard_prefs.php",
+            "size": 1334,
+            "hash": "38754eb5700e5f3654df40a0bbdba0e8c5964182f2059091bc28080d2c301182"
+        },
+        {
+            "type": "file",
+            "name": "api/save_iban.php",
+            "size": 1363,
+            "hash": "0ae5172e72bb6f69eba298309c6e70ce8e8c3036ccfa5cd0b31381a6aaf2c2f5"
+        },
+        {
+            "type": "file",
+            "name": "api/update-agenda-note.php",
+            "size": 1324,
+            "hash": "b08d50113a864197b2a6ed14bfc883fbf599f9cdbaef38bd81066bf77b697d26"
+        },
+        {
+            "type": "file",
+            "name": "api/update-decision-text.php",
+            "size": 2938,
+            "hash": "40152722b095734542bb44e5c8fc1d28f223c84ee2f265b290d16226080532a0"
+        },
+        {
+            "type": "folder",
+            "name": "assets/css"
+        },
+        {
+            "type": "folder",
+            "name": "assets/img"
+        },
+        {
+            "type": "folder",
+            "name": "assets/js"
+        },
+        {
+            "type": "file",
+            "name": "classes/Auth.php",
+            "size": 9960,
+            "hash": "2199127f5fbb6573c6a2a9a2e45e3d974592681d76388441a22707e946e40b7c"
+        },
+        {
+            "type": "file",
+            "name": "classes/Cache.php",
+            "size": 1990,
+            "hash": "fe25905868925bc1f144d2a66cc1d0f098025d25569c3a1a0f232d50762a43a0"
+        },
+        {
+            "type": "file",
+            "name": "classes/Database.php",
+            "size": 1604,
+            "hash": "d034ff9a4eb8d4187fb636667ae14363fbb74f457fbbbd190d0075e0d20a36fe"
+        },
+        {
+            "type": "file",
+            "name": "classes/Mail.php",
+            "size": 13242,
+            "hash": "b921d8eb035e6d516ad4c5a8d60e17831f3c47f6a4ed9ddfe099a8bafdad5103"
+        },
+        {
+            "type": "file",
+            "name": "classes/Middleware.php",
+            "size": 2588,
+            "hash": "199206a0545259cb1d4b0fbf4bbd166ffbd76598581c7063cbe55a7f5e151e5b"
+        },
+        {
+            "type": "file",
+            "name": "classes/SimpleSMTP.php",
+            "size": 4368,
+            "hash": "5285b9f1a620a1a4c4acd747adca077a77bdce5660183c68591c7200b82fac9b"
+        },
+        {
+            "type": "file",
+            "name": "config/app.php",
+            "size": 1294,
+            "hash": "1c827d3e73630ab682c93a29314067712667bec322562a9f58f467c3a3e90cc8"
+        },
+        {
+            "type": "file",
+            "name": "config/baskan_modules.php",
+            "size": 5921,
+            "hash": "bafd635150bae4dcc46b8ade861e452437e294f6a8e6fbad2d3ce6f358a0c4dd"
+        },
+        {
+            "type": "file",
+            "name": "config/database.local.php",
+            "size": 346,
+            "hash": "dc0c3d80f6b0880f6a566d8dcc7369c2d9a9eb845f54e5d4e37c1ea5de727b53"
+        },
+        {
+            "type": "file",
+            "name": "config/database.php",
+            "size": 424,
+            "hash": "a0a0403478bc390170d0a8b9b6092a855d869ec235e50909d2a96bd6ae707d1b"
+        },
+        {
+            "type": "file",
+            "name": "config/mail.php",
+            "size": 294,
+            "hash": "806227abf49c6a966593324326ec7a6652a3c31a1923427a971081a0766bab28"
+        },
+        {
+            "type": "file",
+            "name": "database/CLEANUP-TALIMATLARI.md",
+            "size": 4933,
+            "hash": "d58f13d34dd1bb9dd0fe8dd3854e23cb2c04f1af7187e94a9849d5796e1de160"
+        },
+        {
+            "type": "file",
+            "name": "database/MIGRATION-TALIMATLARI.md",
+            "size": 3658,
+            "hash": "ae88886a7d02e96a5a46d4d40e56d68ba77feb1f944b45dff9cf8928acdb3192"
+        },
+        {
+            "type": "file",
+            "name": "database/cleanup-old-tables.php",
+            "size": 7669,
+            "hash": "001be9d9b9c4acdb1e404ecac150c802abaf035d4ee58e4c9345126832dc2885"
+        },
+        {
+            "type": "file",
+            "name": "database/fix-collations.php",
+            "size": 3160,
+            "hash": "e1e3f15a5aacf9b7e7cdc9ae6d53d57c73ce22fc168a93eaa2271500667d1c66"
+        },
+        {
+            "type": "file",
+            "name": "database/fix-gt-byk.php",
+            "size": 7835,
+            "hash": "5be4a6db68be523d65befd09d111f90871228a77b68bf13fb27ed2123a817e76"
+        },
+        {
+            "type": "file",
+            "name": "database/import-alt-birimler-json.php",
+            "size": 8268,
+            "hash": "33d311f40586075c22ee5a62ed2d866d0f1cd90d45190c56b56e4472083f0505"
+        },
+        {
+            "type": "file",
+            "name": "database/import-birimler-json.php",
+            "size": 15467,
+            "hash": "c9be10b795f85872f236be8d1790f36609be672d1e60c57913afe136a8d2dc03"
+        },
+        {
+            "type": "file",
+            "name": "database/import-byk-data.php",
+            "size": 7641,
+            "hash": "4b782b97fba69f619ddc78dac259a6719d8d576844f5973874a90de25cc44b85"
+        },
+        {
+            "type": "file",
+            "name": "database/import-events-2026.php",
+            "size": 6584,
+            "hash": "9c58fa0e3f4edd5875b3b107ed0872d06da96466020d5938789cd371c5e45bd7"
+        },
+        {
+            "type": "file",
+            "name": "database/import-gorevler-alt-birimler.php",
+            "size": 11719,
+            "hash": "9759c2bcd73407a9903d747ced17c6c1d10ec2dda760963f79f5b32d3c2ac06a"
+        },
+        {
+            "type": "file",
+            "name": "database/migrate-from-sql.php",
+            "size": 17499,
+            "hash": "46f0937f5443001b46eb9bd90bff03b535b2095a92b9ba8831a0f4a42dc87701"
+        },
+        {
+            "type": "file",
+            "name": "database/migrate-unified.php",
+            "size": 29023,
+            "hash": "140765229661a2840340e7773efed7e78382985b94d14ca3087e2423d8457699"
+        },
+        {
+            "type": "folder",
+            "name": "database/migrations"
+        },
+        {
+            "type": "file",
+            "name": "database/normalize-roles.php",
+            "size": 4145,
+            "hash": "a0e1ee6653906a314ab176dcd92f625b561cea6813d3bc677875fbd961941c97"
+        },
+        {
+            "type": "file",
+            "name": "database/run-migration.php",
+            "size": 2222,
+            "hash": "fdeff5742b4093633afe6dec8dbfc1ef9e0b02c5ed0c4c8b9a90d5107172f10e"
+        },
+        {
+            "type": "file",
+            "name": "database/setup-baskan-modules.php",
+            "size": 4816,
+            "hash": "a55209f302713010698a2818d82b4080e0b8fd2ef4301bc06f050f30c79c9aa5"
+        },
+        {
+            "type": "file",
+            "name": "database/update-alt-birim-sorumlular.php",
+            "size": 7245,
+            "hash": "530fce1a83b547ad17dae97c18cac05b32f356fbb01048332876534fa87509a0"
+        },
+        {
+            "type": "file",
+            "name": "database/update-kullanicilar-byk.php",
+            "size": 8433,
+            "hash": "d945dac3d42aa9244ea2f99dac62aa5bec950245dac5148bcb7f343ca39b8e7d"
+        },
+        {
+            "type": "file",
+            "name": "database/update_schema_requests.php",
+            "size": 3217,
+            "hash": "5c231fd416e0172f736e5f4b830164bce5dbf596820ea72b8f36957a27217e05"
+        },
+        {
+            "type": "file",
+            "name": "includes/ensure_preferences_table.php",
+            "size": 686,
+            "hash": "855362f8b19b53113829d45d9b86e4fbd30b60f54765ba231cca826db7a7964c"
+        },
+        {
+            "type": "file",
+            "name": "includes/footer.php",
+            "size": 14626,
+            "hash": "5aa9838082c79d532044e6ea5ebb479f625c283c4f381ef037b77519c52eccbb"
+        },
+        {
+            "type": "file",
+            "name": "includes/header.php",
+            "size": 18003,
+            "hash": "9ebfbd601af05d3c9834eca8e6a342541b403963b7840878860fc05c3e76df58"
+        },
+        {
+            "type": "file",
+            "name": "includes/init.php",
+            "size": 617,
+            "hash": "aa3c7f591befca1fcf665f9cd78a8eb2f42bea0596702388096413c9db48af2b"
+        },
+        {
+            "type": "file",
+            "name": "includes/sidebar.php",
+            "size": 15648,
+            "hash": "cf8819f73982d229fff448c2481c7627ac995405f861c4a155fe82554dec7e42"
+        },
+        {
+            "type": "folder",
+            "name": "includes/toplanti-tabs"
+        },
+        {
+            "type": "file",
+            "name": "panel/baskan_raporlar.php",
+            "size": 7762,
+            "hash": "bead7ce39dd90b1052abe0dad447e78b1c2cb02f18ee57547b7f5700fed996b1"
+        },
+        {
+            "type": "file",
+            "name": "panel/dashboard.php",
+            "size": 33093,
+            "hash": "53df8c54121d20b6394461ea9bd1e948769d66b561174e521710956c76aa85c7"
+        },
+        {
+            "type": "file",
+            "name": "panel/demirbas-talepleri.php",
+            "size": 29615,
+            "hash": "7db05dcd961f60a494002e9b0dc6427b5dce12727d3f0639dc4c489962d4027a"
+        },
+        {
+            "type": "file",
+            "name": "panel/duyurular.php",
+            "size": 8661,
+            "hash": "7da96fdcde5d5818d3dabd8fa3371a002ad46403720b43b7bd2d855dc4ab2a4e"
+        },
+        {
+            "type": "file",
+            "name": "panel/etkinlik-ekle.php",
+            "size": 6552,
+            "hash": "7ced21104b7aced4e581dbd511102a4728dd43bc493c3200ae2658605ac31da9"
+        },
+        {
+            "type": "file",
+            "name": "panel/etkinlikler.php",
+            "size": 31935,
+            "hash": "fc647f605680117141a470a3c4d2e6fc5fe386ae10fe71f0e09dee94c1ad666f"
+        },
+        {
+            "type": "file",
+            "name": "panel/harcama-talepleri.php",
+            "size": 38562,
+            "hash": "37939bb75e9a3024b337ecba3c2d48854ba809aeefd57b1df6728d062425fb1d"
+        },
+        {
+            "type": "file",
+            "name": "panel/iade-formlari.php",
+            "size": 58679,
+            "hash": "84c2e02b8c44d47e3d38aa852396c69b879d6825ed25664d49435c2dc72b7b27"
+        },
+        {
+            "type": "file",
+            "name": "panel/izin-talepleri.php",
+            "size": 36017,
+            "hash": "3b049c62ec347c68cf2b93ea5cf368df2137baafa2c70b684800b6173e044f6b"
+        },
+        {
+            "type": "file",
+            "name": "panel/profil.php",
+            "size": 11239,
+            "hash": "a543d239d97e16fc1b63ebec68b3eba7770328cc681c42fcca16f1ffc2eb3e08"
+        },
+        {
+            "type": "file",
+            "name": "panel/raggal-talepleri.php",
+            "size": 23359,
+            "hash": "8f3adb1ea45b4568f66583d37acff7e78e098aff03d88a833bcbdb9e6b26a00c"
+        },
+        {
+            "type": "file",
+            "name": "panel/toplanti-duzenle.php",
+            "size": 17316,
+            "hash": "40501e6af470c9e7afe48935c5350646af320db868f06c3ba61b05141edb72ab"
+        },
+        {
+            "type": "file",
+            "name": "panel/toplanti-ekle.php",
+            "size": 16560,
+            "hash": "9f35e2b385db2e34ad52dcebde0175c246f4fa56c2804190bfa667ceb69bf104"
+        },
+        {
+            "type": "file",
+            "name": "panel/toplantilar.php",
+            "size": 33883,
+            "hash": "5b9becb6ed1ca382dfbb6100cd8bcce4bcfb627c695c01e6e09eb0f09da42ff0"
+        },
+        {
+            "type": "file",
+            "name": "panel/uyeler.php",
+            "size": 6036,
+            "hash": "6fdf00ee981212f9e634ce770f4c297fb79f769092429b49ed5071afdf073142"
+        },
+        {
+            "type": "file",
+            "name": "scripts/DATABASE-SETUP.md",
+            "size": 4519,
+            "hash": "3cd0814fcf479d51d4dfcd5dbb1357bdac158c5b9e62a1978fce312b321731c5"
+        },
+        {
+            "type": "file",
+            "name": "scripts/ftp-upload.bat",
+            "size": 358,
+            "hash": "bf432d053000de83f76bad49b1c964923b2838e6dc6ea59141d92bbc5758bc25"
+        },
+        {
+            "type": "file",
+            "name": "scripts/ftp-upload.ps1",
+            "size": 4517,
+            "hash": "76e1f0d30a528e5c1b4381e68db8045ab20fa021c1746475d39e304dd8ad1f98"
+        },
+        {
+            "type": "file",
+            "name": "scripts/import-byk-excel.php",
+            "size": 4612,
+            "hash": "f7f89a44cdf2e40b2d88cc78d2ba7abb8a8ab029f6504af7e654ba15d34fdc78"
+        },
+        {
+            "type": "file",
+            "name": "scripts/setup-database.bat",
+            "size": 582,
+            "hash": "9b75a1f2380f74e809143f3d3b72813dce1f4e50c7f5b61d2f304bbc0559f840"
+        },
+        {
+            "type": "file",
+            "name": "scripts/setup-database.php",
+            "size": 7041,
+            "hash": "5f86dcee7fd6ef7fe7c98d678718bb6b7391e8484cff6ae8b0f8d20a5e7fb102"
+        },
+        {
+            "type": "folder",
+            "name": "storage/cache"
+        },
+        {
+            "type": "file",
+            "name": "Hesaplama/uploads/spesenformular_1769293620_697547349efb0.pdf",
+            "size": 25308,
+            "hash": "4a82a9b340519507c22314307796e5317509ce211f6c8c6013ac24e80b1add59"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/style.css",
+            "size": 18100,
+            "hash": "b556e2383f1a3e66ceb7c59b57789f1ffc8774c3148565506af44549038d68b5"
+        },
+        {
+            "type": "file",
+            "name": "assets/css/toplanti-yonetimi.css",
+            "size": 4593,
+            "hash": "27b27f548f1faea67a8927c88f69c90675635dbe2b5c08901c017f154842eed7"
+        },
+        {
+            "type": "file",
+            "name": "assets/img/AIF.png",
+            "size": 10614,
+            "hash": "73906a05c2f61a73a3373f0b060d0f9bc32f009a42646dc3bb56d8978d0de08e"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/main.js",
+            "size": 9431,
+            "hash": "7dc4c5d3f19e05531862298386c71fee1824fa9df8d792eb67a4a102d9467cd4"
+        },
+        {
+            "type": "file",
+            "name": "assets/js/toplanti-yonetimi.js",
+            "size": 21283,
+            "hash": "d3c576de49c365d38bc46082a821b9af23c3204f6d0f006a3470d93ab9815e51"
+        },
+        {
+            "type": "file",
+            "name": "database/migrations/001_create_reservation_tables.php",
+            "size": 1783,
+            "hash": "c23a28ed805ef5831f0ef4d74522bfd82f24de685ba25f0055bfa189d73b505e"
+        },
+        {
+            "type": "file",
+            "name": "database/migrations/002_create_inventory_tables.php",
+            "size": 2271,
+            "hash": "e0752933604833ddce29c7838a7fb1ab9f374578be88b8e1d9c8facab7600072"
+        },
+        {
+            "type": "file",
+            "name": "includes/toplanti-tabs/bilgiler.php",
+            "size": 10404,
+            "hash": "7481d3d684945a7328401d873de7996e766b8c09f49dff7b1bb29542426817d9"
+        },
+        {
+            "type": "file",
+            "name": "includes/toplanti-tabs/gundem.php",
+            "size": 10218,
+            "hash": "96b7c8434d9e53bae90e10964f99ca33d83c9dbe2ea1f2b1449bc1a83c26c132"
+        },
+        {
+            "type": "file",
+            "name": "includes/toplanti-tabs/kararlar.php",
+            "size": 14163,
+            "hash": "3e3961992a1af054aff7565dd18a651d294b03937ad1ee34c459e05918194a69"
+        },
+        {
+            "type": "file",
+            "name": "includes/toplanti-tabs/katilimcilar.php",
+            "size": 13030,
+            "hash": "f89476ce834d3c706967bc29c824e116ed6dc2cc278eea4fcff29a2dde69fd38"
+        },
+        {
+            "type": "file",
+            "name": "includes/toplanti-tabs/tutanak.php",
+            "size": 8126,
+            "hash": "4a05937fc1a943ea813c2e62d2d0867a8e1542b9b7ba1c375d1f3f740766d838"
+        },
+        {
+            "type": "file",
+            "name": "storage/cache/03a98ea7edede75ac98eec0049cc49200e5f551b.cache.php",
+            "size": 241,
+            "hash": "b6b62fd973e5d4f54bab23efc400c901539d92b3d7c1424fe89c59705c39d10c"
+        },
+        {
+            "type": "file",
+            "name": "storage/cache/76140fc6229005a516690676133ae5ee9dbfdf27.cache.php",
+            "size": 503,
+            "hash": "c3051ab912bbc48aa5bcc661b5a43797e132ba81e62a845590e2e6c4deabc703"
+        },
+        {
+            "type": "file",
+            "name": "storage/cache/a08e156a10fbfd459123165ecb3ab38f235bcc5a.cache.php",
+            "size": 249,
+            "hash": "7989ef0d6a41bf6ed8c129b53db315deaec7528b1f5d0a8dbef3f36f28817b5e"
+        }
+    ]
+}

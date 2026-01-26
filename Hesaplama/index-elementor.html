@@ -1,0 +1,248 @@
+<!-- AİF Gider Formu - Elementor HTML Widget İçin -->
+<!-- Bu dosyanın içeriğini Elementor HTML widget'ına kopyalayın -->
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- CSS Stilleri -->
+<style>
+    /* Elementor için özel stil scope'u */
+    .aif-gider-form-wrapper {
+        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    }
+    .aif-gider-form-wrapper :root {
+        --bg: #ffffff;
+        --card: #ffffff;
+        --muted: #6b7280;
+        --text: #000000;
+        --primary: #009872;
+        --primary-600: #007a5e;
+        --accent: #009872;
+        --danger: #dc2626;
+        --warning: #d97706;
+        --border: #e5e7eb;
+        --input: #ffffff;
+    }
+    .aif-gider-form-wrapper * { box-sizing: border-box; }
+    .aif-gider-form-wrapper .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9));
+        border: 2px solid #009872;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,152,114,.1), inset 0 1px 0 rgba(255,255,255,.9);
+        backdrop-filter: blur(8px);
+    }
+    .aif-gider-form-wrapper h2 {
+        margin: 0 0 16px;
+        text-align: center;
+        font-weight: 700;
+        letter-spacing: .3px;
+        color: #009872;
+        font-size: 28px;
+    }
+    .aif-gider-form-wrapper .subtitle {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+    .aif-gider-form-wrapper .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .aif-gider-form-wrapper .form-group {
+        margin-bottom: 14px;
+    }
+    .aif-gider-form-wrapper .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+    .aif-gider-form-wrapper .form-group input, 
+    .aif-gider-form-wrapper .form-group select, 
+    .aif-gider-form-wrapper .form-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        background: #ffffff;
+        color: #000000;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .aif-gider-form-wrapper .form-group input:focus, 
+    .aif-gider-form-wrapper .form-group select:focus, 
+    .aif-gider-form-wrapper .form-group textarea:focus {
+        border-color: #009872;
+        box-shadow: 0 0 0 3px rgba(0,152,114,.15);
+    }
+    .aif-gider-form-wrapper .form-group textarea { resize: vertical; min-height: 70px; }
+    .aif-gider-form-wrapper .items-container { margin: 8px 0 16px; }
+    .aif-gider-form-wrapper .item {
+        border: 1px solid #009872;
+        padding: 14px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(248,250,252,.7));
+    }
+    .aif-gider-form-wrapper .add-item-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background-color: #009872;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .aif-gider-form-wrapper .add-item-button:hover { background-color: #007a5e; }
+    .aif-gider-form-wrapper .remove-item-button {
+        padding: 6px 10px;
+        background-color: #dc2626;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        float: right;
+    }
+    .aif-gider-form-wrapper .remove-item-button:hover { filter: brightness(.95); }
+    .aif-gider-form-wrapper .button-container { text-align: right; }
+    .aif-gider-form-wrapper button[type="submit"] {
+        padding: 10px 16px;
+        background-color: #009872;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .aif-gider-form-wrapper button[type="submit"]:hover { filter: brightness(1.05); }
+    .aif-gider-form-wrapper #spinner {
+        display: none;
+        margin: 12px auto 0;
+        width: 40px; height: 40px;
+        border: 4px solid rgba(255,255,255,.2);
+        border-top-color: #009872;
+        border-radius: 50%;
+        animation: aif-spin 1s linear infinite;
+    }
+    @keyframes aif-spin { to { transform: rotate(360deg); } }
+    .aif-gider-form-wrapper .error-message { color: #dc2626; font-weight: 600; margin-top: 10px; }
+    .aif-gider-form-wrapper .route-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .aif-gider-form-wrapper .calculate-km-btn {
+        background-color: #009872;
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-top: 6px;
+        font-weight: 600;
+    }
+    .aif-gider-form-wrapper .calculate-km-btn:hover { filter: brightness(1.05); }
+    .aif-gider-form-wrapper .km-loading { display: none; color: #009872; font-size: 12px; margin-top: 6px; }
+    .aif-gider-form-wrapper .suggestions { 
+        position: absolute; left: 0; right: 0; z-index: 10; 
+        background: #ffffff; border: 1px solid #e5e7eb; 
+        border-radius: 10px; display: none; overflow: hidden; 
+        box-shadow: 0 10px 20px rgba(0,0,0,.15); 
+    }
+    .aif-gider-form-wrapper .suggestion-item { 
+        padding: 10px 12px; cursor: pointer; 
+        border-bottom: 1px solid rgba(226,232,240,.6); 
+    }
+    .aif-gider-form-wrapper .suggestion-item:last-child { border-bottom: 0; }
+    .aif-gider-form-wrapper .suggestion-item:hover { background: rgba(0,152,114,.08); }
+    .aif-gider-form-wrapper .test-button { 
+        position: fixed; bottom: 20px; right: 20px; 
+        padding: 10px 16px; background: #ffc107; color: #000; 
+        border: none; border-radius: 10px; cursor: pointer; 
+        font-weight: 600; box-shadow: 0 4px 12px rgba(255,193,7,.3); 
+        z-index: 1000; 
+    }
+    .aif-gider-form-wrapper .test-button:hover { 
+        background: #ffb300; transform: translateY(-2px); 
+        box-shadow: 0 6px 16px rgba(255,193,7,.4); 
+        transition: all .2s; 
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .aif-gider-form-wrapper .form-row {
+            grid-template-columns: 1fr;
+        }
+        .aif-gider-form-wrapper .route-inputs {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- External Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- Form HTML -->
+<div class="aif-gider-form-wrapper">
+    <div class="container">
+        <h2>AİF Gider Formu</h2>
+        <div class="subtitle">Gider kalemlerinizi ekleyin, belgeleri yükleyin ve gönderin.</div>
+        <!-- Test butonu - sadece development için -->
+        <button type="button" class="test-button" onclick="fillTestData()" title="Test verilerini doldur">🧪 Test Doldur</button>
+        <form id="expenseForm" onsubmit="handleSubmit(event)">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">İsim</label>
+                    <input type="text" id="name" name="name" placeholder="Adınızı giriniz" required>
+                </div>
+                <div class="form-group">
+                    <label for="surname">Soyisim</label>
+                    <input type="text" id="surname" name="surname" placeholder="Soyadınızı giriniz" required>
+                </div>
+            </div>
+            <div class="items-container" id="itemsContainer"></div>
+            <button type="button" class="add-item-button" onclick="addItem()">+ Kalem ekle</button>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="iban">IBAN</label>
+                    <input type="text" id="iban" name="iban" placeholder="TR.., AT.. (4'lü bloklarla)" required>
+                </div>
+                <div class="form-group">
+                    <label for="total">Toplam Tutar (€)</label>
+                    <input type="number" id="total" name="total" readonly>
+                </div>
+            </div>
+            <div class="button-container">
+                <button type="submit">Gideri bildir</button>
+            </div>
+        </form>
+        <div id="spinner"></div>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+// Tüm JavaScript kodunu buraya kopyalayın (index.html'deki <script> tagları arasındaki kodu)
+// NOT: Bu dosya çok uzun olduğu için ayrı bir dosyada tutulacak
+</script>
+
+<!-- 
+KULLANIM TALİMATI:
+1. Bu dosyanın tamamını kopyalayın
+2. Elementor'da HTML widget ekleyin
+3. Kopyaladığınız içeriği yapıştırın
+4. JavaScript kısmını index.html'den kopyalayıp <script> tagları arasına yapıştırın
+5. Kaydedin
+
+VEYA daha kolay yol:
+1. index-elementor-complete.html dosyasını kullanın (JavaScript dahil)
+-->

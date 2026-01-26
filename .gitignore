@@ -1,0 +1,39 @@
+# Environment
+.env
+.env.*
+
+# Logs
+*.log
+error_log
+logs/
+
+# Backups & Temp
+*_backup.php
+*_backup.json
+*.bak
+*.old
+*.tmp
+temp/
+tmp/
+
+# Storage & Uploads
+# Notu: Önemli yüklemeler varsa buraya eklemeyin ama genellikle ignore edilir
+storage/
+Hesaplama/uploads/*
+!Hesaplama/uploads/.gitkeep
+
+# Vendor
+vendor/
+node_modules/
+
+# IDE & System
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Brain/Artifacts (Antigravity)
+.gemini/
+brain/
