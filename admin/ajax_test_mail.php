@@ -25,20 +25,18 @@ if (empty($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
 
 // SMTP ayarlarını al (POST'tan geliyorsa onları kullan, yoksa DB'den)
 $config = [
-    'host' => $_POST['smtp_host'] ?? Config::get('smtp_host'),
-    'port' => $_POST['smtp_port'] ?? Config::get('smtp_port'),
-    'username' => $_POST['smtp_user'] ?? Config::get('smtp_user'),
-    'password' => !empty($_POST['smtp_pass']) ? $_POST['smtp_pass'] : getenv('MAIL_PASS'),
-    'secure' => $_POST['smtp_secure'] ?? Config::get('smtp_secure'),
-    'from_email' => $_POST['smtp_from_email'] ?? Config::get('smtp_from_email'),
-    'from_name' => $_POST['smtp_from_name'] ?? Config::get('smtp_from_name'),
+    'host'       => $_POST['smtp_host'] ?: Config::get('smtp_host'),
+    'port'       => (int)($_POST['smtp_port'] ?: Config::get('smtp_port')),
+    'username'   => $_POST['smtp_user'] ?: Config::get('smtp_user'),
+    'password'   => !empty($_POST['smtp_pass']) ? $_POST['smtp_pass'] : Config::get('smtp_pass'),
+    'secure'     => $_POST['smtp_secure'] ?: Config::get('smtp_secure'),
+    'from_email' => $_POST['smtp_from_email'] ?: Config::get('smtp_from_email'),
+    'from_name'  => $_POST['smtp_from_name'] ?: Config::get('smtp_from_name'),
 ];
 
 try {
-    require_once __DIR__ . '/../classes/SimpleSMTP.php';
-    $smtp = new SimpleSMTP($config);
-
     $subject = 'SMTP Test Mesajı - ' . Config::get('app_name', 'AIF Otomasyon');
+    
     $body = '<h1>SMTP Testi Başarılı!</h1>';
     $body .= '<p>Bu e-posta, SMTP ayarlarınızın doğru yapılandırıldığını doğrulamak için gönderilmiştir.</p>';
     $body .= '<hr>';
@@ -50,18 +48,12 @@ try {
     $body .= '</ul>';
     $body .= '<p>Tarih: ' . date('d.m.Y H:i:s') . '</p>';
 
-    $result = $smtp->send(
-        $to,
-        $subject,
-        $body,
-        $config['from_email'],
-        $config['from_name']
-    );
+    $result = Mail::send($to, $subject, $body, $config);
 
     if ($result) {
         echo json_encode(['success' => true, 'message' => 'Test e-postası başarıyla gönderildi.']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'E-posta gönderilemedi. Lütfen ayarları ve bağlantıyı kontrol edin.']);
+        echo json_encode(['success' => false, 'message' => 'E-posta gönderilemedi: ' . Mail::$lastError]);
     }
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Hata: ' . $e->getMessage()]);

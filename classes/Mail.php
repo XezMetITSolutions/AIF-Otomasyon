@@ -4,20 +4,24 @@ class Mail
     public static $lastError = null;
     public static $lastLog = null;
 
-    public static function send($to, $subject, $message)
+    public static function send($to, $subject, $message, $customConfig = null)
     {
         $config = require __DIR__ . '/../config/mail.php';
 
-        // Override with database settings if they exist
-        $smtpConfig = [
-            'host'     => Config::get('smtp_host', $config['host']),
-            'port'     => Config::get('smtp_port', $config['port']),
-            'username' => Config::get('smtp_user', $config['username']),
-            'password' => Config::get('smtp_pass', $config['password']),
-            'secure'   => Config::get('smtp_secure', $config['secure']),
-            'from_email' => Config::get('smtp_from_email', $config['from_email']),
-            'from_name'  => Config::get('smtp_from_name', $config['from_name'])
-        ];
+        // Use custom config if provided (for testing), otherwise merge DB settings with file config
+        if ($customConfig) {
+            $smtpConfig = $customConfig;
+        } else {
+            $smtpConfig = [
+                'host'     => Config::get('smtp_host', $config['host']),
+                'port'     => (int)Config::get('smtp_port', $config['port']),
+                'username' => Config::get('smtp_user', $config['username']),
+                'password' => Config::get('smtp_pass', $config['password']),
+                'secure'   => Config::get('smtp_secure', $config['secure']),
+                'from_email' => Config::get('smtp_from_email', $config['from_email']),
+                'from_name'  => Config::get('smtp_from_name', $config['from_name'])
+            ];
+        }
 
         require_once __DIR__ . '/SimpleSMTP.php';
         $smtp = new SimpleSMTP($smtpConfig);
