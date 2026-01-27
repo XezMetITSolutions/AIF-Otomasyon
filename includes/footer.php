@@ -103,7 +103,7 @@ $user = $auth->getUser();
                     
                     e.preventDefault();
                     const form = $(this);
-                    let url = form.attr('action') || window.location.pathname;
+                    let url = form.attr('action') || (window.location.pathname + window.location.search);
                     const method = (form.attr('method') || 'POST').toUpperCase();
                     const formData = new FormData(this); // Supports file uploads too
 
@@ -141,9 +141,9 @@ $user = $auth->getUser();
                     })
                     .then(data => {
                         updateContent(data.html, data.url);
-                        // Update browser URL for GET forms (search/filter)
-                        if (method === 'GET') {
-                            window.history.pushState({path: url}, '', url);
+                        // Update browser URL for both GET and POST (e.g. after redirects)
+                        if (method === 'GET' || data.url !== window.location.href) {
+                            window.history.pushState({path: data.url}, '', data.url);
                         }
                         hideLoader();
                     })
@@ -191,7 +191,20 @@ $user = $auth->getUser();
                 const newContent = doc.querySelector('.content-wrapper');
                 if (newContent) {
                     const currentWrapper = document.querySelector('.content-wrapper');
-                    if(currentWrapper) currentWrapper.innerHTML = newContent.innerHTML;
+                    if(currentWrapper) {
+                        currentWrapper.innerHTML = newContent.innerHTML;
+                        
+                        // Re-execute scripts in the new content
+                        const scripts = newContent.querySelectorAll('script');
+                        scripts.forEach(oldScript => {
+                            const newScript = document.createElement('script');
+                            Array.from(oldScript.attributes).forEach(attr => {
+                                newScript.setAttribute(attr.name, attr.value);
+                            });
+                            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                            currentWrapper.appendChild(newScript);
+                        });
+                    }
                 } else {
                     // Fallback if structure is different
                     // document.body.innerHTML = doc.body.innerHTML;

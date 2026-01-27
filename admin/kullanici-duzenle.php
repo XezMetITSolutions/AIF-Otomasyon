@@ -70,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rol_id = (int)($_POST['rol_id'] ?? 0);
     $byk_id = !empty($_POST['byk_id']) ? (int)$_POST['byk_id'] : null;
     $alt_birim_id = !empty($_POST['alt_birim_id']) ? (int)$_POST['alt_birim_id'] : null;
-    $alt_birim_id = !empty($_POST['alt_birim_id']) ? (int)$_POST['alt_birim_id'] : null;
     $aktif = isset($_POST['aktif']) ? 1 : 0;
     $divan_uyesi = isset($_POST['divan_uyesi']) ? 1 : 0;
     
