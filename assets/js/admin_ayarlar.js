@@ -1,12 +1,12 @@
 /**
  * Sistem Ayarları - SMTP Testi JS
  */
-$(document).ready(function() {
+$(document).ready(function () {
     initSmtpTest();
 });
 
 // SPA (Ajax) geçişleri için tekrar başlatma
-$(document).on('page:loaded', function() {
+$(document).on('page:loaded', function () {
     initSmtpTest();
 });
 
@@ -15,7 +15,7 @@ function initSmtpTest() {
     if (btn.length === 0) return;
 
     // Önceki event listener'ları temizle (tekrar eklenmesin)
-    btn.off('click').on('click', function() {
+    btn.off('click').on('click', function () {
         const email = $('#testEmailAddr').val();
         const statusDiv = $('#testMailStatus');
 
@@ -43,17 +43,23 @@ function initSmtpTest() {
             method: 'POST',
             data: formData,
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     statusDiv.html('<span class="text-success"><i class="fas fa-check-circle me-1"></i> ' + response.message + '</span>');
                 } else {
                     statusDiv.html('<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> ' + response.message + '</span>');
                 }
             },
-            error: function() {
-                statusDiv.html('<span class="text-danger"><i class="fas fa-times-circle me-1"></i> Sistem hatası!</span>');
+            error: function (xhr, status, error) {
+                let msg = 'Sistem hatası!';
+                if (xhr.status === 500) msg = 'Sunucu hatası (500).';
+                else if (xhr.status === 404) msg = 'Dosya bulunamadı (404).';
+                else if (status === 'parsererror') msg = 'Veri okuma hatası (JSON parse error).';
+
+                statusDiv.html('<span class="text-danger"><i class="fas fa-times-circle me-1"></i> ' + msg + '</span>');
+                console.error('SMTP Test Error:', status, error, xhr.responseText);
             },
-            complete: function() {
+            complete: function () {
                 btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Test Gönder');
             }
         });
