@@ -15,18 +15,12 @@ $pageTitle = 'Projelerim';
 
 
 // Yetki Kontrolü
-$isSuperAdmin = ($user['role'] === 'super_admin');
+$isSuperAdmin = $auth->isSuperAdmin();
+$canManage = $auth->hasModulePermission('baskan_projeler');
+$canView = $auth->hasModulePermission('uye_projeler');
 
-if (!$isSuperAdmin) {
-    $canManage = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'baskan_projeler'", [$user['id']]);
-    $canView = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'uye_projeler'", [$user['id']]);
-    
-    if (!$canManage && !$canView) {
-        Middleware::forbidden("Bu sayfayı görüntüleme yetkiniz yok.");
-    }
-} else {
-    $canManage = true;
-    $canView = true;
+if (!$canManage && !$canView) {
+    Middleware::forbidden("Bu sayfayı görüntüleme yetkiniz yok.");
 }
 
 // Projeleri Getir
