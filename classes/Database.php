@@ -37,11 +37,15 @@ class Database {
     }
     
     public function fetch($sql, $params = []) {
-        return $this->query($sql, $params)->fetch();
+        return $this->query($sql, $params)->fetch(PDO::FETCH_ASSOC);
     }
     
     public function fetchAll($sql, $params = []) {
-        return $this->query($sql, $params)->fetchAll();
+        return $this->query($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function fetchColumn($sql, $params = []) {
+        return $this->query($sql, $params)->fetchColumn();
     }
     
     public function lastInsertId() {
