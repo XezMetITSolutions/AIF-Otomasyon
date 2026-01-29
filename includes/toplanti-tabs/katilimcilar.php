@@ -395,9 +395,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const existingUserIds = Array.isArray(rawIds) ? rawIds.map(String) : [];
 
-        // Initial Load if BYK is selected (and script runs after render)
+        // Initial Load if BYK is selected
         if (bykSelect && bykSelect.value) {
             loadUsers(bykSelect.value);
+        }
+
+        // Also load when modal is opened (in case initial load was missed or racer condition)
+        const katilimciModal = document.getElementById('katilimciEkleModal');
+        if (katilimciModal) {
+            katilimciModal.addEventListener('shown.bs.modal', function () {
+                if (bykSelect && bykSelect.value && (userListContainer.innerHTML.includes('Lütfen önce') || userListContainer.innerHTML === '')) {
+                    loadUsers(bykSelect.value);
+                }
+            });
         }
 
         // Change BYK
