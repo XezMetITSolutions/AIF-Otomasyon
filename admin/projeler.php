@@ -30,7 +30,7 @@ $projeler = $db->fetchAll("
 $bykList = $db->fetchAll("SELECT * FROM byk ORDER BY byk_adi ASC");
 
 // Kullanıcı Listesi (Sorumlu seçimi için) - Sadece aktif kullanıcılar
-$usersList = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar WHERE durum = 'aktif' ORDER BY ad ASC");
+$usersList = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar WHERE aktif = 1 ORDER BY ad ASC");
 
 // Yeni Proje Ekleme İşlemi
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_project') {
