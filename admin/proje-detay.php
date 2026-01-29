@@ -8,9 +8,14 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
+$auth = new Auth();
+$user = $auth->getUser();
+$db = Database::getInstance();
+
+$isSuperAdmin = ($user['role'] === 'super_admin');
 
 // Yetki Kontrolü (Genel)
-if (!$auth->isSuperAdmin()) {
+if (!$isSuperAdmin) {
     $canManage = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'baskan_projeler'", [$user['id']]);
     $canView = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'uye_projeler'", [$user['id']]);
     
@@ -45,7 +50,7 @@ if (!$proje) {
 }
 
 // Proje bazlı yetki kontrolü (Spesifik Proje Giriş Yetkisi)
-if (!$auth->isSuperAdmin() && !$canManage) {
+if (!$isSuperAdmin && !$canManage) {
     // Sadece sorumlu veya ekipte olanlar görebilir
     $isAuthorized = ($proje['sorumlu_id'] == $user['id']);
     if (!$isAuthorized) {

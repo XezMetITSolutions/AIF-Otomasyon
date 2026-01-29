@@ -142,6 +142,22 @@ class Auth {
     }
 
     /**
+     * Süper admin mi?
+     */
+    public function isSuperAdmin() {
+        $user = $this->getUser();
+        return $user && ($user['role'] === self::ROLE_SUPER_ADMIN || ($user['role_level'] ?? 0) >= 90);
+    }
+
+    /**
+     * Üye mi?
+     */
+    public function isUye() {
+        $user = $this->getUser();
+        return $user && $user['role'] === self::ROLE_UYE;
+    }
+
+    /**
      * Kullanıcının Muhasebe Başkanı olup olmadığını kontrol et
      */
     public function isAccountingHead($userId) {
