@@ -458,9 +458,6 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
         </div>
-    </div>
-</main>
-
 <!-- MODALS -->
 
 <!-- 1. Yeni Görev -->
@@ -603,9 +600,13 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-function setTeamId(id) {
-    document.getElementById('modalEkipId').value = id;
+window.setTeamId = function(id) {
+    var el = document.getElementById('modalEkipId');
+    if (el) el.value = id;
 }
 </script>
+
+    </div><!-- /.content-wrapper -->
+</main>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
