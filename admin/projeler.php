@@ -121,7 +121,11 @@ include __DIR__ . '/../includes/header.php';
                                 <?php else: ?>
                                     <?php foreach ($projeler as $proje): ?>
                                         <tr>
-                                            <td class="fw-medium"><?php echo htmlspecialchars($proje['baslik']); ?></td>
+                                            <td class="fw-medium">
+                                                <a href="/admin/proje-detay.php?id=<?php echo $proje['proje_id']; ?>" class="text-decoration-none fw-bold text-dark">
+                                                    <?php echo htmlspecialchars($proje['baslik']); ?>
+                                                </a>
+                                            </td>
                                             <td><span class="badge bg-secondary text-light"><?php echo htmlspecialchars($proje['byk_adi']); ?></span></td>
                                             <td>
                                                 <?php if($proje['sorumlu']): ?>
@@ -156,7 +160,10 @@ include __DIR__ . '/../includes/header.php';
                                                 </small>
                                             </td>
                                             <td class="text-end">
-                                                <a href="/admin/proje-duzenle.php?id=<?php echo $proje['proje_id']; ?>" class="btn btn-sm btn-light border">
+                                                <a href="/admin/proje-detay.php?id=<?php echo $proje['proje_id']; ?>" class="btn btn-sm btn-outline-info me-1" title="Detaylar">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="/admin/proje-duzenle.php?id=<?php echo $proje['proje_id']; ?>" class="btn btn-sm btn-light border" title="Düzenle">
                                                     <i class="fas fa-edit text-primary"></i>
                                                 </a>
                                             </td>
