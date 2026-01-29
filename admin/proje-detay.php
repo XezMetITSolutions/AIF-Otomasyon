@@ -190,14 +190,42 @@ $tasks = $db->fetchAll("
     ORDER BY t.son_tarih ASC
 ", [$id]);
 
-// Dosyalar
+// Dosyalar (Proje Dosyaları + Görev Dosyaları)
 $files = $db->fetchAll("
-    SELECT f.*, CONCAT(u.ad, ' ', u.soyad) as yukleyen
+    SELECT 
+        'proje' as tip,
+        f.id, 
+        f.dosya_adi, 
+        f.dosya_yolu, 
+        f.aciklama, 
+        f.tarih,
+        CONCAT(u.ad, ' ', u.soyad) as yukleyen,
+        NULL as gorev_baslik,
+        NULL as ekip_adi
     FROM proje_dosyalari f
     JOIN kullanicilar u ON f.yukleyen_id = u.kullanici_id
     WHERE f.proje_id = ?
-    ORDER BY f.tarih DESC
-", [$id]);
+
+    UNION ALL
+
+    SELECT 
+        'gorev' as tip,
+        gd.id, 
+        gd.dosya_adi, 
+        gd.dosya_yolu, 
+        gd.aciklama, 
+        gd.tarih,
+        CONCAT(u.ad, ' ', u.soyad) as yukleyen,
+        g.baslik as gorev_baslik,
+        pe.baslik as ekip_adi
+    FROM gorev_dosyalari gd
+    JOIN proje_gorevleri g ON gd.gorev_id = g.id
+    JOIN kullanicilar u ON gd.yukleyen_id = u.kullanici_id
+    LEFT JOIN proje_ekipleri pe ON g.ekip_id = pe.id
+    WHERE g.proje_id = ?
+    
+    ORDER BY tarih DESC
+", [$id, $id]);
 
 // Notlar
 $notes = $db->fetchAll("
@@ -446,11 +474,26 @@ include __DIR__ . '/../includes/header.php';
                                     <?php foreach ($files as $file): ?>
                                     <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
-                                            <i class="fas fa-file mb-2 me-2 text-primary"></i>
-                                            <a href="#" class="fw-bold text-decoration-none text-dark"><?php echo htmlspecialchars($file['dosya_adi']); ?></a>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <i class="fas fa-file me-2 text-primary"></i>
+                                                <a href="#" class="fw-bold text-decoration-none text-dark"><?php echo htmlspecialchars($file['dosya_adi']); ?></a>
+                                                <?php if ($file['tip'] == 'gorev'): ?>
+                                                    <span class="badge bg-light text-dark border ms-2" title="Bağlı Görev">
+                                                        <i class="fas fa-tasks me-1 text-secondary"></i>
+                                                        <?php echo htmlspecialchars($file['gorev_baslik']); ?>
+                                                    </span>
+                                                    <?php if ($file['ekip_adi']): ?>
+                                                        <span class="badge bg-secondary ms-1" title="İlgili Ekip">
+                                                            <?php echo htmlspecialchars($file['ekip_adi']); ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <span class="badge bg-primary ms-2">Proje Dosyası</span>
+                                                <?php endif; ?>
+                                            </div>
                                             <div class="small text-muted"><?php echo htmlspecialchars($file['aciklama']); ?></div>
                                             <div class="small text-muted mt-1">
-                                                Yükleyen: <?php echo htmlspecialchars($file['yukleyen']); ?> | <?php echo date('d.m.Y', strtotime($file['tarih'])); ?>
+                                                Yükleyen: <?php echo htmlspecialchars($file['yukleyen']); ?> | <?php echo date('d.m.Y H:i', strtotime($file['tarih'])); ?>
                                             </div>
                                         </div>
                                         <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
