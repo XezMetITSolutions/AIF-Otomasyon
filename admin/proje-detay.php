@@ -494,7 +494,7 @@ include __DIR__ . '/../includes/header.php';
                                         <div>
                                             <div class="d-flex align-items-center mb-1">
                                                 <i class="fas fa-file me-2 text-primary"></i>
-                                                <a href="#" class="fw-bold text-decoration-none text-dark"><?php echo htmlspecialchars($file['dosya_adi']); ?></a>
+                                                <a href="<?php echo htmlspecialchars($file['dosya_yolu']); ?>" target="_blank" class="fw-bold text-decoration-none text-dark"><?php echo htmlspecialchars($file['dosya_adi']); ?></a>
                                                 <?php if ($file['tip'] == 'gorev'): ?>
                                                     <span class="badge bg-light text-dark border ms-2" title="Bağlı Görev">
                                                         <i class="fas fa-tasks me-1 text-secondary"></i>
@@ -514,7 +514,7 @@ include __DIR__ . '/../includes/header.php';
                                                 Yükleyen: <?php echo htmlspecialchars($file['yukleyen']); ?> | <?php echo date('d.m.Y H:i', strtotime($file['tarih'])); ?>
                                             </div>
                                         </div>
-                                        <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                                        <a href="<?php echo htmlspecialchars($file['dosya_yolu']); ?>" download target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
                                     </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>

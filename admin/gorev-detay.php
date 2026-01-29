@@ -303,13 +303,13 @@ include __DIR__ . '/../includes/header.php';
                                      <?php foreach($files as $f): ?>
                                          <div class="list-group-item d-flex justify-content-between align-items-center">
                                              <div>
-                                                 <a href="#" class="fw-bold text-decoration-none"><?php echo htmlspecialchars($f['dosya_adi']); ?></a>
+                                                 <a href="<?php echo htmlspecialchars($f['dosya_yolu']); ?>" target="_blank" class="fw-bold text-decoration-none"><?php echo htmlspecialchars($f['dosya_adi']); ?></a>
                                                  <div class="small text-muted"><?php echo htmlspecialchars($f['aciklama']); ?></div>
                                                  <div class="small text-secondary" style="font-size:11px;">
                                                      <?php echo htmlspecialchars($f['yukleyen']); ?> - <?php echo date('d.m.Y H:i', strtotime($f['tarih'])); ?>
                                                  </div>
                                              </div>
-                                             <i class="fas fa-download text-muted"></i>
+                                             <a href="<?php echo htmlspecialchars($f['dosya_yolu']); ?>" download target="_blank" class="text-muted"><i class="fas fa-download"></i></a>
                                          </div>
                                      <?php endforeach; ?>
                                  <?php endif; ?>
