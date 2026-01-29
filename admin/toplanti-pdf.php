@@ -204,16 +204,7 @@ if (!empty($kararlar)) {
     $html .= '<br>';
 }
 
-// Tutanak
-if ($tutanak) {
-    $html .= '<h2 style="color:#0d6efd;">Tutanak</h2>';
-    if ($tutanak['tutanak_no']) {
-        $html .= '<p><strong>Tutanak No:</strong> ' . htmlspecialchars($tutanak['tutanak_no']) . '</p>';
-    }
-    $html .= '<div style="border:1px solid #dee2e6; padding:10px; background-color:#f8f9fa;">';
-    $html .= nl2br(htmlspecialchars($tutanak['tutanak_metni']));
-    $html .= '</div>';
-}
+
 
 // HTML'i PDF'e yaz
 $pdf->writeHTML($html, true, false, true, false, '');

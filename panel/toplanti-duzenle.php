@@ -68,11 +68,7 @@ $kararlar = $db->fetchAll("
     ORDER BY tk.karar_id
 ", [$toplanti_id]);
 
-// Tutanağı getir
-$tutanak = $db->fetch("
-    SELECT * FROM toplanti_tutanak
-    WHERE toplanti_id = ?
-", [$toplanti_id]);
+
 
 $error = '';
 $success = $_GET['success'] ?? '';
@@ -451,11 +447,7 @@ include __DIR__ . '/../includes/header.php';
                         <span class="badge bg-white text-primary ms-1"><?php echo count($kararlar); ?></span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#tutanak">
-                        <i class="fas fa-file-alt me-2"></i>Tutanak
-                    </a>
-                </li>
+
             </ul>
         </div>
 
@@ -473,9 +465,7 @@ include __DIR__ . '/../includes/header.php';
             <div class="tab-pane fade" id="kararlar">
                 <?php include __DIR__ . '/../includes/toplanti-tabs/kararlar.php'; ?>
             </div>
-            <div class="tab-pane fade" id="tutanak">
-                <?php include __DIR__ . '/../includes/toplanti-tabs/tutanak.php'; ?>
-            </div>
+
         </div>
     </div>
 </main>
