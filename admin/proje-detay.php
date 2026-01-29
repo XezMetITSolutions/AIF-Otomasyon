@@ -8,16 +8,56 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireSuperAdmin();
 
-$auth = new Auth();
-$user = $auth->getUser();
-$db = Database::getInstance();
+// Yetki Kontrolü (Genel)
+if (!$auth->isSuperAdmin()) {
+    $canManage = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'baskan_projeler'", [$user['id']]);
+    $canView = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'uye_projeler'", [$user['id']]);
+    
+    if (!$canManage && !$canView) {
+        Middleware::forbidden("Bu sayfayı görüntüleme yetkiniz yok.");
+    }
+} else {
+    $canManage = true;
+    $canView = true;
+}
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) {
-    header('Location: projeler.php');
+    $redirect = $canManage ? 'projeler' : '../panel/projelerim';
+    header('Location: ' . $redirect);
     exit;
+}
+
+// Proje verilerini al (Gelişmiş)
+$proje = $db->fetch("
+    SELECT p.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as sorumlu_adi
+    FROM projeler p
+    INNER JOIN byk b ON p.byk_id = b.byk_id
+    LEFT JOIN kullanicilar u ON p.sorumlu_id = u.kullanici_id
+    WHERE p.proje_id = ?
+", [$id]);
+
+if (!$proje) {
+    $redirect = $canManage ? 'projeler' : '../panel/projelerim';
+    header('Location: ' . $redirect);
+    exit;
+}
+
+// Proje bazlı yetki kontrolü (Spesifik Proje Giriş Yetkisi)
+if (!$auth->isSuperAdmin() && !$canManage) {
+    // Sadece sorumlu veya ekipte olanlar görebilir
+    $isAuthorized = ($proje['sorumlu_id'] == $user['id']);
+    if (!$isAuthorized) {
+        $checkTeam = $db->fetch("
+            SELECT 1 FROM proje_ekipleri pe 
+            JOIN proje_ekip_uyeleri peu ON pe.id = peu.ekip_id 
+            WHERE pe.proje_id = ? AND peu.kullanici_id = ?
+        ", [$id, $user['id']]);
+        if (!$checkTeam) {
+            Middleware::forbidden("Bu projenin içeriğini görme yetkiniz yok. Sadece ekip üyeleri görebilir.");
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -173,15 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // 2. VERİ ÇEKME
 // ------------------------------------------------------------------------------------------------
 
-// Proje Detay
-$proje = $db->fetch("
-    SELECT p.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as sorumlu_adi
-    FROM projeler p
-    INNER JOIN byk b ON p.byk_id = b.byk_id
-    LEFT JOIN kullanicilar u ON p.sorumlu_id = u.kullanici_id
-    WHERE p.proje_id = ?
-", [$id]);
-
+// Proje Detay (Fetched at top)
 if (!$proje) die("Proje bulunamadı.");
 
 // Ekipler
@@ -274,7 +306,7 @@ include __DIR__ . '/../includes/header.php';
             <div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a href="/admin/projeler.php">Projeler</a></li>
+                        <li class="breadcrumb-item"><a href="<?php echo $canManage ? '/admin/projeler' : '/panel/projelerim'; ?>">Projeler</a></li>
                         <li class="breadcrumb-item active"><?php echo htmlspecialchars($proje['baslik']); ?></li>
                     </ol>
                 </nav>

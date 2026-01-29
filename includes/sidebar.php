@@ -117,10 +117,10 @@ if ($user) {
                 ],
                 [
                     'key' => 'baskan_projeler',
-                    'path' => '/admin/projeler.php',
+                    'path' => '/panel/projelerim',
                     'icon' => 'fas fa-project-diagram',
                     'label' => 'Proje Yönetimi',
-                    'match' => 'admin/projeler',
+                    'match' => 'projeler',
                 ],
             ],
         ],
@@ -178,10 +178,10 @@ if ($user) {
         ],
         [
             'key' => 'uye_projeler',
-            'path' => '/admin/projeler.php',
+            'path' => '/panel/projelerim',
             'icon' => 'fas fa-list-check',
             'label' => 'Projelerim',
-            'match' => 'admin/projeler',
+            'match' => 'projeler',
         ],
     ];
 
