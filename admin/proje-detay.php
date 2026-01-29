@@ -606,6 +606,68 @@ window.setTeamId = function(id) {
     var el = document.getElementById('modalEkipId');
     if (el) el.value = id;
 }
+
+// Team Member Data
+var teamMembers = <?php 
+    $tmData = [];
+    foreach($teams as $t) {
+        $mems = [];
+        if (!empty($t['uyeler'])) {
+            foreach($t['uyeler'] as $u) {
+                $mems[] = ['id' => $u['kullanici_id'], 'name' => $u['ad'] . ' ' . $u['soyad']];
+            }
+        }
+        $tmData[$t['id']] = $mems;
+    }
+    echo json_encode($tmData);
+?>;
+
+var allUsers = <?php 
+    $allU = [];
+    foreach($usersList as $u) {
+        $allU[] = ['id' => $u['kullanici_id'], 'name' => $u['ad'] . ' ' . $u['soyad']];
+    }
+    echo json_encode($allU);
+?>;
+
+document.addEventListener('DOMContentLoaded', function() {
+    var teamSelect = document.querySelector('select[name="assigned_team"]');
+    var userSelect = document.querySelector('select[name="assigned_to"]');
+    
+    if (teamSelect && userSelect) {
+        teamSelect.addEventListener('change', function() {
+            var teamId = this.value;
+            
+            // Clear current options
+            userSelect.innerHTML = '<option value="">Seçiniz</option>';
+            
+            var usersToShow = [];
+            
+            if (teamId && teamMembers[teamId] && teamMembers[teamId].length > 0) {
+                // Show only team members
+                usersToShow = teamMembers[teamId];
+            } else if (teamId && (!teamMembers[teamId] || teamMembers[teamId].length === 0)) {
+                // Team selected but has no members -> Show empty or maybe all? 
+                // Let's show all for flexibility, or maybe show none? 
+                // Usually if I select a team, I want to assign to someone in it. 
+                // If empty, maybe show all (fallback) or show none.
+                // Let's stick to showing ONLY members if team is selected.
+                usersToShow = []; 
+            } else {
+                // No team selected -> Show All
+                usersToShow = allUsers;
+            }
+            
+            // Populate options
+            usersToShow.forEach(function(u) {
+                var option = document.createElement('option');
+                option.value = u.id;
+                option.textContent = u.name;
+                userSelect.appendChild(option);
+            });
+        });
+    }
+});
 </script>
 
     </div><!-- /.content-wrapper -->
