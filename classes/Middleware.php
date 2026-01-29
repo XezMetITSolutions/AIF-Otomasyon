@@ -103,5 +103,19 @@ class Middleware {
         
         return $_SESSION[$tokenName];
     }
+
+    /**
+     * Yetkisiz erişim hatası göster ve durdur
+     */
+    public static function forbidden($message = "Bu sayfayı görüntüleme yetkiniz yok.") {
+        header('HTTP/1.1 403 Forbidden');
+        if (file_exists(__DIR__ . '/../access-denied.php')) {
+            $_SESSION['error_message'] = $message;
+            include __DIR__ . '/../access-denied.php';
+        } else {
+            die($message);
+        }
+        exit;
+    }
 }
 
