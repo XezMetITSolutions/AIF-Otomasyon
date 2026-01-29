@@ -54,10 +54,9 @@ $teamsData = [
 echo "Baslatiliyor... Proje ID: $projectId\n\n";
 
 // Önce proje var mı kontrol et
-$proje = $db->fetch("SELECT id FROM projeler WHERE proje_id = ?", [$projectId]);
+$proje = $db->fetch("SELECT proje_id FROM projeler WHERE proje_id = ?", [$projectId]);
 if (!$proje && $projectId != 0) { 
     // proje_id ve id karışıklığı olabilir, şemayı kontrol etmeyelim, direkt insert/select deneyelim
-    // ama admin/projeler.php'de 'proje_id' kullanılmıştı.
 }
 
 foreach ($teamsData as $teamTitle => $members) {
