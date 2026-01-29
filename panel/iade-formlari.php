@@ -763,7 +763,13 @@ include __DIR__ . '/../includes/header.php';
                     <div class="mt-2">
                         <div class="row g-2">
                             <div class="col-md-4">
-                                <input type="number" name="kilometer" class="form-control form-control-sm kilometer-field" placeholder="KM" onchange="window.calcFuelCost(this)" step="0.01">
+                                <div class="input-group input-group-sm">
+                                    <input type="number" name="kilometer" class="form-control kilometer-field" placeholder="0.00" onchange="window.calcFuelCost(this)" step="0.01">
+                                    <span class="input-group-text">km</span>
+                                </div>
+                                <div class="form-text mt-1" style="font-size: 0.75rem;">
+                                    <i class="fas fa-info-circle me-1 text-primary"></i>Mesafe km başı 0,25 € olarak hesaplanmaktadır.
+                                </div>
                             </div>
                             <div class="col-md-8">
                                 <input type="text" name="route" class="form-control form-control-sm route-full" placeholder="Rota detayı" readonly>
@@ -855,7 +861,7 @@ include __DIR__ . '/../includes/header.php';
 
     window.calcFuelCost = function(input) {
         var km = parseFloat(input.value) || 0;
-        var cost = km * 0.42; 
+        var cost = km * 0.25; 
         var amountInput = input.closest('.item').querySelector('.amount-simple input');
         if(amountInput) amountInput.value = cost.toFixed(2);
         window.calculateTotal();
