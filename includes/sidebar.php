@@ -115,6 +115,13 @@ if ($user) {
                     'badge' => ['id' => 'pendingRaggalCount', 'class' => 'bg-primary'],
                     'class' => 'no-ajax',
                 ],
+                [
+                    'key' => 'baskan_projeler',
+                    'path' => '/admin/projeler.php',
+                    'icon' => 'fas fa-project-diagram',
+                    'label' => 'Proje Yönetimi',
+                    'match' => 'admin/projeler',
+                ],
             ],
         ],
         [
@@ -168,6 +175,13 @@ if ($user) {
             'label' => 'Raggal Rezervasyon',
             'match' => 'panel/raggal-talepleri',
             'class' => 'no-ajax',
+        ],
+        [
+            'key' => 'uye_projeler',
+            'path' => '/admin/projeler.php',
+            'icon' => 'fas fa-list-check',
+            'label' => 'Projelerim',
+            'match' => 'admin/projeler',
         ],
     ];
 
