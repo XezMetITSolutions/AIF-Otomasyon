@@ -168,6 +168,13 @@ $consolidatedFeatures = [
             'manager_key' => 'baskan_raporlar',
             'member_key' => null,
         ],
+        [
+            'name' => 'Proje Yönetimi',
+            'desc' => 'Projeler, görev takibi ve ekip yönetimi',
+            'manager_key' => 'baskan_projeler',
+            'member_key' => 'uye_projeler',
+            'member_desc' => 'Projelerim',
+        ],
     ],
     'İletişim & Faaliyetler' => [
         [

@@ -7,23 +7,47 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireSuperAdmin();
 
-$auth = new Auth();
-$user = $auth->getUser();
-$db = Database::getInstance();
+// Yetki Kontrolü
+if (!$auth->isSuperAdmin()) {
+    $canManage = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'baskan_projeler'", [$user['id']]);
+    $canView = $db->fetchColumn("SELECT can_view FROM baskan_modul_yetkileri WHERE kullanici_id = ? AND module_key = 'uye_projeler'", [$user['id']]);
+    
+    if (!$canManage && !$canView) {
+        Middleware::forbidden("Bu sayfayı görüntüleme yetkiniz yok.");
+    }
+} else {
+    $canManage = true;
+    $canView = true;
+}
 
-$pageTitle = 'Proje Takibi';
+// Projeleri Getir
+$sql = "SELECT p.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as sorumlu
+        FROM projeler p
+        INNER JOIN byk b ON p.byk_id = b.byk_id
+        LEFT JOIN kullanicilar u ON p.sorumlu_id = u.kullanici_id
+        WHERE 1=1";
 
-// Projeler
-$projeler = $db->fetchAll("
-    SELECT p.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as sorumlu
-    FROM projeler p
-    INNER JOIN byk b ON p.byk_id = b.byk_id
-    LEFT JOIN kullanicilar u ON p.sorumlu_id = u.kullanici_id
-    ORDER BY p.olusturma_tarihi DESC
-    LIMIT 50
-");
+$params = [];
+
+// Eğer süper admin değilse ve Yönetici yetkisi yoksa -> Sadece dahil olduğu projeler
+// Not: Yönetici yetkisi ($canManage) varsa tümünü görür (veya BYK filtresi uygulanabilir ama şimdilik tümü)
+if (!$auth->isSuperAdmin() && !$canManage) {
+    // Sadece sorumlu olduğu, ekibinde olduğu projeler
+    $sql .= " AND (
+        p.sorumlu_id = :uid 
+        OR EXISTS (
+            SELECT 1 FROM proje_ekipleri pe 
+            JOIN proje_ekip_uyeleri peu ON pe.id = peu.ekip_id 
+            WHERE pe.proje_id = p.proje_id AND peu.kullanici_id = :uid
+        )
+    )";
+    $params['uid'] = $user['id'];
+}
+
+$sql .= " ORDER BY p.olusturma_tarihi DESC LIMIT 50";
+
+$projeler = $db->fetchAll($sql, $params);
 
 
 // BYK Listesi (Form için)
@@ -74,9 +98,11 @@ include __DIR__ . '/../includes/header.php';
                 <h1 class="h3 mb-0">
                     <i class="fas fa-project-diagram me-2"></i>Proje Takibi
                 </h1>
+                <?php if ($canManage): ?>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
                     <i class="fas fa-plus me-2"></i>Yeni Proje Ekle
                 </button>
+                <?php endif; ?>
             </div>
 
             <?php if (isset($_GET['success']) && $_GET['success'] === 'created'): ?>

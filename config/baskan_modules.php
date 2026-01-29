@@ -101,6 +101,14 @@ return [
         'description' => 'Raggal rezervasyon taleplerini yönetin.',
         'icon' => 'fas fa-calendar-check',
     ],
+    'baskan_projeler' => [
+        'label' => 'Proje Yönetimi',
+        'group' => 'Baskan Paneli',
+        'category' => 'baskan',
+        'default' => true,
+        'description' => 'Projeleri oluşturun, görevleri ve ekipleri yönetin.',
+        'icon' => 'fas fa-project-diagram',
+    ],
 
     // Üye paneli modülleri (varsayılan: kapalı)
     'uye_duyurular' => [
@@ -166,6 +174,14 @@ return [
         'default' => false,
         'description' => 'Raggal rezervasyon formu.',
         'icon' => 'fas fa-calendar-plus',
+    ],
+    'uye_projeler' => [
+        'label' => 'Projelerim',
+        'group' => 'Üye Modülleri',
+        'category' => 'uye',
+        'default' => true,
+        'description' => 'Dahil olduğunuz projeleri ve görevleri görüntüleyin.',
+        'icon' => 'fas fa-list-check',
     ],
 ];
 
