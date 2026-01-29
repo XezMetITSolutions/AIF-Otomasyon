@@ -227,7 +227,18 @@ foreach ($teams as &$team) {
 }
 unset($team);
 
-// Görevler
+// Görevler (Yetkilendirme Filtresi ile)
+$isMainResponsible = ($isSuperAdmin || $proje['sorumlu_id'] == $user['id']);
+$taskWhere = "t.proje_id = ?";
+$taskParams = [$id];
+
+if (!$isMainResponsible) {
+    // Eğer ana sorumlu değilsem, sadece dahil olduğum ekiplerin görevlerini görebilirim.
+    $taskWhere .= " AND (t.ekip_id IN (SELECT ekip_id FROM proje_ekip_uyeleri WHERE kullanici_id = ?) OR t.atanan_kisi_id = ?)";
+    $taskParams[] = $user['id'];
+    $taskParams[] = $user['id'];
+}
+
 $tasks = $db->fetchAll("
     SELECT t.*, 
            CONCAT(u.ad, ' ', u.soyad) as atanan_ad,
@@ -235,9 +246,9 @@ $tasks = $db->fetchAll("
     FROM proje_gorevleri t
     LEFT JOIN kullanicilar u ON t.atanan_kisi_id = u.kullanici_id
     LEFT JOIN proje_ekipleri pe ON t.ekip_id = pe.id
-    WHERE t.proje_id = ?
+    WHERE $taskWhere
     ORDER BY t.son_tarih ASC
-", [$id]);
+", $taskParams);
 
 // Dosyalar (Proje Dosyaları + Görev Dosyaları)
 $files = $db->fetchAll("
