@@ -25,6 +25,40 @@ $projeler = $db->fetchAll("
     LIMIT 50
 ");
 
+
+// BYK Listesi (Form için)
+$bykList = $db->fetchAll("SELECT * FROM byk ORDER BY byk_adi ASC");
+
+// Kullanıcı Listesi (Sorumlu seçimi için) - Sadece aktif kullanıcılar
+$usersList = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar WHERE durum = 'aktif' ORDER BY ad ASC");
+
+// Yeni Proje Ekleme İşlemi
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_project') {
+    try {
+        if (!Middleware::verifyCSRF()) {
+            throw new Exception('Güvenlik doğrulaması başarısız via CSRF.');
+        }
+
+        $baslik = trim($_POST['baslik'] ?? '');
+        $byk_id = $_POST['byk_id'] ?? null;
+        $sorumlu_id = $_POST['sorumlu_id'] ?: null; // Optional
+        $aciklama = trim($_POST['aciklama'] ?? '');
+        $baslangic = $_POST['baslangic_tarihi'] ?: null;
+        $bitis = $_POST['bitis_tarihi'] ?: null;
+        
+        if (empty($baslik)) throw new Exception("Proje başlığı zorunludur.");
+        if (empty($byk_id)) throw new Exception("Birim/BYK seçimi zorunludur.");
+
+        $sql = "INSERT INTO projeler (baslik, aciklama, byk_id, sorumlu_id, baslangic_tarihi, bitis_tarihi, durum, olusturma_tarihi) VALUES (?, ?, ?, ?, ?, ?, 'beklemede', NOW())";
+        $db->query($sql, [$baslik, $aciklama, $byk_id, $sorumlu_id, $baslangic, $bitis]);
+        
+        header("Location: projeler.php?success=created");
+        exit;
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+    }
+}
+
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -37,50 +71,90 @@ include __DIR__ . '/../includes/header.php';
                 <h1 class="h3 mb-0">
                     <i class="fas fa-project-diagram me-2"></i>Proje Takibi
                 </h1>
-                <a href="/admin/proje-ekle.php" class="btn btn-primary">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
                     <i class="fas fa-plus me-2"></i>Yeni Proje Ekle
-                </a>
+                </button>
             </div>
+
+            <?php if (isset($_GET['success']) && $_GET['success'] === 'created'): ?>
+                <div class="alert alert-success alert-dismissible fade show">
+                    Proje başarıyla oluşturuldu.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <?php echo htmlspecialchars($error); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
             
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
                     Toplam: <strong><?php echo count($projeler); ?></strong> proje
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light">
                                 <tr>
                                     <th>Proje Adı</th>
-                                    <th>BYK</th>
+                                    <th>BYK / Birim</th>
                                     <th>Sorumlu</th>
                                     <th>Durum</th>
-                                    <th>Başlangıç</th>
-                                    <th>Bitiş</th>
-                                    <th>İşlemler</th>
+                                    <th>Tarih</th>
+                                    <th class="text-end">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($projeler)): ?>
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">Henüz proje eklenmemiş.</td>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i class="fas fa-folder-open fa-3x mb-3"></i><br>
+                                            Henüz proje eklenmemiş.
+                                        </td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($projeler as $proje): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($proje['baslik']); ?></td>
-                                            <td><?php echo htmlspecialchars($proje['byk_adi']); ?></td>
-                                            <td><?php echo htmlspecialchars($proje['sorumlu'] ?? '-'); ?></td>
+                                            <td class="fw-medium"><?php echo htmlspecialchars($proje['baslik']); ?></td>
+                                            <td><span class="badge bg-secondary text-light"><?php echo htmlspecialchars($proje['byk_adi']); ?></span></td>
                                             <td>
-                                                <span class="badge bg-<?php echo $proje['durum'] === 'tamamlandi' ? 'success' : ($proje['durum'] === 'aktif' ? 'info' : 'warning'); ?>">
-                                                    <?php echo htmlspecialchars($proje['durum']); ?>
+                                                <?php if($proje['sorumlu']): ?>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-circle-sm bg-primary text-white me-2">
+                                                            <?php echo strtoupper(substr($proje['sorumlu'], 0, 1)); ?>
+                                                        </div>
+                                                        <?php echo htmlspecialchars($proje['sorumlu']); ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span class="text-muted">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                $statusClass = match($proje['durum']) {
+                                                    'tamamlandi' => 'success',
+                                                    'aktif' => 'primary',
+                                                    'iptal' => 'danger',
+                                                    default => 'warning text-dark'
+                                                };
+                                                ?>
+                                                <span class="badge bg-<?php echo $statusClass; ?>">
+                                                    <?php echo ucfirst($proje['durum']); ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo $proje['baslangic_tarihi'] ? date('d.m.Y', strtotime($proje['baslangic_tarihi'])) : '-'; ?></td>
-                                            <td><?php echo $proje['bitis_tarihi'] ? date('d.m.Y', strtotime($proje['bitis_tarihi'])) : '-'; ?></td>
                                             <td>
-                                                <a href="/admin/proje-duzenle.php?id=<?php echo $proje['proje_id']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-edit"></i>
+                                                <small class="text-muted">
+                                                    <?php echo $proje['baslangic_tarihi'] ? date('d.m.Y', strtotime($proje['baslangic_tarihi'])) : ''; ?>
+                                                    <?php echo ($proje['baslangic_tarihi'] && $proje['bitis_tarihi']) ? ' - ' : ''; ?>
+                                                    <?php echo $proje['bitis_tarihi'] ? date('d.m.Y', strtotime($proje['bitis_tarihi'])) : ''; ?>
+                                                </small>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="/admin/proje-duzenle.php?id=<?php echo $proje['proje_id']; ?>" class="btn btn-sm btn-light border">
+                                                    <i class="fas fa-edit text-primary"></i>
                                                 </a>
                                             </td>
                                         </tr>
@@ -93,6 +167,70 @@ include __DIR__ . '/../includes/header.php';
             </div>
     </div>
 </main>
+
+<!-- Yeni Proje Modal -->
+<div class="modal fade" id="newProjectModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Proje Oluştur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="csrf_token" value="<?php echo Middleware::generateCSRF(); ?>">
+                <input type="hidden" name="action" value="add_project">
+                
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Proje Başlığı <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="baslik" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Birim / BYK <span class="text-danger">*</span></label>
+                        <select name="byk_id" class="form-select" required>
+                            <option value="">Seçiniz...</option>
+                            <?php foreach($bykList as $byk): ?>
+                                <option value="<?php echo $byk['byk_id']; ?>"><?php echo htmlspecialchars($byk['byk_adi']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Proje Sorumlusu</label>
+                        <select name="sorumlu_id" class="form-select">
+                            <option value="">Seçiniz...</option>
+                            <?php foreach($usersList as $usr): ?>
+                                <option value="<?php echo $usr['kullanici_id']; ?>">
+                                    <?php echo htmlspecialchars($usr['ad'] . ' ' . $usr['soyad']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Başlangıç Tarihi</label>
+                        <input type="date" class="form-control" name="baslangic_tarihi">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Bitiş Tarihi</label>
+                        <input type="date" class="form-control" name="bitis_tarihi">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="aciklama" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="submit" class="btn btn-primary">Projeyi Oluştur</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
