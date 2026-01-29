@@ -463,7 +463,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- 1. Yeni Görev -->
 <div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog">
-        <form method="POST" class="modal-content">
+        <form method="POST" class="modal-content no-ajax">
             <input type="hidden" name="action" value="add_task">
             <div class="modal-header">
                 <h5 class="modal-title">Görev Ekle</h5>
@@ -514,7 +514,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- 2. Yeni Ekip -->
 <div class="modal fade" id="addTeamModal" tabindex="-1">
     <div class="modal-dialog">
-        <form method="POST" class="modal-content">
+        <form method="POST" class="modal-content no-ajax">
             <input type="hidden" name="action" value="add_team">
             <div class="modal-header">
                 <h5 class="modal-title">Yeni Ekip Oluştur</h5>
@@ -570,7 +570,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- 4. Dosya Yükle -->
 <div class="modal fade" id="uploadFileModal" tabindex="-1">
     <div class="modal-dialog">
-        <form method="POST" class="modal-content" enctype="multipart/form-data">
+        <form method="POST" class="modal-content no-ajax" enctype="multipart/form-data">
             <input type="hidden" name="action" value="upload_file">
             <div class="modal-header">
                 <h5 class="modal-title">Dosya / Rapor Yükle</h5>
