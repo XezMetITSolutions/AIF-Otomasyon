@@ -328,9 +328,6 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
         </div>
-    </div>
-</main>
-
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1">
     <div class="modal-dialog">
@@ -361,5 +358,8 @@ include __DIR__ . '/../includes/header.php';
         </form>
     </div>
 </div>
+
+    </div><!-- /.content-wrapper -->
+</main>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
