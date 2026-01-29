@@ -547,7 +547,9 @@ include __DIR__ . '/../includes/header.php';
     // Sabitler ve Ayarlar
     var HESAPLAMA_BASE = '<?php echo $formBasePath; ?>';
     var DEFAULT_BYK = '<?php echo htmlspecialchars($uyeBykKodu); ?>';
-    var ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+    if (typeof ORS_API_KEY === 'undefined') {
+        var ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+    }
     var itemCounter = 0;
     var AUTOCOMPLETE_DEBOUNCE_MS = 250;
 
@@ -1117,17 +1119,16 @@ include __DIR__ . '/../includes/header.php';
         var container = document.getElementById('itemsContainer');
         if (!container) return;
 
-        // Sadece container varsa ve içi boşsa ilk kalemi ekle
-        if (container.children.length === 0) {
-            window.addItem();
-        }
+        // Container temizle (çift yüklenmesini önlemek için)
+        container.innerHTML = '';
+        
+        // İlk kalemi ekle
+        window.addItem();
         
         // Ekleme butonu dinleyicisi
         var btn = document.getElementById('addItemBtn');
         if (btn) {
-            // Eski dinleyicileri temizlemek için (bazı AJAX yüklemelerinde çift çalışma riski)
-            btn.removeEventListener('click', window.addItem);
-            btn.addEventListener('click', window.addItem);
+            btn.onclick = function() { window.addItem(); };
         }
 
         // Format initial IBAN if exists

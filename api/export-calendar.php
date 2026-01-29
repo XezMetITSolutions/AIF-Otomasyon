@@ -17,14 +17,16 @@ $search = $_GET['search'] ?? '';
 $monthFilter = $_GET['ay'] ?? '';
 $yearFilter = $_GET['yil'] ?? '';
 
-// Temel sorgu (Hem üye hem başkan için kendi BYK'sını baz alır)
-$userBykId = $user['byk_id'];
-if (!$userBykId) {
-    die('BYK bilgisi bulunamadı.');
-}
+// Temel sorgu (Varsayılan olarak boş, filtreler aşağıda eklenecek)
+$where = [];
+$params = [];
 
-$where = ["e.byk_id = ?"];
-$params = [$userBykId];
+// Eğer birim filtresi gelmişse kısıtla
+$birimFilter = $_GET['birim'] ?? '';
+if ($birimFilter) {
+    $where[] = "b.byk_kodu = ?";
+    $params[] = $birimFilter;
+}
 
 if ($search) {
     $where[] = "(e.baslik LIKE ? OR e.aciklama LIKE ?)";

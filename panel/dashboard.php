@@ -59,15 +59,13 @@ $kullanici = $db->fetch("
 ", [$user['id']]);
 
 // Check AT (Headquarters)
-$userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
-$isAT = ($userByk && $userByk['byk_kodu'] === 'AT');
-$eventScope = $_GET['event_scope'] ?? ($isAT ? 'all' : 'my_unit');
+$eventScope = $_GET['event_scope'] ?? 'all';
 
 // Events Query
 $eventWhere = ["e.baslangic_tarihi >= CURDATE()", "e.baslangic_tarihi <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))"];
 $eventParams = [];
 
-if (!$isAT || $eventScope === 'my_unit') {
+if ($eventScope === 'my_unit') {
     $eventWhere[] = "e.byk_id = ?";
     $eventParams[] = $user['byk_id'];
 }
@@ -250,7 +248,6 @@ include __DIR__ . '/../includes/header.php';
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div><i class="fas fa-calendar-alt me-2 text-primary"></i>Yaklaşan Etkinlikler</div>
-                            <?php if ($isAT): ?>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-light border dropdown-toggle py-0" type="button" data-bs-toggle="dropdown">
                                     <?php echo ($eventScope === 'my_unit') ? 'Birimim' : 'Tümü'; ?>
@@ -260,7 +257,6 @@ include __DIR__ . '/../includes/header.php';
                                     <li><a class="dropdown-item <?php echo $eventScope === 'my_unit' ? 'active' : ''; ?>" href="?event_scope=my_unit">Birimim</a></li>
                                 </ul>
                             </div>
-                            <?php endif; ?>
                         </div>
 
                         <div class="card-body p-0">
@@ -286,7 +282,11 @@ include __DIR__ . '/../includes/header.php';
                                                     <div class="small text-uppercase" style="font-size: 0.65rem; opacity: 0.9;"><?php echo $aylar[$ayKodu] ?? date('M', strtotime($etkinlik['baslangic_tarihi'])); ?></div>
                                                 </div>
                                                 <div>
-                                                    <h6 class="mb-0 fw-semibold text-dark"><?php echo htmlspecialchars($etkinlik['baslik']); ?></h6>
+                                                    <h6 class="mb-0 fw-semibold">
+                                                        <a href="/panel/etkinlikler.php" class="text-dark text-decoration-none">
+                                                            <?php echo htmlspecialchars($etkinlik['baslik']); ?>
+                                                        </a>
+                                                    </h6>
                                                     <small class="text-muted d-block mt-1">
                                                         <i class="fas fa-sitemap me-1" style="font-size: 0.8em; color: <?php echo $renk; ?>;"></i> <?php echo htmlspecialchars($birimAdi); ?>
                                                     </small>
@@ -330,7 +330,11 @@ include __DIR__ . '/../includes/header.php';
                                                     <div class="small text-muted text-uppercase" style="font-size: 0.65rem;"><?php echo $aylar[$ayKodu] ?? date('M', strtotime($toplanti['toplanti_tarihi'])); ?></div>
                                                 </div>
                                                 <div>
-                                                    <h6 class="mb-1 fw-semibold text-dark"><?php echo htmlspecialchars($toplanti['baslik']); ?></h6>
+                                                    <h6 class="mb-1 fw-semibold">
+                                                        <a href="/panel/toplantilar.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none">
+                                                            <?php echo htmlspecialchars($toplanti['baslik']); ?>
+                                                        </a>
+                                                    </h6>
                                                      <div class="d-flex flex-column gap-1">
                                                         <small class="text-muted">
                                                             <i class="fas fa-sitemap me-1 text-success" style="font-size: 0.8em;"></i> <?php echo htmlspecialchars($birimAdi); ?>
@@ -414,7 +418,7 @@ include __DIR__ . '/../includes/header.php';
                             <div>
                                 <i class="fas fa-calendar-check me-2 text-warning"></i>Son İzin Talepleri
                             </div>
-                            <a href="/panel/uye_izin-talepleri.php" class="btn btn-sm btn-primary rounded-pill px-3">
+                            <a href="/panel/izin-talepleri.php" class="btn btn-sm btn-primary rounded-pill px-3">
                                 Yeni Talep <i class="fas fa-plus ms-1"></i>
                             </a>
                         </div>

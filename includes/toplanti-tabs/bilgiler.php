@@ -108,31 +108,37 @@
 
             <script>
             // OpenRouteService API Logic
-            const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+            if (typeof ORS_API_KEY === 'undefined') {
+                var ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+            }
             
-            function debounce(fn, delay) {
-                let t;
-                return (...args) => {
-                    clearTimeout(t);
-                    t = setTimeout(() => fn(...args), delay);
+            if (typeof debounce === 'undefined') {
+                var debounce = function(fn, delay) {
+                    let t;
+                    return (...args) => {
+                        clearTimeout(t);
+                        t = setTimeout(() => fn(...args), delay);
+                    };
                 };
             }
 
-            async function fetchAddressSuggestions(query) {
-                if (!query || query.length < 2) return [];
-                const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${encodeURIComponent(ORS_API_KEY)}&text=${encodeURIComponent(query)}&size=5&boundary.country=AT,DE,CH&lang=tr`;
-                try {
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    if (!data.features) return [];
-                    return data.features.map(f => ({ label: f.properties.label || '' }));
-                } catch (e) {
-                    console.error('ORS Error:', e);
-                    return [];
-                }
+            if (typeof fetchAddressSuggestions === 'undefined') {
+                var fetchAddressSuggestions = async function(query) {
+                    if (!query || query.length < 2) return [];
+                    const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${encodeURIComponent(ORS_API_KEY)}&text=${encodeURIComponent(query)}&size=5&boundary.country=AT,DE,CH&lang=tr`;
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        if (!data.features) return [];
+                        return data.features.map(f => ({ label: f.properties.label || '' }));
+                    } catch (e) {
+                        console.error('ORS Error:', e);
+                        return [];
+                    }
+                };
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
+            function initBilgilerTab() {
                 const inputEl = document.getElementById('konum');
                 const suggestionsEl = document.getElementById('konumSuggestions');
 
@@ -169,7 +175,16 @@
                         if (inputEl.value.trim().length >= 2) debouncedSearch(); 
                     });
                 }
-            });
+            }
+
+            // Standart sayfa yükleme
+            document.addEventListener('DOMContentLoaded', initBilgilerTab);
+            // AJAX (SPA) sayfa yükleme
+            $(document).on('page:loaded', initBilgilerTab);
+            // Hemen çalıştır
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                initBilgilerTab();
+            }
             </script>
 
             <div class="mb-3">

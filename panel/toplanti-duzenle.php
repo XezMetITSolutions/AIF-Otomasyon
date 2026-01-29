@@ -18,7 +18,7 @@ $pageTitle = 'Toplantı Detayı';
 
 $toplanti_id = $_GET['id'] ?? null;
 if (!$toplanti_id) {
-    header('Location: /panel/baskan_toplantilar.php');
+    header('Location: /panel/toplantilar.php');
     exit;
 }
 
@@ -31,7 +31,7 @@ $toplanti = $db->fetch("
 ", [$toplanti_id, $user['byk_id']]);
 
 if (!$toplanti) {
-    header('Location: /panel/baskan_toplantilar.php');
+    header('Location: /panel/toplantilar.php');
     exit;
 }
 
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $success = 'Bilgiler ve gündem maddeleri güncellendi.';
-            header("Location: /panel/baskan_toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
+            header("Location: /panel/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
             exit;
         }
     } catch (Exception $e) {
@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $toplanti_id
             ]);
             $success = 'Bilgiler güncellendi (Sistem onarımı yapıldı).';
-            header("Location: /panel/baskan_toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
+            header("Location: /panel/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
             exit;
         } else {
             $error = $msg;
@@ -404,7 +404,7 @@ include __DIR__ . '/../includes/header.php';
                     <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-primary" target="_blank">
                         <i class="fas fa-file-pdf me-2"></i>Rapor Al
                     </a>
-                    <a href="/panel/baskan_toplantilar.php" class="btn btn-outline-secondary">
+                    <a href="/panel/toplantilar.php" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-2"></i>Listeye Dön
                     </a>
                 </div>

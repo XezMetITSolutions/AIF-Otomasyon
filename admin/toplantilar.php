@@ -70,7 +70,11 @@ include __DIR__ . '/../includes/header.php';
                                 <?php else: ?>
                                     <?php foreach ($toplantilar as $toplanti): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($toplanti['baslik']); ?></td>
+                                            <td>
+                                                <a href="/admin/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none fw-bold">
+                                                    <?php echo htmlspecialchars($toplanti['baslik']); ?>
+                                                </a>
+                                            </td>
                                             <td><?php echo htmlspecialchars($toplanti['byk_adi']); ?></td>
                                             <td><?php echo date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])); ?></td>
                                             <td>

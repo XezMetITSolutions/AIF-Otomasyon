@@ -41,6 +41,7 @@ $son_aktiviteler = Cache::remember('dashboard_son_aktiviteler', 120, function ()
     return $db->fetchAll("
         SELECT 
             'toplanti' as tip,
+            t.toplanti_id as id,
             t.baslik as baslik,
             t.olusturma_tarihi as tarih,
             CONCAT(u.ad, ' ', u.soyad) as kullanici
@@ -247,7 +248,15 @@ include __DIR__ . '/../includes/header.php';
                                                             <?php echo ucfirst($aktivite['tip']); ?>
                                                         </span>
                                                     </td>
-                                                    <td><?php echo htmlspecialchars($aktivite['baslik']); ?></td>
+                                                    <td>
+                                                        <?php if ($aktivite['tip'] === 'toplanti'): ?>
+                                                            <a href="/admin/toplanti-duzenle.php?id=<?php echo $aktivite['id']; ?>" class="text-dark text-decoration-none fw-bold">
+                                                                <?php echo htmlspecialchars($aktivite['baslik']); ?>
+                                                            </a>
+                                                        <?php else: ?>
+                                                            <?php echo htmlspecialchars($aktivite['baslik']); ?>
+                                                        <?php endif; ?>
+                                                    </td>
                                                     <td><?php echo htmlspecialchars($aktivite['kullanici']); ?></td>
                                                     <td><?php echo date('d.m.Y H:i', strtotime($aktivite['tarih'])); ?></td>
                                                 </tr>

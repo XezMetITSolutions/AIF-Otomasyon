@@ -25,19 +25,9 @@ $yearFilter = $_GET['yil'] ?? '';
 // Permission check for management actions
 $canManage = $auth->hasModulePermission('baskan_etkinlikler');
 
-// Force BYK filter for security / Regional Logic
-$userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
-$isAT = ($userByk && $userByk['byk_kodu'] === 'AT');
-$regionPrefix = '';
-
-if ($isAT) {
-    // AT kullanıcıları bütün birimlerin etkinliklerini görebilir (Global Görünüm)
-    $where = [];
-    $params = [];
-} else {
-    $where = ["e.byk_id = ?"];
-    $params = [$user['byk_id']];
-}
+// Herkes bütün birimlerin etkinliklerini görebilir
+$where = [];
+$params = [];
 
 if ($search) {
     $where[] = "(e.baslik LIKE ? OR e.aciklama LIKE ?)";
@@ -55,11 +45,9 @@ if ($yearFilter) {
     $params[] = $yearFilter;
 }
 
-// Birim Filtresi (Sadece AT için)
+// Birim Filtresi (Herkes için)
 $birimFilter = $_GET['birim'] ?? '';
-if ($isAT && $birimFilter) {
-    // Note: We can't add this to $where easily because the JOIN happens in the main query.
-    // Let's add the condition to the WHERE clause using the alias 'b'
+if ($birimFilter) {
     $where[] = "b.byk_kodu = ?";
     $params[] = $birimFilter;
 }
@@ -364,7 +352,6 @@ include __DIR__ . '/../includes/header.php';
                             </button>
                         </div>
                         
-                        <?php if ($isAT): ?>
                         <div class="col-12 border-top pt-3 mt-3">
                             <label class="form-label d-block text-muted small fw-bold mb-2">BİRİM FİLTRESİ (Tüm Birimler)</label>
                             <div class="btn-group flex-wrap" role="group">
@@ -382,7 +369,6 @@ include __DIR__ . '/../includes/header.php';
                             </div>
                             <input type="hidden" name="birim" id="inputBirim" value="<?php echo htmlspecialchars($birimFilter); ?>">
                         </div>
-                        <?php endif; ?>
                     </form>
                 </div>
             </div>

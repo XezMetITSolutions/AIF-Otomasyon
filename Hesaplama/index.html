@@ -465,7 +465,9 @@
         }
         let uploadedImages = [];
         let itemCounter = 0;
-        const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+        if (typeof ORS_API_KEY === 'undefined') {
+            var ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+        }
         const AUTOCOMPLETE_DEBOUNCE_MS = 250;
         const DEBUG = false; // Konsol çıktısını azalt
         const geocodeCache = {};

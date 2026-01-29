@@ -13,10 +13,16 @@ $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
 
-$pageTitle = 'Yeni Toplantı Ekle';
+// Check if user belongs to 'AT' (Global Admin Unit)
+$userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
+$isAdmin = ($userByk && $userByk['byk_kodu'] === 'AT');
 
-// BYK olarak sadece kendi BYK'sı (Dizi formatında hazırlanır ki foreach çalışsın)
-$bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_id = ?", [$user['byk_id']]);
+// BYK listesi
+if ($isAdmin) {
+    $bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk ORDER BY byk_adi");
+} else {
+    $bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_id = ?", [$user['byk_id']]);
+}
 
 // Hata ve başarı mesajları
 $error = '';
@@ -25,8 +31,11 @@ $success = '';
 // Form gönderildiğinde
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Başkan kendi BYK'sından başkasına ekleyemez
-        $byk_id = $user['byk_id'];
+        if ($isAdmin) {
+            $byk_id = $_POST['byk_id'] ?? $user['byk_id'];
+        } else {
+            $byk_id = $user['byk_id'];
+        }
         
         $baslik = trim($_POST['baslik'] ?? '');
         $aciklama = trim($_POST['aciklama'] ?? '');
@@ -114,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $success = 'Toplantı başarıyla oluşturuldu!';
         
         // Toplantı detay sayfasına yönlendir
-        header("Location: /panel/baskan_toplanti-duzenle.php?id={$toplanti_id}&success=1");
+        header("Location: /panel/toplanti-duzenle.php?id={$toplanti_id}&success=1");
         exit;
         
     } catch (Exception $e) {
@@ -134,7 +143,7 @@ include __DIR__ . '/../includes/header.php';
             <h1 class="h3 mb-0">
                 <i class="fas fa-plus-circle me-2"></i>Yeni Toplantı Ekle
             </h1>
-            <a href="/panel/baskan_toplantilar.php" class="btn btn-secondary">
+            <a href="/panel/toplantilar.php" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Geri Dön
             </a>
         </div>
@@ -164,9 +173,19 @@ include __DIR__ . '/../includes/header.php';
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="byk_display" class="form-label">BYK</label>
-                                    <input type="text" class="form-control" id="byk_display" value="<?php echo htmlspecialchars($bykler[0]['byk_adi']); ?>" readonly disabled>
-                                    <input type="hidden" id="byk_id" name="byk_id" value="<?php echo $user['byk_id']; ?>">
+                                    <label for="byk_id" class="form-label">BYK <span class="text-danger">*</span></label>
+                                    <?php if ($isAdmin): ?>
+                                        <select class="form-select" id="byk_id" name="byk_id" required onchange="loadMembers()">
+                                            <?php foreach ($bykler as $byk): ?>
+                                                <option value="<?php echo $byk['byk_id']; ?>" <?php echo $byk['byk_id'] == $user['byk_id'] ? 'selected' : ''; ?>>
+                                                    <?php echo htmlspecialchars($byk['byk_adi']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    <?php else: ?>
+                                        <input type="text" class="form-control" id="byk_display" value="<?php echo htmlspecialchars($bykler[0]['byk_adi']); ?>" readonly disabled>
+                                        <input type="hidden" id="byk_id" name="byk_id" value="<?php echo $user['byk_id']; ?>">
+                                    <?php endif; ?>
                                 </div>
 
                                 <div class="col-md-6 mb-3 d-flex align-items-end">
@@ -227,7 +246,7 @@ include __DIR__ . '/../includes/header.php';
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-save me-2"></i>Toplantıyı Oluştur
                         </button>
-                        <a href="/panel/baskan_toplantilar.php" class="btn btn-outline-secondary">
+                        <a href="/panel/toplantilar.php" class="btn btn-outline-secondary">
                             <i class="fas fa-times me-2"></i>İptal
                         </a>
                     </div>
@@ -245,10 +264,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const divanCheckbox = document.getElementById('is_divan');
     
     // Sayfa yüklenince otomatik üyeleri yükle
-    checkDivanStatus(document.getElementById('byk_display').value);
+    checkDivanStatus();
     loadMembers();
 
-    function checkDivanStatus(bykText) {
+    function checkDivanStatus() {
+        const bykSelect = document.getElementById('byk_id');
+        let bykText = '';
+        if (bykSelect.tagName === 'SELECT') {
+            bykText = bykSelect.options[bykSelect.selectedIndex].text;
+        } else {
+            bykText = document.getElementById('byk_display').value;
+        }
+        
         if (bykText.toLowerCase().includes('ana teşkilat') || bykText.toLowerCase().includes('merkez') || bykText.toLowerCase().includes('at')) {
             divanCheckboxContainer.style.display = 'block';
         } else {
@@ -265,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         katilimcilarContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="text-muted mt-2">Katılımcılar yükleniyor...</p></div>';
         
         const isDivan = document.getElementById('is_divan').checked;
-        fetch(`/admin/api-byk-baskan_uyeler.php?byk_id=${bykId}&divan_only=${isDivan}`)
+        fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan ? 'true' : 'false'}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.uyeler.length > 0) {

@@ -221,7 +221,7 @@ include __DIR__ . '/../includes/header.php';
                 <p class="text-muted mb-0">Bölge Yürütme Kurulu toplantılarını yönetin.</p>
             </div>
             <?php if ($canManage): ?>
-            <a href="/panel/baskan_toplanti-ekle.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <a href="/panel/toplanti-ekle.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
                 <i class="fas fa-plus me-2"></i>Yeni Toplantı Ekle
             </a>
             <?php endif; ?>
@@ -330,7 +330,7 @@ include __DIR__ . '/../includes/header.php';
                             $cardClass = $isCancelled ? 'border-danger bg-light' : ($isPast ? 'border-secondary' : 'border-primary');
                             $opacityClass = $isCancelled || $isPast ? 'opacity-75' : '';
                             
-                            $linkUrl = $canManage ? "/panel/baskan_toplanti-duzenle.php?id=" . $toplanti['toplanti_id'] : "#";
+                            $linkUrl = $canManage ? "/panel/toplanti-duzenle.php?id=" . $toplanti['toplanti_id'] : "#";
                             $linkClass = $canManage ? "text-dark text-decoration-none stretched-link" : "text-dark text-decoration-none";
                         ?>
                         <div class="col-md-6 col-xl-4">
@@ -394,7 +394,7 @@ include __DIR__ . '/../includes/header.php';
                                     
                                     <?php if ($canManage): ?>
                                     <div class="btn-group" style="position: relative; z-index: 2;">
-                                        <a href="/panel/baskan_toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                        <a href="/panel/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         
@@ -467,7 +467,7 @@ include __DIR__ . '/../includes/header.php';
                                         <td>
                                             <div class="fw-semibold">
                                                 <?php if ($canManage): ?>
-                                                <a href="/panel/baskan_toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none">
+                                                <a href="/panel/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" class="text-dark text-decoration-none">
                                                     <?php echo htmlspecialchars($toplanti['baslik']); ?>
                                                 </a>
                                                 <?php else: ?>
@@ -513,7 +513,7 @@ include __DIR__ . '/../includes/header.php';
                                         <?php if ($canManage): ?>
                                         <td class="text-end pe-4">
                                             <div class="btn-group">
-                                                <a href="/panel/baskan_toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" 
+                                                <a href="/panel/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>" 
                                                    class="btn btn-sm btn-outline-primary" title="Düzenle">
                                                     <i class="fas fa-edit"></i>
                                                 </a>

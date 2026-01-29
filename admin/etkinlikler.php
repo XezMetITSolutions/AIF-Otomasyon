@@ -435,7 +435,9 @@ include __DIR__ . '/../includes/header.php';
                                                 </small>
                                             </td>
                                             <td>
-                                                <strong><?php echo htmlspecialchars($etkinlik['baslik']); ?></strong>
+                                                <a href="/admin/etkinlik-duzenle.php?id=<?php echo $etkinlik['etkinlik_id']; ?>" class="text-dark text-decoration-none">
+                                                    <strong><?php echo htmlspecialchars($etkinlik['baslik']); ?></strong>
+                                                </a>
                                                 <?php if (!empty($etkinlik['aciklama'])): ?>
                                                     <br><small class="text-muted"><?php echo htmlspecialchars(substr($etkinlik['aciklama'], 0, 50)); ?><?php echo strlen($etkinlik['aciklama']) > 50 ? '...' : ''; ?></small>
                                                 <?php endif; ?>

@@ -379,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initKatilimcilarTab() {
     try {
         const bykSelect = document.getElementById('modal_byk_select');
         const userListContainer = document.getElementById('modal_user_list');
@@ -387,6 +387,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectAllCheck = document.getElementById('modal_select_all_users');
         const countBadge = document.getElementById('selected_count_badge');
         
+        if (!bykSelect || !userListContainer) return; // Not the right page or elements missing
+
         // Robust PHP to JS conversion
         let rawIds = <?php echo !empty($katilimcilar) ? json_encode(array_column($katilimcilar, 'kullanici_id')) : '[]'; ?>;
         // Ensure rawIds is an array (handle case where PHP associative array turns into JS object)
@@ -533,5 +535,14 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(e) {
         console.error("Katılımcı modal script hatası:", e);
     }
-});
+}
+
+// Standart sayfa yükleme
+document.addEventListener('DOMContentLoaded', initKatilimcilarTab);
+// AJAX (SPA) sayfa yükleme
+$(document).on('page:loaded', initKatilimcilarTab);
+// Hemen çalıştır
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initKatilimcilarTab();
+}
 </script>

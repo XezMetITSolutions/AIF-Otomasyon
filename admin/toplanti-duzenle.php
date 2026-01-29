@@ -323,15 +323,7 @@ foreach ($katilimcilar as $k) {
 
 include __DIR__ . '/../includes/header.php';
 ?>
-<!-- ... (skipping unchanged content) ... -->
-<li class="nav-item">
-    <a class="nav-link" data-bs-toggle="tab" href="#katilimcilar">
-        <i class="fas fa-users me-2"></i>Katılımcılar
-        <span
-            class="badge bg-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
-    </a>
-</li>
-?>
+
 
 <link rel="stylesheet" href="/assets/css/toplanti-yonetimi.css?v=<?php echo time(); ?>">
 

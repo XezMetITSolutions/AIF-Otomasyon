@@ -3,7 +3,7 @@
  * Tüm AJAX işlemleri ve dinamik etkileşimler
  */
 
-const ToplantiYonetimi = {
+var ToplantiYonetimi = {
     toplanti_id: null,
 
     init: function (toplantiId) {
@@ -585,11 +585,22 @@ const ToplantiYonetimi = {
     }
 };
 
-// Sayfa yüklendiğinde başlat
-document.addEventListener('DOMContentLoaded', function () {
+// Başlatma fonksiyonu
+function initToplantiYonetimi() {
     const toplantiIdElement = document.querySelector('[data-toplanti-id]');
     if (toplantiIdElement) {
         const toplantiId = toplantiIdElement.dataset.toplantiId;
         ToplantiYonetimi.init(toplantiId);
     }
-});
+}
+
+// Standart sayfa yükleme
+document.addEventListener('DOMContentLoaded', initToplantiYonetimi);
+
+// AJAX (SPA) sayfa yükleme
+$(document).on('page:loaded', initToplantiYonetimi);
+
+// Eğer script gecikmeli yüklendiyse ve DOM zaten hazırsa hemen çalıştır
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initToplantiYonetimi();
+}
