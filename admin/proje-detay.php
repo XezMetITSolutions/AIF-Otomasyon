@@ -39,6 +39,28 @@ $db->query("CREATE TABLE IF NOT EXISTS `proje_ekip_uyeleri` (
     FOREIGN KEY (`ekip_id`) REFERENCES `proje_ekipleri`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
+$db->query("CREATE TABLE IF NOT EXISTS `proje_gorevleri` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `proje_id` INT NOT NULL,
+    `baslik` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    `aciklama` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    `atanan_kisi_id` INT DEFAULT NULL,
+    `ekip_id` INT DEFAULT NULL,
+    `son_tarih` DATE DEFAULT NULL,
+    `durum` ENUM('beklemede', 'devam_ediyor', 'tamamlandi') DEFAULT 'beklemede',
+    `olusturma_tarihi` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`proje_id`) REFERENCES `projeler`(`proje_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+$db->query("CREATE TABLE IF NOT EXISTS `proje_notlari` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `proje_id` INT NOT NULL,
+    `kullanici_id` INT NOT NULL,
+    `not_icerik` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    `tarih` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`proje_id`) REFERENCES `projeler`(`proje_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
 // Görevler tablosunu güncelle (ekip_id ekle)
 try {
     $db->query("ALTER TABLE `proje_gorevleri` ADD COLUMN `ekip_id` INT DEFAULT NULL AFTER `proje_id`");
