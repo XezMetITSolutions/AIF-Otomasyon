@@ -135,18 +135,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // --- DOSYA YÜKLEME (Basic) ---
+    // --- DOSYA YÜKLEME ---
     elseif ($action === 'upload_file') {
-        // Not: Gerçek sistemde dosya fiziksel olarak taşınmalı.
-        // Burada DB kaydı örneği yapıyoruz.
         $dosya_adi = trim($_POST['file_name'] ?? 'Dosya');
         $aciklama = trim($_POST['file_desc'] ?? '');
-        // Demo amaçlı fake path
-        $dosya_yolu = '/uploads/demo.pdf'; 
-        
-        $db->query("INSERT INTO proje_dosyalari (proje_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama) VALUES (?, ?, ?, ?, ?)", 
-            [$id, $user['id'], $dosya_adi, $dosya_yolu, $aciklama]);
-        header("Location: ?id=$id&tab=files&msg=file_uploaded"); exit;
+
+        if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../uploads/projeler/' . $id . '/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            $originalName = $_FILES['file']['name'];
+            $fileExt = pathinfo($originalName, PATHINFO_EXTENSION);
+            // Benzersiz isim
+            $fileName = uniqid() . '_' . preg_replace('/[^a-zA-Z0-9]/', '', substr($dosya_adi, 0, 10)) . '.' . $fileExt;
+            $uploadPath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath)) {
+                $webPath = '/uploads/projeler/' . $id . '/' . $fileName;
+                
+                $db->query("INSERT INTO proje_dosyalari (proje_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama) VALUES (?, ?, ?, ?, ?)", 
+                    [$id, $user['id'], $dosya_adi, $webPath, $aciklama]);
+                
+                header("Location: ?id=$id&tab=files&msg=file_uploaded"); exit;
+            } else {
+                header("Location: ?id=$id&tab=files&error=upload_failed"); exit;
+            }
+        } else {
+             header("Location: ?id=$id&tab=files&error=no_file"); exit;
+        }
     }
 }
 
@@ -631,9 +649,8 @@ include __DIR__ . '/../includes/header.php';
                     <input type="text" name="file_name" class="form-control" placeholder="Örn: Fuar Raporu.pdf" required>
                 </div>
                 <div class="mb-3">
-                     <label class="form-label">Dosya Seç (Simülasyon)</label>
-                     <input type="file" class="form-control" name="file_real" disabled>
-                     <small class="text-muted">Test ortamında dosya upload devre dışıdır. Kayıt veritabanına eklenecektir.</small>
+                     <label class="form-label">Dosya Seç</label>
+                     <input type="file" class="form-control" name="file" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Açıklama</label>

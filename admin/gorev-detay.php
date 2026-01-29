@@ -96,11 +96,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif ($action === 'upload_file') {
         $filename = trim($_POST['file_name'] ?? 'Dosya');
         $desc = trim($_POST['file_desc'] ?? '');
-        $path = '/uploads/demo_task.pdf'; // Fake path
         
-        $db->query("INSERT INTO gorev_dosyalari (gorev_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama) VALUES (?, ?, ?, ?, ?)", 
-            [$id, $user['id'], $filename, $path, $desc]);
-        header("Location: ?id=$id&tab=files"); exit;
+        if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../uploads/gorevler/' . $id . '/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            $originalName = $_FILES['file']['name'];
+            $fileExt = pathinfo($originalName, PATHINFO_EXTENSION);
+            // Benzersiz isim
+            $storedName = uniqid() . '_' . preg_replace('/[^a-zA-Z0-9]/', '', substr($filename, 0, 10)) . '.' . $fileExt;
+            $uploadPath = $uploadDir . $storedName;
+
+            if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath)) {
+                $webPath = '/uploads/gorevler/' . $id . '/' . $storedName;
+                $db->query("INSERT INTO gorev_dosyalari (gorev_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama) VALUES (?, ?, ?, ?, ?)", 
+                    [$id, $user['id'], $filename, $webPath, $desc]);
+                header("Location: ?id=$id&tab=files&msg=uploaded"); exit;
+            } else {
+                 header("Location: ?id=$id&tab=files&error=upload_failed"); exit;
+            }
+        }
+        header("Location: ?id=$id&tab=files&error=no_file"); exit;
     }
 }
 
@@ -344,8 +362,7 @@ include __DIR__ . '/../includes/header.php';
                 </div>
                 <div class="mb-3">
                     <label>Dosya</label>
-                    <input type="file" name="file_real" class="form-control" disabled>
-                    <small>Demo mod</small>
+                    <input type="file" name="file" class="form-control" required>
                 </div>
                 <div class="mb-3">
                     <label>Açıklama</label>
