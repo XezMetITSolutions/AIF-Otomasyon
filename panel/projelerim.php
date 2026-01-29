@@ -37,14 +37,15 @@ $params = [];
 if (!$isSuperAdmin && !$canManage) {
     // Sadece sorumlu olduğu, ekibinde olduğu projeler
     $sql .= " AND (
-        p.sorumlu_id = :uid 
+        p.sorumlu_id = :uid_sorumlu 
         OR EXISTS (
             SELECT 1 FROM proje_ekipleri pe 
             JOIN proje_ekip_uyeleri peu ON pe.id = peu.ekip_id 
-            WHERE pe.proje_id = p.proje_id AND peu.kullanici_id = :uid
+            WHERE pe.proje_id = p.proje_id AND peu.kullanici_id = :uid_ekip
         )
     )";
-    $params['uid'] = $user['id'];
+    $params['uid_sorumlu'] = $user['id'];
+    $params['uid_ekip'] = $user['id'];
 }
 
 $sql .= " ORDER BY p.olusturma_tarihi DESC LIMIT 50";
