@@ -3,6 +3,9 @@
  * Dosya Güvenli Erişim Noktası
  * Sadece giriş yapmış kullanıcılar dosyalara erişebilir.
  */
+error_reporting(0); // Hatalari gizle
+ini_set('display_errors', 0);
+
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
 
@@ -36,8 +39,13 @@ if ($targetFile && strpos($targetFile, $baseUploadsDir) === 0 && file_exists($ta
     // Mime tipini belirle
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $targetFile);
-    finfo_close($finfo);
+    // finfo_close($finfo); // Deprecated since PHP 8.x+ as it is auto closed
     
+    // Output buffer temizle
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
     // Headerları gönder
     header('Content-Description: File Transfer');
     header('Content-Type: ' . $mimeType);
