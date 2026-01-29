@@ -346,7 +346,11 @@ include __DIR__ . '/../includes/header.php';
                                             <?php foreach ($tasks as $task): ?>
                                             <tr>
                                                 <td>
-                                                    <div class="fw-bold"><?php echo htmlspecialchars($task['baslik']); ?></div>
+                                                    <div class="fw-bold">
+                                                        <a href="gorev-detay.php?id=<?php echo $task['id']; ?>" class="text-decoration-none text-dark">
+                                                            <?php echo htmlspecialchars($task['baslik']); ?>
+                                                        </a>
+                                                    </div>
                                                     <small class="text-muted"><?php echo htmlspecialchars($task['aciklama']); ?></small>
                                                 </td>
                                                 <td>
