@@ -14,9 +14,9 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
       
-      - name: 📂 List files
-        run: ls -R
-      
+      - name: 🛠️ Install dependencies
+        run: composer install --no-dev --optimize-autoloader
+
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -28,7 +28,6 @@ jobs:
             **/.git*/**
             **/.github*/**
             **/node_modules/**
-            **/vendor/**
             **/.env*
             **/README.md
             **/DEPLOYMENT.md
