@@ -49,8 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (empty($baslik)) throw new Exception("Proje başlığı zorunludur.");
         if (empty($byk_id)) throw new Exception("Birim/BYK seçimi zorunludur.");
 
-        $sql = "INSERT INTO projeler (baslik, aciklama, byk_id, sorumlu_id, baslangic_tarihi, bitis_tarihi, durum, olusturma_tarihi) VALUES (?, ?, ?, ?, ?, ?, 'beklemede', NOW())";
-        $db->query($sql, [$baslik, $aciklama, $byk_id, $sorumlu_id, $baslangic, $bitis]);
+        // olusturan_id eklenmeli (Giriş yapan kullanıcı)
+        $olusturan_id = $user['id'] ?? $user['kullanici_id'] ?? 0;
+
+        $sql = "INSERT INTO projeler (baslik, aciklama, byk_id, sorumlu_id, baslangic_tarihi, bitis_tarihi, durum, olusturan_id, olusturma_tarihi) VALUES (?, ?, ?, ?, ?, ?, 'beklemede', ?, NOW())";
+        $db->query($sql, [$baslik, $aciklama, $byk_id, $sorumlu_id, $baslangic, $bitis, $olusturan_id]);
         
         header("Location: projeler.php?success=created");
         exit;
