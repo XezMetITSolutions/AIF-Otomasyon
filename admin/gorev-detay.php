@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
             $uploadDir = __DIR__ . '/../uploads/gorevler/' . $id . '/';
             if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
+                mkdir($uploadDir, 0755, true);
             }
             
             $originalName = $_FILES['file']['name'];
@@ -110,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $uploadPath = $uploadDir . $storedName;
 
             if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath)) {
+                chmod($uploadPath, 0644); 
                 $webPath = '/uploads/gorevler/' . $id . '/' . $storedName;
                 $db->query("INSERT INTO gorev_dosyalari (gorev_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama) VALUES (?, ?, ?, ?, ?)", 
                     [$id, $user['id'], $filename, $webPath, $desc]);

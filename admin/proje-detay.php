@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
             $uploadDir = __DIR__ . '/../uploads/projeler/' . $id . '/';
             if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
+                mkdir($uploadDir, 0755, true);
             }
             
             $originalName = $_FILES['file']['name'];
@@ -153,6 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $uploadPath = $uploadDir . $fileName;
             
             if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath)) {
+                chmod($uploadPath, 0644); // Fix permissions for web access
                 $webPath = '/uploads/projeler/' . $id . '/' . $fileName;
                 
                 $db->query("INSERT INTO proje_dosyalari (proje_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama) VALUES (?, ?, ?, ?, ?)", 
