@@ -404,7 +404,9 @@ include __DIR__ . '/../includes/header.php';
                                                 </button>
                                             </div>
                                             <div class="card-body">
-                                                <p class="small text-muted mb-2"><?php echo htmlspecialchars($team['aciklama']); ?></p>
+                                                <?php if ($team['aciklama'] && $team['aciklama'] !== 'Otomatik oluşturuldu'): ?>
+                                                    <p class="small text-muted mb-2"><?php echo htmlspecialchars($team['aciklama']); ?></p>
+                                                <?php endif; ?>
                                                 <div class="d-flex flex-wrap gap-1">
                                                     <?php if (empty($team['uyeler'])): ?>
                                                         <span class="small text-muted fs-italics">Henüz üye yok</span>
