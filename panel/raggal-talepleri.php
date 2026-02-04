@@ -209,28 +209,28 @@ include __DIR__ . '/../includes/header.php';
 
     /* Kompakt Takvim */
     .fc-daygrid-event {
-        padding: 2px 4px !important;
-        margin: 1px 2px !important;
-        font-size: 0.75rem !important;
-        line-height: 1.2 !important;
+        padding: 1px 3px !important;
+        margin: 0px 1px !important;
+        font-size: 0.65rem !important;
+        line-height: 1.1 !important;
     }
 
     .fc-daygrid-day-frame {
-        min-height: 50px !important;
+        min-height: 35px !important;
     }
 
     .fc-col-header-cell {
-        padding: 5px 2px !important;
-        font-size: 0.85rem !important;
+        padding: 3px 1px !important;
+        font-size: 0.75rem !important;
     }
 
     .fc-daygrid-day-number {
-        padding: 4px !important;
-        font-size: 0.85rem !important;
+        padding: 2px !important;
+        font-size: 0.75rem !important;
     }
 
     .fc .fc-daygrid-day-top {
-        padding: 2px !important;
+        padding: 1px !important;
     }
 </style>
 
@@ -288,8 +288,8 @@ include __DIR__ . '/../includes/header.php';
                                 <i class="fas fa-plus me-1"></i>Yeni Rezervasyon
                             </button>
                         </div>
-                        <div class="card-body p-3">
-                            <div id='calendar' style="min-height: 600px;"></div>
+                        <div class="card-body p-2">
+                            <div id='calendar' style="min-height: 400px;"></div>
                         </div>
                     </div>
                 </div>
