@@ -216,7 +216,7 @@ include __DIR__ . '/../includes/header.php';
     }
 
     .fc-daygrid-day-frame {
-        min-height: 80px !important;
+        min-height: 50px !important;
     }
 
     .fc-col-header-cell {
