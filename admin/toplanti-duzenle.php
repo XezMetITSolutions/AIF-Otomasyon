@@ -164,11 +164,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once __DIR__ . '/../classes/Mail.php';
 
             error_log("AIF: Send invitations action triggered");
-            
+
             $selected_ids = $_POST['selected_participants'] ?? [];
-            
+
             error_log("AIF: Selected participant IDs: " . print_r($selected_ids, true));
-            
+
             if (empty($selected_ids)) {
                 error_log("AIF: No participants selected");
                 throw new Exception('Lütfen en az bir katılımcı seçin.');
@@ -199,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             foreach ($targets as $target) {
                 error_log("AIF: Sending invitation to: " . $target['email']);
-                
+
                 // Token yoksa oluştur ve kaydet
                 if (empty($target['token'])) {
                     $target['token'] = bin2hex(random_bytes(32));
@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log("AIF: Invitation sending complete. Success: $success_count, Failed: $fail_count");
 
             $success = "İşlem tamamlandı: $success_count başarılı, $fail_count başarısız gönderim.";
-            
+
             if ($fail_count > 0) {
                 $error = "E-posta gönderilemedi: " . implode(', ', $failed_recipients) . "\n";
                 if (!empty($last_error)) {
@@ -415,7 +415,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </main>
 
-<script src="/assets/js/toplanti-yonetimi.js"></script>
+<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
