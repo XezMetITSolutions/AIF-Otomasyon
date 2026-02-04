@@ -207,30 +207,49 @@ include __DIR__ . '/../includes/header.php';
         border-color: #007a5e !important;
     }
 
-    /* Kompakt Takvim */
+    /* Kompakt Takvim - Agresif */
+    #calendar {
+        font-size: 0.7rem !important;
+    }
+
     .fc-daygrid-event {
-        padding: 1px 3px !important;
-        margin: 0px 1px !important;
-        font-size: 0.65rem !important;
-        line-height: 1.1 !important;
+        padding: 1px 2px !important;
+        margin: 0 !important;
+        font-size: 0.6rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
     }
 
     .fc-daygrid-day-frame {
-        min-height: 35px !important;
+        min-height: 30px !important;
+        max-height: 30px !important;
+    }
+
+    .fc-daygrid-day {
+        min-height: 30px !important;
     }
 
     .fc-col-header-cell {
-        padding: 3px 1px !important;
-        font-size: 0.75rem !important;
+        padding: 2px !important;
+        font-size: 0.7rem !important;
     }
 
     .fc-daygrid-day-number {
-        padding: 2px !important;
-        font-size: 0.75rem !important;
+        padding: 1px 3px !important;
+        font-size: 0.7rem !important;
     }
 
     .fc .fc-daygrid-day-top {
-        padding: 1px !important;
+        padding: 0 !important;
+    }
+
+    .fc-toolbar {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .fc-toolbar h2 {
+        font-size: 1rem !important;
     }
 </style>
 
@@ -489,6 +508,9 @@ include __DIR__ . '/../includes/header.php';
                     week: 'Hafta',
                     day: 'Gün'
                 },
+                height: 'auto',
+                aspectRatio: 2.5,
+                dayMaxEvents: 2,
                 selectable: true,
                 events: <?php echo json_encode($calendarEvents); ?>,
                 select: function (info) {
