@@ -473,7 +473,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-    document.addEve ntLis        tener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
         if (calendarEl) {
             var calendar = new FullCalendar.Calendar(calendarEl, {
