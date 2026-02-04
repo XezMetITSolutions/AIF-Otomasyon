@@ -128,10 +128,17 @@ $events = $db->fetchAll("
 $calendarEvents = [];
 foreach ($events as $event) {
     // Sadece kendi redlerimi göreyim, başkasının reddini görmeme gerek yok.
-    if ($event['durum'] === 'reddedildi' && $event['kullanici_id'] != $user['id']) continue;
+    if ($event['durum'] === 'reddedildi' && $event['kullanici_id'] != $user['id'])
+        continue;
+
+    // Başlık: Onaylıysa sadece başlık, kendi talebin bekliyor/reddedildiyse durumu da göster
+    $title = $event['title'];
+    if ($event['kullanici_id'] == $user['id'] && $event['durum'] != 'onaylandi') {
+        $title .= ' (' . ucfirst($event['durum']) . ')';
+    }
 
     $calendarEvents[] = [
-        'title' => $event['title'] . ' (' . ucfirst($event['durum']) . ')',
+        'title' => $title,
         'start' => $event['baslangic_tarihi'],
         'end' => $event['bitis_tarihi'],
         'color' => $event['color'],
@@ -141,7 +148,7 @@ foreach ($events as $event) {
 }
 
 // 2. Yönetim Listesi
-$pendingRequests = []; 
+$pendingRequests = [];
 if ($hasPermissionBaskan) {
     $pendingRequests = $db->fetchAll("
         SELECT r.*, CONCAT(u.ad, ' ', u.soyad) as kullanici_adi 
@@ -165,156 +172,200 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <style>
-    .nav-pills .nav-link { color: #495057; font-weight: 500; padding: 0.75rem 1.25rem; border-radius: 0.75rem; }
-    .nav-pills .nav-link.active { background-color: #009872; color: white; }
-    .fc-event { cursor: pointer; border: none; }
-    .fc-toolbar-title { font-size: 1.25rem !important; }
-    .fc-button { background-color: #009872 !important; border-color: #009872 !important; }
-    .fc-button:hover { background-color: #007a5e !important; border-color: #007a5e !important; }
+    .nav-pills .nav-link {
+        color: #495057;
+        font-weight: 500;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.75rem;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: #009872;
+        color: white;
+    }
+
+    .fc-event {
+        cursor: pointer;
+        border: none;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.25rem !important;
+    }
+
+    .fc-button {
+        background-color: #009872 !important;
+        border-color: #009872 !important;
+    }
+
+    .fc-button:hover {
+        background-color: #007a5e !important;
+        border-color: #007a5e !important;
+    }
 </style>
 
 <div class="dashboard-layout">
     <div class="sidebar-wrapper"><?php include __DIR__ . '/../includes/sidebar.php'; ?></div>
     <main class="main-content">
         <div class="content-wrapper">
-            
+
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                 <div>
-                     <h1 class="h3 mb-1"><i class="fas fa-calendar-check me-2"></i>Raggal Rezervasyon</h1>
-                     <p class="text-muted mb-0">Tesis rezervasyon durumu ve talep işlemleri.</p>
+                    <h1 class="h3 mb-1"><i class="fas fa-calendar-check me-2"></i>Raggal Rezervasyon</h1>
+                    <p class="text-muted mb-0">Tesis rezervasyon durumu ve talep işlemleri.</p>
                 </div>
-                
-                 <ul class="nav nav-pills bg-white p-1 rounded-4 border shadow-sm">
+
+                <ul class="nav nav-pills bg-white p-1 rounded-4 border shadow-sm">
                     <li class="nav-item">
                         <a class="nav-link <?php echo ($activeTab === 'takvim') ? 'active' : ''; ?>" href="?tab=takvim">
                             <i class="fas fa-calendar-alt me-2"></i>Takvim & Talep
                         </a>
                     </li>
                     <?php if ($hasPermissionBaskan): ?>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo ($activeTab === 'yonetim') ? 'active' : ''; ?>" href="?tab=yonetim">
-                            <i class="fas fa-tasks me-2"></i>Yönetim
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($activeTab === 'yonetim') ? 'active' : ''; ?>"
+                                href="?tab=yonetim">
+                                <i class="fas fa-tasks me-2"></i>Yönetim
+                            </a>
+                        </li>
                     <?php endif; ?>
                 </ul>
             </div>
 
             <?php if (!empty($messages)): ?>
                 <div class="alert alert-success alert-dismissible fade show">
-                    <?php foreach($messages as $m) echo "<div>$m</div>"; ?>
+                    <?php foreach ($messages as $m)
+                        echo "<div>$m</div>"; ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
             <?php if (!empty($errors)): ?>
                 <div class="alert alert-danger alert-dismissible fade show">
-                    <?php foreach($errors as $e) echo "<div>$e</div>"; ?>
+                    <?php foreach ($errors as $e)
+                        echo "<div>$e</div>"; ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
 
             <div class="tab-content">
-                
+
                 <!-- TAB 1: TAKVİM (HERKES) -->
                 <div class="tab-pane fade <?php echo ($activeTab === 'takvim') ? 'show active' : ''; ?>">
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 fw-bold">Rezervasyon Durumu</h6>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reservationModal">
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#reservationModal">
                                 <i class="fas fa-plus me-1"></i>Yeni Rezervasyon
                             </button>
                         </div>
                         <div class="card-body p-3">
-                             <div id='calendar' style="min-height: 600px;"></div>
+                            <div id='calendar' style="min-height: 600px;"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- TAB 2: YÖNETİM (BAŞKAN) -->
                 <?php if ($hasPermissionBaskan): ?>
-                <div class="tab-pane fade <?php echo ($activeTab === 'yonetim') ? 'show active' : ''; ?>">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 fw-bold">Rezervasyon Yönetimi</h6>
-                            <button class="btn btn-danger btn-sm" id="bulkDeleteBtn" style="display:none;" onclick="bulkDelete()">
-                                <i class="fas fa-trash me-1"></i>Seçilenleri Sil
-                            </button>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="ps-3" style="width: 40px;">
-                                            <input type="checkbox" id="selectAll" class="form-check-input">
-                                        </th>
-                                        <th>Zaman</th>
-                                        <th>Kullanıcı</th>
-                                        <th>Açıklama</th>
-                                        <th>Durum</th>
-                                        <th class="text-end pe-3">İşlem</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (empty($pendingRequests)): ?>
-                                        <tr><td colspan="6" class="text-center py-4 text-muted">Kayıt bulunamadı.</td></tr>
-                                    <?php else: ?>
-                                        <?php foreach ($pendingRequests as $req): ?>
+                    <div class="tab-pane fade <?php echo ($activeTab === 'yonetim') ? 'show active' : ''; ?>">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold">Rezervasyon Yönetimi</h6>
+                                <button class="btn btn-danger btn-sm" id="bulkDeleteBtn" style="display:none;"
+                                    onclick="bulkDelete()">
+                                    <i class="fas fa-trash me-1"></i>Seçilenleri Sil
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
                                         <tr>
-                                            <td class="ps-3">
-                                                <input type="checkbox" class="form-check-input row-checkbox" value="<?php echo $req['id']; ?>">
-                                            </td>
-                                            <td>
-                                                <div class="small fw-bold text-dark">
-                                                    <?php echo date('d.m.Y H:i', strtotime($req['baslangic_tarihi'])); ?>
-                                                </div>
-                                                <div class="small text-muted">
-                                                    <?php echo date('d.m.Y H:i', strtotime($req['bitis_tarihi'])); ?>
-                                                    (<?php 
-                                                        $diff = strtotime($req['bitis_tarihi']) - strtotime($req['baslangic_tarihi']); 
-                                                        echo round($diff / 3600, 1);
-                                                    ?> saat)
-                                                </div>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($req['kullanici_adi']); ?></td>
-                                            <td><small class="text-muted"><?php echo htmlspecialchars($req['aciklama']); ?></small></td>
-                                            <td>
-                                                <?php if($req['durum']=='bekliyor'): ?><span class="badge bg-warning text-dark">Bekliyor</span>
-                                                <?php elseif($req['durum']=='onaylandi'): ?><span class="badge bg-success">Onaylandı</span>
-                                                <?php else: ?><span class="badge bg-danger">Reddedildi</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="text-end pe-3">
-                                                <div class="btn-group">
-                                                    <?php if ($req['durum'] === 'bekliyor'): ?>
-                                                        <form method="POST" class="d-inline-block">
-                                                            <input type="hidden" name="action" value="">
-                                                            <input type="hidden" name="id" value="<?php echo $req['id']; ?>">
-                                                            <button type="submit" onclick="this.form.action.value='approve'" class="btn btn-sm btn-success" title="Onayla"><i class="fas fa-check"></i></button>
-                                                            <button type="submit" onclick="this.form.action.value='reject'" class="btn btn-sm btn-danger" title="Reddet"><i class="fas fa-times"></i></button>
-                                                        </form>
-                                                    <?php endif; ?>
-                                                    <button class="btn btn-sm btn-primary" onclick="editReservation(<?php echo htmlspecialchars(json_encode($req)); ?>)" title="Düzenle">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <form method="POST" class="d-inline-block" onsubmit="return confirm('Bu rezervasyonu silmek istediğinizden emin misiniz?');">
-                                                        <input type="hidden" name="action" value="delete">
-                                                        <input type="hidden" name="id" value="<?php echo $req['id']; ?>">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <th class="ps-3" style="width: 40px;">
+                                                <input type="checkbox" id="selectAll" class="form-check-input">
+                                            </th>
+                                            <th>Zaman</th>
+                                            <th>Kullanıcı</th>
+                                            <th>Açıklama</th>
+                                            <th>Durum</th>
+                                            <th class="text-end pe-3">İşlem</th>
                                         </tr>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (empty($pendingRequests)): ?>
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">Kayıt bulunamadı.</td>
+                                            </tr>
+                                        <?php else: ?>
+                                            <?php foreach ($pendingRequests as $req): ?>
+                                                <tr>
+                                                    <td class="ps-3">
+                                                        <input type="checkbox" class="form-check-input row-checkbox"
+                                                            value="<?php echo $req['id']; ?>">
+                                                    </td>
+                                                    <td>
+                                                        <div class="small fw-bold text-dark">
+                                                            <?php echo date('d.m.Y H:i', strtotime($req['baslangic_tarihi'])); ?>
+                                                        </div>
+                                                        <div class="small text-muted">
+                                                            <?php echo date('d.m.Y H:i', strtotime($req['bitis_tarihi'])); ?>
+                                                            (<?php
+                                                            $diff = strtotime($req['bitis_tarihi']) - strtotime($req['baslangic_tarihi']);
+                                                            echo round($diff / 3600, 1);
+                                                            ?> saat)
+                                                        </div>
+                                                    </td>
+                                                    <td><?php echo htmlspecialchars($req['kullanici_adi']); ?></td>
+                                                    <td><small
+                                                            class="text-muted"><?php echo htmlspecialchars($req['aciklama']); ?></small>
+                                                    </td>
+                                                    <td>
+                                                        <?php if ($req['durum'] == 'bekliyor'): ?><span
+                                                                class="badge bg-warning text-dark">Bekliyor</span>
+                                                        <?php elseif ($req['durum'] == 'onaylandi'): ?><span
+                                                                class="badge bg-success">Onaylandı</span>
+                                                        <?php else: ?><span class="badge bg-danger">Reddedildi</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td class="text-end pe-3">
+                                                        <div class="btn-group">
+                                                            <?php if ($req['durum'] === 'bekliyor'): ?>
+                                                                <form method="POST" class="d-inline-block">
+                                                                    <input type="hidden" name="action" value="">
+                                                                    <input type="hidden" name="id" value="<?php echo $req['id']; ?>">
+                                                                    <button type="submit" onclick="this.form.action.value='approve'"
+                                                                        class="btn btn-sm btn-success" title="Onayla"><i
+                                                                            class="fas fa-check"></i></button>
+                                                                    <button type="submit" onclick="this.form.action.value='reject'"
+                                                                        class="btn btn-sm btn-danger" title="Reddet"><i
+                                                                            class="fas fa-times"></i></button>
+                                                                </form>
+                                                            <?php endif; ?>
+                                                            <button class="btn btn-sm btn-primary"
+                                                                onclick="editReservation(<?php echo htmlspecialchars(json_encode($req)); ?>)"
+                                                                title="Düzenle">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <form method="POST" class="d-inline-block"
+                                                                onsubmit="return confirm('Bu rezervasyonu silmek istediğinizden emin misiniz?');">
+                                                                <input type="hidden" name="action" value="delete">
+                                                                <input type="hidden" name="id" value="<?php echo $req['id']; ?>">
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                                    title="Sil">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
                 <?php endif; ?>
-                
+
             </div>
         </div>
     </main>
@@ -338,7 +389,7 @@ include __DIR__ . '/../includes/header.php';
                     <label class="form-label small fw-bold">Bitiş</label>
                     <input type="datetime-local" name="bitis" id="modal_end" class="form-control" required>
                 </div>
-                 <div class="mb-3">
+                <div class="mb-3">
                     <label class="form-label small fw-bold">Açıklama</label>
                     <textarea name="aciklama" class="form-control" rows="3"></textarea>
                 </div>
@@ -392,108 +443,108 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    if (calendarEl) {
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            locale: 'tr',
-            selectable: true,
-            events: <?php echo json_encode($calendarEvents); ?>,
-            select: function(info) {
-                var modal = new bootstrap.Modal(document.getElementById('reservationModal'));
-                
-                var start = new Date(info.startStr);
-                var end = new Date(info.endStr || info.startStr);
-                
-                // UTC offset fix
-                start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
-                end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
-                
-                document.getElementById('modal_start').value = start.toISOString().slice(0, 16);
-                document.getElementById('modal_end').value = end.toISOString().slice(0, 16);
-                
-                modal.show();
-            }
-        });
-        calendar.render();
-        
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        if (calendarEl) {
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'tr',
+                selectable: true,
+                events: <?php echo json_encode($calendarEvents); ?>,
+                select: function (info) {
+                    var modal = new bootstrap.Modal(document.getElementById('reservationModal'));
 
-    }
+                    var start = new Date(info.startStr);
+                    var end = new Date(info.endStr || info.startStr);
 
-    // Bulk operations
-    const selectAll = document.getElementById('selectAll');
-    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+                    // UTC offset fix
+                    start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
+                    end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
 
-    if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            rowCheckboxes.forEach(cb => cb.checked = this.checked);
-            updateBulkDeleteBtn();
-        });
-    }
+                    document.getElementById('modal_start').value = start.toISOString().slice(0, 16);
+                    document.getElementById('modal_end').value = end.toISOString().slice(0, 16);
 
-    rowCheckboxes.forEach(cb => {
-        cb.addEventListener('change', updateBulkDeleteBtn);
-    });
+                    modal.show();
+                }
+            });
+            calendar.render();
 
-    function updateBulkDeleteBtn() {
-        const checked = document.querySelectorAll('.row-checkbox:checked');
-        if (bulkDeleteBtn) {
-            bulkDeleteBtn.style.display = checked.length > 0 ? 'block' : 'none';
+
         }
-    }
-});
 
-function bulkDelete() {
-    const checked = document.querySelectorAll('.row-checkbox:checked');
-    if (checked.length === 0) {
-        alert('Lütfen en az bir kayıt seçin.');
-        return;
-    }
-    
-    if (!confirm(checked.length + ' rezervasyonu silmek istediğinizden emin misiniz?')) {
-        return;
-    }
-    
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.innerHTML = '<input type="hidden" name="action" value="bulk_delete">';
-    
-    checked.forEach(cb => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'ids[]';
-        input.value = cb.value;
-        form.appendChild(input);
+        // Bulk operations
+        const selectAll = document.getElementById('selectAll');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                rowCheckboxes.forEach(cb => cb.checked = this.checked);
+                updateBulkDeleteBtn();
+            });
+        }
+
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkDeleteBtn);
+        });
+
+        function updateBulkDeleteBtn() {
+            const checked = document.querySelectorAll('.row-checkbox:checked');
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.style.display = checked.length > 0 ? 'block' : 'none';
+            }
+        }
     });
-    
-    document.body.appendChild(form);
-    form.submit();
-}
 
-function editReservation(req) {
-    document.getElementById('edit_id').value = req.id;
-    
-    // Convert to datetime-local format
-    const start = new Date(req.baslangic_tarihi);
-    const end = new Date(req.bitis_tarihi);
-    
-    start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
-    end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
-    
-    document.getElementById('edit_start').value = start.toISOString().slice(0, 16);
-    document.getElementById('edit_end').value = end.toISOString().slice(0, 16);
-    document.getElementById('edit_aciklama').value = req.aciklama || '';
-    document.getElementById('edit_durum').value = req.durum;
-    
-    const modal = new bootstrap.Modal(document.getElementById('editModal'));
-    modal.show();
-}
+    function bulkDelete() {
+        const checked = document.querySelectorAll('.row-checkbox:checked');
+        if (checked.length === 0) {
+            alert('Lütfen en az bir kayıt seçin.');
+            return;
+        }
+
+        if (!confirm(checked.length + ' rezervasyonu silmek istediğinizden emin misiniz?')) {
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = '<input type="hidden" name="action" value="bulk_delete">';
+
+        checked.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = cb.value;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function editReservation(req) {
+        document.getElementById('edit_id').value = req.id;
+
+        // Convert to datetime-local format
+        const start = new Date(req.baslangic_tarihi);
+        const end = new Date(req.bitis_tarihi);
+
+        start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
+        end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
+
+        document.getElementById('edit_start').value = start.toISOString().slice(0, 16);
+        document.getElementById('edit_end').value = end.toISOString().slice(0, 16);
+        document.getElementById('edit_aciklama').value = req.aciklama || '';
+        document.getElementById('edit_durum').value = req.durum;
+
+        const modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+    }
 </script>
 <?php include __DIR__ . '/../includes/footer.php'; ?>
