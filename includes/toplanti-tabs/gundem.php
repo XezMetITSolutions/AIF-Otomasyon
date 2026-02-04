@@ -2,9 +2,11 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Gündem Maddeleri</h5>
+        <?php if ($canManageContent): ?>
         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#gundemEkleModal">
             <i class="fas fa-plus me-1"></i>Gündem Ekle
         </button>
+        <?php endif; ?>
         <?php if (strpos($toplanti['byk_kodu'], 'AT') !== false): ?>
             <button type="button" class="btn btn-sm btn-info text-white ms-2" id="atStandartGundemBtn">
                 <i class="fas fa-magic me-1"></i>Birim Gündemini Ekle
@@ -41,12 +43,15 @@
                                         </div>
                                         <textarea class="form-control form-control-sm gorusme-notu-input mb-2" rows="2"
                                             placeholder="Bu gündem maddesiyle ilgili görüşme notlarını buraya yazabilirsiniz..."
-                                            data-gundem-id="<?php echo $gundem['gundem_id']; ?>"><?php echo htmlspecialchars($gundem['gorusme_notlari'] ?? ''); ?></textarea>
+                                            data-gundem-id="<?php echo $gundem['gundem_id']; ?>"
+                                            <?php echo !$canManageContent ? 'readonly' : ''; ?>><?php echo htmlspecialchars($gundem['gorusme_notlari'] ?? ''); ?></textarea>
                                         <div class="text-end">
+                                            <?php if ($canManageContent): ?>
                                             <button type="button" class="btn btn-sm btn-outline-success gorusme-notu-kaydet-btn"
                                                 data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
                                                 <i class="fas fa-save me-1"></i>Notu Kaydet
                                             </button>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
 
@@ -68,6 +73,7 @@
                                         <?php endif; ?>
                                     </div>
                                 </div>
+                                <?php if ($canManageContent): ?>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-sm btn-outline-primary gundem-duzenle-btn"
                                         data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
@@ -78,6 +84,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

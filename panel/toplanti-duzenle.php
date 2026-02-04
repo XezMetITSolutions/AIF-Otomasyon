@@ -30,6 +30,11 @@ $toplanti = $db->fetch("
     WHERE t.toplanti_id = ? AND t.byk_id = ?
 ", [$toplanti_id, $user['byk_id']]);
 
+$currentUserId = $user['id'] ?? $user['kullanici_id'];
+$isCreator = ($toplanti['olusturan_id'] == $currentUserId);
+$isSecretary = (isset($toplanti['sekreter_id']) && $toplanti['sekreter_id'] == $currentUserId);
+$canManageContent = $isCreator || $isSecretary;
+
 if (!$toplanti) {
     header('Location: /panel/toplantilar.php');
     exit;
@@ -85,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $konum = trim($_POST['konum'] ?? '');
             $toplanti_turu = $_POST['toplanti_turu'] ?? 'normal';
             $durum = $_POST['durum'] ?? 'planlandi';
+            $sekreter_id = !empty($_POST['sekreter_id']) ? $_POST['sekreter_id'] : null;
 
             $db->query("
                 UPDATE toplantilar SET
@@ -93,7 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     toplanti_tarihi = ?,
                     konum = ?,
                     toplanti_turu = ?,
-                    durum = ?
+                    durum = ?,
+                    sekreter_id = ?
                 WHERE toplanti_id = ?
             ", [
                 $baslik,
@@ -102,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $konum,
                 $toplanti_turu,
                 $durum,
+                $sekreter_id,
                 $toplanti_id
             ]);
 
@@ -175,6 +183,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strpos($msg, 'toplanti_turu') !== false) {
                 $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olaganüstü') DEFAULT 'normal' AFTER gundem");
             }
+            if (strpos($msg, 'sekreter_id') !== false) {
+                $db->query("ALTER TABLE toplantilar ADD COLUMN sekreter_id INT NULL DEFAULT NULL");
+            }
             // Retry Update
             $db->query("
                 UPDATE toplantilar SET
@@ -183,7 +194,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     toplanti_tarihi = ?,
                     konum = ?,
                     toplanti_turu = ?,
-                    durum = ?
+                    durum = ?,
+                    sekreter_id = ?
                 WHERE toplanti_id = ?
             ", [
                 $baslik,
@@ -192,6 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $konum,
                 $toplanti_turu,
                 $durum,
+                $sekreter_id,
                 $toplanti_id
             ]);
             $success = 'Bilgiler güncellendi (Sistem onarımı yapıldı).';
