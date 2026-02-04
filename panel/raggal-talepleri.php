@@ -215,8 +215,8 @@ include __DIR__ . '/../includes/header.php';
     .fc-daygrid-event {
         padding: 1px 2px !important;
         margin: 0 !important;
-        font-size: 0.6rem !important;
-        line-height: 1 !important;
+        font-size: 0.7rem !important;
+        line-height: 1.1 !important;
         white-space: nowrap !important;
         overflow: hidden !important;
     }
@@ -527,6 +527,27 @@ include __DIR__ . '/../includes/header.php';
                     document.getElementById('modal_end').value = end.toISOString().slice(0, 16);
 
                     modal.show();
+                },
+                eventClick: function(info) {
+                    // Detay modal'ı göster
+                    var event = info.event;
+                    var detailHtml = '<div style="padding: 15px;">';
+                    detailHtml += '<h5>' + event.title + '</h5>';
+                    detailHtml += '<p><strong>Başlangıç:</strong> ' + event.start.toLocaleString('tr-TR') + '</p>';
+                    if (event.end) {
+                        detailHtml += '<p><strong>Bitiş:</strong> ' + event.end.toLocaleString('tr-TR') + '</p>';
+                    }
+                    detailHtml += '</div>';
+                    
+                    // Bootstrap alert olarak göster
+                    var existingAlert = document.querySelector('.event-detail-alert');
+                    if (existingAlert) existingAlert.remove();
+                    
+                    var alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-info alert-dismissible fade show event-detail-alert';
+                    alertDiv.innerHTML = detailHtml + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    
+                    document.querySelector('.content-wrapper').insertBefore(alertDiv, document.querySelector('.tab-content'));
                 }
             });
             calendar.render();
