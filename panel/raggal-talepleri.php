@@ -151,7 +151,11 @@ foreach ($events as $event) {
 $pendingRequests = [];
 if ($hasPermissionBaskan) {
     $pendingRequests = $db->fetchAll("
-        SELECT r.*, CONCAT(u.ad, ' ', u.soyad) as kullanici_adi 
+        SELECT r.*, 
+            CASE 
+                WHEN u.kullanici_id = 3 THEN 'Ana Yönetici'
+                ELSE CONCAT(u.ad, ' ', u.soyad)
+            END as kullanici_adi 
         FROM raggal_talepleri r
         JOIN kullanicilar u ON r.kullanici_id = u.kullanici_id 
         ORDER BY r.created_at DESC
