@@ -113,7 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $events = $db->fetchAll("
     SELECT 
         r.*, 
-        CONCAT(u.ad, ' ', u.soyad) as title,
+        r.aciklama as title,
+        CONCAT(u.ad, ' ', u.soyad) as kullanici_adi,
         CASE 
             WHEN r.durum = 'onaylandi' THEN '#10b981'
             WHEN r.durum = 'reddedildi' THEN '#ef4444'
