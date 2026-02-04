@@ -5,6 +5,11 @@
         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#gundemEkleModal">
             <i class="fas fa-plus me-1"></i>Gündem Ekle
         </button>
+        <?php if (strpos($toplanti['byk_kodu'], 'AT') !== false): ?>
+            <button type="button" class="btn btn-sm btn-info text-white ms-2" id="atStandartGundemBtn">
+                <i class="fas fa-magic me-1"></i>Birim Gündemini Ekle
+            </button>
+        <?php endif; ?>
     </div>
     <div class="card-body">
         <?php if (empty($gundem_maddeleri)): ?>
@@ -25,7 +30,7 @@
                                     <?php if ($gundem['aciklama']): ?>
                                         <p class="text-muted mb-2"><?php echo nl2br(htmlspecialchars($gundem['aciklama'])); ?></p>
                                     <?php endif; ?>
-                                    
+
                                     <!-- Görüşme Notları Alanı -->
                                     <div class="mt-3 p-3 bg-light rounded container-gorusme-notu">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -34,12 +39,12 @@
                                             </label>
                                             <span class="small text-muted fst-italic save-status"></span>
                                         </div>
-                                        <textarea class="form-control form-control-sm gorusme-notu-input mb-2" 
-                                                  rows="2" 
-                                                  placeholder="Bu gündem maddesiyle ilgili görüşme notlarını buraya yazabilirsiniz..."
-                                                  data-gundem-id="<?php echo $gundem['gundem_id']; ?>"><?php echo htmlspecialchars($gundem['gorusme_notlari'] ?? ''); ?></textarea>
+                                        <textarea class="form-control form-control-sm gorusme-notu-input mb-2" rows="2"
+                                            placeholder="Bu gündem maddesiyle ilgili görüşme notlarını buraya yazabilirsiniz..."
+                                            data-gundem-id="<?php echo $gundem['gundem_id']; ?>"><?php echo htmlspecialchars($gundem['gorusme_notlari'] ?? ''); ?></textarea>
                                         <div class="text-end">
-                                            <button type="button" class="btn btn-sm btn-outline-success gorusme-notu-kaydet-btn" data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
+                                            <button type="button" class="btn btn-sm btn-outline-success gorusme-notu-kaydet-btn"
+                                                data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
                                                 <i class="fas fa-save me-1"></i>Notu Kaydet
                                             </button>
                                         </div>
@@ -47,28 +52,29 @@
 
                                     <div class="d-flex align-items-center gap-3 mt-3">
                                         <?php if ($gundem['durum'] !== 'beklemede'): ?>
-                                            <span class="badge bg-<?php 
-                                                echo $gundem['durum'] === 'karara_baglandi' ? 'success' : 
-                                                    ($gundem['durum'] === 'gorusuluyor' ? 'warning' : 
-                                                    ($gundem['durum'] === 'ertelendi' ? 'danger' : 'info')); 
+                                            <span class="badge bg-<?php
+                                            echo $gundem['durum'] === 'karara_baglandi' ? 'success' :
+                                                ($gundem['durum'] === 'gorusuluyor' ? 'warning' :
+                                                    ($gundem['durum'] === 'ertelendi' ? 'danger' : 'info'));
                                             ?>">
                                                 <?php echo ucfirst(str_replace('_', ' ', $gundem['durum'])); ?>
                                             </span>
                                         <?php endif; ?>
                                         <?php if (!empty($gundem['sunum_dosyasi'] ?? null)): ?>
-                                            <a href="/uploads/toplanti/<?php echo htmlspecialchars($gundem['sunum_dosyasi']); ?>" target="_blank" class="text-decoration-none">
+                                            <a href="/uploads/toplanti/<?php echo htmlspecialchars($gundem['sunum_dosyasi']); ?>"
+                                                target="_blank" class="text-decoration-none">
                                                 <i class="fas fa-file-pdf me-1"></i>Sunum
                                             </a>
                                         <?php endif; ?>
                                     </div>
                                 </div>
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-outline-primary gundem-duzenle-btn" 
-                                            data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
+                                    <button type="button" class="btn btn-sm btn-outline-primary gundem-duzenle-btn"
+                                        data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger gundem-sil-btn" 
-                                            data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
+                                    <button type="button" class="btn btn-sm btn-outline-danger gundem-sil-btn"
+                                        data-gundem-id="<?php echo $gundem['gundem_id']; ?>">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -93,11 +99,13 @@
                 <form id="gundemEkleForm">
                     <div class="mb-3">
                         <label class="form-label">Sıra No</label>
-                        <input type="number" class="form-control" id="gundem_sira_no" value="<?php echo count($gundem_maddeleri) + 1; ?>" min="1">
+                        <input type="number" class="form-control" id="gundem_sira_no"
+                            value="<?php echo count($gundem_maddeleri) + 1; ?>" min="1">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Gündem Maddesi <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="gundem_baslik" placeholder="Örn: Bütçe Görüşmeleri" required>
+                        <input type="text" class="form-control" id="gundem_baslik" placeholder="Örn: Bütçe Görüşmeleri"
+                            required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Açıklama</label>
@@ -141,7 +149,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Gündem Maddesi <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="edit_gundem_baslik" placeholder="Örn: Bütçe Görüşmeleri" required>
+                        <input type="text" class="form-control" id="edit_gundem_baslik"
+                            placeholder="Örn: Bütçe Görüşmeleri" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Açıklama</label>

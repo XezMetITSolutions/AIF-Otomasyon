@@ -56,6 +56,8 @@ var ToplantiYonetimi = {
         document.getElementById('gundemKaydetBtn')?.addEventListener('click', () => this.gundemEkle());
         document.getElementById('gundemGuncelleBtn')?.addEventListener('click', () => this.gundemGuncelle());
 
+        document.getElementById('atStandartGundemBtn')?.addEventListener('click', () => this.atStandartGundemEkle());
+
         document.querySelectorAll('.gundem-duzenle-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const gundemId = e.target.closest('button').dataset.gundemId;
@@ -291,6 +293,53 @@ var ToplantiYonetimi = {
                 } else {
                     this.showAlert('danger', result.error);
                 }
+            });
+    },
+
+    atStandartGundemEkle: function () {
+        if (!confirm('Standart AT birim gündem maddeleri eklenecek. Onaylıyor musunuz?')) {
+            return;
+        }
+
+        const items = [
+            "Genel Başkanlık",
+            "Genel Sekreterlik",
+            "Sosyal Hizmetler",
+            "Teşkilatlanma",
+            "İrşad",
+            "Eğitim",
+            "Kadınlar Teşkilatı",
+            "Kadınlar Gençlik Teşkilatı",
+            "Gençlik Teşkilatı",
+            "Basın/Kurumsal Iletisim Baskanligi",
+            "Hacc Umre"
+        ];
+
+        const btn = document.getElementById('atStandartGundemBtn');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Ekleniyor...';
+
+        const data = {
+            action: 'add_bulk',
+            toplanti_id: this.toplanti_id,
+            items: items
+        };
+
+        this.apiRequest('/admin/api-toplanti-gundem.php', data)
+            .then(result => {
+                if (result.success) {
+                    this.showAlert('success', result.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    this.showAlert('danger', result.error);
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             });
     },
 

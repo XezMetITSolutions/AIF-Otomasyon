@@ -45,6 +45,32 @@ try {
                 'gundem_id' => $gundem_id
             ]);
             break;
+
+        case 'add_bulk':
+            $toplanti_id = $input['toplanti_id'] ?? null;
+            $items = $input['items'] ?? [];
+
+            if (!$toplanti_id || empty($items)) {
+                throw new Exception('Toplantı ID ve maddeler gereklidir');
+            }
+
+            // Get current max sort order
+            $max_sort = $db->fetch("SELECT MAX(sira_no) as max_sira FROM toplanti_gundem WHERE toplanti_id = ?", [$toplanti_id]);
+            $current_sort = ($max_sort['max_sira'] ?? 0) + 1;
+
+            $stmt = $db->getConnection()->prepare("INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) VALUES (?, ?, ?, 'beklemede')");
+
+            foreach ($items as $item) {
+                // Check if already exists to avoid duplicates (optional but good)
+                $exists = $db->fetch("SELECT 1 FROM toplanti_gundem WHERE toplanti_id = ? AND baslik = ?", [$toplanti_id, $item]);
+                if (!$exists) {
+                    $stmt->execute([$toplanti_id, $current_sort, $item]);
+                    $current_sort++;
+                }
+            }
+            
+            echo json_encode(['success' => true, 'message' => count($items) . ' gündem maddesi işlendi']);
+            break;
             
         case 'update':
             $gundem_id = $input['gundem_id'] ?? null;
