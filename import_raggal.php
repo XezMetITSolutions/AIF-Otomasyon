@@ -2,13 +2,13 @@
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/classes/Database.php';
 
+header('Content-Type: text/plain');
+
 try {
     $db = Database::getInstance();
 
-    // Admin User
-    $admin = $db->fetch("SELECT * FROM kullanicilar WHERE rol = 'admin' LIMIT 1");
-    if (!$admin)
-        $admin = $db->fetch("SELECT * FROM kullanicilar LIMIT 1");
+    // İlk kullanıcıyı al (Admin varsayımı)
+    $admin = $db->fetch("SELECT * FROM kullanicilar ORDER BY kullanici_id ASC LIMIT 1");
     if (!$admin)
         die('Kullanıcı bulunamadı.');
 
