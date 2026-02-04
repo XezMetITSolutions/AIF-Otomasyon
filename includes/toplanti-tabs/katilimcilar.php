@@ -1,13 +1,19 @@
 <!-- Katılımcılar Tab İçeriği -->
+<?php
+$currentUserId = $user['id'] ?? $user['kullanici_id'];
+$isCreator = ($toplanti['olusturan_id'] == $currentUserId);
+?>
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Katılımcı Listesi</h5>
+                <?php if ($isCreator): ?>
                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
                     data-bs-target="#katilimciEkleModal">
                     <i class="fas fa-plus me-1"></i>Katılımcı Ekle
                 </button>
+                <?php endif; ?>
             </div>
             <div class="card-body">
                 <?php if (empty($katilimcilar)): ?>
@@ -68,8 +74,12 @@
                                                 ?>
                                             </td>
                                             <td>
-                                                <select class="form-select form-select-sm katilim-durum-select"
-                                                    data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>">
+                                                <?php
+                                                $isDisabled = (!$isCreator && $katilimci['kullanici_id'] != $currentUserId) ? 'disabled' : '';
+                                                ?>
+                                                <select class="form-select form-select-sm katilim-durum-select" 
+                                                        data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>"
+                                                        <?php echo $isDisabled; ?>>
                                                     <option value="beklemede" <?php echo $katilimci['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>
                                                         ⌛ Davet Edildi
                                                     </option>
@@ -82,11 +92,13 @@
                                                 </select>
                                             </td>
                                             <td>
-                                                <button type="button" class="btn btn-sm btn-danger katilimci-sil-btn"
-                                                    data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>"
-                                                    data-ad="<?php echo htmlspecialchars($katilimci['ad'] . ' ' . $katilimci['soyad']); ?>">
+                                                <?php if ($isCreator): ?>
+                                                <button type="button" class="btn btn-sm btn-danger katilimci-sil-btn" 
+                                                        data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>"
+                                                        data-ad="<?php echo htmlspecialchars($katilimci['ad'] . ' ' . $katilimci['soyad']); ?>">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
