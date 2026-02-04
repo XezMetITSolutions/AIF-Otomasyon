@@ -7,13 +7,24 @@ header('Content-Type: text/plain');
 try {
     $db = Database::getInstance();
 
-    // İlk kullanıcıyı al (Admin varsayımı)
-    $admin = $db->fetch("SELECT * FROM kullanicilar ORDER BY kullanici_id ASC LIMIT 1");
-    if (!$admin)
-        die('Kullanıcı bulunamadı.');
+    // BYK ID si olan bir kullanıcı bul
+    $admin = $db->fetch("SELECT * FROM kullanicilar WHERE byk_id IS NOT NULL ORDER BY kullanici_id ASC LIMIT 1");
 
-    $olusturan_id = $admin['kullanici_id'];
-    $byk_id = $admin['byk_id'];
+    if ($admin) {
+        $olusturan_id = $admin['kullanici_id'];
+        $byk_id = $admin['byk_id'];
+    } else {
+        // Kullanıcılarda BYK yoksa BYK tablosundan al
+        $byk = $db->fetch("SELECT * FROM byk LIMIT 1");
+        if (!$byk)
+            die('Sistemde hiç BYK tanımlı değil.');
+        $byk_id = $byk['byk_id'];
+
+        $user = $db->fetch("SELECT * FROM kullanicilar LIMIT 1");
+        if (!$user)
+            die('Sistemde hiç kullanıcı yok.');
+        $olusturan_id = $user['kullanici_id'];
+    }
 
     $events = [
         ['2026-02-27 15:00:00', 'İmamlar Toplantısı'],
