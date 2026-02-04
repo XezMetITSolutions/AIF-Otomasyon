@@ -239,10 +239,9 @@ include __DIR__ . '/../includes/header.php';
     <main class="main-content">
         <div class="content-wrapper">
 
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
-                    <h1 class="h3 mb-1"><i class="fas fa-calendar-check me-2"></i>Raggal Rezervasyon</h1>
-                    <p class="text-muted mb-0">Tesis rezervasyon durumu ve talep işlemleri.</p>
+                    <h1 class="h4 mb-0"><i class="fas fa-calendar-check me-2"></i>Raggal Rezervasyon</h1>
                 </div>
 
                 <ul class="nav nav-pills bg-white p-1 rounded-4 border shadow-sm">
@@ -484,6 +483,12 @@ include __DIR__ . '/../includes/header.php';
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 locale: 'tr',
+                buttonText: {
+                    today: 'Bugün',
+                    month: 'Ay',
+                    week: 'Hafta',
+                    day: 'Gün'
+                },
                 selectable: true,
                 events: <?php echo json_encode($calendarEvents); ?>,
                 select: function (info) {
