@@ -202,6 +202,32 @@ include __DIR__ . '/../includes/header.php';
         background-color: #007a5e !important;
         border-color: #007a5e !important;
     }
+
+    /* Kompakt Takvim */
+    .fc-daygrid-event {
+        padding: 2px 4px !important;
+        margin: 1px 2px !important;
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .fc-daygrid-day-frame {
+        min-height: 80px !important;
+    }
+
+    .fc-col-header-cell {
+        padding: 5px 2px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .fc-daygrid-day-number {
+        padding: 4px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .fc .fc-daygrid-day-top {
+        padding: 2px !important;
+    }
 </style>
 
 <div class="dashboard-layout">
@@ -443,7 +469,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEve ntLis        tener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
         if (calendarEl) {
             var calendar = new FullCalendar.Calendar(calendarEl, {
