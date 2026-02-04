@@ -77,7 +77,7 @@ $success = $_GET['success'] ?? '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $action = $_POST['action'] ?? '';
-        
+
         if ($action === 'update_toplanti') {
             $baslik = trim($_POST['baslik'] ?? '');
             $aciklama = trim($_POST['aciklama'] ?? '');
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $konum = trim($_POST['konum'] ?? '');
             $toplanti_turu = $_POST['toplanti_turu'] ?? 'normal';
             $durum = $_POST['durum'] ?? 'planlandi';
-            
+
             $db->query("
                 UPDATE toplantilar SET
                     baslik = ?,
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $lines = explode("\n", $aciklama);
                 $yeni_maddeler = [];
                 $sira = 1;
-                
+
                 // 1. Yeni maddeleri parse et
                 foreach ($lines as $line) {
                     $line = trim($line);
@@ -140,8 +140,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     } else {
                         // Yoksa ekle
-                        $db->query("INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) VALUES (?, ?, ?, 'beklemede')", 
-                            [$toplanti_id, $sira_no, $baslik]);
+                        $db->query(
+                            "INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) VALUES (?, ?, ?, 'beklemede')",
+                            [$toplanti_id, $sira_no, $baslik]
+                        );
                     }
                 }
 
@@ -158,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             }
-            
+
             $success = 'Bilgiler ve gündem maddeleri güncellendi.';
             header("Location: /panel/toplanti-duzenle.php?id={$toplanti_id}&success=" . urlencode($success));
             exit;
@@ -167,14 +169,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $msg = $e->getMessage();
         // Self-Healing for missing columns
         if (strpos($msg, 'Unknown column') !== false) {
-             if (strpos($msg, 'bitis_tarihi') !== false) {
-                 $db->query("ALTER TABLE toplantilar ADD COLUMN bitis_tarihi DATETIME NULL AFTER toplanti_tarihi");
-             }
-             if (strpos($msg, 'toplanti_turu') !== false) {
-                 $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olaganüstü') DEFAULT 'normal' AFTER gundem");
-             }
-             // Retry Update
-              $db->query("
+            if (strpos($msg, 'bitis_tarihi') !== false) {
+                $db->query("ALTER TABLE toplantilar ADD COLUMN bitis_tarihi DATETIME NULL AFTER toplanti_tarihi");
+            }
+            if (strpos($msg, 'toplanti_turu') !== false) {
+                $db->query("ALTER TABLE toplantilar ADD COLUMN toplanti_turu ENUM('normal', 'acil', 'ozel', 'olagan', 'olaganüstü') DEFAULT 'normal' AFTER gundem");
+            }
+            // Retry Update
+            $db->query("
                 UPDATE toplantilar SET
                     baslik = ?,
                     aciklama = ?,
@@ -217,155 +219,153 @@ foreach ($katilimcilar as $k) {
 include __DIR__ . '/../includes/header.php';
 ?>
 <!-- ... (skipping unchanged content) ... -->
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#katilimcilar">
-                        <i class="fas fa-users me-2"></i>Katılımcılar
-                        <span class="badge bg-white text-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
-                    </a>
-                </li>
+<li class="nav-item">
+    <a class="nav-link" data-bs-toggle="pill" href="#katilimcilar">
+        <i class="fas fa-users me-2"></i>Katılımcılar
+        <span
+            class="badge bg-white text-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
+    </a>
+</li>
 ?>
 
 <!-- Custom CSS for Baskan Redesign -->
 <style>
-/* Modern Gradient Header */
-/* Modern Minimal Header */
-.modern-header {
-    background: #fff;
-    padding: 2rem;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0,0,0,0.03);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Subtle accent line on top */
-.modern-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, #0d6efd 0%, #0dcaf0 100%);
-}
-
-.header-meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 1.5rem;
-    color: #6c757d;
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
-}
-
-.header-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.header-breadcrumb {
-    font-size: 0.9rem;
-    color: #0d6efd;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #212529;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.5px;
-}
-
-/* Glass Tabs */
-.nav-pills-glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 0.5rem;
-    border-radius: 15px;
-    display: inline-flex;
-    gap: 0.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    margin-bottom: 2rem;
-}
-
-.nav-pills-glass .nav-link {
-    color: #555;
-    border-radius: 10px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-pills-glass .nav-link:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.nav-pills-glass .nav-link.active {
-    background: #1e3c72;
-    color: white;
-    box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
-}
-
-/* Glass Cards overrides */
-.card {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-.card-header {
-    background: #fff;
-    border-bottom: 1px solid #eee;
-    padding: 1.25rem 1.5rem;
-}
-
-.stat-box {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    text-align: center;
-}
-
-/* Layout overrides */
-.content-wrapper {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Hide Alt Birim Column in Participants Tab */
-#katilimcilar table th:nth-child(2),
-#katilimcilar table td:nth-child(2) {
-    display: none;
-}
-
-/* Sidebar Layout Fix */
-@media (min-width: 992px) {
-    main.container-fluid {
-        padding-left: 280px !important;
-        padding-right: 20px !important; /* Slight padding for aesthetics */
-        margin: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
+    /* Modern Gradient Header */
+    /* Modern Minimal Header */
+    .modern-header {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        position: relative;
+        overflow: hidden;
     }
-}
+
+    /* Subtle accent line on top */
+    .modern-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #0d6efd 0%, #0dcaf0 100%);
+    }
+
+    .header-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 1.5rem;
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .header-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-breadcrumb {
+        font-size: 0.9rem;
+        color: #0d6efd;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+
+    /* Glass Tabs */
+    .nav-pills-glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        padding: 0.5rem;
+        border-radius: 15px;
+        display: inline-flex;
+        gap: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+    }
+
+    .nav-pills-glass .nav-link {
+        color: #555;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .nav-pills-glass .nav-link:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-pills-glass .nav-link.active {
+        background: #1e3c72;
+        color: white;
+        box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+    }
+
+    /* Glass Cards overrides */
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: #fff;
+        border-bottom: 1px solid #eee;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .stat-box {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+        text-align: center;
+    }
+
+    /* Layout overrides */
+    .content-wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+
+
+    /* Sidebar Layout Fix */
+    @media (min-width: 992px) {
+        main.container-fluid {
+            padding-left: 280px !important;
+            padding-right: 20px !important;
+            /* Slight padding for aesthetics */
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
 </style>
 
 <link rel="stylesheet" href="/assets/css/toplanti-yonetimi.css">
@@ -374,7 +374,7 @@ include __DIR__ . '/../includes/header.php';
 
 <main class="container-fluid mt-4">
     <div class="content-wrapper" data-toplanti-id="<?php echo $toplanti_id; ?>">
-        
+
         <!-- Modern Minimal Header -->
         <div class="modern-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -383,7 +383,7 @@ include __DIR__ . '/../includes/header.php';
                         <i class="fas fa-layer-group me-1"></i><?php echo htmlspecialchars($toplanti['byk_adi']); ?>
                     </span>
                     <h1 class="page-title"><?php echo htmlspecialchars($toplanti['baslik']); ?></h1>
-                    
+
                     <div class="header-meta">
                         <div class="header-meta-item">
                             <i class="far fa-calendar-alt text-primary"></i>
@@ -395,9 +395,10 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="d-flex gap-2">
-                    <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-primary" target="_blank">
+                    <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-primary"
+                        target="_blank">
                         <i class="fas fa-file-pdf me-2"></i>Rapor Al
                     </a>
                     <a href="/panel/toplantilar.php" class="btn btn-outline-secondary">
@@ -432,7 +433,8 @@ include __DIR__ . '/../includes/header.php';
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="pill" href="#katilimcilar">
                         <i class="fas fa-users me-2"></i>Katılımcılar
-                        <span class="badge bg-white text-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
+                        <span
+                            class="badge bg-white text-primary ms-1"><?php echo $katilim_stats['katilacak'] . '/' . count($katilimcilar); ?></span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -476,22 +478,22 @@ include __DIR__ . '/../includes/header.php';
 
 <script>
     // Prepare participants for Tribute.js
-    const MEETING_PARTICIPANTS = <?php 
-        $participantsForJs = array_map(function($p) {
-            return [
-                'key' => $p['ad'] . ' ' . $p['soyad'],
-                'value' => $p['ad'] . ' ' . $p['soyad'],
-                'email' => $p['email'],
-                'id' => $p['kullanici_id']
-            ];
-        }, $katilimcilar);
-        echo json_encode(array_values($participantsForJs));
+    const MEETING_PARTICIPANTS = <?php
+    $participantsForJs = array_map(function ($p) {
+        return [
+            'key' => $p['ad'] . ' ' . $p['soyad'],
+            'value' => $p['ad'] . ' ' . $p['soyad'],
+            'email' => $p['email'],
+            'id' => $p['kullanici_id']
+        ];
+    }, $katilimcilar);
+    echo json_encode(array_values($participantsForJs));
     ?>;
 </script>
 
 <script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
     });
 </script>
