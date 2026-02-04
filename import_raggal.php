@@ -2,28 +2,39 @@
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/classes/Database.php';
 
-header('Content-Type: text/plain');
+header('Content-Type: text/html');
 
 try {
     $db = Database::getInstance();
 
+    echo "<h2>Raggal Import Debug</h2>";
+
     // BYK ID si olan bir kullanıcı bul
-    $admin = $db->fetch("SELECT * FROM kullanicilar WHERE byk_id IS NOT NULL ORDER BY kullanici_id ASC LIMIT 1");
+    $sql = "SELECT * FROM kullanicilar WHERE byk_id IS NOT NULL AND byk_id != '' ORDER BY kullanici_id ASC LIMIT 1";
+    $admin = $db->fetch($sql);
 
     if ($admin) {
         $olusturan_id = $admin['kullanici_id'];
         $byk_id = $admin['byk_id'];
+        echo "Kullanıcı bulundu: {$admin['ad']} {$admin['soyad']} (ID: $olusturan_id). BYK ID: $byk_id <br>";
     } else {
+        echo "Uygun kullanıcı bulunamadı. BYK tablosuna bakılıyor...<br>";
         // Kullanıcılarda BYK yoksa BYK tablosundan al
         $byk = $db->fetch("SELECT * FROM byk LIMIT 1");
         if (!$byk)
             die('Sistemde hiç BYK tanımlı değil.');
         $byk_id = $byk['byk_id'];
+        echo "BYK tablosundan bulundu: {$byk['byk_adi']} (ID: $byk_id)<br>";
 
         $user = $db->fetch("SELECT * FROM kullanicilar LIMIT 1");
         if (!$user)
             die('Sistemde hiç kullanıcı yok.');
         $olusturan_id = $user['kullanici_id'];
+        echo "Kullanıcı tablosundan rastgele atandı: {$user['ad']} (ID: $olusturan_id)<br>";
+    }
+
+    if (empty($byk_id)) {
+        die("KRİTİK HATA: byk_id hala boş! Veritabanında sorun olabilir.");
     }
 
     $events = [
@@ -62,8 +73,8 @@ try {
         }
     }
 
-    echo "İşlem Tamam. $added toplantı eklendi.";
+    echo "<br><strong>İşlem Tamam. $added toplantı eklendi.</strong>";
 } catch (Exception $e) {
-    echo 'Hata: ' . $e->getMessage();
+    echo '<br>Hata: ' . $e->getMessage();
 }
 ?>
