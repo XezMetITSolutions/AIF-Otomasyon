@@ -6,8 +6,17 @@ $db = Database::getInstance();
 
 echo "🛠️ Gruplar Temizleniyor ve Düzeltiliyor (Hard Reset)...\n";
 
-// 1. Tüm isimleri normalize et (Bosluklari temizle)
-$db->query("UPDATE ziyaret_gruplari SET grup_adi = TRIM(grup_adi)");
+// 1. Tüm isimleri normalize et (Bosluklari temizle, invisible karakterleri yok et)
+$allGroupsRaw = $db->fetchAll("SELECT * FROM ziyaret_gruplari");
+foreach ($allGroupsRaw as $g) {
+    // Görünmez karakterleri, non-breaking spaceleri ve fazla boşlukları temizle
+    $cleanName = preg_replace('/[\x00-\x1F\x7F-\xA0]/u', ' ', $g['grup_adi']); // Tab, newline, nbsp...
+    $cleanName = trim(preg_replace('/\s+/', ' ', $cleanName)); // Fazla boşlukları teke indir
+    
+    if ($g['grup_adi'] !== $cleanName) {
+        $db->query("UPDATE ziyaret_gruplari SET grup_adi = ? WHERE grup_id = ?", [$cleanName, $g['grup_id']]);
+    }
+}
 
 // 2. Mükerrerleri bul ve tekilleştir
 $allGroups = $db->fetchAll("SELECT * FROM ziyaret_gruplari ORDER BY grup_id ASC");
