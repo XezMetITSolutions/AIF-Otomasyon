@@ -4,38 +4,38 @@ require_once __DIR__ . '/classes/Database.php';
 
 $db = Database::getInstance();
 
-echo "🛠️ Gruplar Temizleniyor ve Düzeltiliyor...\n";
+echo "🛠️ Gruplar Temizleniyor ve Düzeltiliyor (Hard Reset)...\n";
 
-// 1. Yinelenen isimleri (TRIM edilince aynı olanları) bul ve birleştir
-$allGroups = $db->fetchAll("SELECT * FROM ziyaret_gruplari");
+// 1. Tüm isimleri normalize et (Bosluklari temizle)
+$db->query("UPDATE ziyaret_gruplari SET grup_adi = TRIM(grup_adi)");
+
+// 2. Mükerrerleri bul ve tekilleştir
+$allGroups = $db->fetchAll("SELECT * FROM ziyaret_gruplari ORDER BY grup_id ASC");
 $seen = [];
-$toDelete = [];
-
 foreach ($allGroups as $g) {
-    $trimmedName = trim($g['grup_adi']);
-    if (isset($seen[$trimmedName])) {
-        echo "⚠️ Çift Grup Bulundu: '$trimmedName' (ID: " . $g['grup_id'] . " -> Siliniyor, ID: " . $seen[$trimmedName] . " -> Birleştiriliyor)\n";
+    $name = $g['grup_adi'];
+    if (isset($seen[$name])) {
+        $primaryId = $seen[$name];
+        $duplicateId = $g['grup_id'];
+        echo "⚠️ Mükerrer Grup Siliniyor: $name (ID: $duplicateId -> Birleştiriliyor ID: $primaryId)\n";
         
-        // Üyeleri ve ziyaretleri eski ID'den yeni ID're aktar
-        $db->query("UPDATE IGNORE ziyaret_grup_uyeleri SET grup_id = ? WHERE grup_id = ?", [$seen[$trimmedName], $g['grup_id']]);
-        $db->query("UPDATE sube_ziyaretleri SET grup_id = ? WHERE grup_id = ? AND NOT EXISTS (SELECT 1 FROM (SELECT * FROM sube_ziyaretleri) as tmp WHERE byk_id = sube_ziyaretleri.byk_id AND grup_id = ? AND ziyaret_tarihi = sube_ziyaretleri.ziyaret_tarihi)", [$seen[$trimmedName], $g['grup_id'], $seen[$trimmedName]]);
+        // Üyeleri taşı
+        $db->query("UPDATE IGNORE ziyaret_grup_uyeleri SET grup_id = ? WHERE grup_id = ?", [$primaryId, $duplicateId]);
+        // Temizle
+        $db->query("DELETE FROM ziyaret_grup_uyeleri WHERE grup_id = ?", [$duplicateId]);
         
-        $toDelete[] = $g['grup_id'];
+        // Ziyaretleri taşı
+        $db->query("UPDATE sube_ziyaretleri SET grup_id = ? WHERE grup_id = ?", [$primaryId, $duplicateId]);
+        
+        // Grubu sil
+        $db->query("DELETE FROM ziyaret_gruplari WHERE grup_id = ?", [$duplicateId]);
     } else {
-        $seen[$trimmedName] = $g['grup_id'];
-        if ($g['grup_adi'] !== $trimmedName) {
-            $db->query("UPDATE ziyaret_gruplari SET grup_adi = ? WHERE grup_id = ?", [$trimmedName, $g['grup_id']]);
-        }
+        $seen[$name] = $g['grup_id'];
     }
 }
 
-if (!empty($toDelete)) {
-    $ids = implode(',', $toDelete);
-    $db->query("DELETE FROM ziyaret_grup_uyeleri WHERE grup_id IN ($ids)");
-    $db->query("DELETE FROM ziyaret_gruplari WHERE grup_id IN ($ids)");
-}
-
-// 2. Eksik grupları (Grup 4, Grup 5) kontrol et ve oluştur
+// 3. İsimleri düzelt (Örn: Yanlışlıkla Grup 4 yazılmışsa ama Grup 5 olması gerekiyorsa?)
+// Aslında bu manuel olmalı ama otomatik 1-5 arası tam olmalı.
 for ($i = 1; $i <= 5; $i++) {
     $name = "Grup $i";
     $exists = $db->fetch("SELECT grup_id FROM ziyaret_gruplari WHERE grup_adi = ?", [$name]);
@@ -45,4 +45,4 @@ for ($i = 1; $i <= 5; $i++) {
     }
 }
 
-echo "✅ Temizlik Tamamlandı.\n";
+echo "✅ Temizlik ve Senkronizasyon Tamamlandı.\n";
