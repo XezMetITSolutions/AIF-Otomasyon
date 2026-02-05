@@ -74,7 +74,7 @@ if ($bykFilter) {
 $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
 $ziyaretler = $db->fetchAll("
-    SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu, CONCAT(u.ad, ' ', u.soyad) as olusturan
+    SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu, g.baskan_id, CONCAT(u.ad, ' ', u.soyad) as olusturan
     FROM sube_ziyaretleri z
     INNER JOIN byk b ON z.byk_id = b.byk_id
     INNER JOIN ziyaret_gruplari g ON z.grup_id = g.grup_id
@@ -83,6 +83,22 @@ $ziyaretler = $db->fetchAll("
     ORDER BY z.ziyaret_tarihi ASC
     LIMIT 100
 ", $params);
+
+// Grupların üyelerini topluca çekelim (N+1 engellemek için)
+$grupIds = array_unique(array_column($ziyaretler, 'grup_id'));
+$grupUyeleri = [];
+if (!empty($grupIds)) {
+    $idsStr = implode(',', $grupIds);
+    $allMembers = $db->fetchAll("
+        SELECT gu.grup_id, k.kullanici_id, k.ad, k.soyad 
+        FROM ziyaret_grup_uyeleri gu 
+        JOIN kullanicilar k ON gu.kullanici_id = k.kullanici_id 
+        WHERE gu.grup_id IN ($idsStr)
+    ");
+    foreach ($allMembers as $m) {
+        $grupUyeleri[$m['grup_id']][] = $m;
+    }
+}
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -266,8 +282,7 @@ include __DIR__ . '/../includes/header.php';
                             <tr>
                                 <th class="ps-4">Tarih</th>
                                 <th>Şube</th>
-                                <th>Grup</th>
-                                <th>Planlayan</th>
+                                <th>Grup / Ekip</th>
                                 <th>Durum</th>
                                 <th class="text-end pe-4">İşlemler</th>
                             </tr>
@@ -278,6 +293,7 @@ include __DIR__ . '/../includes/header.php';
                                     $dt = new DateTime($ziyaret['ziyaret_tarihi']);
                                     $dateStr = $dt->format('d.m.Y');
                                     $dayStr = $trMonths[$dt->format('M')] ?? $dt->format('M');
+                                    $members = $grupUyeleri[$ziyaret['grup_id']] ?? [];
                                 ?>
                                 <tr>
                                     <td class="ps-4">
@@ -288,13 +304,22 @@ include __DIR__ . '/../includes/header.php';
                                         <div class="fw-bold text-dark"><?php echo htmlspecialchars($ziyaret['byk_adi']); ?></div>
                                     </td>
                                     <td>
-                                        <span class="badge rounded-pill" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>; border: 1px solid <?php echo $ziyaret['renk_kodu']; ?>30;">
-                                            <?php echo htmlspecialchars($ziyaret['grup_adi']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="small text-muted">
-                                            <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($ziyaret['olusturan']); ?>
+                                        <div class="mb-1">
+                                            <span class="badge rounded-pill" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>; border: 1px solid <?php echo $ziyaret['renk_kodu']; ?>30;">
+                                                <?php echo htmlspecialchars($ziyaret['grup_adi']); ?>
+                                            </span>
+                                            <span class="small text-muted ms-1">(<?php echo count($members); ?> Kişi)</span>
+                                        </div>
+                                        <div class="small text-muted d-flex flex-wrap gap-1">
+                                            <?php 
+                                            $names = [];
+                                            foreach ($members as $m) {
+                                                $isBaskan = $m['kullanici_id'] == $ziyaret['baskan_id'];
+                                                $nameClass = $isBaskan ? 'text-danger fw-bold' : '';
+                                                $names[] = '<span class="' . $nameClass . '">' . htmlspecialchars($m['ad'] . ' ' . $m['soyad']) . '</span>';
+                                            }
+                                            echo implode(', ', $names);
+                                            ?>
                                         </div>
                                     </td>
                                     <td>
