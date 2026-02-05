@@ -61,6 +61,102 @@ $db->query("CREATE TABLE IF NOT EXISTS `gorev_dosyalari` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
 // ------------------------------------------------------------------------------------------------
+// PERMISSION HELPER FUNCTIONS
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * İçeriğin görünürlüğünü kontrol eder
+ * @param string $gorulebilirlik - sadece_ben, ekip, herkes, ozel
+ * @param int $olusturan_id - İçeriği oluşturan kullanıcı ID
+ * @param int $ekip_id - Görevin ekip ID'si (varsa)
+ * @param int $proje_id - Projenin ID'si
+ * @param string $icerik_tipi - checklist, not, dosya
+ * @param int $icerik_id - İçerik ID'si
+ * @return bool
+ */
+function canViewContent($gorulebilirlik, $olusturan_id, $ekip_id, $proje_id, $icerik_tipi = null, $icerik_id = null) {
+    global $user, $db, $isSuperAdmin;
+    
+    // Süper admin her şeyi görebilir
+    if ($isSuperAdmin) return true;
+    
+    switch ($gorulebilirlik) {
+        case 'sadece_ben':
+            return $user['id'] == $olusturan_id;
+            
+        case 'ekip':
+            // Oluşturan görebilir
+            if ($user['id'] == $olusturan_id) return true;
+            
+            // Ekip üyesi mi kontrol et
+            if ($ekip_id) {
+                $isMember = $db->fetch(
+                    "SELECT 1 FROM proje_ekip_uyeleri WHERE ekip_id = ? AND kullanici_id = ?",
+                    [$ekip_id, $user['id']]
+                );
+                return (bool)$isMember;
+            }
+            return false;
+            
+        case 'herkes':
+            // Projedeki herkes görebilir
+            $isProjectMember = $db->fetch(
+                "SELECT 1 FROM projeler p WHERE p.proje_id = ? AND (
+                    p.sorumlu_id = ? OR 
+                    EXISTS (
+                        SELECT 1 FROM proje_ekipleri pe 
+                        JOIN proje_ekip_uyeleri peu ON pe.id = peu.ekip_id 
+                        WHERE pe.proje_id = p.proje_id AND peu.kullanici_id = ?
+                    )
+                )",
+                [$proje_id, $user['id'], $user['id']]
+            );
+            return (bool)$isProjectMember;
+            
+        case 'ozel':
+            // Oluşturan görebilir
+            if ($user['id'] == $olusturan_id) return true;
+            
+            // Özel izin listesinde mi?
+            if ($icerik_tipi && $icerik_id) {
+                $hasPermission = $db->fetch(
+                    "SELECT 1 FROM gorev_icerik_izinleri 
+                     WHERE icerik_tipi = ? AND icerik_id = ? AND kullanici_id = ?",
+                    [$icerik_tipi, $icerik_id, $user['id']]
+                );
+                return (bool)$hasPermission;
+            }
+            return false;
+            
+        default:
+            return false;
+    }
+}
+
+/**
+ * Özel izinleri kaydet
+ */
+function saveCustomPermissions($icerik_tipi, $icerik_id, $kullanici_ids) {
+    global $db;
+    
+    // Önce mevcut izinleri temizle
+    $db->query(
+        "DELETE FROM gorev_icerik_izinleri WHERE icerik_tipi = ? AND icerik_id = ?",
+        [$icerik_tipi, $icerik_id]
+    );
+    
+    // Yeni izinleri ekle
+    if (!empty($kullanici_ids)) {
+        foreach ($kullanici_ids as $uid) {
+            $db->query(
+                "INSERT INTO gorev_icerik_izinleri (icerik_tipi, icerik_id, kullanici_id) VALUES (?, ?, ?)",
+                [$icerik_tipi, $icerik_id, (int)$uid]
+            );
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
 // 1. ACTION HANDLERS
 // ------------------------------------------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -69,8 +165,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ADD CHECKLIST ITEM
     if ($action === 'add_checklist') {
         $item = trim($_POST['item'] ?? '');
+        $gorulebilirlik = $_POST['gorulebilirlik'] ?? 'ekip';
+        $ozel_kullanicilar = $_POST['ozel_kullanicilar'] ?? [];
+        
         if ($item) {
-            $db->query("INSERT INTO gorev_checklist (gorev_id, baslik) VALUES (?, ?)", [$id, $item]);
+            $db->query(
+                "INSERT INTO gorev_checklist (gorev_id, baslik, gorulebilirlik, olusturan_id) VALUES (?, ?, ?, ?)",
+                [$id, $item, $gorulebilirlik, $user['id']]
+            );
+            
+            // Özel izinler varsa kaydet
+            if ($gorulebilirlik === 'ozel' && !empty($ozel_kullanicilar)) {
+                $lastId = $db->fetch("SELECT LAST_INSERT_ID() as id")['id'];
+                saveCustomPermissions('checklist', $lastId, $ozel_kullanicilar);
+            }
         }
         header("Location: ?id=$id&tab=todo"); exit;
     }
@@ -86,8 +194,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ADD NOTE
     elseif ($action === 'add_note') {
         $note = trim($_POST['note'] ?? '');
+        $gorulebilirlik = $_POST['note_gorulebilirlik'] ?? 'ekip';
+        $ozel_kullanicilar = $_POST['note_ozel_kullanicilar'] ?? [];
+        
         if ($note) {
-            $db->query("INSERT INTO gorev_notlari (gorev_id, kullanici_id, not_icerik) VALUES (?, ?, ?)", [$id, $user['id'], $note]);
+            $db->query(
+                "INSERT INTO gorev_notlari (gorev_id, kullanici_id, not_icerik, gorulebilirlik) VALUES (?, ?, ?, ?)",
+                [$id, $user['id'], $note, $gorulebilirlik]
+            );
+            
+            if ($gorulebilirlik === 'ozel' && !empty($ozel_kullanicilar)) {
+                $lastId = $db->fetch("SELECT LAST_INSERT_ID() as id")['id'];
+                saveCustomPermissions('not', $lastId, $ozel_kullanicilar);
+            }
         }
         header("Location: ?id=$id&tab=notes"); exit;
     }
@@ -119,8 +238,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath)) {
                 chmod($uploadPath, 0644); 
                 $webPath = '/uploads/gorevler/' . $id . '/' . $storedName;
-                $db->query("INSERT INTO gorev_dosyalari (gorev_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama) VALUES (?, ?, ?, ?, ?)", 
-                    [$id, $user['id'], $filename, $webPath, $desc]);
+                
+                $gorulebilirlik = $_POST['file_gorulebilirlik'] ?? 'ekip';
+                $ozel_kullanicilar = $_POST['file_ozel_kullanicilar'] ?? [];
+                
+                $db->query(
+                    "INSERT INTO gorev_dosyalari (gorev_id, yukleyen_id, dosya_adi, dosya_yolu, aciklama, gorulebilirlik) VALUES (?, ?, ?, ?, ?, ?)", 
+                    [$id, $user['id'], $filename, $webPath, $desc, $gorulebilirlik]
+                );
+                
+                if ($gorulebilirlik === 'ozel' && !empty($ozel_kullanicilar)) {
+                    $lastId = $db->fetch("SELECT LAST_INSERT_ID() as id")['id'];
+                    saveCustomPermissions('dosya', $lastId, $ozel_kullanicilar);
+                }
+                
                 header("Location: ?id=$id&tab=files&msg=uploaded"); exit;
             } else {
                  header("Location: ?id=$id&tab=files&error=upload_failed"); exit;
