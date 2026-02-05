@@ -191,7 +191,7 @@ include __DIR__ . '/../includes/header.php';
                 <p class="text-muted mb-0">Haftalık şube ziyaretleri ve raporlama sistemi.</p>
             </div>
             <div class="d-flex gap-2">
-                <a href="ziyaret-gruplari.php" class="btn btn-outline-primary rounded-pill px-4">
+                <a href="ziyaret-gruplari.php" class="btn btn-outline-primary rounded-pill px-4 no-ajax">
                     <i class="fas fa-users-rectangle me-2"></i>Grup Yönetimi
                 </a>
                 <?php if ($canManage): ?>

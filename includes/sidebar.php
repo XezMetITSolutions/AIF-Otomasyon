@@ -135,6 +135,7 @@ if ($user) {
                     'icon' => 'fas fa-map-location-dot',
                     'label' => 'Şube Ziyaretleri',
                     'match' => 'panel/sube-ziyaretleri',
+                    'class' => 'no-ajax',
                 ],
             ],
         ],
@@ -254,7 +255,7 @@ if ($user) {
                 <i class="fas fa-bullhorn me-2"></i>Duyurular
             </a>
             <a href="/admin/sube-ziyaretleri.php"
-                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'sube-ziyaretleri') !== false ? 'active' : ''; ?>">
+                class="list-group-item list-group-item-action no-ajax <?php echo strpos($currentPath, 'sube-ziyaretleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-map-location-dot me-2"></i>Şube Ziyaretleri
             </a>
 

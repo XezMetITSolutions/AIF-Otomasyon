@@ -159,7 +159,7 @@ include __DIR__ . '/../includes/header.php';
                 <p class="text-muted mb-0">Şube ziyaretlerini gerçekleştirecek ekipleri yönetin.</p>
             </div>
             <div class="d-flex gap-2">
-                <a href="sube_ziyaretleri.php" class="btn btn-outline-secondary rounded-pill">
+                <a href="sube-ziyaretleri.php" class="btn btn-outline-secondary rounded-pill no-ajax">
                     <i class="fas fa-arrow-left me-2"></i>Ziyaretlere Dön
                 </a>
                 <?php if ($canManage): ?>
