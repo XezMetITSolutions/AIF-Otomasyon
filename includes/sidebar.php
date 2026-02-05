@@ -12,14 +12,21 @@ $isBaskan = $user['role'] === 'uye';
 $isUye = $user['role'] === 'uye';
 $currentPath = $_SERVER['PHP_SELF'];
 
-// Muhasebe Başkanı olup olmadığını kontrol et
+// Muhasebe Başkanı veya AT üyesi olup olmadığını kontrol et
 $isMuhasebeBaskani = false;
+$isAT = false;
 if ($user) {
     $db = Database::getInstance();
     try {
         $checkMuhasebe = $db->fetch("SELECT count(*) as cnt FROM byk WHERE muhasebe_baskani_id = ?", [$user['id']]);
         if ($checkMuhasebe && $checkMuhasebe['cnt'] > 0) {
             $isMuhasebeBaskani = true;
+        }
+
+        // AT birimi kontrolü
+        $checkAT = $db->fetch("SELECT b.byk_kodu FROM byk b JOIN kullanicilar k ON b.byk_id = k.byk_id WHERE k.kullanici_id = ?", [$user['kullanici_id']]);
+        if ($checkAT && $checkAT['byk_kodu'] === 'AT') {
+            $isAT = true;
         }
     } catch (Exception $e) {
         // Tablo kolonu yoksa veya hata varsa yoksay
@@ -121,6 +128,13 @@ if ($user) {
                     'icon' => 'fas fa-project-diagram',
                     'label' => 'Proje Yönetimi',
                     'match' => 'projeler',
+                ],
+                [
+                    'key' => 'baskan_sube_ziyaretleri',
+                    'path' => '/panel/sube-ziyaretleri.php',
+                    'icon' => 'fas fa-map-location-dot',
+                    'label' => 'Şube Ziyaretleri',
+                    'match' => 'panel/sube-ziyaretleri',
                 ],
             ],
         ],
@@ -239,6 +253,12 @@ if ($user) {
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-bullhorn me-2"></i>Duyurular
             </a>
+            <?php if ($isAT): ?>
+            <a href="/admin/sube-ziyaretleri.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'sube-ziyaretleri') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-map-location-dot me-2"></i>Şube Ziyaretleri
+            </a>
+            <?php endif; ?>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
 
@@ -301,9 +321,13 @@ if ($user) {
             $hasAnyManagement = false;
             foreach ($baskanSidebarSections as $section) {
                 // Check if user has ANY permission in this section
-                $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani) {
+                $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani, $isAT) {
                     if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
                         return true;
+                    }
+                    // Şube ziyaretleri sadece AT üyelerine özel
+                    if ($link['key'] === 'baskan_sube_ziyaretleri' && !$isAT) {
+                        return false;
                     }
                     return $auth->hasModulePermission($link['key']);
                 });

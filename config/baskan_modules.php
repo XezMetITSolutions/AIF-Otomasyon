@@ -109,6 +109,14 @@ return [
         'description' => 'Projeleri oluşturun, görevleri ve ekipleri yönetin.',
         'icon' => 'fas fa-project-diagram',
     ],
+    'baskan_sube_ziyaretleri' => [
+        'label' => 'Şube Ziyaretleri',
+        'group' => 'Baskan Paneli',
+        'category' => 'baskan',
+        'default' => true,
+        'description' => 'Şube ziyaretlerini planlayın ve raporlayın.',
+        'icon' => 'fas fa-map-location-dot',
+    ],
 
     // Üye paneli modülleri (varsayılan: kapalı)
     'uye_duyurular' => [
