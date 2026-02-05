@@ -211,13 +211,6 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             <?php else: ?>
                 <!-- Raporlama Formu -->
-                <div class="alert alert-info d-flex align-items-center mb-4 rounded-4 shadow-sm border-0">
-                    <i class="fas fa-info-circle fs-4 me-3"></i>
-                    <div>
-                        Aşağıdaki soruları ziyaret esnasında veya sonrasında objektif bir şekilde yanıtlayınız. 
-                        Bu bilgiler şube performans değerlendirmesinde kullanılacaktır.
-                    </div>
-                </div>
 
                 <div class="questions-container">
                     <?php foreach ($questions as $id => $text): ?>
