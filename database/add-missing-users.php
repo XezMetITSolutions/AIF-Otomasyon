@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/includes/init.php';
-require_once __DIR__ . '/classes/Database.php';
+require_once __DIR__ . '/../includes/init.php';
+require_once __DIR__ . '/../classes/Database.php';
 
 $db = Database::getInstance();
 
