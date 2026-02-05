@@ -83,15 +83,21 @@ function findBykId($name, $db) {
 
 echo "🚀 Ziyaret Planı Uygulanıyor...\n";
 
+// 1. Grupları Temizle ve Hazırla
+echo "🧹 Grup Temizliği Yapılıyor...\n";
+require_once __DIR__ . '/cleanup-groups.php';
+
 // 1. Grupları Oluştur ve Üyeleri Ata
 $groupMap = [];
 foreach ($groupsData as $gName => $members) {
+    $gName = trim($gName);
     echo "👥 Grup İşleniyor: $gName\n";
     
     // Grubu bul veya oluştur
-    $existing = $db->fetch("SELECT grup_id FROM ziyaret_gruplari WHERE grup_adi = ?", [$gName]);
+    $existing = $db->fetch("SELECT grup_id FROM ziyaret_gruplari WHERE TRIM(grup_adi) = ?", [$gName]);
     if ($existing) {
         $gId = $existing['grup_id'];
+        // Mevcut üyeleri temizle (yeniden atamak için)
         $db->query("DELETE FROM ziyaret_grup_uyeleri WHERE grup_id = ?", [$gId]);
     } else {
         $db->query("INSERT INTO ziyaret_gruplari (grup_adi, renk_kodu) VALUES (?, ?)", [$gName, '#'.substr(md5($gName), 0, 6)]);

@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canManage) {
     $action = $_POST['action'] ?? '';
     
     if ($action === 'add' || $action === 'edit') {
-        $grup_adi = $_POST['grup_adi'] ?? '';
+        $grup_adi = trim($_POST['grup_adi'] ?? '');
         $baskan_id = $_POST['baskan_id'] ?? null;
         $renk_kodu = $_POST['renk_kodu'] ?? '#009872';
         $uyeler = $_POST['uyeler'] ?? [];
