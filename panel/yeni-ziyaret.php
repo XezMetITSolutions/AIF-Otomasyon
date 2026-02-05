@@ -200,7 +200,7 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">Planlama Notları</label>
-                            <textarea name="notlar" class="form-control" rows="3" placeholder="Ziyaretle ilgili ön notlar..."><?php echo $ziyaret ? htmlspecialchars($ziyaret['notlar']) : ''; ?></textarea>
+                            <textarea name="notlar" class="form-control" rows="3" placeholder="Ziyaretle ilgili ön notlar..."><?php echo ($ziyaret && $ziyaret['notlar'] !== null) ? htmlspecialchars($ziyaret['notlar']) : ''; ?></textarea>
                         </div>
                         <div class="col-12 text-end">
                             <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">

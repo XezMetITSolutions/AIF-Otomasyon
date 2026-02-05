@@ -220,7 +220,7 @@ include __DIR__ . '/../includes/header.php';
                 <?php if ($ziyaret['notlar']): ?>
                     <div class="mt-5 p-4 border rounded-4 bg-light">
                         <h6 class="fw-bold mb-3"><i class="fas fa-sticky-note me-2 text-primary"></i>Planlama / Ek Notlar</h6>
-                        <div class="text-dark"><?php echo nl2br(htmlspecialchars($ziyaret['notlar'])); ?></div>
+                        <div class="text-dark"><?php echo nl2br(htmlspecialchars($ziyaret['notlar'] ?? '')); ?></div>
                     </div>
                 <?php endif; ?>
             </div>
