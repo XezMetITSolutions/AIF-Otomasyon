@@ -139,11 +139,11 @@ foreach ($events as $event) {
 
     $calendarEvents[] = [
         'title' => $title,
-        'start' => $event['baslangic_tarihi'],
-        'end' => $event['bitis_tarihi'],
+        'start' => date('Y-m-d', strtotime($event['baslangic_tarihi'])),
+        'end' => date('Y-m-d', strtotime($event['bitis_tarihi'] . ' +1 day')),
         'color' => $event['color'],
         'textColor' => '#fff',
-        'allDay' => false
+        'allDay' => true
     ];
 }
 
@@ -430,12 +430,12 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Başlangıç</label>
-                    <input type="datetime-local" name="baslangic" id="modal_start" class="form-control" require>
+                    <label class="form-label small fw-bold">Başlangıç Tarihi</label>
+                    <input type="date" name="baslangic" id="modal_start" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Bitiş</label>
-                    <input type="datetime-local" name="bitis" id="modal_end" class="form-control" required>
+                    <label class="form-label small fw-bold">Bitiş Tarihi</label>
+                    <input type="date" name="bitis" id="modal_end" class="form-control" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold">Açıklama</label>
@@ -462,12 +462,12 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Başlangıç</label>
-                    <input type="datetime-local" name="baslangic" id="edit_start" class="form-control" required>
+                    <label class="form-label small fw-bold">Başlangıç Tarihi</label>
+                    <input type="date" name="baslangic" id="edit_start" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Bitiş</label>
-                    <input type="datetime-local" name="bitis" id="edit_end" class="form-control" required>
+                    <label class="form-label small fw-bold">Bitiş Tarihi</label>
+                    <input type="date" name="bitis" id="edit_end" class="form-control" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold">Açıklama</label>
@@ -516,37 +516,32 @@ include __DIR__ . '/../includes/header.php';
                 select: function (info) {
                     var modal = new bootstrap.Modal(document.getElementById('reservationModal'));
 
-                    var start = new Date(info.startStr);
-                    var end = new Date(info.endStr || info.startStr);
-
-                    // UTC offset fix
-                    start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
-                    end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
-
-                    document.getElementById('modal_start').value = start.toISOString().slice(0, 16);
-                    document.getElementById('modal_end').value = end.toISOString().slice(0, 16);
+                    document.getElementById('modal_start').value = info.startStr;
+                    document.getElementById('modal_end').value = info.endStr || info.startStr;
 
                     modal.show();
                 },
-                eventClick: function(info) {
-                    // Detay modal'ı göster
+                eventClick: function (info) {
                     var event = info.event;
                     var detailHtml = '<div style="padding: 15px;">';
                     detailHtml += '<h5>' + event.title + '</h5>';
-                    detailHtml += '<p><strong>Başlangıç:</strong> ' + event.start.toLocaleString('tr-TR') + '</p>';
+                    detailHtml += '<p><strong>Tarih:</strong> ' + event.start.toLocaleDateString('tr-TR');
                     if (event.end) {
-                        detailHtml += '<p><strong>Bitiş:</strong> ' + event.end.toLocaleString('tr-TR') + '</p>';
+                        var endDate = new Date(event.end);
+                        endDate.setDate(endDate.getDate() - 1);
+                        if (endDate.toDateString() !== event.start.toDateString()) {
+                            detailHtml += ' - ' + endDate.toLocaleDateString('tr-TR');
+                        }
                     }
-                    detailHtml += '</div>';
-                    
-                    // Bootstrap alert olarak göster
+                    detailHtml += '</p></div>';
+
                     var existingAlert = document.querySelector('.event-detail-alert');
                     if (existingAlert) existingAlert.remove();
-                    
+
                     var alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-info alert-dismissible fade show event-detail-alert';
                     alertDiv.innerHTML = detailHtml + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-                    
+
                     document.querySelector('.content-wrapper').insertBefore(alertDiv, document.querySelector('.tab-content'));
                 }
             });
