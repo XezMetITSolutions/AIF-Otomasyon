@@ -80,7 +80,7 @@ $ziyaretler = $db->fetchAll("
     INNER JOIN ziyaret_gruplari g ON z.grup_id = g.grup_id
     INNER JOIN kullanicilar u ON z.olusturan_id = u.kullanici_id
     $whereClause
-    ORDER BY z.ziyaret_tarihi DESC
+    ORDER BY z.ziyaret_tarihi ASC
     LIMIT 100
 ", $params);
 
@@ -115,12 +115,6 @@ include __DIR__ . '/../includes/header.php';
         border: var(--glass-border);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         border-radius: 1rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .nav-pills .nav-link {
@@ -139,15 +133,41 @@ include __DIR__ . '/../includes/header.php';
     .sidebar-wrapper { width: 250px; flex-shrink: 0; }
     .main-content { flex-grow: 1; padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
 
-    .date-badge {
-        width: 60px;
-        height: 60px;
-        background: #f1f5f9;
-        border-radius: 12px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+    .table-container {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: var(--glass-border);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.025em;
+        padding: 1rem;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 500;
     }
 
     @media (max-width: 991px) {
@@ -201,7 +221,7 @@ include __DIR__ . '/../includes/header.php';
                         </ul>
                     </div>
                     <div class="col-12 col-md">
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="d-flex gap-2 flex-wrap justify-content-md-end">
                             <select class="form-select form-select-sm" style="width: auto;" onchange="applyFilter('grup', this.value)">
                                 <option value="">Tüm Gruplar</option>
                                 <?php foreach ($gruplar as $g): ?>
@@ -231,78 +251,88 @@ include __DIR__ . '/../includes/header.php';
             </div>
         </div>
 
-        <!-- Visit List -->
-        <div class="row g-4">
+        <!-- Visit Table list -->
+        <div class="table-container shadow-sm">
             <?php if (empty($ziyaretler)): ?>
-                <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border">
+                <div class="text-center py-5 bg-white border-0">
                     <i class="fas fa-calendar-day fa-4x text-muted opacity-25 mb-4"></i>
                     <h5 class="text-muted">Kayıtlı ziyaret bulunamadı.</h5>
                     <p class="text-muted small">Seçilen kriterlere göre görüntülenecek kayıt yok.</p>
                 </div>
             <?php else: ?>
-                <?php foreach ($ziyaretler as $ziyaret): ?>
-                    <?php 
-                        $dt = new DateTime($ziyaret['ziyaret_tarihi']);
-                        $isPast = $dt < new DateTime('today');
-                        $isToday = $dt->format('Y-m-d') === date('Y-m-d');
-                    ?>
-                    <div class="col-md-6 col-xl-4">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex gap-3 mb-3">
-                                    <div class="date-badge border">
-                                        <span class="fw-bold fs-5 mb-0"><?php echo $dt->format('d'); ?></span>
-                                        <span class="small text-uppercase text-muted" style="font-size: 0.7rem;">
-                                            <?php echo $trMonths[$dt->format('M')] ?? $dt->format('M'); ?>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Tarih</th>
+                                <th>Şube</th>
+                                <th>Grup</th>
+                                <th>Planlayan</th>
+                                <th>Durum</th>
+                                <th class="text-end pe-4">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($ziyaretler as $ziyaret): ?>
+                                <?php 
+                                    $dt = new DateTime($ziyaret['ziyaret_tarihi']);
+                                    $dateStr = $dt->format('d.m.Y');
+                                    $dayStr = $trMonths[$dt->format('M')] ?? $dt->format('M');
+                                ?>
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold"><?php echo $dateStr; ?></div>
+                                        <div class="small text-muted"><?php echo $dayStr; ?></div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark"><?php echo htmlspecialchars($ziyaret['byk_adi']); ?></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>; border: 1px solid <?php echo $ziyaret['renk_kodu']; ?>30;">
+                                            <?php echo htmlspecialchars($ziyaret['grup_adi']); ?>
                                         </span>
-                                    </div>
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <h5 class="fw-bold mb-1 text-truncate"><?php echo htmlspecialchars($ziyaret['byk_adi']); ?></h5>
-                                        <span class="badge rounded-pill mb-2" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>20; color: <?php echo $ziyaret['renk_kodu']; ?>; border: 1px solid <?php echo $ziyaret['renk_kodu']; ?>40;">
-                                            <i class="fas fa-users-rectangle me-1"></i> <?php echo htmlspecialchars($ziyaret['grup_adi']); ?>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3 small flex-column d-flex gap-1">
-                                    <div class="text-muted">
-                                        <i class="fas fa-user-edit me-2"></i>Planlayan: <strong><?php echo htmlspecialchars($ziyaret['olusturan']); ?></strong>
-                                    </div>
-                                    <?php if ($ziyaret['notlar']): ?>
-                                        <div class="text-muted text-truncate-2 mt-1 italic">
-                                            <i class="fas fa-sticky-note me-2"></i><?php echo htmlspecialchars($ziyaret['notlar']); ?>
+                                    </td>
+                                    <td>
+                                        <div class="small text-muted">
+                                            <i class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($ziyaret['olusturan']); ?>
                                         </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <?php if ($ziyaret['durum'] === 'planlandi'): ?>
-                                        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-3 border border-warning border-opacity-25">
-                                            <i class="fas fa-clock me-1"></i> Beklemede
-                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php if ($ziyaret['durum'] === 'planlandi'): ?>
+                                            <span class="status-badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
+                                                Planlandı
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="status-badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                                Tamamlandı
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-end pe-4">
                                         <div class="btn-group">
-                                            <a href="yeni-ziyaret.php?edit=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-primary" title="Düzenle">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="yeni-ziyaret.php?rapor=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-primary" title="Raporu Doldur">
-                                                <i class="fas fa-file-pen me-1"></i> Raporla
-                                            </a>
+                                            <?php if ($ziyaret['durum'] === 'planlandi'): ?>
+                                                <a href="yeni-ziyaret.php?edit=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="yeni-ziyaret.php?rapor=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-primary" title="Raporla">
+                                                    <i class="fas fa-file-pen"></i> Raporla
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-eye me-1"></i> Rapor
+                                                </a>
+                                            <?php endif; ?>
                                         </div>
-                                    <?php else: ?>
-                                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-3 border border-success border-opacity-25">
-                                            <i class="fas fa-check-circle me-1"></i> Tamamlandı
-                                        </span>
-                                        <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-eye me-1"></i> Raporu Gör
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php endif; ?>
         </div>
+    </main>
+</div>
     </main>
 </div>
 

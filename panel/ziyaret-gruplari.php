@@ -15,6 +15,7 @@ if (!$user) {
 }
 
 $db = Database::getInstance();
+require_once __DIR__ . '/../includes/ensure_sube_ziyaretleri_tables.php';
 
 // AT Birimi veya Super Admin Kontrolü
 $isAT = false;
