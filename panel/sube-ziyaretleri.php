@@ -343,9 +343,12 @@ include __DIR__ . '/../includes/header.php';
                                                     <i class="fas fa-file-pen"></i> Raporla
                                                 </a>
                                             <?php else: ?>
-                                                <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-info no-ajax">
+                                                <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-info no-ajax" title="Raporu Gör">
                                                     <i class="fas fa-eye me-1"></i> Rapor
                                                 </a>
+                                                <button onclick="printReport(<?php echo $ziyaret['ziyaret_id']; ?>)" class="btn btn-sm btn-outline-dark" title="PDF / Yazdır">
+                                                    <i class="fas fa-print"></i>
+                                                </button>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -367,6 +370,13 @@ include __DIR__ . '/../includes/header.php';
         if (value) url.searchParams.set(filter, value);
         else url.searchParams.delete(filter);
         window.location = url;
+    }
+
+    function printReport(id) {
+        const printWin = window.open('ziyaret-detay.php?id=' + id, '_blank');
+        printWin.onload = function() {
+            printWin.print();
+        };
     }
 </script>
 

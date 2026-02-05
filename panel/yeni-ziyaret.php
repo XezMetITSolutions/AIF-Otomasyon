@@ -36,9 +36,9 @@ $ziyaret = null;
 $isReport = ($reportId !== null);
 
 if ($editId) {
-    $ziyaret = $db->fetch("SELECT * FROM sube_ziyaretleri WHERE ziyaret_id = ?", [$editId]);
+    $ziyaret = $db->fetch("SELECT z.*, b.byk_adi FROM sube_ziyaretleri z JOIN byk b ON z.byk_id = b.byk_id WHERE z.ziyaret_id = ?", [$editId]);
 } elseif ($reportId) {
-    $ziyaret = $db->fetch("SELECT * FROM sube_ziyaretleri WHERE ziyaret_id = ?", [$reportId]);
+    $ziyaret = $db->fetch("SELECT z.*, b.byk_adi FROM sube_ziyaretleri z JOIN byk b ON z.byk_id = b.byk_id WHERE z.ziyaret_id = ?", [$reportId]);
 }
 
 $pageTitle = $isReport ? 'Ziyaret Raporunu Doldur' : ($editId ? 'Ziyareti Düzenle' : 'Yeni Ziyaret Planla');
