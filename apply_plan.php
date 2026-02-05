@@ -30,5 +30,5 @@ echo "=================================\n";
 require_once __DIR__ . '/database/apply-visit-plan.php';
 
 echo "</pre>";
-unlink(__FILE__); // Güvenlik için çalıştıktan sonra kendini sil
+// UNLINK KALDIRILDI - HATA OLURSA TEKRAR DENENEBİLSİN
 ?>
