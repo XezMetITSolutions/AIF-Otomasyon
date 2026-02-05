@@ -24,7 +24,7 @@ if ($user) {
         }
 
         // AT birimi kontrolü
-        $checkAT = $db->fetch("SELECT b.byk_kodu FROM byk b JOIN kullanicilar k ON b.byk_id = k.byk_id WHERE k.kullanici_id = ?", [$user['kullanici_id']]);
+        $checkAT = $db->fetch("SELECT b.byk_kodu FROM byk b JOIN kullanicilar k ON b.byk_id = k.byk_id WHERE k.kullanici_id = ?", [$user['id']]);
         if ($checkAT && $checkAT['byk_kodu'] === 'AT') {
             $isAT = true;
         }
@@ -253,12 +253,10 @@ if ($user) {
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'duyurular') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-bullhorn me-2"></i>Duyurular
             </a>
-            <?php if ($isAT): ?>
             <a href="/admin/sube-ziyaretleri.php"
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'sube-ziyaretleri') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-map-location-dot me-2"></i>Şube Ziyaretleri
             </a>
-            <?php endif; ?>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İŞLEMLER</div>
 
@@ -325,8 +323,8 @@ if ($user) {
                     if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
                         return true;
                     }
-                    // Şube ziyaretleri sadece AT üyelerine özel
-                    if ($link['key'] === 'baskan_sube_ziyaretleri' && !$isAT) {
+                    // Şube ziyaretleri sadece AT üyelerine ve Super Adminlere özel
+                    if ($link['key'] === 'baskan_sube_ziyaretleri' && !$isAT && !$isSuperAdmin) {
                         return false;
                     }
                     return $auth->hasModulePermission($link['key']);
