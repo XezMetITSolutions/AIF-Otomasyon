@@ -321,6 +321,10 @@ foreach ($katilimcilar as $k) {
     $katilim_stats[$k['katilim_durumu']]++;
 }
 
+// Admin Panel Variables (Admin is always creator/manager in this context)
+$isCreator = true; 
+$canManageContent = true;
+
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -401,9 +405,9 @@ include __DIR__ . '/../includes/header.php';
             </div>
 
 
+
             <!-- Gündem Tab -->
             <div class="tab-pane fade" id="gundem">
-                <?php $canManageContent = true; // Admin her türlü yönetebilir ?>
                 <?php include __DIR__ . '/../includes/toplanti-tabs/gundem.php'; ?>
             </div>
 

@@ -1,4 +1,5 @@
 <!-- Temel Bilgiler Tab İçeriği -->
+<?php $isCreator = isset($isCreator) ? $isCreator : false; ?>
 <div class="card">
     <div class="card-header">
         <h5 class="mb-0">Toplantı Bilgileri</h5>
