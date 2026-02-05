@@ -533,10 +533,20 @@ include __DIR__ . '/../includes/header.php';
                                 <?php endif; ?>
                             </div>
                             
-                            <form method="POST" class="no-ajax">
+                            <form method="POST" class="card p-3 bg-light border no-ajax">
                                 <input type="hidden" name="action" value="add_note">
-                                <textarea name="note" class="form-control mb-2" rows="2" placeholder="Not yaz..." required></textarea>
-                                <button class="btn btn-primary btn-sm" type="submit">Gönder</button>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Yeni Not</label>
+                                    <textarea name="note" class="form-control" rows="3" placeholder="Not yaz..." required></textarea>
+                                </div>
+                                
+                                <?php $prefix = 'note_'; include __DIR__ . '/../includes/gorulebilirlik-selector.php'; ?>
+                                
+                                <div class="text-end">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-paper-plane me-1"></i>Gönder
+                                    </button>
+                                </div>
                             </form>
                         <?php endif; ?>
 
@@ -544,7 +554,35 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
         </div>
-<!-- Upload Modal -->
+
+<!-- Modals -->
+
+<!-- 1. Checklist Modal -->
+<div class="modal fade" id="addChecklistModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content no-ajax">
+            <input type="hidden" name="action" value="add_checklist">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Madde Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Madde</label>
+                    <input type="text" name="item" class="form-control" required>
+                </div>
+                
+                <?php $prefix = ''; include __DIR__ . '/../includes/gorulebilirlik-selector.php'; ?>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="submit" class="btn btn-primary">Ekle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 2. Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1">
     <div class="modal-dialog">
         <form method="POST" class="modal-content no-ajax" enctype="multipart/form-data">
@@ -566,8 +604,11 @@ include __DIR__ . '/../includes/header.php';
                     <label>Açıklama</label>
                     <textarea name="file_desc" class="form-control"></textarea>
                 </div>
+                
+                <?php $prefix = 'file_'; include __DIR__ . '/../includes/gorulebilirlik-selector.php'; ?>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                 <button type="submit" class="btn btn-primary">Kaydet</button>
             </div>
         </form>
