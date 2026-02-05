@@ -175,6 +175,12 @@ $consolidatedFeatures = [
             'member_key' => 'uye_projeler',
             'member_desc' => 'Projelerim',
         ],
+        [
+            'name' => 'Şube Ziyaretleri',
+            'desc' => 'Ziyaret planlama ve raporlama (AT Birimi)',
+            'manager_key' => 'baskan_sube_ziyaretleri',
+            'member_key' => null,
+        ],
     ],
     'İletişim & Faaliyetler' => [
         [
