@@ -400,8 +400,10 @@ include __DIR__ . '/../includes/header.php';
                 <?php include __DIR__ . '/../includes/toplanti-tabs/katilimcilar.php'; ?>
             </div>
 
+
             <!-- Gündem Tab -->
             <div class="tab-pane fade" id="gundem">
+                <?php $canManageContent = true; // Admin her türlü yönetebilir ?>
                 <?php include __DIR__ . '/../includes/toplanti-tabs/gundem.php'; ?>
             </div>
 
