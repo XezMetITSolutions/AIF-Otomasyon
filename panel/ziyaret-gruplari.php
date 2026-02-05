@@ -40,16 +40,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canManage) {
     
     if ($action === 'add' || $action === 'edit') {
         $grup_adi = $_POST['grup_adi'] ?? '';
+        $baskan_id = $_POST['baskan_id'] ?? null;
         $renk_kodu = $_POST['renk_kodu'] ?? '#009872';
         $uyeler = $_POST['uyeler'] ?? [];
         
         try {
             if ($action === 'add') {
-                $db->query("INSERT INTO ziyaret_gruplari (grup_adi, renk_kodu) VALUES (?, ?)", [$grup_adi, $renk_kodu]);
+                $db->query("INSERT INTO ziyaret_gruplari (grup_adi, baskan_id, renk_kodu) VALUES (?, ?, ?)", [$grup_adi, $baskan_id, $renk_kodu]);
                 $grup_id = $db->lastInsertId();
             } else {
                 $grup_id = $_POST['grup_id'];
-                $db->query("UPDATE ziyaret_gruplari SET grup_adi = ?, renk_kodu = ? WHERE grup_id = ?", [$grup_adi, $renk_kodu, $grup_id]);
+                $db->query("UPDATE ziyaret_gruplari SET grup_adi = ?, baskan_id = ?, renk_kodu = ? WHERE grup_id = ?", [$grup_adi, $baskan_id, $renk_kodu, $grup_id]);
                 // Mevcut üyeleri temizle
                 $db->query("DELETE FROM ziyaret_grup_uyeleri WHERE grup_id = ?", [$grup_id]);
             }
@@ -83,12 +84,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canManage) {
 // Grupları ve üyelerini getir
 $gruplar = $db->fetchAll("
     SELECT g.*, 
+    CONCAT(u.ad, ' ', u.soyad) as baskan_adi,
     (SELECT COUNT(*) FROM ziyaret_grup_uyeleri gu WHERE gu.grup_id = g.grup_id) as uye_sayisi
     FROM ziyaret_gruplari g 
+    LEFT JOIN kullanicilar u ON g.baskan_id = u.kullanici_id
     ORDER BY g.grup_adi
 ");
 
-// Her grubun üyelerini ayrı ayrı çekelim (veya join ile toplayalım ama bu daha kolay)
+// Her grubun üyelerini ayrı ayrı çekelim
 foreach ($gruplar as &$grup) {
     $grup['uye_listesi'] = $db->fetchAll("
         SELECT k.kullanici_id, k.ad, k.soyad 
@@ -202,8 +205,18 @@ include __DIR__ . '/../includes/header.php';
                                         </div>
                                     <?php endif; ?>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="small text-muted d-block mb-2">Grup Üyeleri (<?php echo $grup['uye_sayisi']; ?>)</label>
+                                    <div class="mb-3">
+                                        <label class="small text-muted d-block mb-1">Grup Başkanı</label>
+                                        <?php if ($grup['baskan_id']): ?>
+                                            <div class="fw-bold text-primary">
+                                                <i class="fas fa-user-tie me-1"></i> <?php echo htmlspecialchars($grup['baskan_adi']); ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-muted small italic">Atanmamış</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted d-block mb-2">Grup Üyeleri (<?php echo $grup['uye_sayisi']; ?>)</label>
                                     <div class="d-flex flex-wrap gap-2">
                                         <?php if (empty($grup['uye_listesi'])): ?>
                                             <span class="text-muted small italic">Üye atanmamış</span>
@@ -239,11 +252,22 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div class="modal-body p-4">
                 <div class="row g-3">
-                    <div class="col-md-8">
+                    <div class="col-md-6 text-truncate">
                         <label class="form-label fw-semibold">Grup Adı</label>
                         <input type="text" name="grup_adi" id="modalGrupAdi" class="form-control" required placeholder="Örn: 1. Ziyaret Grubu">
                     </div>
                     <div class="col-md-4">
+                        <label class="form-label fw-semibold">Grup Başkanı</label>
+                        <select name="baskan_id" id="modalBaskanId" class="form-select">
+                            <option value="">Başkan Seçin...</option>
+                            <?php foreach ($tum_uyeler as $uye): ?>
+                                <option value="<?php echo $uye['kullanici_id']; ?>">
+                                    <?php echo htmlspecialchars($uye['ad'] . ' ' . $uye['soyad']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label fw-semibold">Grup Rengi</label>
                         <input type="color" name="renk_kodu" id="modalRenkKodu" class="form-control form-control-color w-100" value="#009872">
                     </div>
@@ -303,6 +327,7 @@ include __DIR__ . '/../includes/header.php';
         document.getElementById('modalSubmitBtn').innerText = 'Kaydet';
         document.getElementById('modalGrupId').value = '';
         document.getElementById('modalGrupAdi').value = '';
+        document.getElementById('modalBaskanId').value = '';
         document.getElementById('modalRenkKodu').value = '#009872';
         
         // Checkboxları temizle
@@ -315,6 +340,7 @@ include __DIR__ . '/../includes/header.php';
         document.getElementById('modalSubmitBtn').innerText = 'Değişiklikleri Kaydet';
         document.getElementById('modalGrupId').value = grup.grup_id;
         document.getElementById('modalGrupAdi').value = grup.grup_adi;
+        document.getElementById('modalBaskanId').value = grup.baskan_id || '';
         document.getElementById('modalRenkKodu').value = grup.renk_kodu;
         
         // Checkboxları temizle ve mevcut üyeleri işaretle

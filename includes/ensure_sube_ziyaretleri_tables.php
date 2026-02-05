@@ -9,11 +9,19 @@ try {
     $db->query("CREATE TABLE IF NOT EXISTS `ziyaret_gruplari` (
         `grup_id` INT AUTO_INCREMENT PRIMARY KEY,
         `grup_adi` VARCHAR(255) NOT NULL,
+        `baskan_id` INT DEFAULT NULL,
         `renk_kodu` VARCHAR(20) DEFAULT '#009872',
         `aktif` TINYINT(1) DEFAULT 1,
         `olusturma_tarihi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        `guncelleme_tarihi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        `guncelleme_tarihi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX `idx_grup_baskan` (`baskan_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+    // Mevcut tablo varsa sütunu ekle
+    $cols = $db->fetchAll("SHOW COLUMNS FROM `ziyaret_gruplari` LIKE 'baskan_id'");
+    if (empty($cols)) {
+        $db->query("ALTER TABLE `ziyaret_gruplari` ADD COLUMN `baskan_id` INT DEFAULT NULL AFTER `grup_adi` , ADD INDEX `idx_grup_baskan` (`baskan_id`) ");
+    }
 
     // 2. Grup Üyeleri
     $db->query("CREATE TABLE IF NOT EXISTS `ziyaret_grup_uyeleri` (
