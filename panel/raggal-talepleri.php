@@ -493,8 +493,10 @@ include __DIR__ . '/../includes/header.php';
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
+        var calendar = null;
+
         if (calendarEl) {
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
@@ -545,10 +547,23 @@ include __DIR__ . '/../includes/header.php';
                     document.querySelector('.content-wrapper').insertBefore(alertDiv, document.querySelector('.tab-content'));
                 }
             });
-            calendar.render();
 
-
+            // Sadece takvim tabı aktifse render et
+            <?php if ($activeTab === 'takvim'): ?>
+                calendar.render();
+            <?php endif; ?>
         }
+
+        // Tab değiştiğinde takvimi yeniden render et
+        document.querySelectorAll('a[href*="tab=takvim"]').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (calendar) {
+                    setTimeout(function () {
+                        calendar.render();
+                    }, 100);
+                }
+            });
+        });
 
         // Bulk operations
         const selectAll = document.getElementById('selectAll');
