@@ -63,9 +63,22 @@ function findUserId($name, $db) {
 }
 
 function findBykId($name, $db) {
-    $sql = "SELECT byk_id FROM byk WHERE byk_adi LIKE ? LIMIT 1";
-    $res = $db->fetch($sql, ["%$name%"]);
-    return $res ? $res['byk_id'] : null;
+    if (!$name) return null;
+    $aifName = "AİF " . trim($name);
+    
+    // 1. "AİF Name" şeklinde ara
+    $res = $db->fetch("SELECT byk_id FROM byk WHERE byk_adi = ? OR byk_adi LIKE ?", [$aifName, "%$name%"]);
+    if ($res) return $res['byk_id'];
+    
+    // 2. Bulunamazsa AİF ön ekiyle beraber oluştur
+    try {
+        $db->query("INSERT INTO byk (byk_adi, byk_kodu, aktif) VALUES (?, ?, 1)", [$aifName, strtoupper(substr($name, 0, 3))]);
+        $newId = $db->lastInsertId();
+        echo "   ✨ Yeni Şube Oluşturuldu: $aifName\n";
+        return $newId;
+    } catch (Exception $e) {
+        return null;
+    }
 }
 
 echo "🚀 Ziyaret Planı Uygulanıyor...\n";
