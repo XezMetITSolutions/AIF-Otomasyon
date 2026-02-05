@@ -32,18 +32,34 @@ function normalizeName($name) {
 }
 
 function findUserId($name, $db) {
+    if (!$name) return null;
     $normalized = normalizeName($name);
     $parts = explode(' ', $normalized);
     $lastName = end($parts);
-    $firstName = count($parts) > 1 ? $parts[0] : '';
     
     // 1. Exact match
     $res = $db->fetch("SELECT kullanici_id FROM kullanicilar WHERE LOWER(CONCAT(ad, ' ', soyad)) = ? OR LOWER(CONCAT(ad, '  ', soyad)) = ?", [$normalized, $normalized]);
     if ($res) return $res['kullanici_id'];
     
-    // 2. Fuzzy match with LIKE
-    $res = $db->fetch("SELECT kullanici_id FROM kullanicilar WHERE (LOWER(ad) LIKE ? AND LOWER(soyad) LIKE ?) OR LOWER(CONCAT(ad, ' ', soyad)) LIKE ?", ["%$firstName%", "%$lastName%", "%$normalized%"]);
-    return $res ? $res['kullanici_id'] : null;
+    // 2. Fuzzy match with LIKE (Full name in database contains the requested name)
+    $res = $db->fetch("SELECT kullanici_id FROM kullanicilar WHERE LOWER(CONCAT(ad, ' ', soyad)) LIKE ?", ["%$normalized%"]);
+    if ($res) return $res['kullanici_id'];
+
+    // 3. Try to match by checking if name parts are present
+    $allUsers = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar");
+    foreach ($allUsers as $u) {
+        $uFullName = normalizeName($u['ad'] . ' ' . $u['soyad']);
+        $match = true;
+        foreach ($parts as $p) {
+            if (strlen($p) > 2 && strpos($uFullName, $p) === false) {
+                $match = false;
+                break;
+            }
+        }
+        if ($match) return $u['kullanici_id'];
+    }
+    
+    return null;
 }
 
 function findBykId($name, $db) {
@@ -83,12 +99,19 @@ foreach ($groupsData as $gName => $members) {
 
 // 2. Takvimi İşle
 echo "\n📅 Takvim İşleniyor...\n";
-$superAdminId = $db->fetchColumn("SELECT kullanici_id FROM kullanicilar WHERE role = 'super_admin' LIMIT 1");
+$superAdminId = $db->fetchColumn("SELECT u.kullanici_id FROM kullanicilar u JOIN roller r ON u.rol_id = r.rol_id WHERE r.rol_adi = 'super_admin' LIMIT 1");
+
+// Eğer super admin bulunamazsa herhangi bir admin veya ilk kullanıcıyı seç
+if (!$superAdminId) {
+    $superAdminId = $db->fetchColumn("SELECT kullanici_id FROM kullanicilar LIMIT 1");
+}
 
 foreach ($schedule as $date => $assignments) {
     echo "🗓️ Tarih: $date\n";
     foreach ($assignments as $index => $bykName) {
         $gName = "Grup " . ($index + 1);
+        if (!isset($groupMap[$gName])) continue;
+        
         $gId = $groupMap[$gName];
         $bykId = findBykId($bykName, $db);
         
