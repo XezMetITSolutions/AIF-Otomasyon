@@ -2,8 +2,8 @@
 /**
  * AT Birimi Üyelerine Şube Ziyaret Yetkisi Verme Scripti
  */
-require_once __DIR__ . '/includes/init.php';
-require_once __DIR__ . '/classes/Database.php';
+require_once __DIR__ . '/../includes/init.php';
+require_once __DIR__ . '/../classes/Database.php';
 
 $db = Database::getInstance();
 
