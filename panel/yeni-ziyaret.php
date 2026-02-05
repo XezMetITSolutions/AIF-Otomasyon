@@ -23,7 +23,7 @@ if ($userByk && $userByk['byk_kodu'] === 'AT') {
     $isAT = true;
 }
 
-if (!$isAT) {
+if (!$isAT && $user['role'] !== 'super_admin') {
     header('Location: /access-denied.php');
     exit;
 }
