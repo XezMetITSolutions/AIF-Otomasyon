@@ -88,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $konum = trim($_POST['konum'] ?? '');
             $toplanti_turu = $_POST['toplanti_turu'] ?? 'normal';
             $durum = $_POST['durum'] ?? 'planlandi';
+            $sekreter_id = !empty($_POST['sekreter_id']) ? $_POST['sekreter_id'] : null;
 
             $db->query("
                 UPDATE toplantilar SET
@@ -97,7 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     bitis_tarihi = ?,
                     konum = ?,
                     toplanti_turu = ?,
-                    durum = ?
+                    durum = ?,
+                    sekreter_id = ?
                 WHERE toplanti_id = ?
             ", [
                 $baslik,
@@ -107,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $konum,
                 $toplanti_turu,
                 $durum,
+                $sekreter_id,
                 $toplanti_id
             ]);
 
