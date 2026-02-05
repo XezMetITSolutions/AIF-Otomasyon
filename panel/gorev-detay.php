@@ -441,11 +441,12 @@ include __DIR__ . '/../includes/header.php';
                         
                         <!-- TAB: TODO -->
                         <?php if ($activeTab == 'todo'): ?>
-                            <form method="POST" class="input-group mb-3 no-ajax">
-                                <input type="hidden" name="action" value="add_checklist">
-                                <input type="text" name="item" class="form-control" placeholder="Yeni madde ekle..." required>
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-plus"></i></button>
-                            </form>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Yapılacaklar Listesi</h6>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addChecklistModal">
+                                    <i class="fas fa-plus me-1"></i>Yeni Madde
+                                </button>
+                            </div>
                             
                             <ul class="list-group list-group-flush" id="checklist-container">
                                 <?php if(empty($checklist)): ?>
