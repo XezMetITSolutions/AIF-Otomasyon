@@ -277,19 +277,77 @@ $task = $db->fetch("
 
 if (!$task) die("Görev bulunamadı.");
 
-$checklist = $db->fetchAll("SELECT * FROM gorev_checklist WHERE gorev_id = ? ORDER BY id ASC", [$id]);
-$notes = $db->fetchAll("
+// Proje ekip üyelerini ve sorumluyu çek (dropdown için)
+$projectUsers = $db->fetchAll("
+    SELECT DISTINCT u.kullanici_id, u.ad, u.soyad
+    FROM kullanicilar u
+    WHERE u.kullanici_id IN (
+        SELECT sorumlu_id FROM projeler WHERE proje_id = ?
+        UNION
+        SELECT peu.kullanici_id 
+        FROM proje_ekipleri pe 
+        JOIN proje_ekip_uyeleri peu ON pe.id = peu.ekip_id 
+        WHERE pe.proje_id = ?
+    )
+    ORDER BY u.ad, u.soyad
+", [$task['proje_id'], $task['proje_id']]);
+
+// Checklist - izinlere göre filtrele
+$allChecklist = $db->fetchAll("
+    SELECT c.*, CONCAT(u.ad, ' ', u.soyad) as olusturan_adi
+    FROM gorev_checklist c
+    LEFT JOIN kullanicilar u ON c.olusturan_id = u.kullanici_id
+    WHERE c.gorev_id = ? 
+    ORDER BY c.id ASC
+", [$id]);
+
+$checklist = [];
+foreach ($allChecklist as $item) {
+    $gorulebilirlik = $item['gorulebilirlik'] ?? 'ekip';
+    $olusturan_id = $item['olusturan_id'] ?? null;
+    
+    if (canViewContent($gorulebilirlik, $olusturan_id, $task['ekip_id'], $task['proje_id'], 'checklist', $item['id'])) {
+        $checklist[] = $item;
+    }
+}
+
+// Notlar - izinlere göre filtrele
+$allNotes = $db->fetchAll("
     SELECT n.*, CONCAT(u.ad, ' ', u.soyad) as yazar
     FROM gorev_notlari n
     JOIN kullanicilar u ON n.kullanici_id = u.kullanici_id
-    WHERE n.gorev_id = ? ORDER BY n.tarih DESC
+    WHERE n.gorev_id = ? 
+    ORDER BY n.tarih DESC
 ", [$id]);
-$files = $db->fetchAll("
+
+$notes = [];
+foreach ($allNotes as $note) {
+    $gorulebilirlik = $note['gorulebilirlik'] ?? 'ekip';
+    $olusturan_id = $note['kullanici_id'];
+    
+    if (canViewContent($gorulebilirlik, $olusturan_id, $task['ekip_id'], $task['proje_id'], 'not', $note['id'])) {
+        $notes[] = $note;
+    }
+}
+
+// Dosyalar - izinlere göre filtrele
+$allFiles = $db->fetchAll("
     SELECT f.*, CONCAT(u.ad, ' ', u.soyad) as yukleyen
     FROM gorev_dosyalari f
     JOIN kullanicilar u ON f.yukleyen_id = u.kullanici_id
-    WHERE f.gorev_id = ? ORDER BY f.tarih DESC
+    WHERE f.gorev_id = ? 
+    ORDER BY f.tarih DESC
 ", [$id]);
+
+$files = [];
+foreach ($allFiles as $file) {
+    $gorulebilirlik = $file['gorulebilirlik'] ?? 'ekip';
+    $olusturan_id = $file['yukleyen_id'];
+    
+    if (canViewContent($gorulebilirlik, $olusturan_id, $task['ekip_id'], $task['proje_id'], 'dosya', $file['id'])) {
+        $files[] = $file;
+    }
+}
 
 $activeTab = $_GET['tab'] ?? 'todo';
 $pageTitle = 'Görev: ' . $task['baslik'];
