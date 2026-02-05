@@ -104,60 +104,67 @@ try {
     //4. Kullanıcıları bul
     echo "\n4. Onaylayıcı kullanıcılar kontrol ediliyor...\n";
 
+    $firstApproverId = null;
+    $firstApproverName = '';
+    $secondApproverId = null;
+    $secondApproverName = '';
+
     // Yasin Çakmak
     $yasinUser = $db->fetch("
-        SELECT kullanici_id, isim, soyisim, email 
+        SELECT kullanici_id, ad, soyad, email 
         FROM kullanicilar 
-        WHERE (isim LIKE '%Yasin%' AND soyisim LIKE '%Çakmak%')
-           OR email LIKE '%yasin%'
+        WHERE (ad LIKE '%Yasin%' OR ad LIKE '%yasin%') 
+          AND (soyad LIKE '%Çakmak%' OR soyad LIKE '%Cakmak%')
         LIMIT 1
     ");
 
     if ($yasinUser) {
-        echo "   ✓ Yasin Çakmak bulundu: ID={$yasinUser['kullanici_id']}, Email={$yasinUser['email']}\n";
+        echo "   ✓ Yasin Çakmak bulundu: {$yasinUser['ad']} {$yasinUser['soyad']} (ID: {$yasinUser['kullanici_id']})\n";
+        $firstApproverId = $yasinUser['kullanici_id'];
+        $firstApproverName = $yasinUser['ad'] . ' ' . $yasinUser['soyad'];
     } else {
-        echo "   ⚠ UYARI: Yasin Çakmak kullanıcısı bulunamadı!\n";
-        echo "   → Lütfen manuel olarak kullanıcıyı oluşturun veya kontrol edin\n";
+        echo "   ⚠ Yasin Çakmak kullanıcısı bulunamadı. Manuel olarak config/approval_workflow.php'yi düzenleyin.\n";
     }
 
     // Muhammed Enes Sivrikaya
     $muhammedUser = $db->fetch("
-        SELECT kullanici_id, isim, soyisim, email 
+        SELECT kullanici_id, ad, soyad, email 
         FROM kullanicilar 
-        WHERE (isim LIKE '%Muhammed%' OR isim LIKE '%Enes%') 
-          AND soyisim LIKE '%Sivrikaya%'
+        WHERE (ad LIKE '%Muhammed%' OR ad LIKE '%Enes%') 
+          AND soyad LIKE '%Sivrikaya%'
         LIMIT 1
     ");
 
     if ($muhammedUser) {
-        echo "   ✓ Muhammed Enes Sivrikaya bulundu: ID={$muhammedUser['kullanici_id']}, Email={$muhammedUser['email']}\n";
+        echo "   ✓ Muhammed Enes Sivrikaya bulundu: {$muhammedUser['ad']} {$muhammedUser['soyad']} (ID: {$muhammedUser['kullanici_id']})\n";
+        $secondApproverId = $muhammedUser['kullanici_id'];
+        $secondApproverName = $muhammedUser['ad'] . ' ' . $muhammedUser['soyad'];
     } else {
-        echo "   ⚠ UYARI: Muhammed Enes Sivrikaya kullanıcısı bulunamadı!\n";
-        echo "   → Lütfen manuel olarak kullanıcıyı oluşturun veya kontrol edin\n";
+        echo "   ⚠ Muhammed Enes Sivrikaya kullanıcısı bulunamadı. Manuel olarak config/approval_workflow.php'yi düzenleyin.\n";
     }
 
     // 5. Özet bilgi
     echo "\n=== ÖZET ===\n";
     echo "İzin Talepleri Onay Akışı:\n";
-    echo "  → Yasin Çakmak (ID: " . ($yasinUser['kullanici_id'] ?? 'BULUNAMADI') . ") → Onay/Red\n\n";
+    echo "  → Yasin Çakmak (ID: " . ($firstApproverId ?? 'BULUNAMADI') . ") → Onay/Red\n\n";
 
     echo "Harcama Talepleri Onay Akışı:\n";
-    echo "  → 1. Seviye: Yasin Çakmak (ID: " . ($yasinUser['kullanici_id'] ?? 'BULUNAMADI') . ")\n";
-    echo "  → 2. Seviye: Muhammed Enes Sivrikaya (ID: " . ($muhammedUser['kullanici_id'] ?? 'BULUNAMADI') . ")\n";
+    echo "  → 1. Seviye: Yasin Çakmak (ID: " . ($firstApproverId ?? 'BULUNAMADI') . ")\n";
+    echo "  → 2. Seviye: Muhammed Enes Sivrikaya (ID: " . ($secondApproverId ?? 'BULUNAMADI') . ")\n";
 
     // 6. Onaylayıcı ID'lerini config dosyasına kaydet
-    if ($yasinUser || $muhammedUser) {
+    if ($firstApproverId || $secondApproverId) {
         $configData = [
             'approval_workflow' => [
                 'izin_talepleri' => [
-                    'approver_user_id' => $yasinUser['kullanici_id'] ?? null,
-                    'approver_name' => ($yasinUser['isim'] ?? '') . ' ' . ($yasinUser['soyisim'] ?? ''),
+                    'approver_user_id' => $firstApproverId,
+                    'approver_name' => $firstApproverName,
                 ],
                 'harcama_talepleri' => [
-                    'first_approver_user_id' => $yasinUser['kullanici_id'] ?? null,
-                    'first_approver_name' => ($yasinUser['isim'] ?? '') . ' ' . ($yasinUser['soyisim'] ?? ''),
-                    'second_approver_user_id' => $muhammedUser['kullanici_id'] ?? null,
-                    'second_approver_name' => ($muhammedUser['isim'] ?? '') . ' ' . ($muhammedUser['soyisim'] ?? ''),
+                    'first_approver_user_id' => $firstApproverId,
+                    'first_approver_name' => $firstApproverName,
+                    'second_approver_user_id' => $secondApproverId,
+                    'second_approver_name' => $secondApproverName,
                 ]
             ]
         ];
