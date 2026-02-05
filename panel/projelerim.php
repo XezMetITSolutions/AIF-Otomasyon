@@ -223,7 +223,7 @@ include __DIR__ . '/../includes/header.php';
                                 <?php foreach ($projeler as $proje): ?>
                                     <tr>
                                         <td class="fw-medium">
-                                            <a href="/admin/proje-detay.php?id=<?php echo $proje['proje_id']; ?>"
+                                            <a href="/panel/proje-detay.php?id=<?php echo $proje['proje_id']; ?>"
                                                 class="text-decoration-none fw-bold text-dark">
                                                 <?php echo htmlspecialchars($proje['baslik']); ?>
                                             </a>
@@ -264,7 +264,7 @@ include __DIR__ . '/../includes/header.php';
                                             </small>
                                         </td>
                                         <td class="text-end">
-                                            <a href="/admin/proje-detay.php?id=<?php echo $proje['proje_id']; ?>"
+                                            <a href="/panel/proje-detay.php?id=<?php echo $proje['proje_id']; ?>"
                                                 class="btn btn-sm btn-outline-info me-1" title="Detaylar">
                                                 <i class="fas fa-eye"></i>
                                             </a>
@@ -381,7 +381,8 @@ include __DIR__ . '/../includes/header.php';
                             <option value="">Seçiniz...</option>
                             <?php foreach ($bykList as $byk): ?>
                                 <option value="<?php echo $byk['byk_id']; ?>">
-                                    <?php echo htmlspecialchars($byk['byk_adi']); ?></option>
+                                    <?php echo htmlspecialchars($byk['byk_adi']); ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
