@@ -10,15 +10,22 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireSuperAdmin();
-
 $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
 
+$isSuperAdmin = $auth->isSuperAdmin();
+$canManage = $auth->hasModulePermission('baskan_projeler');
+$canView = $auth->hasModulePermission('uye_projeler');
+
+if (!$canManage && !$canView) {
+    Middleware::forbidden("Bu sayfayı görüntüleme yetkiniz yok.");
+}
+
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) {
-    header('Location: projeler.php');
+    $redirect = $canManage ? '/admin/projeler' : 'projelerim';
+    header('Location: ' . $redirect);
     exit;
 }
 
@@ -167,8 +174,8 @@ include __DIR__ . '/../includes/header.php';
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="/admin/projeler.php">Projeler</a></li>
-                <li class="breadcrumb-item"><a href="/admin/proje-detay.php?id=<?php echo $task['proje_id']; ?>"><?php echo htmlspecialchars($task['proje_adi']); ?></a></li>
+                <li class="breadcrumb-item"><a href="<?php echo $canManage ? '/admin/projeler' : 'projelerim'; ?>">Projeler</a></li>
+                <li class="breadcrumb-item"><a href="proje-detay.php?id=<?php echo $task['proje_id']; ?>"><?php echo htmlspecialchars($task['proje_adi']); ?></a></li>
                 <li class="breadcrumb-item active">Görev Detayı</li>
             </ol>
         </nav>
