@@ -142,7 +142,7 @@ include __DIR__ . '/../includes/header.php';
                 <button onclick="window.print()" class="btn btn-outline-dark rounded-pill px-4">
                     <i class="fas fa-print me-2"></i>Yazdır / PDF
                 </button>
-                <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4">Geri Dön</a>
+                <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4 no-ajax">Geri Dön</a>
             </div>
         </div>
 

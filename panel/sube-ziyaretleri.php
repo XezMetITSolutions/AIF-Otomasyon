@@ -336,14 +336,14 @@ include __DIR__ . '/../includes/header.php';
                                     <td class="text-end pe-4">
                                         <div class="btn-group">
                                             <?php if ($ziyaret['durum'] === 'planlandi'): ?>
-                                                <a href="yeni-ziyaret.php?edit=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                                <a href="yeni-ziyaret.php?edit=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-secondary no-ajax" title="Düzenle">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="yeni-ziyaret.php?rapor=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-primary" title="Raporla">
+                                                <a href="yeni-ziyaret.php?rapor=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-primary no-ajax" title="Raporla">
                                                     <i class="fas fa-file-pen"></i> Raporla
                                                 </a>
                                             <?php else: ?>
-                                                <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-info">
+                                                <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" class="btn btn-sm btn-outline-info no-ajax">
                                                     <i class="fas fa-eye me-1"></i> Rapor
                                                 </a>
                                             <?php endif; ?>

@@ -164,7 +164,7 @@ include __DIR__ . '/../includes/header.php';
                     <p class="text-muted mb-0"><strong><?php echo htmlspecialchars($ziyaret['byk_adi'] ?? ''); ?></strong> şubesi için raporu tamamlayın.</p>
                 <?php endif; ?>
             </div>
-            <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4">İptal</a>
+            <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4 no-ajax">İptal</a>
         </div>
 
         <form method="POST" class="needs-validation" novalidate>
