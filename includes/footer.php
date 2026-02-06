@@ -70,6 +70,15 @@ $user = $auth->getUser();
                 
                 // 1. Link Interception
                 $(document).on('click', 'a', function(e) {
+                    // Mobil menü açıksa ve menü linkine tıklandıysa kapat
+                    const mobileMenu = document.getElementById('navbarNav');
+                    if (mobileMenu && mobileMenu.classList.contains('show') && $(this).closest('.navbar-nav').length > 0) {
+                        const bsCollapse = bootstrap.Collapse.getInstance(mobileMenu);
+                        if (bsCollapse) {
+                            bsCollapse.hide();
+                        }
+                    }
+
                     const el = $(this);
                     const href = el.attr('href');
                     const target = el.attr('target');

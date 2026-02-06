@@ -312,8 +312,8 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 <?php else: ?>
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
+                        <table class="table table-hover mb-0 mobile-table">
+                            <thead class="d-none d-md-table-header-group">
                                 <tr>
                                     <th class="ps-4">Tarih</th>
                                     <th>Şube</th>
@@ -322,7 +322,7 @@ include __DIR__ . '/../includes/header.php';
                                     <th class="text-end pe-4">İşlemler</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="d-block d-md-table-row-group">
                                 <?php foreach ($ziyaretler as $ziyaret): ?>
                                     <?php
                                     $dt = new DateTime($ziyaret['ziyaret_tarihi']);
@@ -330,19 +330,49 @@ include __DIR__ . '/../includes/header.php';
                                     $dayStr = $trMonths[$dt->format('M')] ?? $dt->format('M');
                                     $members = $grupUyeleri[$ziyaret['grup_id']] ?? [];
                                     ?>
-                                    <tr>
-                                        <td class="ps-4">
+                                    <tr class="d-block d-md-table-row border-bottom border-md-0 position-relative mb-3 bg-white rounded-3 shadow-sm mx-0 mx-md-0 p-3 p-md-0">
+                                        
+                                        <!-- Mobil Başlık ve Tarih -->
+                                        <td class="d-flex d-md-none justify-content-between align-items-center border-0 pb-0 px-3 pt-3">
+                                            <div class="fw-bold text-dark fs-5"><?php echo htmlspecialchars($ziyaret['byk_adi']); ?></div>
+                                            <div>
+                                                 <?php if ($ziyaret['durum'] === 'planlandi'): ?>
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-2 py-1">Planlandı</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-success bg-opacity-10 text-success px-2 py-1">Tamamlandı</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Masaüstü Tarih -->
+                                        <td class="ps-4 d-none d-md-table-cell">
                                             <div class="fw-bold"><?php echo $dateStr; ?></div>
                                             <div class="small text-muted"><?php echo $dayStr; ?></div>
                                         </td>
-                                        <td>
-                                            <div class="fw-bold text-dark"><?php echo htmlspecialchars($ziyaret['byk_adi']); ?>
+
+                                        <!-- Mobil Detay Satırı: Tarih ve Grup -->
+                                        <td class="d-block d-md-none border-0 px-3 py-2">
+                                            <div class="d-flex align-items-center text-muted small mb-2">
+                                                 <i class="fas fa-calendar-alt me-2 text-primary opacity-50"></i>
+                                                 <span><?php echo $dateStr; ?> (<?php echo $dayStr; ?>)</span>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge rounded-pill me-2" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>;">
+                                                    <?php echo htmlspecialchars($ziyaret['grup_adi']); ?>
+                                                </span>
+                                                <span class="small text-muted"><?php echo count($members); ?> Ziyaretçi</span>
                                             </div>
                                         </td>
-                                        <td>
+
+                                        <!-- Masaüstü Şube -->
+                                        <td class="d-none d-md-table-cell">
+                                            <div class="fw-bold text-dark"><?php echo htmlspecialchars($ziyaret['byk_adi']); ?></div>
+                                        </td>
+
+                                        <!-- Masaüstü Grup -->
+                                        <td class="d-none d-md-table-cell">
                                             <div class="mb-1">
-                                                <span class="badge rounded-pill"
-                                                    style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>; border: 1px solid <?php echo $ziyaret['renk_kodu']; ?>30;">
+                                                <span class="badge rounded-pill" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>; border: 1px solid <?php echo $ziyaret['renk_kodu']; ?>30;">
                                                     <?php echo htmlspecialchars($ziyaret['grup_adi']); ?>
                                                 </span>
                                                 <span class="small text-muted ms-1">(<?php echo count($members); ?> Kişi)</span>
@@ -359,37 +389,35 @@ include __DIR__ . '/../includes/header.php';
                                                 ?>
                                             </div>
                                         </td>
-                                        <td>
+
+                                        <!-- Masaüstü Durum -->
+                                        <td class="d-none d-md-table-cell">
                                             <?php if ($ziyaret['durum'] === 'planlandi'): ?>
-                                                <span
-                                                    class="status-badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
-                                                    Planlandı
-                                                </span>
+                                                <span class="status-badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">Planlandı</span>
                                             <?php else: ?>
-                                                <span
-                                                    class="status-badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                                                    Tamamlandı
-                                                </span>
+                                                <span class="status-badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Tamamlandı</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="text-end pe-4">
-                                            <div class="btn-group">
+
+                                        <!-- İşlemler Butonları (Responsive) -->
+                                        <td class="text-end pe-md-4 d-block d-md-table-cell border-0 px-3 pb-3 pt-0">
+                                            <div class="d-grid d-md-inline-flex gap-2">
                                                 <?php if ($ziyaret['durum'] === 'planlandi'): ?>
-                                                    <a href="yeni-ziyaret.php?edit=<?php echo $ziyaret['ziyaret_id']; ?>"
-                                                        class="btn btn-sm btn-outline-secondary no-ajax" title="Düzenle">
-                                                        <i class="fas fa-edit"></i>
+                                                    <a href="yeni-ziyaret.php?edit=<?php echo $ziyaret['ziyaret_id']; ?>" 
+                                                       class="btn btn-sm btn-outline-secondary d-md-inline-block no-ajax flex-fill" title="Düzenle">
+                                                        <i class="fas fa-edit me-1 d-md-none"></i>Düzenle
                                                     </a>
-                                                    <a href="yeni-ziyaret.php?rapor=<?php echo $ziyaret['ziyaret_id']; ?>"
-                                                        class="btn btn-sm btn-primary no-ajax" title="Raporla">
-                                                        <i class="fas fa-file-pen"></i> Raporla
+                                                    <a href="yeni-ziyaret.php?rapor=<?php echo $ziyaret['ziyaret_id']; ?>" 
+                                                       class="btn btn-sm btn-primary d-md-inline-block no-ajax flex-fill" title="Raporla">
+                                                        <i class="fas fa-file-pen me-1"></i> Raporla
                                                     </a>
                                                 <?php else: ?>
-                                                    <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>"
-                                                        class="btn btn-sm btn-outline-info no-ajax" title="Raporu Gör">
+                                                    <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" 
+                                                       class="btn btn-sm btn-outline-info d-md-inline-block no-ajax flex-fill" title="Raporu Gör">
                                                         <i class="fas fa-eye me-1"></i> Rapor
                                                     </a>
-                                                    <button onclick="printReport(<?php echo $ziyaret['ziyaret_id']; ?>)"
-                                                        class="btn btn-sm btn-outline-dark" title="PDF / Yazdır">
+                                                    <button onclick="printReport(<?php echo $ziyaret['ziyaret_id']; ?>)" 
+                                                            class="btn btn-sm btn-outline-dark d-none d-md-inline-block" title="PDF / Yazdır">
                                                         <i class="fas fa-print"></i>
                                                     </button>
                                                 <?php endif; ?>
