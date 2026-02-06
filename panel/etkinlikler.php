@@ -69,7 +69,7 @@ try {
         ORDER BY e.baslangic_tarihi ASC
         LIMIT 500
     ", $params);
-    
+
     if (!empty($etkinlikler)) {
         try {
             $bykCategories = $db->fetchAll("SELECT code, name, color FROM byk_categories");
@@ -80,7 +80,7 @@ try {
                     'color' => $cat['color']
                 ];
             }
-            
+
             foreach ($etkinlikler as &$etkinlik) {
                 $bykKodu = $etkinlik['byk_kodu'] ?? '';
                 if (!empty($bykKodu) && isset($bykCategoryMap[$bykKodu])) {
@@ -96,7 +96,8 @@ try {
                 }
             }
             unset($etkinlik);
-        } catch (Exception $e) { /* Ignore */ }
+        } catch (Exception $e) { /* Ignore */
+        }
     }
 } catch (Exception $e) {
     $etkinlikler = [];
@@ -112,24 +113,26 @@ foreach ($etkinlikler as $etkinlik) {
     if (empty($etkinlik['baslangic_tarihi']) || empty($etkinlik['bitis_tarihi']) || empty($etkinlik['baslik'])) {
         continue;
     }
-    
+
     try {
         $baslangic = new DateTime($etkinlik['baslangic_tarihi']);
         $bitis = new DateTime($etkinlik['bitis_tarihi']);
-    } catch (Exception $e) { continue; }
-    
+    } catch (Exception $e) {
+        continue;
+    }
+
     $bykRenk = $etkinlik['byk_renk'] ?? '#009872';
     if (empty($bykRenk) || !preg_match('/^#[0-9A-Fa-f]{6}$/i', $bykRenk)) {
-         $bykRenk = '#009872';
+        $bykRenk = '#009872';
     }
-    
+
     $calendarEvents[] = [
         'id' => $etkinlik['etkinlik_id'],
         'title' => $etkinlik['baslik'],
         'start' => $baslangic->format('Y-m-d\TH:i:s'),
         'end' => $bitis->format('Y-m-d\TH:i:s'),
-        'allDay' => (date('H:i:s', strtotime($etkinlik['baslangic_tarihi'])) == '00:00:00' && 
-                     date('H:i:s', strtotime($etkinlik['bitis_tarihi'])) == '23:59:59'),
+        'allDay' => (date('H:i:s', strtotime($etkinlik['baslangic_tarihi'])) == '00:00:00' &&
+            date('H:i:s', strtotime($etkinlik['bitis_tarihi'])) == '23:59:59'),
         'backgroundColor' => $bykRenk,
         'borderColor' => $bykRenk,
         'textColor' => '#ffffff',
@@ -191,8 +194,8 @@ include __DIR__ . '/../includes/header.php';
     body {
         font-family: 'Inter', sans-serif;
         background: radial-gradient(circle at 0% 0%, rgba(0, 152, 114, 0.08) 0%, transparent 50%),
-                    radial-gradient(circle at 100% 100%, rgba(0, 152, 114, 0.05) 0%, transparent 50%),
-                    #f8fafc;
+            radial-gradient(circle at 100% 100%, rgba(0, 152, 114, 0.05) 0%, transparent 50%),
+            #f8fafc;
         color: var(--text-dark);
     }
 
@@ -205,7 +208,7 @@ include __DIR__ . '/../includes/header.php';
         border-radius: 1rem;
         transition: transform 0.2s, box-shadow 0.2s;
     }
-    
+
     .card:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
@@ -213,7 +216,7 @@ include __DIR__ . '/../includes/header.php';
 
     .card-header {
         background: transparent;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         padding: 1.25rem 1.5rem;
         font-size: 1rem;
         color: var(--text-dark);
@@ -255,7 +258,7 @@ include __DIR__ . '/../includes/header.php';
             flex-shrink: 0;
             z-index: 1000;
         }
-        
+
         .main-content {
             flex-grow: 1;
             width: auto;
@@ -267,11 +270,14 @@ include __DIR__ . '/../includes/header.php';
             margin: 0 auto !important;
         }
     }
-    
+
     #calendarLoadingOverlay {
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(255,255,255,0.7);
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
         z-index: 10;
         display: none;
         align-items: center;
@@ -294,17 +300,18 @@ include __DIR__ . '/../includes/header.php';
                     <i class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi
                 </h1>
                 <div class="btn-group">
-                    <a href="/api/export-calendar.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success" id="exportBtn">
+                    <a href="/api/export-calendar.php?<?php echo http_build_query($_GET); ?>"
+                        class="btn btn-outline-success" id="exportBtn">
                         <i class="fas fa-file-export me-2"></i>Takvime Aktar
                     </a>
                     <?php if ($canManage): ?>
-                    <a href="/panel/baskan_etkinlik-ekle.php" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
-                    </a>
+                        <a href="/panel/baskan_etkinlik-ekle.php" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
+                        </a>
                     <?php endif; ?>
                 </div>
             </div>
-            
+
             <?php if (isset($_GET['success'])): ?>
                 <div class="alert alert-success alert-dismissible fade show">
                     <i class="fas fa-check-circle me-2"></i>İşlem başarıyla tamamlandı.
@@ -314,12 +321,16 @@ include __DIR__ . '/../includes/header.php';
 
             <!-- Filtreler -->
             <div class="card mb-4 position-relative">
-                <div id="filterLoading" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.6); z-index:5; border-radius:1rem;"></div>
+                <div id="filterLoading"
+                    style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.6); z-index:5; border-radius:1rem;">
+                </div>
                 <div class="card-body">
                     <form id="filterForm" class="row g-3">
                         <div class="col-md-5">
                             <label class="form-label">Arama</label>
-                            <input type="text" class="form-control" name="search" id="inputSearch" value="<?php echo htmlspecialchars($search); ?>" placeholder="Etkinlik adı, açıklama...">
+                            <input type="text" class="form-control" name="search" id="inputSearch"
+                                value="<?php echo htmlspecialchars($search); ?>"
+                                placeholder="Etkinlik adı, açıklama...">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Ay</label>
@@ -327,12 +338,21 @@ include __DIR__ . '/../includes/header.php';
                                 <option value="">Tüm Aylar</option>
                                 <?php
                                 $aylar = [
-                                    1 => 'Ocak', 2 => 'Şubat', 3 => 'Mart', 4 => 'Nisan',
-                                    5 => 'Mayıs', 6 => 'Haziran', 7 => 'Temmuz', 8 => 'Ağustos',
-                                    9 => 'Eylül', 10 => 'Ekim', 11 => 'Kasım', 12 => 'Aralık'
+                                    1 => 'Ocak',
+                                    2 => 'Şubat',
+                                    3 => 'Mart',
+                                    4 => 'Nisan',
+                                    5 => 'Mayıs',
+                                    6 => 'Haziran',
+                                    7 => 'Temmuz',
+                                    8 => 'Ağustos',
+                                    9 => 'Eylül',
+                                    10 => 'Ekim',
+                                    11 => 'Kasım',
+                                    12 => 'Aralık'
                                 ];
                                 foreach ($aylar as $num => $ayAdi):
-                                ?>
+                                    ?>
                                     <option value="<?php echo $num; ?>" <?php echo $monthFilter == $num ? 'selected' : ''; ?>>
                                         <?php echo $ayAdi; ?>
                                     </option>
@@ -341,7 +361,8 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Yıl</label>
-                            <input type="number" class="form-control" name="yil" id="inputYear" value="<?php echo htmlspecialchars($yearFilter); ?>" min="2020" max="2030">
+                            <input type="number" class="form-control" name="yil" id="inputYear"
+                                value="<?php echo htmlspecialchars($yearFilter); ?>" min="2020" max="2030">
                         </div>
                         <div class="col-md-3 d-flex align-items-end gap-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -351,35 +372,43 @@ include __DIR__ . '/../includes/header.php';
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
-                        
+
                         <div class="col-12 border-top pt-3 mt-3">
-                            <label class="form-label d-block text-muted small fw-bold mb-2">BİRİM FİLTRESİ (Tüm Birimler)</label>
+                            <label class="form-label d-block text-muted small fw-bold mb-2">BİRİM FİLTRESİ (Tüm
+                                Birimler)</label>
                             <div class="btn-group flex-wrap" role="group">
-                                <button type="button" class="btn btn-sm btn-outline-secondary unit-filter <?php echo $birimFilter == '' ? 'active' : ''; ?>" data-unit="">Tümü</button>
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-secondary unit-filter <?php echo $birimFilter == '' ? 'active' : ''; ?>"
+                                    data-unit="">Tümü</button>
                                 <?php
-                                $availableTypes = $db->fetchAll("SELECT DISTINCT byk_kodu FROM byk WHERE byk_kodu IS NOT NULL AND byk_kodu != '' ORDER BY byk_kodu");
+                                $availableTypes = $db->fetchAll("SELECT DISTINCT byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'KGT', 'KT', 'GT') ORDER BY FIELD(byk_kodu, 'AT', 'KGT', 'KT', 'GT')");
                                 foreach ($availableTypes as $type):
                                     $label = $type['byk_kodu'];
                                     $isActive = ($birimFilter == $type['byk_kodu']);
-                                ?>
-                                <button type="button" class="btn btn-sm btn-outline-primary unit-filter <?php echo $isActive ? 'active' : ''; ?>" data-unit="<?php echo htmlspecialchars($label); ?>">
-                                    <?php echo htmlspecialchars($label); ?>
-                                </button>
+                                    ?>
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-primary unit-filter <?php echo $isActive ? 'active' : ''; ?>"
+                                        data-unit="<?php echo htmlspecialchars($label); ?>">
+                                        <?php echo htmlspecialchars($label); ?>
+                                    </button>
                                 <?php endforeach; ?>
                             </div>
-                            <input type="hidden" name="birim" id="inputBirim" value="<?php echo htmlspecialchars($birimFilter); ?>">
+                            <input type="hidden" name="birim" id="inputBirim"
+                                value="<?php echo htmlspecialchars($birimFilter); ?>">
                         </div>
                     </form>
                 </div>
             </div>
-            
+
             <!-- Görünüm Seçici -->
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="badge bg-info me-2">Toplam: <strong id="totalCount"><?php echo count($etkinlikler); ?></strong> etkinlik</span>
-                            <span id="loadingSpinner" class="spinner-border spinner-border-sm text-primary ms-2" style="display:none;"></span>
+                            <span class="badge bg-info me-2">Toplam: <strong
+                                    id="totalCount"><?php echo count($etkinlikler); ?></strong> etkinlik</span>
+                            <span id="loadingSpinner" class="spinner-border spinner-border-sm text-primary ms-2"
+                                style="display:none;"></span>
                         </div>
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-outline-primary active" id="calendarViewBtn">
@@ -392,17 +421,17 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <!-- Takvim Görünümü -->
             <div class="card" id="calendarView">
-                 <div id="calendarLoadingOverlay" style="display:none;">
+                <div id="calendarLoadingOverlay" style="display:none;">
                     <div class="spinner-border text-primary" role="status"></div>
-                 </div>
+                </div>
                 <div class="card-body">
                     <div id="calendar" style="min-height: 600px;"></div>
                 </div>
             </div>
-            
+
             <!-- Liste Görünümü -->
             <div class="card d-none" id="listView">
                 <div class="card-body">
@@ -414,44 +443,54 @@ include __DIR__ . '/../includes/header.php';
                                     <th>Başlık</th>
                                     <th>Konum</th>
                                     <th>Oluşturan</th>
-                                    <?php if ($canManage): ?><th>İşlemler</th><?php endif; ?>
+                                    <?php if ($canManage): ?>
+                                        <th>İşlemler</th><?php endif; ?>
                                 </tr>
                             </thead>
                             <tbody id="eventListBody">
                                 <!-- JS Populated -->
                                 <?php if (empty($etkinlikler)): ?>
-                                    <tr><td colspan="<?php echo $canManage ? 5 : 4; ?>" class="text-center text-muted">Henüz etkinlik eklenmemiş.</td></tr>
+                                    <tr>
+                                        <td colspan="<?php echo $canManage ? 5 : 4; ?>" class="text-center text-muted">Henüz
+                                            etkinlik eklenmemiş.</td>
+                                    </tr>
                                 <?php else: ?>
                                     <?php foreach ($etkinlikler as $e): ?>
-                                      <!-- Initial Render (Server Side) -->
-                                      <tr>
-                                          <td>
-                                              <strong><?php echo date('d.m.Y', strtotime($e['baslangic_tarihi'])); ?></strong><br>
-                                              <small class="text-muted">
-                                                <?php 
+                                        <!-- Initial Render (Server Side) -->
+                                        <tr>
+                                            <td>
+                                                <strong><?php echo date('d.m.Y', strtotime($e['baslangic_tarihi'])); ?></strong><br>
+                                                <small class="text-muted">
+                                                    <?php
                                                     $s = date('H:i', strtotime($e['baslangic_tarihi']));
                                                     $end = date('H:i', strtotime($e['bitis_tarihi']));
-                                                    echo ($s!='00:00' || $end!='23:59') ? "$s - $end" : 'Tüm gün';
-                                                ?>
-                                              </small>
-                                          </td>
-                                          <td>
-                                              <strong><?php echo htmlspecialchars($e['baslik']); ?></strong>
-                                              <?php if(!empty($e['aciklama'])): ?>
-                                              <br><small class="text-muted text-truncate d-inline-block" style="max-width:200px;"><?php echo htmlspecialchars(substr($e['aciklama'],0,50)); ?></small>
-                                              <?php endif; ?>
-                                          </td>
-                                          <td><?php echo !empty($e['konum']) ? htmlspecialchars($e['konum']) : '-'; ?></td>
-                                          <td><?php echo !empty($e['olusturan']) ? htmlspecialchars($e['olusturan']) : '-'; ?></td>
-                                          <?php if($canManage): ?>
-                                          <td>
-                                              <div class="btn-group">
-                                                  <a href="/panel/baskan_etkinlik-ekle.php?id=<?php echo $e['etkinlik_id']; ?>" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
-                                                  <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" data-id="<?php echo $e['etkinlik_id']; ?>" data-name="<?php echo htmlspecialchars($e['baslik']); ?>"><i class="fas fa-trash"></i></button>
-                                              </div>
-                                          </td>
-                                          <?php endif; ?>
-                                      </tr>
+                                                    echo ($s != '00:00' || $end != '23:59') ? "$s - $end" : 'Tüm gün';
+                                                    ?>
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <strong><?php echo htmlspecialchars($e['baslik']); ?></strong>
+                                                <?php if (!empty($e['aciklama'])): ?>
+                                                    <br><small class="text-muted text-truncate d-inline-block"
+                                                        style="max-width:200px;"><?php echo htmlspecialchars(substr($e['aciklama'], 0, 50)); ?></small>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><?php echo !empty($e['konum']) ? htmlspecialchars($e['konum']) : '-'; ?></td>
+                                            <td><?php echo !empty($e['olusturan']) ? htmlspecialchars($e['olusturan']) : '-'; ?>
+                                            </td>
+                                            <?php if ($canManage): ?>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a href="/panel/baskan_etkinlik-ekle.php?id=<?php echo $e['etkinlik_id']; ?>"
+                                                            class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger confirm-delete"
+                                                            data-id="<?php echo $e['etkinlik_id']; ?>"
+                                                            data-name="<?php echo htmlspecialchars($e['baslik']); ?>"><i
+                                                                class="fas fa-trash"></i></button>
+                                                    </div>
+                                                </td>
+                                            <?php endif; ?>
+                                        </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
@@ -459,7 +498,7 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
             </div>
-    </div>
+        </div>
     </main>
 </div>
 
@@ -480,75 +519,75 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const calendarViewBtn = document.getElementById('calendarViewBtn');
-    const listViewBtn = document.getElementById('listViewBtn');
-    const calendarView = document.getElementById('calendarView');
-    const listView = document.getElementById('listView');
-    
-    // View Toggles
-    calendarViewBtn.addEventListener('click', () => {
-        calendarViewBtn.classList.add('active');
-        listViewBtn.classList.remove('active');
-        calendarView.classList.remove('d-none');
-        listView.classList.add('d-none');
-        if(window.calendar) window.calendar.render();
-    });
-    
-    listViewBtn.addEventListener('click', () => {
-        listViewBtn.classList.add('active');
-        calendarViewBtn.classList.remove('active');
-        listView.classList.remove('d-none');
-        calendarView.classList.add('d-none');
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarViewBtn = document.getElementById('calendarViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const calendarView = document.getElementById('calendarView');
+        const listView = document.getElementById('listView');
 
-    // Calendar Init
-    const initialEvents = <?php echo json_encode($calendarEvents, JSON_UNESCAPED_UNICODE) ?: '[]'; ?>;
-    const calendarEl = document.getElementById('calendar');
-    
-    if(calendarEl) {
-        try {
-            if (typeof FullCalendar !== 'undefined') {
-                window.calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    locale: 'tr',
-                    firstDay: 1,
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,listWeek'
-                    },
-                    buttonText: {
-                        today: 'Bugün',
-                        month: 'Ay',
-                        week: 'Hafta',
-                        day: 'Gün',
-                        list: 'Liste'
-                    },
-                    events: initialEvents,
-                    eventClick: function(info) {
-                        showEventModal(info.event);
-                    },
-                    eventDisplay: 'block',
-                    height: 'auto'
-                });
-                window.calendar.render();
-            } else {
-                console.error('FullCalendar library not loaded.');
-                calendarEl.innerHTML = '<div class="alert alert-danger">Takvim kütüphanesi yüklenemedi. Lütfen sayfayı yenileyiniz.</div>';
+        // View Toggles
+        calendarViewBtn.addEventListener('click', () => {
+            calendarViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+            calendarView.classList.remove('d-none');
+            listView.classList.add('d-none');
+            if (window.calendar) window.calendar.render();
+        });
+
+        listViewBtn.addEventListener('click', () => {
+            listViewBtn.classList.add('active');
+            calendarViewBtn.classList.remove('active');
+            listView.classList.remove('d-none');
+            calendarView.classList.add('d-none');
+        });
+
+        // Calendar Init
+        const initialEvents = <?php echo json_encode($calendarEvents, JSON_UNESCAPED_UNICODE) ?: '[]'; ?>;
+        const calendarEl = document.getElementById('calendar');
+
+        if (calendarEl) {
+            try {
+                if (typeof FullCalendar !== 'undefined') {
+                    window.calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        locale: 'tr',
+                        firstDay: 1,
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,listWeek'
+                        },
+                        buttonText: {
+                            today: 'Bugün',
+                            month: 'Ay',
+                            week: 'Hafta',
+                            day: 'Gün',
+                            list: 'Liste'
+                        },
+                        events: initialEvents,
+                        eventClick: function (info) {
+                            showEventModal(info.event);
+                        },
+                        eventDisplay: 'block',
+                        height: 'auto'
+                    });
+                    window.calendar.render();
+                } else {
+                    console.error('FullCalendar library not loaded.');
+                    calendarEl.innerHTML = '<div class="alert alert-danger">Takvim kütüphanesi yüklenemedi. Lütfen sayfayı yenileyiniz.</div>';
+                }
+            } catch (e) {
+                console.error('Calendar init error:', e);
+                calendarEl.innerHTML = '<div class="alert alert-danger">Takvim yüklenirken bir hata oluştu.</div>';
             }
-        } catch(e) {
-            console.error('Calendar init error:', e);
-            calendarEl.innerHTML = '<div class="alert alert-danger">Takvim yüklenirken bir hata oluştu.</div>';
         }
-    }
 
-    function showEventModal(event) {
-         const props = event.extendedProps;
-         const modalBody = document.getElementById('eventModalBody');
-         document.getElementById('eventModalLabel').textContent = event.title;
-         
-         let html = `
+        function showEventModal(event) {
+            const props = event.extendedProps;
+            const modalBody = document.getElementById('eventModalBody');
+            document.getElementById('eventModalLabel').textContent = event.title;
+
+            let html = `
             <div class="mb-3"><strong>Başlık:</strong> ${event.title}</div>
             ${props.byk ? `<div class="mb-3"><strong>BYK:</strong> <span class="badge" style="background-color: ${event.backgroundColor};">${props.byk}</span></div>` : ''}
             <div class="mb-3"><strong>Başlangıç:</strong> ${event.start ? event.start.toLocaleString('tr-TR') : ''}</div>
@@ -558,176 +597,176 @@ document.addEventListener('DOMContentLoaded', function() {
             ${props.olusturan ? `<div class="mb-3"><strong>Oluşturan:</strong> ${props.olusturan}</div>` : ''}
          `;
 
-         if (<?php echo $canManage ? 'true' : 'false'; ?>) {
-             html += `<div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+            if (<?php echo $canManage ? 'true' : 'false'; ?>) {
+                html += `<div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
                 <a href="/panel/baskan_etkinlik-ekle.php?id=${event.id}" class="btn btn-primary btn-sm"><i class="fas fa-edit me-1"></i>Düzenle</a>
              </div>`;
-         }
-         
-         modalBody.innerHTML = html;
-         new bootstrap.Modal(document.getElementById('eventModal')).show();
-    }
+            }
 
-    // --- AJAX FILTER LOGIC ---
-    
-    const filterForm = document.getElementById('filterForm');
-    const unitButtons = document.querySelectorAll('.unit-filter');
-    const inputBirim = document.getElementById('inputBirim');
-    const resetBtn = document.getElementById('resetFilters');
-    
-    // Unit Buttons functionality
-    unitButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // UI Update
-            unitButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Value Update
-            if (inputBirim) inputBirim.value = this.dataset.unit;
-            
-            // Fetch
+            modalBody.innerHTML = html;
+            new bootstrap.Modal(document.getElementById('eventModal')).show();
+        }
+
+        // --- AJAX FILTER LOGIC ---
+
+        const filterForm = document.getElementById('filterForm');
+        const unitButtons = document.querySelectorAll('.unit-filter');
+        const inputBirim = document.getElementById('inputBirim');
+        const resetBtn = document.getElementById('resetFilters');
+
+        // Unit Buttons functionality
+        unitButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                // UI Update
+                unitButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Value Update
+                if (inputBirim) inputBirim.value = this.dataset.unit;
+
+                // Fetch
+                fetchEvents();
+            });
+        });
+
+        // Reset Button
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                document.getElementById('inputSearch').value = '';
+                document.getElementById('selectMonth').value = '';
+                document.getElementById('inputYear').value = new Date().getFullYear();
+                if (inputBirim) inputBirim.value = '';
+
+                unitButtons.forEach(b => b.classList.toggle('active', b.dataset.unit === ''));
+
+                fetchEvents();
+            });
+        }
+
+        // Form Submit
+        filterForm.addEventListener('submit', function (e) {
+            e.preventDefault();
             fetchEvents();
         });
-    });
 
-    // Reset Button
-    if(resetBtn) {
-        resetBtn.addEventListener('click', function() {
-           document.getElementById('inputSearch').value = '';
-           document.getElementById('selectMonth').value = '';
-           document.getElementById('inputYear').value = new Date().getFullYear();
-           if(inputBirim) inputBirim.value = '';
-           
-           unitButtons.forEach(b => b.classList.toggle('active', b.dataset.unit === ''));
-           
-           fetchEvents(); 
-        });
-    }
+        async function fetchEvents() {
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams(formData);
+            params.append('ajax', '1');
 
-    // Form Submit
-    filterForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        fetchEvents();
-    });
-
-    async function fetchEvents() {
-        const formData = new FormData(filterForm);
-        const params = new URLSearchParams(formData);
-        params.append('ajax', '1');
-        
-        // Show Loaders
-        const loader = document.getElementById('calendarLoadingOverlay');
-        if(loader) loader.style.display = 'flex';
-        document.getElementById('loadingSpinner').style.display = 'inline-block';
-        
-        // Update URL (PushState) without reloading
-        const cleanParams = new URLSearchParams(formData);
-        // Remove empty
-        for (const [key, value] of [...cleanParams]) {
-             if (value === '') cleanParams.delete(key);
-        }
-        const newUrl = window.location.pathname + '?' + cleanParams.toString();
-        window.history.pushState({}, '', newUrl);
-        
-        // Update Export Link
-        const exportBtn = document.getElementById('exportBtn');
-        if(exportBtn) exportBtn.href = '/api/export-calendar.php?' + cleanParams.toString();
-        
-        try {
-            const response = await fetch('/panel/etkinlikler.php?' + params.toString());
-            const data = await response.json();
-            
-            // Update Calendar
-            if (window.calendar) {
-                window.calendar.removeAllEvents();
-                window.calendar.addEventSource(data.events);
-            }
-            
-            // Update Count
-            document.getElementById('totalCount').innerText = data.count;
-            
-            // Update List View
-            updateListView(data.events, data.canManage);
-            
-        } catch (error) {
-            console.error('Error fetching events:', error);
-            alert('Etkinlikler yüklenirken bir sorun oluştu.');
-        } finally {
+            // Show Loaders
             const loader = document.getElementById('calendarLoadingOverlay');
-            if(loader) loader.style.display = 'none';
-            document.getElementById('loadingSpinner').style.display = 'none';
+            if (loader) loader.style.display = 'flex';
+            document.getElementById('loadingSpinner').style.display = 'inline-block';
+
+            // Update URL (PushState) without reloading
+            const cleanParams = new URLSearchParams(formData);
+            // Remove empty
+            for (const [key, value] of [...cleanParams]) {
+                if (value === '') cleanParams.delete(key);
+            }
+            const newUrl = window.location.pathname + '?' + cleanParams.toString();
+            window.history.pushState({}, '', newUrl);
+
+            // Update Export Link
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) exportBtn.href = '/api/export-calendar.php?' + cleanParams.toString();
+
+            try {
+                const response = await fetch('/panel/etkinlikler.php?' + params.toString());
+                const data = await response.json();
+
+                // Update Calendar
+                if (window.calendar) {
+                    window.calendar.removeAllEvents();
+                    window.calendar.addEventSource(data.events);
+                }
+
+                // Update Count
+                document.getElementById('totalCount').innerText = data.count;
+
+                // Update List View
+                updateListView(data.events, data.canManage);
+
+            } catch (error) {
+                console.error('Error fetching events:', error);
+                alert('Etkinlikler yüklenirken bir sorun oluştu.');
+            } finally {
+                const loader = document.getElementById('calendarLoadingOverlay');
+                if (loader) loader.style.display = 'none';
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
         }
-    }
-    
-    function updateListView(events, canManage) {
-        const tbody = document.getElementById('eventListBody');
-        tbody.innerHTML = '';
-        
-        if (events.length === 0) {
-            const colspan = canManage ? 5 : 4;
-            tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center text-muted">Etkinlik bulunamadı.</td></tr>`;
-            return;
-        }
-        
-        // Sort events by date for list view (Calendar events object comes unsorted from JSON sometimes?)
-        // Actually PHP sorted them by SQL, so array order should be preserved.
-        
-        events.forEach(e => {
-            const raw = e._raw;
-            const props = e.extendedProps;
-             // Date formatting is simpler if we use logic similar to PHP or raw values
-            const tr = document.createElement('tr');
-            
-            let actions = '';
-            if (canManage) {
-                actions = `
+
+        function updateListView(events, canManage) {
+            const tbody = document.getElementById('eventListBody');
+            tbody.innerHTML = '';
+
+            if (events.length === 0) {
+                const colspan = canManage ? 5 : 4;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center text-muted">Etkinlik bulunamadı.</td></tr>`;
+                return;
+            }
+
+            // Sort events by date for list view (Calendar events object comes unsorted from JSON sometimes?)
+            // Actually PHP sorted them by SQL, so array order should be preserved.
+
+            events.forEach(e => {
+                const raw = e._raw;
+                const props = e.extendedProps;
+                // Date formatting is simpler if we use logic similar to PHP or raw values
+                const tr = document.createElement('tr');
+
+                let actions = '';
+                if (canManage) {
+                    actions = `
                 <td>
                     <div class="btn-group">
                         <a href="/panel/baskan_etkinlik-ekle.php?id=${raw.id}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
                         <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" data-id="${raw.id}" data-name="${e.title}"><i class="fas fa-trash"></i></button>
                     </div>
                 </td>`;
-            }
-            
-            let timeStr = (raw.baslangic_saat !== '00:00' || raw.bitis_saat !== '23:59') 
-                          ? `${raw.baslangic_saat} - ${raw.bitis_saat}` 
-                          : 'Tüm gün';
+                }
 
-            tr.innerHTML = `
+                let timeStr = (raw.baslangic_saat !== '00:00' || raw.bitis_saat !== '23:59')
+                    ? `${raw.baslangic_saat} - ${raw.bitis_saat}`
+                    : 'Tüm gün';
+
+                tr.innerHTML = `
                 <td>
                    <strong>${raw.baslangic_format}</strong><br>
                    <small class="text-muted">${timeStr}</small>
                 </td>
                 <td>
                    <strong>${e.title}</strong>
-                   ${props.aciklama ? `<br><small class="text-muted text-truncate d-inline-block" style="max-width:200px;">${props.aciklama.substring(0,50)}</small>` : ''}
+                   ${props.aciklama ? `<br><small class="text-muted text-truncate d-inline-block" style="max-width:200px;">${props.aciklama.substring(0, 50)}</small>` : ''}
                 </td>
                 <td>${props.konum || '-'}</td>
                 <td>${props.olusturan || '-'}</td>
                 ${actions}
             `;
-            tbody.appendChild(tr);
+                tbody.appendChild(tr);
+            });
+
+            // Re-bind delete events if needed (since they are new DOM elements)
+            // You might need a global delegate listener for dynamic content or re-bind.
+            // Assuming your main script uses delegates, if not, adding a quick delegate here:
+        }
+
+        // Global Delegate for Delete Buttons in the table
+        document.getElementById('eventListBody').addEventListener('click', function (e) {
+            const btn = e.target.closest('.confirm-delete');
+            if (btn) {
+                // Trigger your global delete confirmation logic here or standard alert
+                if (confirm(btn.dataset.name + ' etkinliğini silmek istediğinize emin misiniz?')) {
+                    // Proceed with delete... URL or Form submit
+                    // Since we are strictly doing Filter AJAX here, actual Deletion might be standard page load
+                    // For now, let's just allow standard click which might fail if event listeners aren't attached.
+                    // Ideally, sidebar/footer global scripts handle .confirm-delete delegation.
+                }
+            }
         });
-        
-        // Re-bind delete events if needed (since they are new DOM elements)
-        // You might need a global delegate listener for dynamic content or re-bind.
-        // Assuming your main script uses delegates, if not, adding a quick delegate here:
-    }
-    
-    // Global Delegate for Delete Buttons in the table
-     document.getElementById('eventListBody').addEventListener('click', function(e) {
-        const btn = e.target.closest('.confirm-delete');
-        if (btn) {
-           // Trigger your global delete confirmation logic here or standard alert
-           if(confirm(btn.dataset.name + ' etkinliğini silmek istediğinize emin misiniz?')) {
-               // Proceed with delete... URL or Form submit
-               // Since we are strictly doing Filter AJAX here, actual Deletion might be standard page load
-               // For now, let's just allow standard click which might fail if event listeners aren't attached.
-               // Ideally, sidebar/footer global scripts handle .confirm-delete delegation.
-           }
-        } 
-     });
-});
+    });
 </script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
