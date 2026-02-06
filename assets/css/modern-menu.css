@@ -115,16 +115,28 @@
         }
     }
 
-    /* Mobile Nav Links - Compact */
+    /* Mobile Nav Links - Compact Ultra */
     .navbar-nav .nav-link {
-        padding: 8px 12px;
-        border-radius: 8px;
-        margin-bottom: 2px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin-bottom: 1px;
         font-weight: 500;
-        font-size: 14px;
+        font-size: 13.5px;
+        line-height: 1.2;
         color: var(--gray-700);
         transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         border: 1px solid transparent;
+        display: flex;
+        /* İkon ve metni hizalamak için */
+        align-items: center;
+    }
+
+    /* İkon hizalaması */
+    .navbar-nav .nav-link i {
+        font-size: 13px;
+        width: 20px;
+        text-align: center;
+        margin-right: 8px;
     }
 
     /* Active & Hover States */
@@ -132,21 +144,21 @@
         background: rgba(0, 152, 114, 0.08);
         /* Primary color low opacity */
         color: var(--primary-color);
-        padding-left: 18px;
+        padding-left: 14px;
         /* Slight slide right effect */
     }
 
     .navbar-nav .nav-link.active {
         background: var(--primary-gradient);
         color: white;
-        box-shadow: 0 2px 8px rgba(0, 152, 114, 0.25);
+        box-shadow: 0 1px 4px rgba(0, 152, 114, 0.15);
     }
 
     /* Separators */
     .dropdown-divider {
-        margin: 6px 0;
+        margin: 4px 0;
         border-top: 1px solid var(--gray-200);
-        opacity: 0.5;
+        opacity: 0.4;
     }
 
     /* Section Headers */
