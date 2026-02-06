@@ -50,6 +50,7 @@ $canManage = $auth->hasModulePermission('baskan_sube_ziyaretleri');
 
 // Filters
 $tab = $_GET['tab'] ?? 'planlanan'; // planlanan, tamamlanan
+$scope = $_GET['scope'] ?? 'my_groups'; // my_groups, all
 $grupFilter = $_GET['grup'] ?? '';
 $bykFilter = $_GET['byk'] ?? '';
 
@@ -77,8 +78,12 @@ if ($bykFilter) {
     $params[] = $bykFilter;
 }
 
-// Global Admin (AT) değilse sadece kendi ziyaretlerini veya grubunun ziyaretlerini görebilir mi?
-// Kullanıcının "Sube Ziyaretleri" yetkisi varsa genellikle herkesinkini görebilir (Raporlama için).
+// Scope Filter
+if ($scope === 'my_groups') {
+    $where[] = "(g.baskan_id = ? OR EXISTS (SELECT 1 FROM ziyaret_grup_uyeleri gu WHERE gu.grup_id = z.grup_id AND gu.kullanici_id = ?))";
+    $params[] = $user['id'];
+    $params[] = $user['id'];
+}
 
 $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
@@ -251,18 +256,26 @@ include __DIR__ . '/../includes/header.php';
             <!-- Tabs and Filters -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
+                    <!-- Scope Tabs -->
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="bg-light p-1 rounded-pill d-inline-flex">
+                            <a href="?scope=my_groups&tab=<?php echo $tab; ?>" class="btn btn-sm rounded-pill px-4 <?php echo $scope === 'my_groups' ? 'btn-white shadow-sm fw-bold text-primary' : 'text-muted'; ?>">Grubum</a>
+                            <a href="?scope=all&tab=<?php echo $tab; ?>" class="btn btn-sm rounded-pill px-4 <?php echo $scope === 'all' ? 'btn-white shadow-sm fw-bold text-primary' : 'text-muted'; ?>">Bütün Gruplar</a>
+                        </div>
+                    </div>
+
                     <div class="row g-3 align-items-center">
                         <div class="col-12 col-md-auto">
                             <ul class="nav nav-pills w-100 nav-fill nav-md-start">
                                 <li class="nav-item">
                                     <a class="nav-link <?php echo $tab === 'planlanan' ? 'active' : ''; ?>"
-                                        href="?tab=planlanan&grup=<?php echo $grupFilter; ?>&byk=<?php echo $bykFilter; ?>">
+                                        href="?scope=<?php echo $scope; ?>&tab=planlanan&grup=<?php echo $grupFilter; ?>&byk=<?php echo $bykFilter; ?>">
                                         <i class="fas fa-calendar-alt me-2"></i>Planlanan
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link <?php echo $tab === 'tamamlanan' ? 'active' : ''; ?>"
-                                        href="?tab=tamamlanan&grup=<?php echo $grupFilter; ?>&byk=<?php echo $bykFilter; ?>">
+                                        href="?scope=<?php echo $scope; ?>&tab=tamamlanan&grup=<?php echo $grupFilter; ?>&byk=<?php echo $bykFilter; ?>">
                                         <i class="fas fa-check-circle me-2"></i>Tamamlanan
                                     </a>
                                 </li>
@@ -291,7 +304,7 @@ include __DIR__ . '/../includes/header.php';
                                 </select>
 
                                 <?php if ($grupFilter || $bykFilter): ?>
-                                    <a href="sube-ziyaretleri.php?tab=<?php echo $tab; ?>"
+                                    <a href="sube-ziyaretleri.php?scope=<?php echo $scope; ?>&tab=<?php echo $tab; ?>"
                                         class="btn btn-sm btn-light border">
                                         <i class="fas fa-times me-1"></i>Temizle
                                     </a>

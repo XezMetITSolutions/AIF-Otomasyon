@@ -336,7 +336,7 @@ include __DIR__ . '/../includes/header.php';
 
                                             // Link Belirle
                                             $link = isset($etkinlik['type']) && $etkinlik['type'] === 'ziyaret'
-                                                ? '/panel/yeni-ziyaret.php?edit=' . $etkinlik['id']
+                                                ? '/panel/yeni-ziyaret.php?rapor=' . $etkinlik['id']
                                                 : '/panel/etkinlikler.php';
 
                                             // Icon Belirle
