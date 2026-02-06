@@ -42,7 +42,7 @@ $isUye = $user && $user['role'] === 'uye';
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/css/modern-menu.css">
+    <link rel="stylesheet" href="/assets/css/modern-menu.css?v=<?php echo time(); ?>">
 
     <!-- Dynamic Theme Color -->
     <style>
