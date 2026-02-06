@@ -42,6 +42,7 @@ $isUye = $user && $user['role'] === 'uye';
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/modern-menu.css">
 
     <!-- Dynamic Theme Color -->
     <style>
@@ -91,8 +92,10 @@ $isUye = $user && $user['role'] === 'uye';
                     <img src="/assets/img/AIF.png" alt="AIF Logo" style="height: 40px; width: auto;">
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
+                <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
