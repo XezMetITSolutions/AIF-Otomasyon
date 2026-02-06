@@ -236,12 +236,12 @@ include __DIR__ . '/../includes/header.php';
                     </h1>
                     <p class="text-muted mb-0">Haftalık şube ziyaretleri ve raporlama sistemi.</p>
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="ziyaret-gruplari.php" class="btn btn-outline-primary rounded-pill px-4 no-ajax">
-                        <i class="fas fa-users-rectangle me-2"></i>Grup Yönetimi
+                <div class="d-flex gap-2 w-100 w-md-auto">
+                    <a href="ziyaret-gruplari.php" class="btn btn-outline-primary rounded-pill px-4 no-ajax flex-fill flex-md-grow-0 text-center">
+                        <i class="fas fa-users-rectangle me-2"></i>Grup Ynt.
                     </a>
                     <?php if ($canManage): ?>
-                        <a href="yeni-ziyaret.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <a href="yeni-ziyaret.php" class="btn btn-primary rounded-pill px-4 shadow-sm no-ajax flex-fill flex-md-grow-0 text-center">
                             <i class="fas fa-plus me-2"></i>Ziyaret Planla
                         </a>
                     <?php endif; ?>
@@ -253,7 +253,7 @@ include __DIR__ . '/../includes/header.php';
                 <div class="card-body">
                     <div class="row g-3 align-items-center">
                         <div class="col-12 col-md-auto">
-                            <ul class="nav nav-pills">
+                            <ul class="nav nav-pills w-100 nav-fill nav-md-start">
                                 <li class="nav-item">
                                     <a class="nav-link <?php echo $tab === 'planlanan' ? 'active' : ''; ?>"
                                         href="?tab=planlanan&grup=<?php echo $grupFilter; ?>&byk=<?php echo $bykFilter; ?>">
@@ -270,7 +270,7 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                         <div class="col-12 col-md">
                             <div class="d-flex gap-2 flex-wrap justify-content-md-end">
-                                <select class="form-select form-select-sm" style="width: auto;"
+                                <select class="form-select form-select-sm flex-fill flex-md-grow-0" style="width: auto;"
                                     onchange="applyFilter('grup', this.value)">
                                     <option value="">Tüm Gruplar</option>
                                     <?php foreach ($gruplar as $g): ?>
@@ -280,7 +280,7 @@ include __DIR__ . '/../includes/header.php';
                                     <?php endforeach; ?>
                                 </select>
 
-                                <select class="form-select form-select-sm" style="width: auto;"
+                                <select class="form-select form-select-sm flex-fill flex-md-grow-0" style="width: auto;"
                                     onchange="applyFilter('byk', this.value)">
                                     <option value="">Tüm Şubeler</option>
                                     <?php foreach ($bykList as $b): ?>
@@ -329,6 +329,15 @@ include __DIR__ . '/../includes/header.php';
                                     $dateStr = $dt->format('d.m.Y');
                                     $dayStr = $trMonths[$dt->format('M')] ?? $dt->format('M');
                                     $members = $grupUyeleri[$ziyaret['grup_id']] ?? [];
+                                    
+                                    // Başkanı bul
+                                    $baskanAd = '';
+                                    foreach ($members as $m) {
+                                        if ($m['kullanici_id'] == $ziyaret['baskan_id']) {
+                                            $baskanAd = $m['ad'] . ' ' . $m['soyad'];
+                                            break;
+                                        }
+                                    }
                                     ?>
                                     <tr class="d-block d-md-table-row border-bottom border-md-0 position-relative mb-3 bg-white rounded-3 shadow-sm mx-0 mx-md-0 p-3 p-md-0">
                                         
@@ -356,11 +365,15 @@ include __DIR__ . '/../includes/header.php';
                                                  <i class="fas fa-calendar-alt me-2 text-primary opacity-50"></i>
                                                  <span><?php echo $dateStr; ?> (<?php echo $dayStr; ?>)</span>
                                             </div>
-                                            <div class="d-flex align-items-center">
-                                                <span class="badge rounded-pill me-2" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>;">
+                                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                                <span class="badge rounded-pill" style="background-color: <?php echo $ziyaret['renk_kodu']; ?>15; color: <?php echo $ziyaret['renk_kodu']; ?>;">
                                                     <?php echo htmlspecialchars($ziyaret['grup_adi']); ?>
                                                 </span>
-                                                <span class="small text-muted"><?php echo count($members); ?> Ziyaretçi</span>
+                                                <?php if ($baskanAd): ?>
+                                                    <span class="small text-muted"><i class="fas fa-user-tie me-1"></i><?php echo htmlspecialchars($baskanAd); ?></span>
+                                                <?php else: ?>
+                                                    <span class="small text-muted"><?php echo count($members); ?> Ziyaretçi</span>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
 
