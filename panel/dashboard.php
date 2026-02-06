@@ -89,12 +89,14 @@ if ($auth->hasModulePermission('baskan_sube_ziyaretleri')) {
     $visitWhere = ["z.durum = 'planlandi'", "z.ziyaret_tarihi >= CURDATE()"];
     $visitParams = [];
 
-    // Eğer sadece kendi birimi seçildiyse (Hem hedef şube hem de dahil olduğu grup)
-    if ($eventScope === 'my_unit') {
-        $visitWhere[] = "(z.byk_id = ? OR EXISTS (SELECT 1 FROM ziyaret_grup_uyeleri gu WHERE gu.grup_id = z.grup_id AND gu.kullanici_id = ?))";
-        $visitParams[] = $user['byk_id'];
-        $visitParams[] = $user['id'];
-    }
+    // KULLANICI İSTEĞİ: Sadece kendi grubunun ziyaretleri gösterilsin.
+    // Dashboard'da karmaşayı önlemek için sadece kullanıcının başkanı olduğu veya üyesi olduğu grupları getiriyoruz.
+    $visitWhere[] = "(
+        g.baskan_id = ? 
+        OR EXISTS (SELECT 1 FROM ziyaret_grup_uyeleri gu WHERE gu.grup_id = z.grup_id AND gu.kullanici_id = ?)
+    )";
+    $visitParams[] = $user['id'];
+    $visitParams[] = $user['id'];
 
     $yaklasan_ziyaretler = $db->fetchAll("
         SELECT z.*, 
