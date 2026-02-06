@@ -344,7 +344,7 @@ include __DIR__ . '/../includes/header.php';
                                                 ? 'fa-map-marker-alt'
                                                 : 'fa-sitemap';
                                             ?>
-                                            <a href="<?php echo $link; ?>" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+                                            <a href="<?php echo $link; ?>" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between no-ajax">
 
                                                 <div class="d-flex align-items-center">
                                                     <div class="rounded p-2 text-center me-3 text-white"
