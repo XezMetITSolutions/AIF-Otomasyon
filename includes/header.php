@@ -107,11 +107,18 @@ $isUye = $user && $user['role'] === 'uye';
                         // DB ve Yetki Kontrolleri
                         $dbHeader = Database::getInstance();
                         $isMuhasebeBaskaniHeader = false;
+                        $isATHeader = false;
                         try {
                             if ($user) {
                                 $checkMuhasebe = $dbHeader->fetch("SELECT count(*) as cnt FROM byk WHERE muhasebe_baskani_id = ?", [$user['id']]);
                                 if ($checkMuhasebe && $checkMuhasebe['cnt'] > 0) {
                                     $isMuhasebeBaskaniHeader = true;
+                                }
+                                
+                                // AT birimi kontrolü
+                                $checkAT = $dbHeader->fetch("SELECT b.byk_kodu FROM byk b JOIN kullanicilar k ON b.byk_id = k.byk_id WHERE k.kullanici_id = ?", [$user['id']]);
+                                if ($checkAT && $checkAT['byk_kodu'] === 'AT') {
+                                    $isATHeader = true;
                                 }
                             }
                         } catch (Exception $e) {
@@ -136,6 +143,8 @@ $isUye = $user && $user['role'] === 'uye';
                                     ['key' => 'baskan_iade_formlari', 'path' => '/panel/iade-formlari.php?tab=yonetim', 'icon' => 'fas fa-hand-holding-usd', 'label' => 'İade Onayları', 'match' => 'panel/iade-formlari'],
                                     ['key' => 'baskan_demirbas_talepleri', 'path' => '/panel/demirbas-talepleri.php?tab=onay', 'icon' => 'fas fa-box', 'label' => 'Demirbaş Talepleri', 'match' => 'panel/demirbas-talepleri'],
                                     ['key' => 'baskan_raggal_talepleri', 'path' => '/panel/raggal-talepleri.php?tab=yonetim', 'icon' => 'fas fa-calendar-check', 'label' => 'Raggal Talepleri', 'match' => 'panel/raggal-talepleri'],
+                                    ['key' => 'baskan_projeler', 'path' => '/panel/projelerim', 'icon' => 'fas fa-project-diagram', 'label' => 'Proje Yönetimi', 'match' => 'projeler'],
+                                    ['key' => 'baskan_sube_ziyaretleri', 'path' => '/panel/sube-ziyaretleri.php', 'icon' => 'fas fa-map-location-dot', 'label' => 'Şube Ziyaretleri', 'match' => 'panel/sube-ziyaretleri'],
                                 ],
                             ],
                             [
@@ -153,6 +162,7 @@ $isUye = $user && $user['role'] === 'uye';
                             ['key' => 'uye_iade_formu', 'path' => '/panel/iade-formlari.php?tab=form', 'icon' => 'fas fa-file-invoice-dollar', 'label' => 'İade Talebi Oluştur', 'match' => 'panel/iade-formlari'],
                             ['key' => 'uye_demirbas_talep', 'path' => '/panel/demirbas-talepleri.php?tab=talep', 'icon' => 'fas fa-box', 'label' => 'Demirbaş Talep', 'match' => 'panel/demirbas-talepleri'],
                             ['key' => 'uye_raggal_talep', 'path' => '/panel/raggal-talepleri.php?tab=takvim', 'icon' => 'fas fa-calendar-plus', 'label' => 'Raggal Rezervasyon', 'match' => 'panel/raggal-talepleri'],
+                            ['key' => 'uye_projeler', 'path' => '/panel/projelerim', 'icon' => 'fas fa-list-check', 'label' => 'Projelerim', 'match' => 'projeler'],
                         ];
 
                         $currentPath = $_SERVER['PHP_SELF'];
@@ -187,10 +197,10 @@ $isUye = $user && $user['role'] === 'uye';
                                                     class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi</a></li>
                                         <li><a class="dropdown-item" href="/admin/toplantilar.php"><i
                                                     class="fas fa-users-cog me-2"></i>Toplantı Yönetimi</a></li>
-                                        <li><a class="dropdown-item" href="/admin/projeler.php"><i
-                                                    class="fas fa-project-diagram me-2"></i>Proje Takibi</a></li>
                                         <li><a class="dropdown-item" href="/admin/duyurular.php"><i
                                                     class="fas fa-bullhorn me-2"></i>Duyurular</a></li>
+                                        <li><a class="dropdown-item" href="/admin/sube-ziyaretleri.php"><i
+                                                    class="fas fa-map-location-dot me-2"></i>Şube Ziyaretleri</a></li>
                                     </ul>
                                 </li>
                                 <li class="nav-item dropdown">
@@ -216,6 +226,9 @@ $isUye = $user && $user['role'] === 'uye';
                                 <li class="nav-item">
                                     <a class="nav-link" href="/admin/ayarlar.php"><i class="fas fa-cog me-1"></i>Ayarlar</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/email-sablonlari.php"><i class="fas fa-envelope-open-text me-1"></i>E-posta Şablonları</a>
+                                </li>
 
                             <?php else: // Üye (Yetkili/Normal) ?>
 
@@ -232,9 +245,13 @@ $isUye = $user && $user['role'] === 'uye';
                                 <!-- Baskan (Management) -->
                                 <?php
                                 foreach ($baskanSidebarSections as $section) {
-                                    $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskaniHeader) {
+                                    $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskaniHeader, $isATHeader, $isSuperAdmin) {
                                         if ($isMuhasebeBaskaniHeader && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
                                             return true;
+                                        }
+                                        // Şube ziyaretleri sadece AT üyelerine ve Super Adminlere özel
+                                        if ($link['key'] === 'baskan_sube_ziyaretleri' && !$isATHeader && !$isSuperAdmin) {
+                                            return false;
                                         }
                                         return $auth->hasModulePermission($link['key']);
                                     });
