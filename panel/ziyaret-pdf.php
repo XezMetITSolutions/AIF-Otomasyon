@@ -33,11 +33,14 @@ if (!$ziyaretId) {
 }
 
 $ziyaret = $db->fetch("
-    SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu, CONCAT(u.ad, ' ', u.soyad) as olusturan
+    SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu, g.baskan_id, 
+           CONCAT(u.ad, ' ', u.soyad) as olusturan,
+           CONCAT(kb.ad, ' ', kb.soyad) as grup_baskani
     FROM sube_ziyaretleri z
     INNER JOIN byk b ON z.byk_id = b.byk_id
     INNER JOIN ziyaret_gruplari g ON z.grup_id = g.grup_id
     INNER JOIN kullanicilar u ON z.olusturan_id = u.kullanici_id
+    LEFT JOIN kullanicilar kb ON g.baskan_id = kb.kullanici_id
     WHERE z.ziyaret_id = ?
 ", [$ziyaretId]);
 
@@ -292,7 +295,7 @@ $questions = [
         <!-- Header -->
         <div class="header-wrapper">
             <div class="header-content">
-                <img src="/assets/img/logo.png" alt="AIF Logo" class="header-logo" onerror="this.src='https://islamfederasyonu.at/wp-content/uploads/2021/03/aif_logo_v2.png'">
+                <img src="/assets/img/AIF.png" alt="AIF Logo" class="header-logo" >
                 <div class="header-title">
                     <h1>ŞUBE ZİYARET RAPORU</h1>
                     <p>AIF Otomasyon Sistemi</p>
@@ -319,8 +322,8 @@ $questions = [
                     <div class="info-value"><?php echo date('d.m.Y', strtotime($ziyaret['ziyaret_tarihi'])); ?></div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">RAPORLAYAN</div>
-                    <div class="info-value"><?php echo htmlspecialchars($ziyaret['olusturan']); ?></div>
+                    <div class="info-label">GRUP BAŞKANI</div>
+                    <div class="info-value"><?php echo htmlspecialchars($ziyaret['grup_baskani'] ?? 'Belirtilmemiş'); ?></div>
                 </div>
             </div>
 

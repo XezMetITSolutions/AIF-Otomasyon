@@ -448,10 +448,11 @@ include __DIR__ . '/../includes/header.php';
                                                        class="btn btn-sm btn-outline-info d-md-inline-block flex-fill" title="Raporu Gör">
                                                         <i class="fas fa-eye me-1"></i> Rapor
                                                     </a>
-                                                    <button onclick="printReport(<?php echo $ziyaret['ziyaret_id']; ?>)" 
-                                                            class="btn btn-sm btn-outline-dark d-none d-md-inline-block" title="PDF / Yazdır">
-                                                        <i class="fas fa-print"></i>
-                                                    </button>
+                                                    <a href="ziyaret-pdf.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" 
+                                                       target="_blank"
+                                                       class="btn btn-sm btn-outline-dark d-none d-md-inline-block" title="PDF / Yazdır">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -474,12 +475,7 @@ include __DIR__ . '/../includes/header.php';
         window.location = url;
     }
 
-    function printReport(id) {
-        const printWin = window.open('ziyaret-pdf.php?id=' + id, '_blank');
-        printWin.onload = function () {
-            // printWin.print(); // Removed auto-print to let user see the premium preview first
-        };
-    }
+
 </script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
