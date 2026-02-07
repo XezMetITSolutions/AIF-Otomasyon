@@ -99,8 +99,8 @@ $isUye = $user && $user['role'] === 'uye';
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <div class="mobile-menu-wrapper w-100 d-lg-flex justify-content-lg-end align-items-lg-center">
-                        <ul class="navbar-nav me-auto">
+                    <!-- Mobile Menu Links (Hidden on Desktop) -->
+                    <ul class="navbar-nav me-auto d-lg-none">
                         <?php
                         // Mobil Menü için Sidebar Mantığı (Desktop'ta gizli: d-lg-none)
                     
@@ -168,8 +168,7 @@ $isUye = $user && $user['role'] === 'uye';
                         $currentPath = $_SERVER['PHP_SELF'];
                         ?>
 
-                        <!-- List Wrapper with d-lg-none to hide on desktop -->
-                        <ul class="navbar-nav me-auto d-lg-none">
+                        <!-- Sidebar items rendered here for mobile -->
                             <?php if ($isSuperAdmin): ?>
                                 <li class="nav-item">
                                     <a class="nav-link" href="/admin/dashboard.php"><i
@@ -299,8 +298,10 @@ $isUye = $user && $user['role'] === 'uye';
 
 
 
-                    <!-- Bildirimler ve Kullanıcı Menüsü -->
-                    <ul class="navbar-nav">
+                    </ul>
+
+                    <!-- Notifications and User Menu (Pushed to Right on Desktop) -->
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <?php if ($user): ?>
                             <li class="nav-item dropdown">
                                 <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button"
