@@ -58,6 +58,19 @@ $bykFilter = $_GET['byk'] ?? '';
 $gruplar = $db->fetchAll("SELECT grup_id, grup_adi, renk_kodu FROM ziyaret_gruplari ORDER BY grup_adi");
 $bykList = $db->fetchAll("SELECT byk_id, byk_adi FROM byk ORDER BY byk_adi");
 
+// Reset İşlemi
+if (isset($_POST['reset_id']) && $canManage) {
+    try {
+        $resetId = $_POST['reset_id'];
+        $db->query("UPDATE sube_ziyaretleri SET durum = 'planlandi', cevaplar = NULL WHERE ziyaret_id = ?", [$resetId]);
+        $_SESSION['message'] = ['type' => 'success', 'text' => 'Rapor başarıyla sıfırlandı ve planlananlar listesine alındı.'];
+        header('Location: sube-ziyaretleri.php?tab=planlanan');
+        exit;
+    } catch (Exception $e) {
+        $_SESSION['message'] = ['type' => 'danger', 'text' => 'Hata: ' . $e->getMessage()];
+    }
+}
+
 // Build Query
 $where = [];
 $params = [];
@@ -453,6 +466,12 @@ include __DIR__ . '/../includes/header.php';
                                                        class="btn btn-sm btn-outline-dark d-none d-md-inline-block" title="PDF / Yazdır">
                                                         <i class="fas fa-file-pdf"></i>
                                                     </a>
+                                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Bu raporu sıfırlamak istediğinize emin misiniz? Tüm cevaplar silinecek ve ziyaret tekrar planlananlar listesine alınacak.');">
+                                                        <input type="hidden" name="reset_id" value="<?php echo $ziyaret['ziyaret_id']; ?>">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger d-none d-md-inline-block" title="Raporu Sıfırla">
+                                                            <i class="fas fa-undo"></i>
+                                                        </button>
+                                                    </form>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
