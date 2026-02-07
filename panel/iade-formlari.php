@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hasPermissionBaskan) {
 
                 if (isset($message) && $messageType === 'success') {
                     // Kullanıcı e-postasını bul
-                    $uyeInfo = $db->fetch("SELECT k.email, CONCAT(k.ad, ' ', k.soyad) as ad_soyad FROM kullanicilar k INNER JOIN harcama_talepleri ht ON k.kullanici_id = ht.kullanici_id WHERE ht.talep_id = ?", [$talepId]);
+                    $uyeInfo = $db->fetch("SELECT k.kullanici_id, k.email, CONCAT(k.ad, ' ', k.soyad) as ad_soyad FROM kullanicilar k INNER JOIN harcama_talepleri ht ON k.kullanici_id = ht.kullanici_id WHERE ht.talep_id = ?", [$talepId]);
 
                     if ($uyeInfo) {
                         $statusMap = [
@@ -135,6 +135,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hasPermissionBaskan) {
                             'durum' => $statusMap[$action] ?? 'Güncellendi',
                             'aciklama' => $note ?: 'Talebiniz yönetici tarafından güncellenmiştir.'
                         ]);
+
+                        $notifType = ($action == 'approve' || $action == 'mark_paid') ? 'basarili' : (($action == 'reject') ? 'hata' : 'uyari');
+                        Notification::add(
+                            $uyeInfo['kullanici_id'],
+                            'Harcama Talebi: ' . ($statusMap[$action] ?? 'Güncellendi'),
+                            "Talebiniz durumu değiştirildi: " . ($statusMap[$action] ?? $action) . " (" . ($note ?: 'Açıklama yok') . ")",
+                            $notifType,
+                            '/panel/iade-formlari.php?tab=form',
+                            false
+                        );
                     }
                 }
 

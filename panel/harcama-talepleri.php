@@ -171,6 +171,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Birim Muhasebe Başkanına Bildirim Gönder
                 $bykInfo = $db->fetch("SELECT muhasebe_baskani_id FROM byk WHERE byk_id = ?", [$user['byk_id']]);
                 if ($bykInfo && $bykInfo['muhasebe_baskani_id']) {
+                    
+                    Notification::add(
+                        $bykInfo['muhasebe_baskani_id'],
+                        'Yeni Harcama Talebi',
+                        "{$user['name']} yeni bir harcama talebi oluşturdu: " . substr($baslik, 0, 30),
+                        'bilgi',
+                        '/panel/harcama-talepleri.php?tab=onay',
+                        false
+                    );
+
                     $adminUser = $db->fetch("SELECT email FROM kullanicilar WHERE kullanici_id = ?", [$bykInfo['muhasebe_baskani_id']]);
                     if ($adminUser) {
                         Mail::sendWithTemplate($adminUser['email'], 'talep_yeni', [
@@ -235,6 +245,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         // Kullanıcıya red bilgisi gönder
                         $requester = $db->fetch("SELECT email, CONCAT(ad, ' ', soyad) AS name FROM kullanicilar WHERE kullanici_id = ?", [$talep['kullanici_id']]);
+                        
+                        // Bildirim
+                        Notification::add(
+                            $talep['kullanici_id'],
+                            'Harcama Talebi Reddedildi',
+                            "Harcama talebiniz reddedildi.",
+                            'hata', // veya reddedildi
+                            '/panel/harcama-talepleri.php?tab=talebim',
+                            false
+                        );
+
                         if ($requester) {
                             Mail::sendWithTemplate($requester['email'], 'talep_sonuc', [
                                 'ad_soyad' => $requester['name'],
@@ -263,6 +284,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         // İkinci onaylayıcıya bildirim gönder
                         if (!empty($harcamaWorkflow['second_approver_user_id'])) {
+                            
+                            Notification::add(
+                                $harcamaWorkflow['second_approver_user_id'],
+                                'Harcama Onayı (2. Aşama)',
+                                "Yasin Çakmak onayladı, 2. onay bekleniyor: {$talep['baslik']}",
+                                'uyari',
+                                '/panel/harcama-talepleri.php?tab=onay',
+                                false
+                            );
+
                             $secondApprover = $db->fetch("SELECT email, CONCAT(ad, ' ', soyad) AS name FROM kullanicilar WHERE kullanici_id = ?", [$harcamaWorkflow['second_approver_user_id']]);
                             if ($secondApprover) {
                                 Mail::sendWithTemplate($secondApprover['email'], 'talep_yeni', [
@@ -289,6 +320,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         // Talep sahibine bildirim gönder
                         $requester = $db->fetch("SELECT email, CONCAT(ad, ' ', soyad) AS name FROM kullanicilar WHERE kullanici_id = ?", [$talep['kullanici_id']]);
+                        
+                        Notification::add(
+                            $talep['kullanici_id'],
+                            'Harcama Talebi Onaylandı',
+                            "Talebiniz tamamen onaylandı.",
+                            'basarili',
+                            '/panel/harcama-talepleri.php?tab=talebim',
+                            false
+                        );
+
                         if ($requester) {
                             Mail::sendWithTemplate($requester['email'], 'talep_sonuc', [
                                 'ad_soyad' => $requester['name'],
@@ -313,6 +354,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ", [$user['id'], $user['id'], $aciklama ?: 'Başkan tarafından direkt onaylandı.', $talepId]);
 
                         $messages[] = 'Talep başkan tarafından direkt onaylandı.';
+                        
+                        Notification::add(
+                            $talep['kullanici_id'],
+                            'Harcama Talebi Onaylandı',
+                            "Talebiniz başkan tarafından onaylandı.",
+                            'basarili',
+                            '/panel/harcama-talepleri.php?tab=talebim'
+                        );
                     } else {
                         $errors[] = 'Bu seviyede onay yetkiniz yok veya talep bu aşamada değil.';
                     }

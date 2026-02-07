@@ -44,6 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "INSERT INTO raggal_talepleri (kullanici_id, baslangic_tarihi, bitis_tarihi, aciklama, durum) VALUES (?, ?, ?, ?, 'bekliyor')",
                     [$user['id'], $baslangic, $bitis, $aciklama]
                 );
+                // Bildirim - İlk yöneticiye
+                $admin = $db->fetch("SELECT kullanici_id FROM kullanicilar WHERE role IN ('admin', 'super_admin') ORDER BY kullanici_id ASC LIMIT 1");
+                if ($admin) {
+                     Notification::add(
+                        $admin['kullanici_id'],
+                        'Yeni Raggal Rezervasyonu',
+                        "{$user['name']} yeni bir rezervasyon talebi oluşturdu.",
+                        'bilgi',
+                        '/panel/raggal-talepleri.php?tab=yonetim'
+                    );
+                }
+                
                 $messages[] = 'Rezervasyon talebiniz oluşturuldu, onay bekleniyor.';
             } catch (Exception $e) {
                 $errors[] = 'Hata: ' . $e->getMessage();
@@ -57,6 +69,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id) {
             $status = ($action === 'approve') ? 'onaylandi' : 'reddedildi';
             $db->query("UPDATE raggal_talepleri SET durum = ? WHERE id = ?", [$status, $id]);
+            
+            // Kullanıcıya bildirim
+            $talep = $db->fetch("SELECT kullanici_id, baslangic_tarihi FROM raggal_talepleri WHERE id = ?", [$id]);
+            if ($talep) {
+                 Notification::add(
+                    $talep['kullanici_id'],
+                    'Rezervasyon Durumu: ' . ucfirst($status),
+                    date('d.m.Y H:i', strtotime($talep['baslangic_tarihi'])) . " tarihli rezervasyonunuz " . ($status == 'onaylandi' ? 'onaylandı' : 'reddedildi') . ".",
+                    ($status == 'onaylandi' ? 'basarili' : 'hata'),
+                    '/panel/raggal-talepleri.php'
+                );
+            }
             $messages[] = 'Rezervasyon durumu güncellendi: ' . ucfirst($status);
             $activeTab = 'yonetim';
         }

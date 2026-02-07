@@ -215,6 +215,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif ($action === 'update_status') {
         $status = $_POST['status'] ?? 'beklemede';
         $db->query("UPDATE proje_gorevleri SET durum = ? WHERE id = ?", [$status, $id]);
+        
+        // Görev detayını çek
+        $taskInfo = $db->fetch("SELECT atanan_kisi_id, baslik FROM proje_gorevleri WHERE id = ?", [$id]);
+
+        if ($taskInfo && $taskInfo['atanan_kisi_id'] && $taskInfo['atanan_kisi_id'] != $user['id']) {
+            Notification::add(
+                $taskInfo['atanan_kisi_id'],
+                'Görev Durumu: ' . ucfirst($status),
+                "'{$taskInfo['baslik']}' görevinin durumu güncellendi.",
+                'bilgi',
+                "/panel/gorev-detay.php?id=$id"
+            );
+        }
         header("Location: ?id=$id"); exit;
     }
 

@@ -89,6 +89,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Birim Muhasebe Başkanına Bildirim Gönder
                 $bykInfo = $db->fetch("SELECT muhasebe_baskani_id FROM byk WHERE byk_id = ?", [$user['byk_id']]);
                 if ($bykInfo && $bykInfo['muhasebe_baskani_id']) {
+                    // Veritabanı bildirimi ekle - YENİ
+                    Notification::add(
+                        $bykInfo['muhasebe_baskani_id'],
+                        'Yeni İzin Talebi',
+                        "{$user['name']} tarafından yeni bir izin talebi oluşturuldu.",
+                        'bilgi',
+                        '/panel/izin-talepleri.php?tab=onay',
+                        false
+                    );
+
                     $adminUser = $db->fetch("SELECT email FROM kullanicilar WHERE kullanici_id = ?", [$bykInfo['muhasebe_baskani_id']]);
                     if ($adminUser) {
                         Mail::sendWithTemplate($adminUser['email'], 'talep_yeni', [
@@ -131,7 +141,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     WHERE izin_id = ?
                 ", [$yeniDurum, $user['id'], $aciklama ?: null, $izinId]);
                 
+                
                 // Kullanıcıya Bildirim Gönder
+                $notifType = ($yeniDurum === 'onaylandi') ? 'basarili' : 'reddedildi'; // hata yerine reddedildi tipi kullanalim ya da uyari
+                $notifTitle = ($yeniDurum === 'onaylandi') ? 'İzin Talebiniz Onaylandı' : 'İzin Talebiniz Reddedildi';
+                
+                Notification::add(
+                    $izin['kullanici_id'],
+                    $notifTitle,
+                    "İzin talebiniz yönetici tarafından sonuçlandırıldı.",
+                    $notifType,
+                    '/panel/izin-talepleri.php?tab=talebim',
+                    false
+                );
+
                 Mail::sendWithTemplate($izin['email'], 'talep_sonuc', [
                     'ad_soyad' => $izin['kullanici_adi'],
                     'talep_turu' => 'İzin Talebi',

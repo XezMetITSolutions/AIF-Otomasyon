@@ -144,6 +144,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $exist = $db->fetch("SELECT id FROM proje_ekip_uyeleri WHERE ekip_id = ? AND kullanici_id = ?", [$ekip_id, $kullanici_id]);
             if (!$exist) {
                 $db->query("INSERT INTO proje_ekip_uyeleri (ekip_id, kullanici_id) VALUES (?, ?)", [$ekip_id, $kullanici_id]);
+                
+                // Bildirim
+                Notification::add(
+                    $kullanici_id,
+                    'Projeye Eklendiniz',
+                    "Bir proje ekibine dahil edildiniz.",
+                    'bilgi',
+                    "/panel/proje-detay.php?id=$id"
+                );
+
                 header("Location: ?id=$id&tab=teams&msg=member_added"); exit;
             }
         }
@@ -160,6 +170,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($baslik) {
             $db->query("INSERT INTO proje_gorevleri (proje_id, ekip_id, baslik, aciklama, atanan_kisi_id, son_tarih, durum) VALUES (?, ?, ?, ?, ?, ?, 'beklemede')", 
                 [$id, $atanan_ekip, $baslik, $aciklama, $atanan_kisi, $son_tarih]);
+            
+            $newTaskID = $db->lastInsertId();
+
+            if ($atanan_kisi && $atanan_kisi != $user['id']) {
+                Notification::add(
+                    $atanan_kisi,
+                    'Yeni Görev Atandı',
+                    "Size yeni bir görev atandı: $baslik",
+                    'gorev',
+                    "/panel/gorev-detay.php?id=$newTaskID"
+                );
+            }
             header("Location: ?id=$id&tab=tasks&msg=task_added"); exit;
         }
     }

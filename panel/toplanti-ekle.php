@@ -74,25 +74,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($katilimcilar)) {
             foreach ($katilimcilar as $kullanici_id => $durum) {
                 if (!empty($durum)) {
+                    $token = md5(uniqid($kullanici_id, true) . microtime());
+                    
                     try {
+                        // Token ile birlikte eklemeyi dene
                         $db->query("
                             INSERT INTO toplanti_katilimcilar (
-                                toplanti_id, kullanici_id, katilim_durumu
-                            ) VALUES (?, ?, ?)
-                        ", [$toplanti_id, $kullanici_id, $durum]);
+                                toplanti_id, kullanici_id, katilim_durumu, token
+                            ) VALUES (?, ?, ?, ?)
+                        ", [$toplanti_id, $kullanici_id, $durum, $token]);
                     } catch (Exception $e) {
-                        // Enum hatası durumunda veritabanını güncelle ve tekrar dene
-                        if (strpos($e->getMessage(), 'Data truncated') !== false || strpos($e->getMessage(), '1265') !== false) {
-                            $db->query("ALTER TABLE toplanti_katilimcilar MODIFY COLUMN katilim_durumu ENUM('beklemede', 'katildi', 'ozur_diledi', 'izinli', 'katilmadi') DEFAULT 'beklemede'");
-                            
+                        $msg = $e->getMessage();
+                        
+                        // 1. Durum: Token kolonu yoksa ekle ve tekrar dene
+                        if (strpos($msg, 'Unknown column') !== false && strpos($msg, 'token') !== false) {
+                            $db->query("ALTER TABLE toplanti_katilimcilar ADD COLUMN token VARCHAR(100) NULL AFTER kullanici_id");
+                             $db->query("ALTER TABLE toplanti_katilimcilar ADD INDEX (token)");
                             $db->query("
                                 INSERT INTO toplanti_katilimcilar (
-                                    toplanti_id, kullanici_id, katilim_durumu
-                                ) VALUES (?, ?, ?)
-                            ", [$toplanti_id, $kullanici_id, $durum]);
+                                    toplanti_id, kullanici_id, katilim_durumu, token
+                                ) VALUES (?, ?, ?, ?)
+                            ", [$toplanti_id, $kullanici_id, $durum, $token]);
+                        }
+                        // 2. Durum: Enum hatası (eski koddan)
+                        elseif (strpos($msg, 'Data truncated') !== false || strpos($msg, '1265') !== false) {
+                            $db->query("ALTER TABLE toplanti_katilimcilar MODIFY COLUMN katilim_durumu ENUM('beklemede', 'katildi', 'ozur_diledi', 'izinli', 'katilmadi') DEFAULT 'beklemede'");
+                            $db->query("
+                                INSERT INTO toplanti_katilimcilar (
+                                    toplanti_id, kullanici_id, katilim_durumu, token
+                                ) VALUES (?, ?, ?, ?)
+                            ", [$toplanti_id, $kullanici_id, $durum, $token]);
                         } else {
                             throw $e;
                         }
+                    }
+
+                    // E-posta ve Bildirim Gönderimi
+                    if ($kullanici_id != $user['id']) {
+                        $mailSent = false;
+                        
+                        // Kullanıcı bilgilerini çek
+                        $receiver = $db->fetch("SELECT email, ad, soyad FROM kullanicilar WHERE kullanici_id = ?", [$kullanici_id]);
+                        
+                        // Zengin Davetiye E-postası Gönder (Mail sınıfı varsa ve alıcı e-postası varsa)
+                        if ($receiver && !empty($receiver['email']) && class_exists('Mail') && method_exists('Mail', 'sendMeetingInvitation')) {
+                            $mailData = [
+                                'ad_soyad' => $receiver['ad'] . ' ' . $receiver['soyad'],
+                                'email' => $receiver['email'],
+                                'baslik' => $baslik,
+                                'toplanti_tarihi' => $toplanti_tarihi,
+                                'konum' => $konum,
+                                'aciklama' => $aciklama,
+                                'token' => $token
+                            ];
+                            $mailSent = Mail::sendMeetingInvitation($mailData);
+                        }
+
+                        // Bildirim Ekle (Eğer mail gittiyse bildirim mailini kapat, gitmediyse aç)
+                        Notification::add(
+                            $kullanici_id, 
+                            'Toplantı Daveti', 
+                            "Yeni bir toplantıya davet edildiniz: $baslik", 
+                            'uyari', 
+                            '/panel/toplantilar.php',
+                            !$mailSent // Mail gönderilemediyse bildirim maili gitsin
+                        );
                     }
                 }
             }

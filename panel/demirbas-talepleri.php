@@ -40,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$demirbas_id || !$baslangic || !$bitis) {
             $errors[] = 'Lütfen tüm zorunlu alanları doldurun.';
         } else {
-             // Demirbaş adını al
-            $demirbasItem = $db->fetch("SELECT ad FROM demirbaslar WHERE id = ?", [$demirbas_id]);
+             // Demirbaş adını ve sorumlusunu al
+            $demirbasItem = $db->fetch("SELECT ad, sorumlu_kisi_id FROM demirbaslar WHERE id = ?", [$demirbas_id]);
             $baslik = $demirbasItem ? $demirbasItem['ad'] . ' Talebi' : 'Genel Talep';
 
             try {
@@ -49,6 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "INSERT INTO demirbas_talepleri (kullanici_id, demirbas_id, baslik, aciklama, baslangic_tarihi, bitis_tarihi, durum) VALUES (?, ?, ?, ?, ?, ?, 'bekliyor')",
                     [$user['id'], $demirbas_id, $baslik, $aciklama, $baslangic, $bitis]
                 );
+
+                // Sorumlu Kişiye Bildirim
+                if ($demirbasItem && isset($demirbasItem['sorumlu_kisi_id'])) {
+                    Notification::add(
+                        $demirbasItem['sorumlu_kisi_id'],
+                        'Yeni Demirbaş Talebi',
+                        "{$user['name']} tarafından '{$demirbasItem['ad']}' için talep oluşturuldu.",
+                        'bilgi',
+                        '/panel/demirbas-talepleri.php?tab=onay'
+                    );
+                }
                 $messages[] = 'Demirbaş talebiniz başarıyla oluşturuldu.';
                 $activeTab = 'talep'; // Kal
             } catch (Exception $e) {
@@ -63,6 +74,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($talepId) {
             $status = ($action === 'approve') ? 'onaylandi' : 'reddedildi';
             $db->query("UPDATE demirbas_talepleri SET durum = ? WHERE id = ?", [$status, $talepId]);
+            
+            // Talep Sahibine Bildirim
+            $talep = $db->fetch("SELECT kullanici_id, baslik FROM demirbas_talepleri WHERE id = ?", [$talepId]);
+            if ($talep) {
+                Notification::add(
+                    $talep['kullanici_id'],
+                    'Demirbaş Talebi ' . ucfirst($status),
+                    "'{$talep['baslik']}' talebiniz yönetici tarafından " . ($status == 'onaylandi' ? 'onaylandı' : 'reddedildi') . ".",
+                    ($status == 'onaylandi' ? 'basarili' : 'hata'),
+                    '/panel/demirbas-talepleri.php?tab=talep'
+                );
+            }
+
             $messages[] = 'Talep durumu güncellendi: ' . ucfirst($status);
             $activeTab = 'onay';
         }

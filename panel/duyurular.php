@@ -40,6 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     INSERT INTO duyurular (byk_id, baslik, icerik, olusturan_id, aktif)
                     VALUES (?, ?, ?, ?, 1)
                 ", [$user['byk_id'], $baslik, $icerik, $user['id']]);
+
+                // BYK üyelerine bildirim gönder
+                $usersToNotify = $db->fetchAll("SELECT kullanici_id FROM kullanicilar WHERE byk_id = ? AND aktif = 1 AND kullanici_id != ?", [$user['byk_id'], $user['id']]);
+                foreach ($usersToNotify as $uNotify) {
+                    Notification::add($uNotify['kullanici_id'], 'Yeni Duyuru: ' . $baslik, 'BYK Başkanlığı tarafından yeni bir duyuru paylaşıldı.', 'bilgi', '/panel/duyurular.php');
+                }
+                
                 $message = 'Duyuru yayınlandı.';
             }
         } elseif ($action === 'toggle') {
