@@ -56,8 +56,8 @@ $questions = [
     4 => "Aylık GSYK (AT-KT-GT-KGT) düzenli olarak yapılıyor mu?",
     5 => "Yılda en az 1 defa (tercihen 2 defa) Üyeler Toplantısı yapılıyor mu?",
     6 => "Haftalık en az 1 lokal sohbet yapılıyor mu?",
-    7 => "Teşbih sisteminde üye girişleri tam ve güncel mi?",
-    8 => "Camide haftalık Kur’an-ı Kerim eğitimi durumu (öğrenci sayısı, sorunlar vb.)",
+    7 => "Tesbih sisteminde üye girişleri tam ve güncel mi?",
+    8 => "Camide haftalık Kur’an-ı Kerim eğitimi durumu nedir? (öğrenci sayısı, sorunlar vb.)",
     9 => "Hafta sonu sabah namazı programı var mı?",
     10 => "Sosyal medya hesapları aktif ve düzenli kullanılıyor mu?",
     11 => "Yetişkinlere yönelik eğitim kursları var mı? Katılımcı sayısı nedir?",
@@ -148,9 +148,9 @@ include __DIR__ . '/../includes/header.php';
                     <p class="text-muted mb-0">Rapor Detayları ve Değerlendirme</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <button onclick="window.print()" class="btn btn-outline-dark rounded-pill px-4">
-                        <i class="fas fa-print me-2"></i>Yazdır / PDF
-                    </button>
+                    <a href="ziyaret-pdf.php?id=<?php echo $ziyaretId; ?>" target="_blank" class="btn btn-outline-dark rounded-pill px-4">
+                        <i class="fas fa-file-pdf me-2"></i>PDF Olarak İndir / Yazdır
+                    </a>
                     <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4">Geri Dön</a>
                 </div>
             </div>

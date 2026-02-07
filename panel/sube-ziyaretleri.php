@@ -475,9 +475,9 @@ include __DIR__ . '/../includes/header.php';
     }
 
     function printReport(id) {
-        const printWin = window.open('ziyaret-detay.php?id=' + id, '_blank');
+        const printWin = window.open('ziyaret-pdf.php?id=' + id, '_blank');
         printWin.onload = function () {
-            printWin.print();
+            // printWin.print(); // Removed auto-print to let user see the premium preview first
         };
     }
 </script>
