@@ -170,9 +170,15 @@ include __DIR__ . '/../includes/header.php';
 
     .main-content {
         flex-grow: 1;
-        padding: 1.5rem 2rem;
-        max-width: 1400px;
-        margin: 0 auto;
+        padding: 0.5rem;
+    }
+
+    .content-wrapper {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1.5rem 2rem !important;
+        max-width: 1400px !important;
+        margin: 0 auto !important;
     }
 
     .table-container {
@@ -242,11 +248,11 @@ include __DIR__ . '/../includes/header.php';
                     <p class="text-muted mb-0">Haftalık şube ziyaretleri ve raporlama sistemi.</p>
                 </div>
                 <div class="d-flex gap-2 w-100 w-md-auto">
-                    <a href="ziyaret-gruplari.php" class="btn btn-outline-primary rounded-pill px-4 no-ajax flex-fill flex-md-grow-0 text-center">
+                    <a href="ziyaret-gruplari.php" class="btn btn-outline-primary rounded-pill px-4 flex-fill flex-md-grow-0 text-center">
                         <i class="fas fa-users-rectangle me-2"></i>Grup Ynt.
                     </a>
                     <?php if ($canManage): ?>
-                        <a href="yeni-ziyaret.php" class="btn btn-primary rounded-pill px-4 shadow-sm no-ajax flex-fill flex-md-grow-0 text-center">
+                        <a href="yeni-ziyaret.php" class="btn btn-primary rounded-pill px-4 shadow-sm flex-fill flex-md-grow-0 text-center">
                             <i class="fas fa-plus me-2"></i>Ziyaret Planla
                         </a>
                     <?php endif; ?>
@@ -430,16 +436,16 @@ include __DIR__ . '/../includes/header.php';
                                             <div class="d-grid d-md-inline-flex gap-2">
                                                 <?php if ($ziyaret['durum'] === 'planlandi'): ?>
                                                     <a href="yeni-ziyaret.php?edit=<?php echo $ziyaret['ziyaret_id']; ?>" 
-                                                       class="btn btn-sm btn-outline-secondary d-md-inline-block no-ajax flex-fill" title="Düzenle">
+                                                       class="btn btn-sm btn-outline-secondary d-md-inline-block flex-fill" title="Düzenle">
                                                         <i class="fas fa-edit me-1 d-md-none"></i>Düzenle
                                                     </a>
                                                     <a href="yeni-ziyaret.php?rapor=<?php echo $ziyaret['ziyaret_id']; ?>" 
-                                                       class="btn btn-sm btn-primary d-md-inline-block no-ajax flex-fill" title="Raporla">
+                                                       class="btn btn-sm btn-primary d-md-inline-block flex-fill" title="Raporla">
                                                         <i class="fas fa-file-pen me-1"></i> Raporla
                                                     </a>
                                                 <?php else: ?>
                                                     <a href="ziyaret-detay.php?id=<?php echo $ziyaret['ziyaret_id']; ?>" 
-                                                       class="btn btn-sm btn-outline-info d-md-inline-block no-ajax flex-fill" title="Raporu Gör">
+                                                       class="btn btn-sm btn-outline-info d-md-inline-block flex-fill" title="Raporu Gör">
                                                         <i class="fas fa-eye me-1"></i> Rapor
                                                     </a>
                                                     <button onclick="printReport(<?php echo $ziyaret['ziyaret_id']; ?>)" 

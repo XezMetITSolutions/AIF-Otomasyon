@@ -138,7 +138,15 @@ include __DIR__ . '/../includes/header.php';
 
     .dashboard-layout { display: flex; }
     .sidebar-wrapper { width: 250px; flex-shrink: 0; }
-    .main-content { flex-grow: 1; padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+    .main-content { flex-grow: 1; padding: 0.5rem; }
+    
+    .content-wrapper {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1.5rem 2rem !important;
+        max-width: 1400px !important;
+        margin: 0 auto !important;
+    }
 
     @media (max-width: 991px) {
         .dashboard-layout { display: block; }
@@ -153,22 +161,23 @@ include __DIR__ . '/../includes/header.php';
     </div>
 
     <main class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h3 fw-bold mb-1"><i class="fas fa-users-rectangle me-2 text-primary"></i>Ziyaret Grupları</h1>
-                <p class="text-muted mb-0">Şube ziyaretlerini gerçekleştirecek ekipleri yönetin.</p>
+        <div class="content-wrapper">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold mb-1"><i class="fas fa-users-rectangle me-2 text-primary"></i>Ziyaret Grupları</h1>
+                    <p class="text-muted mb-0">Şube ziyaretlerini gerçekleştirecek ekipleri yönetin.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="sube-ziyaretleri.php" class="btn btn-outline-secondary rounded-pill">
+                        <i class="fas fa-arrow-left me-2"></i>Ziyaretlere Dön
+                    </a>
+                    <?php if ($canManage): ?>
+                        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#grupModal" onclick="prepareAdd()">
+                            <i class="fas fa-plus me-2"></i>Yeni Grup Ekle
+                        </button>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="sube-ziyaretleri.php" class="btn btn-outline-secondary rounded-pill no-ajax">
-                    <i class="fas fa-arrow-left me-2"></i>Ziyaretlere Dön
-                </a>
-                <?php if ($canManage): ?>
-                    <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#grupModal" onclick="prepareAdd()">
-                        <i class="fas fa-plus me-2"></i>Yeni Grup Ekle
-                    </button>
-                <?php endif; ?>
-            </div>
-        </div>
 
         <?php if (isset($_SESSION['message'])): ?>
             <div class="alert alert-<?php echo $_SESSION['message']['type']; ?> alert-dismissible fade show mb-4">
@@ -235,6 +244,7 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
+        </div>
         </div>
     </main>
 </div>

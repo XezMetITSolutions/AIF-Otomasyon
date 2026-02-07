@@ -119,7 +119,15 @@ include __DIR__ . '/../includes/header.php';
 
     .dashboard-layout { display: flex; }
     .sidebar-wrapper { width: 250px; flex-shrink: 0; }
-    .main-content { flex-grow: 1; padding: 1.5rem 2rem; max-width: 1000px; margin: 0 auto; }
+    .main-content { flex-grow: 1; padding: 0.5rem; }
+    
+    .content-wrapper {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1.5rem 2rem !important;
+        max-width: 1000px !important;
+        margin: 0 auto !important;
+    }
 
     .card { border-radius: 1rem; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
     
@@ -157,101 +165,103 @@ include __DIR__ . '/../includes/header.php';
     </div>
 
     <main class="main-content">
-        <div class="mb-4 d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="h3 fw-bold mb-1"><?php echo $pageTitle; ?></h1>
-                <?php if ($isReport): ?>
-                    <p class="text-muted mb-0"><strong><?php echo htmlspecialchars($ziyaret['byk_adi'] ?? ''); ?></strong> şubesi için raporu tamamlayın.</p>
-                <?php endif; ?>
+        <div class="content-wrapper">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 fw-bold mb-1"><?php echo $pageTitle; ?></h1>
+                    <?php if ($isReport): ?>
+                        <p class="text-muted mb-0"><strong><?php echo htmlspecialchars($ziyaret['byk_adi'] ?? ''); ?></strong> şubesi için raporu tamamlayın.</p>
+                    <?php endif; ?>
+                </div>
+                <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4">İptal</a>
             </div>
-            <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4 no-ajax">İptal</a>
-        </div>
 
-        <form method="POST" class="needs-validation" novalidate>
-            <?php if (!$isReport): ?>
-                <!-- Planlama Formu -->
-                <div class="card p-4">
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ziyaret Edilecek Şube</label>
-                            <select name="byk_id" class="form-select" required>
-                                <option value="">Şube Seçiniz...</option>
-                                <?php foreach ($bykList as $b): ?>
-                                    <option value="<?php echo $b['byk_id']; ?>" <?php echo ($ziyaret && $ziyaret['byk_id'] == $b['byk_id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($b['byk_adi']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+            <form method="POST" class="needs-validation" novalidate>
+                <?php if (!$isReport): ?>
+                    <!-- Planlama Formu -->
+                    <div class="card p-4">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ziyaret Edilecek Şube</label>
+                                <select name="byk_id" class="form-select" required>
+                                    <option value="">Şube Seçiniz...</option>
+                                    <?php foreach ($bykList as $b): ?>
+                                        <option value="<?php echo $b['byk_id']; ?>" <?php echo ($ziyaret && $ziyaret['byk_id'] == $b['byk_id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($b['byk_adi']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ziyaret Edecek Grup</label>
+                                <select name="grup_id" class="form-select" required>
+                                    <option value="">Grup Seçiniz...</option>
+                                    <?php foreach ($gruplar as $g): ?>
+                                        <option value="<?php echo $g['grup_id']; ?>" <?php echo ($ziyaret && $ziyaret['grup_id'] == $g['grup_id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($g['grup_adi']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ziyaret Tarihi</label>
+                                <input type="date" name="ziyaret_tarihi" class="form-control" value="<?php echo $ziyaret ? $ziyaret['ziyaret_tarihi'] : date('Y-m-d'); ?>" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Planlama Notları</label>
+                                <textarea name="notlar" class="form-control" rows="3" placeholder="Ziyaretle ilgili ön notlar..."><?php echo ($ziyaret && $ziyaret['notlar'] !== null) ? htmlspecialchars($ziyaret['notlar']) : ''; ?></textarea>
+                            </div>
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+                                    <?php echo $editId ? 'Güncelle' : 'Planı Kaydet'; ?>
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ziyaret Edecek Grup</label>
-                            <select name="grup_id" class="form-select" required>
-                                <option value="">Grup Seçiniz...</option>
-                                <?php foreach ($gruplar as $g): ?>
-                                    <option value="<?php echo $g['grup_id']; ?>" <?php echo ($ziyaret && $ziyaret['grup_id'] == $g['grup_id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($g['grup_adi']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ziyaret Tarihi</label>
-                            <input type="date" name="ziyaret_tarihi" class="form-control" value="<?php echo $ziyaret ? $ziyaret['ziyaret_tarihi'] : date('Y-m-d'); ?>" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Planlama Notları</label>
-                            <textarea name="notlar" class="form-control" rows="3" placeholder="Ziyaretle ilgili ön notlar..."><?php echo ($ziyaret && $ziyaret['notlar'] !== null) ? htmlspecialchars($ziyaret['notlar']) : ''; ?></textarea>
-                        </div>
-                        <div class="col-12 text-end">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
-                                <?php echo $editId ? 'Güncelle' : 'Planı Kaydet'; ?>
+                    </div>
+                <?php else: ?>
+                    <!-- Raporlama Formu -->
+
+                    <div class="questions-container">
+                        <?php foreach ($questions as $id => $text): ?>
+                            <div class="question-row shadow-sm">
+                                <div class="d-flex gap-3 mb-3">
+                                    <div class="question-num"><?php echo $id; ?></div>
+                                    <div class="fw-bold text-dark pt-1"><?php echo $text; ?></div>
+                                </div>
+                                <?php if ($id <= 7 || $id == 9 || $id == 10 || $id == 14 || $id == 15 || $id == 16): ?>
+                                    <!-- Evet/Hayır/Kısmen Tipi Sorular -->
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="q[<?php echo $id; ?>][status]" id="q<?php echo $id; ?>_evet" value="Evet" required>
+                                        <label class="btn btn-outline-success" for="q<?php echo $id; ?>_evet">Evet</label>
+                                        
+                                        <input type="radio" class="btn-check" name="q[<?php echo $id; ?>][status]" id="q<?php echo $id; ?>_kismen" value="Kısmen" required>
+                                        <label class="btn btn-outline-warning" for="q<?php echo $id; ?>_kismen">Kısmen</label>
+                                        
+                                        <input type="radio" class="btn-check" name="q[<?php echo $id; ?>][status]" id="q<?php echo $id; ?>_hayir" value="Hayır" required>
+                                        <label class="btn btn-outline-danger" for="q<?php echo $id; ?>_hayir">Hayır</label>
+                                    </div>
+                                    <textarea name="q[<?php echo $id; ?>][note]" class="form-control mt-3" rows="2" placeholder="Ek açıklama (opsiyonel)..."></textarea>
+                                <?php else: ?>
+                                    <!-- Açık Uçlu Sorular -->
+                                    <textarea name="q[<?php echo $id; ?>][text]" class="form-control" rows="3" required placeholder="Cevabınızı buraya yazınız..."></textarea>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="card p-4 mt-4 bg-light border">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted small">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Raporu gönderdikten sonra düzenleme yapılamayabilir.
+                            </div>
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm">
+                                <i class="fas fa-paper-plane me-2"></i>Raporu Tamamla ve Gönder
                             </button>
                         </div>
                     </div>
-                </div>
-            <?php else: ?>
-                <!-- Raporlama Formu -->
-
-                <div class="questions-container">
-                    <?php foreach ($questions as $id => $text): ?>
-                        <div class="question-row shadow-sm">
-                            <div class="d-flex gap-3 mb-3">
-                                <div class="question-num"><?php echo $id; ?></div>
-                                <div class="fw-bold text-dark pt-1"><?php echo $text; ?></div>
-                            </div>
-                            <?php if ($id <= 7 || $id == 9 || $id == 10 || $id == 14 || $id == 15 || $id == 16): ?>
-                                <!-- Evet/Hayır/Kısmen Tipi Sorular -->
-                                <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="q[<?php echo $id; ?>][status]" id="q<?php echo $id; ?>_evet" value="Evet" required>
-                                    <label class="btn btn-outline-success" for="q<?php echo $id; ?>_evet">Evet</label>
-                                    
-                                    <input type="radio" class="btn-check" name="q[<?php echo $id; ?>][status]" id="q<?php echo $id; ?>_kismen" value="Kısmen" required>
-                                    <label class="btn btn-outline-warning" for="q<?php echo $id; ?>_kismen">Kısmen</label>
-                                    
-                                    <input type="radio" class="btn-check" name="q[<?php echo $id; ?>][status]" id="q<?php echo $id; ?>_hayir" value="Hayır" required>
-                                    <label class="btn btn-outline-danger" for="q<?php echo $id; ?>_hayir">Hayır</label>
-                                </div>
-                                <textarea name="q[<?php echo $id; ?>][note]" class="form-control mt-3" rows="2" placeholder="Ek açıklama (opsiyonel)..."></textarea>
-                            <?php else: ?>
-                                <!-- Açık Uçlu Sorular -->
-                                <textarea name="q[<?php echo $id; ?>][text]" class="form-control" rows="3" required placeholder="Cevabınızı buraya yazınız..."></textarea>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <div class="card p-4 mt-4 bg-light border">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted small">
-                            <i class="fas fa-exclamation-triangle me-2"></i> Raporu gönderdikten sonra düzenleme yapılamayabilir.
-                        </div>
-                        <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm">
-                            <i class="fas fa-paper-plane me-2"></i>Raporu Tamamla ve Gönder
-                        </button>
-                    </div>
-                </div>
-            <?php endif; ?>
-        </form>
+                <?php endif; ?>
+            </form>
+        </div>
     </main>
 </div>
 

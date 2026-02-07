@@ -91,7 +91,15 @@ include __DIR__ . '/../includes/header.php';
 
     .dashboard-layout { display: flex; }
     .sidebar-wrapper { width: 250px; flex-shrink: 0; }
-    .main-content { flex-grow: 1; padding: 1.5rem 2rem; max-width: 1000px; margin: 0 auto; }
+    .main-content { flex-grow: 1; padding: 0.5rem; }
+    
+    .content-wrapper {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 1.5rem 2rem !important;
+        max-width: 1000px !important;
+        margin: 0 auto !important;
+    }
 
     .report-card { border-radius: 1.5rem; border: none; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); background: white; }
     
@@ -133,18 +141,19 @@ include __DIR__ . '/../includes/header.php';
     </div>
 
     <main class="main-content">
-        <div class="mb-4 d-flex justify-content-between align-items-center btn-print-hide">
-            <div>
-                <h1 class="h4 fw-bold mb-1"><i class="fas fa-file-invoice me-2 text-primary"></i>Ziyaret Raporu</h1>
-                <p class="text-muted mb-0">Rapor Detayları ve Değerlendirme</p>
+        <div class="content-wrapper">
+            <div class="mb-4 d-flex justify-content-between align-items-center btn-print-hide">
+                <div>
+                    <h1 class="h4 fw-bold mb-1"><i class="fas fa-file-invoice me-2 text-primary"></i>Ziyaret Raporu</h1>
+                    <p class="text-muted mb-0">Rapor Detayları ve Değerlendirme</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-dark rounded-pill px-4">
+                        <i class="fas fa-print me-2"></i>Yazdır / PDF
+                    </button>
+                    <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4">Geri Dön</a>
+                </div>
             </div>
-            <div class="d-flex gap-2">
-                <button onclick="window.print()" class="btn btn-outline-dark rounded-pill px-4">
-                    <i class="fas fa-print me-2"></i>Yazdır / PDF
-                </button>
-                <a href="sube-ziyaretleri.php" class="btn btn-light rounded-pill px-4 no-ajax">Geri Dön</a>
-            </div>
-        </div>
 
         <div class="report-card overflow-hidden">
             <div class="p-4 p-md-5 border-bottom bg-light">
@@ -228,6 +237,7 @@ include __DIR__ . '/../includes/header.php';
             <div class="p-4 bg-light text-center text-muted small border-top">
                 Bu rapor AIF Otomasyon Sistemi tarafından <strong><?php echo date('d.m.Y H:i'); ?></strong> tarihinde oluşturulmuştur.
             </div>
+        </div>
         </div>
     </main>
 </div>
