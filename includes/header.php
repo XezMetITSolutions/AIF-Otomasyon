@@ -99,7 +99,7 @@ $isUye = $user && $user['role'] === 'uye';
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <div class="mobile-menu-wrapper">
+                    <div class="mobile-menu-wrapper w-100 d-lg-flex justify-content-lg-end align-items-lg-center">
                         <ul class="navbar-nav me-auto">
                         <?php
                         // Mobil Menü için Sidebar Mantığı (Desktop'ta gizli: d-lg-none)
@@ -297,7 +297,7 @@ $isUye = $user && $user['role'] === 'uye';
                             <?php endif; ?>
                         </ul>
 
-                    </ul>
+
 
                     <!-- Bildirimler ve Kullanıcı Menüsü -->
                     <ul class="navbar-nav">
