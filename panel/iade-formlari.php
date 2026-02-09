@@ -452,7 +452,7 @@ include __DIR__ . '/../includes/header.php';
 
                                     <div id="itemsContainer"></div>
 
-                                    <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="addItemBtn">
+                                    <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="addItemBtn" onclick="window.addItem()">
                                         <i class="fas fa-plus me-1"></i>Yeni Kalem Ekle
                                     </button>
 
@@ -1275,11 +1275,7 @@ include __DIR__ . '/../includes/header.php';
             // İlk kalemi ekle
             window.addItem();
 
-            // Ekleme butonu dinleyicisi
-            var btn = document.getElementById('addItemBtn');
-            if (btn) {
-                btn.onclick = function () { window.addItem(); };
-            }
+            // Ekleme butonu dinleyicisi (HTML onclick kullanıldı)
 
             // Format initial IBAN if exists
             var ibanInput = document.getElementById('iban');
