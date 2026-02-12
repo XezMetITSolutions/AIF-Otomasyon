@@ -311,6 +311,8 @@ include __DIR__ . '/../includes/header.php';
         // Divan checkbox değiştiğinde
         divanCheckbox.addEventListener('change', loadMembers);
 
+        window.loadMembers = loadMembers;
+
         function loadMembers() {
             const bykId = bykSelect.value;
 

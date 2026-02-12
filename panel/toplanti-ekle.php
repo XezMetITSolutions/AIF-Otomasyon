@@ -332,6 +332,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Divan checkbox değiştiğinde
     divanCheckbox.addEventListener('change', loadMembers);
 
+    window.loadMembers = loadMembers;
+
     function loadMembers() {
         if (!bykId) return;
         

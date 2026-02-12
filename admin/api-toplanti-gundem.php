@@ -10,7 +10,7 @@ require_once __DIR__ . '/../classes/Database.php';
 header('Content-Type: application/json');
 
 try {
-    Middleware::requireSuperAdmin();
+    Middleware::requireRole(['super_admin', 'uye']);
     
     $db = Database::getInstance();
     $input = json_decode(file_get_contents('php://input'), true);

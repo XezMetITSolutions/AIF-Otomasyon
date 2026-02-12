@@ -653,3 +653,69 @@ $(document).on('page:loaded', initToplantiYonetimi);
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     initToplantiYonetimi();
 }
+
+/**
+ * Global Functions for specific actions
+ */
+window.deleteMeeting = function (id, title) {
+    if (!confirm(`⚠️ "${title}" toplantısını kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve tüm ilgili veriler (katılımcılar, gündem, kararlar) silinecektir.`)) {
+        return;
+    }
+
+    if (!confirm(`Son uyarı: Toplantıyı silmek istediğinize %100 emin misiniz?`)) {
+        return;
+    }
+
+    // Find button if event exists or passed explicitly (though onclick usually passes event implicitly or not)
+    // In inline onclick="deleteMeeting(id, title)", 'event' is usually available globally in some browsers but explicitly passed is better.
+    // We'll rely on global event or just try to find the button via target.
+
+    let btn = null;
+    if (typeof event !== 'undefined' && event.target) {
+        btn = event.target.closest('button');
+    }
+
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    }
+
+    fetch('/api/delete-meeting.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            toplanti_id: id
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                if (window.location.pathname.includes('toplanti-duzenle.php')) {
+                    if (window.location.pathname.includes('/admin/')) {
+                        window.location.href = '/admin/toplantilar.php';
+                    } else {
+                        window.location.href = '/panel/toplantilar.php';
+                    }
+                } else {
+                    location.reload();
+                }
+            } else {
+                alert('❌ Hata: ' + data.message);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
+        })
+        .catch(error => {
+            alert('❌ Bir hata oluştu: ' + error.message);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        });
+};
