@@ -591,6 +591,7 @@ include __DIR__ . '/../includes/header.php';
                             aspectRatio: 2.5,
                             dayMaxEvents: 2,
                             selectable: true,
+                            firstDay: 1, // Haftayı Pazartesi başlat
                             events: <?php echo json_encode($calendarEvents); ?>,
                             select: function (info) {
                                 var modal = new bootstrap.Modal(document.getElementById('reservationModal'));
