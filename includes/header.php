@@ -40,6 +40,12 @@ $isUye = $user && $user['role'] === 'uye';
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <?php endif; ?>
 
+    <!-- jQuery 3.7.1 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap 5.3.0 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/modern-menu.css?v=<?php echo time(); ?>">
@@ -92,7 +98,8 @@ $isUye = $user && $user['role'] === 'uye';
                     <img src="/assets/img/AIF.png" alt="AIF Logo" style="height: 40px; width: auto;">
                 </a>
 
-                <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -114,7 +121,7 @@ $isUye = $user && $user['role'] === 'uye';
                                 if ($checkMuhasebe && $checkMuhasebe['cnt'] > 0) {
                                     $isMuhasebeBaskaniHeader = true;
                                 }
-                                
+
                                 // AT birimi kontrolü
                                 $checkAT = $dbHeader->fetch("SELECT b.byk_kodu FROM byk b JOIN kullanicilar k ON b.byk_id = k.byk_id WHERE k.kullanici_id = ?", [$user['id']]);
                                 if ($checkAT && $checkAT['byk_kodu'] === 'AT') {
@@ -169,120 +176,96 @@ $isUye = $user && $user['role'] === 'uye';
                         ?>
 
                         <!-- Sidebar items rendered here for mobile -->
-                            <?php if ($isSuperAdmin): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/admin/dashboard.php"><i
-                                            class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i
-                                            class="fas fa-users me-1"></i>Yönetim</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="/admin/kullanicilar.php"><i
-                                                    class="fas fa-user me-2"></i>Kullanıcılar</a></li>
-                                        <li><a class="dropdown-item" href="/admin/byk.php"><i
-                                                    class="fas fa-building me-2"></i>BYK Yönetimi</a></li>
-                                        <li><a class="dropdown-item" href="/admin/alt-birimler.php"><i
-                                                    class="fas fa-sitemap me-2"></i>Alt Birimler</a></li>
-                                        <li><a class="dropdown-item" href="/admin/baskan-yetkileri.php"><i
-                                                    class="fas fa-sliders me-2"></i>Üye Yetkileri</a></li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i
-                                            class="fas fa-calendar me-1"></i>İçerik</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="/admin/etkinlikler.php"><i
-                                                    class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi</a></li>
-                                        <li><a class="dropdown-item" href="/admin/toplantilar.php"><i
-                                                    class="fas fa-users-cog me-2"></i>Toplantı Yönetimi</a></li>
-                                        <li><a class="dropdown-item" href="/admin/duyurular.php"><i
-                                                    class="fas fa-bullhorn me-2"></i>Duyurular</a></li>
-                                        <li><a class="dropdown-item" href="/admin/sube-ziyaretleri.php"><i
-                                                    class="fas fa-map-location-dot me-2"></i>Şube Ziyaretleri</a></li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i
-                                            class="fas fa-briefcase me-1"></i>İşlemler</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="/admin/izin-talepleri.php"><i
-                                                    class="fas fa-calendar-check me-2"></i>İzin Talepleri</a></li>
-                                        <li><a class="dropdown-item" href="/admin/harcama-talepleri.php"><i
-                                                    class="fas fa-money-bill-wave me-2"></i>Harcama Talepleri</a></li>
-                                        <li><a class="dropdown-item" href="/admin/demirbaslar.php"><i
-                                                    class="fas fa-box me-2"></i>Demirbaş Yönetimi</a></li>
-                                        <li><a class="dropdown-item" href="/admin/demirbas-talepleri.php"><i
-                                                    class="fas fa-box-open me-2"></i>Demirbaş Talepleri</a></li>
-                                        <li><a class="dropdown-item" href="/admin/raggal-talepleri.php"><i
-                                                    class="fas fa-calendar-check me-2"></i>Raggal Talepleri</a></li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/admin/raporlar.php"><i
-                                            class="fas fa-chart-bar me-1"></i>Raporlar</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/admin/ayarlar.php"><i class="fas fa-cog me-1"></i>Ayarlar</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/admin/email-sablonlari.php"><i class="fas fa-envelope-open-text me-1"></i>E-posta Şablonları</a>
-                                </li>
+                        <?php if ($isSuperAdmin): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/dashboard.php"><i
+                                        class="fas fa-tachometer-alt me-1"></i>Kontrol Paneli</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i
+                                        class="fas fa-users me-1"></i>Yönetim</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/admin/kullanicilar.php"><i
+                                                class="fas fa-user me-2"></i>Kullanıcılar</a></li>
+                                    <li><a class="dropdown-item" href="/admin/byk.php"><i class="fas fa-building me-2"></i>BYK
+                                            Yönetimi</a></li>
+                                    <li><a class="dropdown-item" href="/admin/alt-birimler.php"><i
+                                                class="fas fa-sitemap me-2"></i>Alt Birimler</a></li>
+                                    <li><a class="dropdown-item" href="/admin/baskan-yetkileri.php"><i
+                                                class="fas fa-sliders me-2"></i>Üye Yetkileri</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i
+                                        class="fas fa-calendar me-1"></i>İçerik</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/admin/etkinlikler.php"><i
+                                                class="fas fa-calendar-alt me-2"></i>Çalışma Takvimi</a></li>
+                                    <li><a class="dropdown-item" href="/admin/toplantilar.php"><i
+                                                class="fas fa-users-cog me-2"></i>Toplantı Yönetimi</a></li>
+                                    <li><a class="dropdown-item" href="/admin/duyurular.php"><i
+                                                class="fas fa-bullhorn me-2"></i>Duyurular</a></li>
+                                    <li><a class="dropdown-item" href="/admin/sube-ziyaretleri.php"><i
+                                                class="fas fa-map-location-dot me-2"></i>Şube Ziyaretleri</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i
+                                        class="fas fa-briefcase me-1"></i>İşlemler</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/admin/izin-talepleri.php"><i
+                                                class="fas fa-calendar-check me-2"></i>İzin Talepleri</a></li>
+                                    <li><a class="dropdown-item" href="/admin/harcama-talepleri.php"><i
+                                                class="fas fa-money-bill-wave me-2"></i>Harcama Talepleri</a></li>
+                                    <li><a class="dropdown-item" href="/admin/demirbaslar.php"><i
+                                                class="fas fa-box me-2"></i>Demirbaş Yönetimi</a></li>
+                                    <li><a class="dropdown-item" href="/admin/demirbas-talepleri.php"><i
+                                                class="fas fa-box-open me-2"></i>Demirbaş Talepleri</a></li>
+                                    <li><a class="dropdown-item" href="/admin/raggal-talepleri.php"><i
+                                                class="fas fa-calendar-check me-2"></i>Raggal Talepleri</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/raporlar.php"><i class="fas fa-chart-bar me-1"></i>Raporlar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/ayarlar.php"><i class="fas fa-cog me-1"></i>Ayarlar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/email-sablonlari.php"><i
+                                        class="fas fa-envelope-open-text me-1"></i>E-posta Şablonları</a>
+                            </li>
 
-                            <?php else: // Üye (Yetkili/Normal) ?>
+                        <?php else: // Üye (Yetkili/Normal) ?>
 
-                                <!-- Common Links -->
-                                <?php foreach ($commonLinks as $link): ?>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="<?php echo $link['path']; ?>">
-                                            <i
-                                                class="<?php echo $link['icon']; ?> me-1"></i><?php echo htmlspecialchars($link['label']); ?>
-                                        </a>
-                                    </li>
-                                <?php endforeach; ?>
+                            <!-- Common Links -->
+                            <?php foreach ($commonLinks as $link): ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?php echo $link['path']; ?>">
+                                        <i
+                                            class="<?php echo $link['icon']; ?> me-1"></i><?php echo htmlspecialchars($link['label']); ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
 
-                                <!-- Baskan (Management) -->
-                                <?php
-                                foreach ($baskanSidebarSections as $section) {
-                                    $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskaniHeader, $isATHeader, $isSuperAdmin) {
-                                        if ($isMuhasebeBaskaniHeader && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
-                                            return true;
-                                        }
-                                        // Şube ziyaretleri sadece AT üyelerine ve Super Adminlere özel
-                                        if ($link['key'] === 'baskan_sube_ziyaretleri' && !$isATHeader && !$isSuperAdmin) {
-                                            return false;
-                                        }
-                                        return $auth->hasModulePermission($link['key']);
-                                    });
-
-                                    if (!empty($visibleManageLinks)) {
-                                        echo '<li class="nav-item"><hr class="dropdown-divider text-light border-secondary"></li>';
-                                        echo '<li class="nav-item"><span class="nav-link text-uppercase small disabled text-white-50 ms-2">' . $section['title'] . '</span></li>';
-                                        foreach ($visibleManageLinks as $link) {
-                                            ?>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="<?php echo $link['path']; ?>">
-                                                    <i
-                                                        class="<?php echo $link['icon']; ?> me-1"></i><?php echo htmlspecialchars($link['label']); ?>
-                                                </a>
-                                            </li>
-                                            <?php
-                                        }
+                            <!-- Baskan (Management) -->
+                            <?php
+                            foreach ($baskanSidebarSections as $section) {
+                                $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskaniHeader, $isATHeader, $isSuperAdmin) {
+                                    if ($isMuhasebeBaskaniHeader && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
+                                        return true;
                                     }
-                                }
-                                ?>
+                                    // Şube ziyaretleri sadece AT üyelerine ve Super Adminlere özel
+                                    if ($link['key'] === 'baskan_sube_ziyaretleri' && !$isATHeader && !$isSuperAdmin) {
+                                        return false;
+                                    }
+                                    return $auth->hasModulePermission($link['key']);
+                                });
 
-                                <!-- Uye (Personal) -->
-                                <?php
-                                $hasAnyPersonal = false;
-                                $firstPersonal = true;
-                                foreach ($uyeSidebarLinks as $link):
-                                    if ($auth->hasModulePermission($link['key'])):
-                                        if ($firstPersonal) {
-                                            echo '<li class="nav-item"><hr class="dropdown-divider text-light border-secondary"></li>';
-                                            echo '<li class="nav-item"><span class="nav-link text-uppercase small disabled text-white-50 ms-2">KİŞİSEL</span></li>';
-                                            $firstPersonal = false;
-                                        }
+                                if (!empty($visibleManageLinks)) {
+                                    echo '<li class="nav-item"><hr class="dropdown-divider text-light border-secondary"></li>';
+                                    echo '<li class="nav-item"><span class="nav-link text-uppercase small disabled text-white-50 ms-2">' . $section['title'] . '</span></li>';
+                                    foreach ($visibleManageLinks as $link) {
                                         ?>
                                         <li class="nav-item">
                                             <a class="nav-link" href="<?php echo $link['path']; ?>">
@@ -290,11 +273,35 @@ $isUye = $user && $user['role'] === 'uye';
                                                     class="<?php echo $link['icon']; ?> me-1"></i><?php echo htmlspecialchars($link['label']); ?>
                                             </a>
                                         </li>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
+                                        <?php
+                                    }
+                                }
+                            }
+                            ?>
 
-                            <?php endif; ?>
-                        </ul>
+                            <!-- Uye (Personal) -->
+                            <?php
+                            $hasAnyPersonal = false;
+                            $firstPersonal = true;
+                            foreach ($uyeSidebarLinks as $link):
+                                if ($auth->hasModulePermission($link['key'])):
+                                    if ($firstPersonal) {
+                                        echo '<li class="nav-item"><hr class="dropdown-divider text-light border-secondary"></li>';
+                                        echo '<li class="nav-item"><span class="nav-link text-uppercase small disabled text-white-50 ms-2">KİŞİSEL</span></li>';
+                                        $firstPersonal = false;
+                                    }
+                                    ?>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="<?php echo $link['path']; ?>">
+                                            <i
+                                                class="<?php echo $link['icon']; ?> me-1"></i><?php echo htmlspecialchars($link['label']); ?>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+
+                        <?php endif; ?>
+                    </ul>
 
 
 
@@ -347,7 +354,7 @@ $isUye = $user && $user['role'] === 'uye';
                         <?php endif; ?>
                     </ul>
                 </div>
-                </div>
+            </div>
             </div>
         </nav>
     <?php endif; ?>
