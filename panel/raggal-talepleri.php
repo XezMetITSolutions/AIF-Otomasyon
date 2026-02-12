@@ -337,7 +337,7 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
 
-                <!-- TAB 2: YÖNETİM (BAŞKAN) -->
+            <!-- TAB 2: YÖNETİM (BAŞKAN) -->
                 <?php if ($hasPermissionBaskan): ?>
                     <div class="tab-pane fade <?php echo ($activeTab === 'yonetim') ? 'show active' : ''; ?>">
                         <div class="card border-0 shadow-sm">
@@ -392,9 +392,9 @@ include __DIR__ . '/../includes/header.php';
                                                     </td>
                                                     <td>
                                                         <?php if ($req['durum'] == 'bekliyor'): ?><span
-                                                                class="badge bg-warning text-dark">Bekliyor</span>
+                                                                 class="badge bg-warning text-dark">Bekliyor</span>
                                                         <?php elseif ($req['durum'] == 'onaylandi'): ?><span
-                                                                class="badge bg-success">Onaylandı</span>
+                                                                 class="badge bg-success">Onaylandı</span>
                                                         <?php else: ?><span class="badge bg-danger">Reddedildi</span>
                                                         <?php endif; ?>
                                                     </td>
@@ -439,224 +439,236 @@ include __DIR__ . '/../includes/header.php';
                 <?php endif; ?>
 
             </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="reservationModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <form method="POST" class="modal-content">
+                        <input type="hidden" name="action" value="create_reservation">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Rezervasyon Yap</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Başlangıç Tarihi</label>
+                                <input type="date" name="baslangic" id="modal_start" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Bitiş Tarihi</label>
+                                <input type="date" name="bitis" id="modal_end" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Açıklama</label>
+                                <textarea name="aciklama" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                            <button type="submit" class="btn btn-primary">Gönder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Edit Modal -->
+            <div class="modal fade" id="editModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <form method="POST" class="modal-content">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="id" id="edit_id">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Rezervasyonu Düzenle</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Başlangıç Tarihi</label>
+                                <input type="date" name="baslangic" id="edit_start" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Bitiş Tarihi</label>
+                                <input type="date" name="bitis" id="edit_end" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Açıklama</label>
+                                <textarea name="aciklama" id="edit_aciklama" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Durum</label>
+                                <select name="durum" id="edit_durum" class="form-select">
+                                    <option value="bekliyor">Bekliyor</option>
+                                    <option value="onaylandi">Onaylandı</option>
+                                    <option value="reddedildi">Reddedildi</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                            <button type="submit" class="btn btn-primary">Güncelle</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- FullCalendar CSS and JS (Included here for SPA compatibility) -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
+
+            <script>
+                (function () {
+                    var calendarInstance = null;
+                    
+                    function initCalendar() {
+                        var calendarEl = document.getElementById('calendar');
+                        if (!calendarEl) return;
+                        
+                        // Wait for FullCalendar to be available
+                        if (typeof FullCalendar === 'undefined') {
+                            setTimeout(initCalendar, 100);
+                            return;
+                        }
+
+                        calendarInstance = new FullCalendar.Calendar(calendarEl, {
+                            initialView: 'dayGridMonth',
+                            headerToolbar: {
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                            },
+                            locale: 'tr',
+                            buttonText: {
+                                today: 'Bugün',
+                                month: 'Ay',
+                                week: 'Hafta',
+                                day: 'Gün'
+                            },
+                            height: 'auto',
+                            aspectRatio: 2.5,
+                            dayMaxEvents: 2,
+                            selectable: true,
+                            events: <?php echo json_encode($calendarEvents); ?>,
+                            select: function (info) {
+                                var modal = new bootstrap.Modal(document.getElementById('reservationModal'));
+                                document.getElementById('modal_start').value = info.startStr;
+                                document.getElementById('modal_end').value = info.endStr || info.startStr;
+                                modal.show();
+                            },
+                            eventClick: function (info) {
+                                var event = info.event;
+                                var detailHtml = '<div style="padding: 15px;">';
+                                detailHtml += '<h5>' + event.title + '</h5>';
+                                detailHtml += '<p><strong>Tarih:</strong> ' + event.start.toLocaleDateString('tr-TR');
+                                if (event.end) {
+                                    var endDate = new Date(event.end);
+                                    endDate.setDate(endDate.getDate() - 1);
+                                    if (endDate.toDateString() !== event.start.toDateString()) {
+                                        detailHtml += ' - ' + endDate.toLocaleDateString('tr-TR');
+                                    }
+                                }
+                                detailHtml += '</p></div>';
+
+                                var existingAlert = document.querySelector('.event-detail-alert');
+                                if (existingAlert) existingAlert.remove();
+
+                                var alertDiv = document.createElement('div');
+                                alertDiv.className = 'alert alert-info alert-dismissible fade show event-detail-alert';
+                                alertDiv.innerHTML = detailHtml + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+
+                                document.querySelector('.content-wrapper').insertBefore(alertDiv, document.querySelector('.tab-content'));
+                            }
+                        });
+
+                        // Render if tab is active
+                        <?php if ($activeTab === 'takvim'): ?>
+                            calendarInstance.render();
+                        <?php endif; ?>
+                    }
+
+                    // Run initialization
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', initCalendar);
+                    } else {
+                        initCalendar();
+                    }
+
+                    // Re-render when switching tabs (if handled via JS without page reload)
+                    document.querySelectorAll('a[href*="tab=takvim"]').forEach(function (link) {
+                        link.addEventListener('click', function () {
+                            if (calendarInstance) {
+                                setTimeout(function () {
+                                    calendarInstance.render();
+                                }, 150);
+                            }
+                        });
+                    });
+
+                    // Bulk operation logic inside the closure
+                    const selectAll = document.getElementById('selectAll');
+                    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+                    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+                    if (selectAll) {
+                        selectAll.addEventListener('change', function () {
+                            rowCheckboxes.forEach(cb => cb.checked = this.checked);
+                            updateBulk();
+                        });
+                    }
+
+                    rowCheckboxes.forEach(cb => {
+                        cb.addEventListener('change', updateBulk);
+                    });
+
+                    function updateBulk() {
+                        const checked = document.querySelectorAll('.row-checkbox:checked');
+                        if (bulkDeleteBtn) {
+                            bulkDeleteBtn.style.display = checked.length > 0 ? 'block' : 'none';
+                        }
+                    }
+                })();
+
+                // Global functions (needed if called from onclick in HTML)
+                function bulkDelete() {
+                    const checked = document.querySelectorAll('.row-checkbox:checked');
+                    if (checked.length === 0) {
+                        alert('Lütfen en az bir kayıt seçin.');
+                        return;
+                    }
+                    if (!confirm(checked.length + ' rezervasyonu silmek istediğinizden emin misiniz?')) {
+                        return;
+                    }
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.innerHTML = '<input type="hidden" name="action" value="bulk_delete">';
+                    checked.forEach(cb => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ids[]';
+                        input.value = cb.value;
+                        form.appendChild(input);
+                    });
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+
+                function editReservation(req) {
+                    document.getElementById('edit_id').value = req.id;
+                    const start = new Date(req.baslangic_tarihi);
+                    const end = new Date(req.bitis_tarihi);
+                    start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
+                    end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
+                    document.getElementById('edit_start').value = start.toISOString().slice(0, 16);
+                    document.getElementById('edit_end').value = end.toISOString().slice(0, 16);
+                    document.getElementById('edit_aciklama').value = req.aciklama || '';
+                    document.getElementById('edit_durum').value = req.durum;
+                    const modal = new bootstrap.Modal(document.getElementById('editModal'));
+                    modal.show();
+                }
+            </script>
+
         </div>
     </main>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="reservationModal" tabindex="-1">
-    <div class="modal-dialog">
-        <form method="POST" class="modal-content">
-            <input type="hidden" name="action" value="create_reservation">
-            <div class="modal-header">
-                <h5 class="modal-title">Rezervasyon Yap</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Başlangıç Tarihi</label>
-                    <input type="date" name="baslangic" id="modal_start" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Bitiş Tarihi</label>
-                    <input type="date" name="bitis" id="modal_end" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Açıklama</label>
-                    <textarea name="aciklama" class="form-control" rows="3"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                <button type="submit" class="btn btn-primary">Gönder</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Edit Modal -->
-<div class="modal fade" id="editModal" tabindex="-1">
-    <div class="modal-dialog">
-        <form method="POST" class="modal-content">
-            <input type="hidden" name="action" value="edit">
-            <input type="hidden" name="id" id="edit_id">
-            <div class="modal-header">
-                <h5 class="modal-title">Rezervasyonu Düzenle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Başlangıç Tarihi</label>
-                    <input type="date" name="baslangic" id="edit_start" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Bitiş Tarihi</label>
-                    <input type="date" name="bitis" id="edit_end" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Açıklama</label>
-                    <textarea name="aciklama" id="edit_aciklama" class="form-control" rows="3"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold">Durum</label>
-                    <select name="durum" id="edit_durum" class="form-select">
-                        <option value="bekliyor">Bekliyor</option>
-                        <option value="onaylandi">Onaylandı</option>
-                        <option value="reddedildi">Reddedildi</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                <button type="submit" class="btn btn-primary">Güncelle</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var calendarEl = document.getElementById('calendar');
-        var calendar = null;
-
-        if (calendarEl) {
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                locale: 'tr',
-                buttonText: {
-                    today: 'Bugün',
-                    month: 'Ay',
-                    week: 'Hafta',
-                    day: 'Gün'
-                },
-                height: 'auto',
-                aspectRatio: 2.5,
-                dayMaxEvents: 2,
-                selectable: true,
-                events: <?php echo json_encode($calendarEvents); ?>,
-                select: function (info) {
-                    var modal = new bootstrap.Modal(document.getElementById('reservationModal'));
-
-                    document.getElementById('modal_start').value = info.startStr;
-                    document.getElementById('modal_end').value = info.endStr || info.startStr;
-
-                    modal.show();
-                },
-                eventClick: function (info) {
-                    var event = info.event;
-                    var detailHtml = '<div style="padding: 15px;">';
-                    detailHtml += '<h5>' + event.title + '</h5>';
-                    detailHtml += '<p><strong>Tarih:</strong> ' + event.start.toLocaleDateString('tr-TR');
-                    if (event.end) {
-                        var endDate = new Date(event.end);
-                        endDate.setDate(endDate.getDate() - 1);
-                        if (endDate.toDateString() !== event.start.toDateString()) {
-                            detailHtml += ' - ' + endDate.toLocaleDateString('tr-TR');
-                        }
-                    }
-                    detailHtml += '</p></div>';
-
-                    var existingAlert = document.querySelector('.event-detail-alert');
-                    if (existingAlert) existingAlert.remove();
-
-                    var alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-info alert-dismissible fade show event-detail-alert';
-                    alertDiv.innerHTML = detailHtml + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-
-                    document.querySelector('.content-wrapper').insertBefore(alertDiv, document.querySelector('.tab-content'));
-                }
-            });
-
-            // Sadece takvim tabı aktifse render et
-            <?php if ($activeTab === 'takvim'): ?>
-                calendar.render();
-            <?php endif; ?>
-        }
-
-        // Tab değiştiğinde takvimi yeniden render et
-        document.querySelectorAll('a[href*="tab=takvim"]').forEach(function (link) {
-            link.addEventListener('click', function () {
-                if (calendar) {
-                    setTimeout(function () {
-                        calendar.render();
-                    }, 100);
-                }
-            });
-        });
-
-        // Bulk operations
-        const selectAll = document.getElementById('selectAll');
-        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-
-        if (selectAll) {
-            selectAll.addEventListener('change', function () {
-                rowCheckboxes.forEach(cb => cb.checked = this.checked);
-                updateBulkDeleteBtn();
-            });
-        }
-
-        rowCheckboxes.forEach(cb => {
-            cb.addEventListener('change', updateBulkDeleteBtn);
-        });
-
-        function updateBulkDeleteBtn() {
-            const checked = document.querySelectorAll('.row-checkbox:checked');
-            if (bulkDeleteBtn) {
-                bulkDeleteBtn.style.display = checked.length > 0 ? 'block' : 'none';
-            }
-        }
-    });
-
-    function bulkDelete() {
-        const checked = document.querySelectorAll('.row-checkbox:checked');
-        if (checked.length === 0) {
-            alert('Lütfen en az bir kayıt seçin.');
-            return;
-        }
-
-        if (!confirm(checked.length + ' rezervasyonu silmek istediğinizden emin misiniz?')) {
-            return;
-        }
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.innerHTML = '<input type="hidden" name="action" value="bulk_delete">';
-
-        checked.forEach(cb => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'ids[]';
-            input.value = cb.value;
-            form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    function editReservation(req) {
-        document.getElementById('edit_id').value = req.id;
-
-        // Convert to datetime-local format
-        const start = new Date(req.baslangic_tarihi);
-        const end = new Date(req.bitis_tarihi);
-
-        start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
-        end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
-
-        document.getElementById('edit_start').value = start.toISOString().slice(0, 16);
-        document.getElementById('edit_end').value = end.toISOString().slice(0, 16);
-        document.getElementById('edit_aciklama').value = req.aciklama || '';
-        document.getElementById('edit_durum').value = req.durum;
-
-        const modal = new bootstrap.Modal(document.getElementById('editModal'));
-        modal.show();
-    }
-</script>
 <?php include __DIR__ . '/../includes/footer.php'; ?>
