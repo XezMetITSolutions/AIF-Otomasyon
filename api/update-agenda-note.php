@@ -7,7 +7,7 @@ require_once __DIR__ . '/../classes/Database.php';
 header('Content-Type: application/json');
 
 try {
-    Middleware::requireBaskan();
+    Middleware::requireUye();
     
     $input = json_decode(file_get_contents('php://input'), true);
     

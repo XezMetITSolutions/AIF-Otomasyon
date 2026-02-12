@@ -5,7 +5,7 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 // Yetki kontrolü (Başkan veya Admin)
-Middleware::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_UYE]);
+Middleware::requireUye();
 
 header('Content-Type: application/json');
 
