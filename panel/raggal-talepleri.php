@@ -25,6 +25,10 @@ $pageTitle = 'Raggal Rezervasyonları';
 $messages = [];
 $errors = [];
 
+// ICS Link Üretimi
+$icsToken = md5($user['id'] . 'RaggalSalt2024');
+$icsUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/panel/raggal-ics.php?u=" . $user['id'] . "&t=" . $icsToken;
+
 // === POST İŞLEMLERİ ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -330,6 +334,10 @@ include __DIR__ . '/../includes/header.php';
                                 data-bs-target="#reservationModal">
                                 <i class="fas fa-plus me-1"></i>Yeni Rezervasyon
                             </button>
+                            <button class="btn btn-outline-success btn-sm ms-2" data-bs-toggle="modal"
+                                data-bs-target="#icsModal">
+                                <i class="fas fa-calendar-plus me-1"></i>Takvim Entegrasyonu
+                            </button>
                         </div>
                         <div class="card-body p-2">
                             <div id='calendar' style="min-height: 400px;"></div>
@@ -471,7 +479,42 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
-            <!-- Edit Modal -->
+            <div class="modal fade" id="icsModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Takvim Entegrasyonu</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="small text-muted">Aşağıdaki linki telefonunuzdaki takvim uygulamasına (iPhone, Google Calendar, Outlook) "Takvim Aboneliği" olarak ekleyerek tüm Raggal rezervasyonlarını anlık olarak takip edebilirsiniz.</p>
+                            <div class="input-group mb-3">
+                                <input type="text" id="ics_url_input" class="form-control" value="<?php echo $icsUrl; ?>" readonly>
+                                <button class="btn btn-outline-primary" type="button" onclick="copyIcsUrl()">
+                                    <i class="fas fa-copy"></i> Kopyala
+                                </button>
+                            </div>
+                            <div class="alert alert-info py-2 small mb-0">
+                                <i class="fas fa-info-circle me-1"></i> Bu link size özeldir. Raggal taleplerini ve boş/dolu durumlarını telefonunuzdan görmenizi sağlar.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function copyIcsUrl() {
+                    var copyText = document.getElementById("ics_url_input");
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999);
+                    navigator.clipboard.writeText(copyText.value).then(function() {
+                        alert("Link kopyalandı!");
+                    });
+                }
+            </script>
             <div class="modal fade" id="editModal" tabindex="-1">
                 <div class="modal-dialog">
                     <form method="POST" class="modal-content">
