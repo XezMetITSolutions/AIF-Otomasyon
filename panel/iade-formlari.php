@@ -452,7 +452,8 @@ include __DIR__ . '/../includes/header.php';
 
                                     <div id="itemsContainer"></div>
 
-                                    <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="addItemBtn" onclick="window.addItem()">
+                                    <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="addItemBtn"
+                                        onclick="window.addItem()">
                                         <i class="fas fa-plus me-1"></i>Yeni Kalem Ekle
                                     </button>
 
@@ -524,7 +525,8 @@ include __DIR__ . '/../includes/header.php';
                                         </div>
                                         <div class="small text-muted mt-1">
                                             <?php echo number_format((float) ($stats['odenmedi_tutar'] ?? 0), 2, ',', '.'); ?>
-                                            €</div>
+                                            €
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -534,7 +536,8 @@ include __DIR__ . '/../includes/header.php';
                                         </div>
                                         <div class="small text-muted mt-1">
                                             <?php echo number_format((float) ($stats['odendi_tutar'] ?? 0), 2, ',', '.'); ?>
-                                            €</div>
+                                            €
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -606,7 +609,8 @@ include __DIR__ . '/../includes/header.php';
                                                         <td><?php echo htmlspecialchars($talep['uye_adi']); ?></td>
                                                         <td><?php echo htmlspecialchars($talep['baslik']); ?></td>
                                                         <td class="fw-bold text-success">
-                                                            <?php echo number_format($talep['tutar'], 2, ',', '.'); ?> €</td>
+                                                            <?php echo number_format($talep['tutar'], 2, ',', '.'); ?> €
+                                                        </td>
                                                         <td>
                                                             <span class="badge <?php echo $isPaid ? 'paid' : 'unpaid'; ?>">
                                                                 <?php echo $isPaid ? 'Ödendi' : 'Ödenmedi/Bekliyor'; ?>
@@ -666,636 +670,612 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                     <script>
-                        const actionModal = document.getElementById('actionModal');
-                        if (actionModal) {
-                            actionModal.addEventListener('show.bs.modal', function (event) {
-                                const button = event.relatedTarget;
-                                const id = button.getAttribute('data-id');
-                                const isPaid = button.getAttribute('data-paid') === '1';
-                                this.querySelector('#modalTalepId').value = id;
+                        (function() {
+                            var actionModalEl = document.getElementById('actionModal');
+                            if (actionModalEl) {
+                                actionModalEl.addEventListener('show.bs.modal', function (event) {
+                                    var button = event.relatedTarget;
+                                    var id = button.getAttribute('data-id');
+                                    var isPaid = button.getAttribute('data-paid') === '1';
+                                    this.querySelector('#modalTalepId').value = id;
 
-                                // Ön seçim mantığı, isterseniz geliştirebilirsiniz
-                                this.querySelector('#modalActionSelect').value = isPaid ? 'mark_unpaid' : 'approve';
-                            });
-                        }
+                                    // Ön seçim mantığı, isterseniz geliştirebilirsiniz
+                                    this.querySelector('#modalActionSelect').value = isPaid ? 'mark_unpaid' : 'approve';
+                                });
+                            }
+                        })();
                     </script>
                 <?php endif; ?>
 
             </div>
+
+            <?php if ($hasPermissionUye): ?>
+                <script>
+                    // Sabitler ve Ayarlar
+                    var HESAPLAMA_BASE = '<?php echo $formBasePath; ?>';
+                    var DEFAULT_BYK = '<?php echo htmlspecialchars($uyeBykKodu); ?>';
+                    if (typeof ORS_API_KEY === 'undefined') {
+                        var ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+                    }
+                    var itemCounter = 0;
+                    var AUTOCOMPLETE_DEBOUNCE_MS = 250;
+
+                    if (window['pdfjsLib']) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                    // Yardımcı Fonksiyonlar
+                    function debounce(fn, delay) {
+                        let t;
+                        return (...args) => {
+                            clearTimeout(t);
+                            t = setTimeout(() => fn(...args), delay);
+                        };
+                    }
+
+                    async function fetchAddressSuggestions(query) {
+                        if (!query || query.length < 2) return [];
+                        const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${encodeURIComponent(ORS_API_KEY)}&text=${encodeURIComponent(query)}&size=5&boundary.country=AT,DE,CH&lang=tr`;
+                        try {
+                            const res = await fetch(url);
+                            const data = await res.json();
+                            if (!data.features) return [];
+                            return data.features.map(f => ({ label: f.properties.label || '', lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] }));
+                        } catch (e) { console.error("Geocoding error", e); return []; }
+                    }
+
+                    function attachAutocomplete(inputEl, suggestionsEl) {
+                        if (!inputEl || !suggestionsEl) return;
+
+                        const render = (items) => {
+                            suggestionsEl.innerHTML = '';
+                            if (!items.length) { suggestionsEl.style.display = 'none'; return; }
+                            suggestionsEl.style.display = 'block';
+                            items.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'suggestion-item';
+                                div.textContent = item.label;
+                                div.onclick = () => {
+                                    inputEl.value = item.label;
+                                    suggestionsEl.style.display = 'none';
+                                };
+                                suggestionsEl.appendChild(div);
+                            });
+                        };
+                        const debounced = debounce(async () => {
+                            const q = inputEl.value.trim();
+                            const items = await fetchAddressSuggestions(q).catch(() => []);
+                            render(items);
+                        }, AUTOCOMPLETE_DEBOUNCE_MS);
+
+                        inputEl.addEventListener('input', debounced);
+                        inputEl.addEventListener('blur', () => setTimeout(() => suggestionsEl.style.display = 'none', 150));
+                        inputEl.addEventListener('focus', () => { if (inputEl.value.trim().length >= 2) debounced(); });
+                    }
+
+                    // -- Item Ekleme ve Yönetimi --
+
+                    window.addItem = function () {
+                        var container = document.getElementById('itemsContainer');
+                        if (!container) return;
+
+                        var newItem = document.createElement('div');
+                        newItem.className = 'item card mb-3 border bg-white shadow-sm';
+                        var itemId = itemCounter++;
+
+                        newItem.innerHTML = getItemHtml(itemId);
+                        container.appendChild(newItem);
+
+                        // Autocomplete Bağla (Simple Mode)
+                        const startInput = newItem.querySelector('.route-start');
+                        const endInput = newItem.querySelector('.route-end');
+                        const startSug = newItem.querySelector('.suggestions-start');
+                        const endSug = newItem.querySelector('.suggestions-end');
+
+                        if (startInput && startSug) attachAutocomplete(startInput, startSug);
+                        if (endInput && endSug) attachAutocomplete(endInput, endSug);
+
+                        // Autocomplete Bağla (Multi Mode - İlk 2 durak)
+                        const multiStops = newItem.querySelectorAll('.route-stop-input');
+                        const multiSuggs = newItem.querySelectorAll('.multi-route-mode .suggestions');
+                        multiStops.forEach((input, idx) => {
+                            if (multiSuggs[idx]) attachAutocomplete(input, multiSuggs[idx]);
+                        });
+                    };
+
+                    function getItemHtml(itemId) {
+                        var selectedAT = (DEFAULT_BYK === 'AT') ? 'selected' : '';
+                        var selectedKT = (DEFAULT_BYK === 'KT') ? 'selected' : '';
+                        var selectedGT = (DEFAULT_BYK === 'GT') ? 'selected' : '';
+                        var selectedKGT = (DEFAULT_BYK === 'KGT') ? 'selected' : '';
+
+                        return `
+                    <div class="card-body position-relative">
+                        <button type="button" class="btn btn-close position-absolute top-0 end-0 m-2" onclick="this.closest('.item').remove(); window.calculateTotal();"></button>
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label small text-muted">Tarih</label><input type="date" class="form-control" name="position-datum[]" required></div>
+                            <div class="col-md-4"><label class="form-label small text-muted">Birim/BYK</label>
+                                <select class="form-select" name="region[]" required>
+                                    <option value="AT" ${selectedAT}>AT</option>
+                                    <option value="KT" ${selectedKT}>KT</option>
+                                    <option value="GT" ${selectedGT}>GT</option>
+                                    <option value="KGT" ${selectedKGT}>KGT</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label small text-muted">Birim</label>
+                                <select class="form-select" name="birim[]" required>
+                                    <option value="baskan">Başkan</option>
+                                    <option value="byk">BYK Üyesi</option>
+                                    <option value="egitim">Eğitim</option>
+                                    <option value="fuar">Fuar</option>
+                                    <option value="gob">Spor/Gezi (GOB)</option>
+                                    <option value="hacumre">Hac/Umre</option>
+                                    <option value="idair">İdari İşler</option>
+                                    <option value="irsad">İrşad</option>
+                                    <option value="kurumsal">Kurumsal İletişim</option>
+                                    <option value="muhasebe">Muhasebe</option>
+                                    <option value="ortaogretim">Orta Öğretim</option>
+                                    <option value="raggal">Raggal</option>
+                                    <option value="sosyal">Sosyal Hizmetler</option>
+                                    <option value="tanitma">Tanıtma</option>
+                                    <option value="teftis">Teftiş</option>
+                                    <option value="teskilatlanma">Teşkilatlanma</option>
+                                    <option value="universiteler">Üniversiteler</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label small text-muted">Tür</label>
+                                <select class="form-select" name="gider-turu[]" required onchange="window.handleGiderTuruChange(this)">
+                                    <option value="genel">Genel</option>
+                                    <option value="ulasim_km">Ulaşım - Kilometre Hesaplama</option>
+                                    <option value="ulasim_fatura">Ulaşım - Faturalı/Kasabon</option>
+                                    <option value="yemek">Yemek/İkram</option>
+                                    <option value="konaklama">Konaklama</option>
+                                    <option value="malzeme">Malzeme</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label class="form-label small text-muted">Ödeme Şekli</label>
+                                <select class="form-select" name="odeme-sekli[]" required onchange="window.handleOdemeSekliChange(this)">
+                                    <option value="faturasiz">Faturasız</option>
+                                    <option value="faturali">Faturalı</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="yakit-fields mt-3 p-3 bg-light border rounded" style="display:none;">
+                            <label class="small fw-bold text-primary mb-2 d-block">Mesafe Hesapla</label>
+                            
+                            <div class="simple-route-mode">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12 col-md-5 position-relative">
+                                        <input type="text" class="form-control form-control-sm route-start" placeholder="Başlangıç (Şehir/Adres)" data-item="${itemId}">
+                                        <div class="suggestions suggestions-start" style="position: absolute; width:100%;"></div>
+                                    </div>
+                                    <div class="col-12 col-md-1 text-center align-self-center">
+                                        <i class="fas fa-arrow-right text-muted"></i>
+                                    </div>
+                                    <div class="col-12 col-md-5 position-relative">
+                                        <input type="text" class="form-control form-control-sm route-end" placeholder="Bitiş (Şehir/Adres)">
+                                        <div class="suggestions suggestions-end" style="position: absolute; width:100%;"></div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="window.calculateDistance(${itemId}, false)">
+                                        <i class="fas fa-exchange-alt me-1"></i>Gidiş-Dönüş
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.calculateDistance(${itemId}, true)">
+                                        <i class="fas fa-arrow-right me-1"></i>Tek Gidiş
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.showMultiRoute(${itemId})">
+                                        <i class="fas fa-route me-1"></i>Rota Oluştur
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="multi-route-mode" style="display:none;">
+                                <div class="mb-2">
+                                    <label class="small text-muted mb-1">Çoklu Durak Rotası (sırasıyla)</label>
+                                    <div class="route-stops-container">
+                                        <div class="route-stop d-flex gap-2 mb-2 align-items-center">
+                                            <span class="badge bg-primary">1</span>
+                                            <div class="flex-grow-1 position-relative">
+                                                <input type="text" class="form-control form-control-sm route-stop-input" placeholder="1. Durak (Başlangıç)">
+                                                <div class="suggestions" style="position: absolute; width:100%;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="route-stop d-flex gap-2 mb-2 align-items-center">
+                                            <span class="badge bg-secondary">2</span>
+                                            <div class="flex-grow-1 position-relative">
+                                                <input type="text" class="form-control form-control-sm route-stop-input" placeholder="2. Durak">
+                                                <div class="suggestions" style="position: absolute; width:100%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="window.addRouteStop(${itemId})">
+                                            <i class="fas fa-plus me-1"></i>Durak Ekle
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="window.calculateMultiRoute(${itemId})">
+                                            <i class="fas fa-calculator me-1"></i>Rotayı Hesapla
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.showSimpleRoute(${itemId})">
+                                            <i class="fas fa-times me-1"></i>Basit Mod
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" name="kilometer" class="form-control kilometer-field" placeholder="0.00" onchange="window.calcFuelCost(this)" step="0.01">
+                                            <span class="input-group-text">km</span>
+                                        </div>
+                                        <div class="form-text mt-1" style="font-size: 0.75rem;">
+                                            <i class="fas fa-info-circle me-1 text-primary"></i>Mesafe km başı 0,25 € olarak hesaplanmaktadır.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="text" name="route" class="form-control form-control-sm route-full" placeholder="Rota detayı" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1 align-items-end">
+                            <div class="col-md-2 amount-simple">
+                                <label class="form-label fw-bold small">Gider Miktari (€)</label>
+                                <input type="text" class="form-control" name="gider-miktari[]" required onchange="window.calculateTotal()" placeholder="0.00">
+                            </div>
+
+                            <div class="col-md-2 amount-detailed" style="display:none;">
+                                <label class="form-label fw-bold small" style="font-size:0.75rem;">Gider Miktari Netto</label>
+                                <input type="text" class="form-control" name="netto[]" onchange="window.calculateBrutto(this)" placeholder="Net">
+                            </div>
+                            <div class="col-md-2 amount-detailed" style="display:none;">
+                                <label class="form-label fw-bold small" style="font-size:0.75rem;">MwSt/KDV Miktari</label>
+                                <input type="text" class="form-control" name="mwst[]" onchange="window.calculateBrutto(this)" placeholder="KDV">
+                            </div>
+                            <div class="col-md-2 amount-detailed" style="display:none;">
+                                <label class="form-label fw-bold small" style="font-size:0.75rem;">Gider Miktari Brutto</label>
+                                <input type="text" class="form-control bg-light" name="brutto[]" readonly placeholder="Brüt">
+                            </div>
+
+                            <div class="col-md-4"><label class="form-label small text-muted">Açıklama</label><input type="text" class="form-control" name="beschreibung[]" placeholder="Detay..."></div>
+                            <div class="col-md-12"><label class="form-label small text-muted">Fiş/Fatura</label><input type="file" class="form-control item-documents" accept="image/*,.pdf" multiple></div>
+                        </div>
+                    </div>`;
+                    }
+
+                    window.handleGiderTuruChange = function (sel) {
+                        var item = sel.closest('.item');
+                        var yakit = item.querySelector('.yakit-fields');
+                        var amount = item.querySelector('.amount-simple input');
+                        var odemeSelect = item.querySelector('select[name="odeme-sekli[]"]');
+
+                        if (sel.value === 'ulasim_km') {
+                            yakit.style.display = 'block';
+                            if (amount) amount.readOnly = true;
+                            odemeSelect.value = 'faturasiz';
+                            window.handleOdemeSekliChange(odemeSelect, true);
+                        } else {
+                            yakit.style.display = 'none';
+                            if (amount) amount.readOnly = false;
+                        }
+                    };
+
+                    window.handleOdemeSekliChange = function (sel, forceSimple) {
+                        forceSimple = forceSimple || false;
+                        var item = sel.closest('.item');
+                        var isFaturali = (sel.value === 'faturali') && !forceSimple;
+
+                        var simpleDiv = item.querySelector('.amount-simple');
+                        var detailedDivs = item.querySelectorAll('.amount-detailed');
+                        var simpleInput = simpleDiv.querySelector('input');
+
+                        if (isFaturali) {
+                            simpleDiv.style.display = 'none';
+                            detailedDivs.forEach(function (d) { d.style.display = 'block'; });
+                            simpleInput.removeAttribute('required');
+                        } else {
+                            simpleDiv.style.display = 'block';
+                            detailedDivs.forEach(function (d) { d.style.display = 'none'; });
+                            simpleInput.setAttribute('required', 'required');
+                        }
+                        window.calculateTotal();
+                    };
+
+                    window.calculateBrutto = function (input) {
+                        var item = input.closest('.item');
+                        var netEl = item.querySelector('input[name="netto[]"]');
+                        var vatEl = item.querySelector('input[name="mwst[]"]');
+                        var bruttoInput = item.querySelector('input[name="brutto[]"]');
+
+                        var net = parseFloat(netEl.value.replace(',', '.')) || 0;
+                        var vat = parseFloat(vatEl.value.replace(',', '.')) || 0;
+
+                        var total = net + vat;
+                        bruttoInput.value = total.toFixed(2);
+
+                        var simpleInput = item.querySelector('.amount-simple input');
+                        if (simpleInput) simpleInput.value = total.toFixed(2);
+
+                        window.calculateTotal();
+                    };
+
+                    window.calcFuelCost = function (input) {
+                        var km = parseFloat(input.value) || 0;
+                        var cost = km * 0.25;
+                        var amountInput = input.closest('.item').querySelector('.amount-simple input');
+                        if (amountInput) amountInput.value = cost.toFixed(2);
+                        window.calculateTotal();
+                    };
+
+                    window.calculateTotal = function () {
+                        var total = 0;
+                        var inputs = document.querySelectorAll('.amount-simple input');
+                        inputs.forEach(function (i) {
+                            total += parseFloat(i.value) || 0;
+                        });
+                        var totalField = document.getElementById('total');
+                        if (totalField) totalField.value = total.toFixed(2);
+                    };
+
+                    window.geocodeCity = async function (cityName) {
+                        const url = `https://api.openrouteservice.org/geocode/search?api_key=${encodeURIComponent(ORS_API_KEY)}&text=${encodeURIComponent(cityName)}&size=1&boundary.country=AT,DE,CH&lang=tr`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        if (!data.features || data.features.length === 0) return null;
+                        const coords = data.features[0].geometry.coordinates; // [lon, lat]
+                        return { lat: parseFloat(coords[1]), lon: parseFloat(coords[0]) };
+                    };
+
+                    window.calculateDistance = async function (id, isOneWay) {
+                        try {
+                            var item = document.querySelector('.route-start[data-item="' + id + '"]').closest('.item');
+                            var startInput = item.querySelector('.route-start');
+                            var endInput = item.querySelector('.route-end');
+
+                            var start = startInput.value.trim();
+                            var end = endInput.value.trim();
+
+                            if (!start || !end) {
+                                alert('Lütfen başlangıç ve bitiş adreslerini girin.');
+                                return;
+                            }
+
+                            updateRouteLoadingState(item, true, 'Hesaplanıyor...');
+
+                            const startCoords = await window.geocodeCity(start);
+                            const endCoords = await window.geocodeCity(end);
+
+                            if (!startCoords || !endCoords) {
+                                throw new Error('Adres bulunamadı. Lütfen geçerli bir adres girin.');
+                            }
+
+                            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords.lon},${startCoords.lat};${endCoords.lon},${endCoords.lat}?overview=false`;
+                            const osrmRes = await fetch(osrmUrl);
+                            const osrmData = await osrmRes.json();
+
+                            if (osrmData.code !== 'Ok') { throw new Error('OSRM rota bulamadı'); }
+
+                            const oneWayKm = osrmData.routes[0].distance / 1000;
+                            const totalKm = isOneWay ? oneWayKm : (oneWayKm * 2);
+
+                            updateRouteResult(item, totalKm, `${start} → ${end} (${isOneWay ? 'Tek Yön' : 'Gidiş-Dönüş'})`);
+
+                        } catch (e) {
+                            console.error(e);
+                            alert('Hata: ' + e.message);
+                        } finally {
+                            updateRouteLoadingState(item, false);
+                        }
+                    };
+
+                    window.showMultiRoute = function (itemId) {
+                        var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
+                        item.querySelector('.simple-route-mode').style.display = 'none';
+                        item.querySelector('.multi-route-mode').style.display = 'block';
+
+                        var startVal = item.querySelector('.route-start').value;
+                        var endVal = item.querySelector('.route-end').value;
+
+                        var stops = item.querySelectorAll('.route-stop-input');
+                        if (stops.length >= 2) {
+                            if (startVal) stops[0].value = startVal;
+                            if (endVal) stops[1].value = endVal;
+                        }
+                    };
+
+                    window.showSimpleRoute = function (itemId) {
+                        var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
+                        item.querySelector('.multi-route-mode').style.display = 'none';
+                        item.querySelector('.simple-route-mode').style.display = 'block';
+                    };
+
+                    window.addRouteStop = function (itemId) {
+                        var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
+                        var container = item.querySelector('.route-stops-container');
+                        var count = container.querySelectorAll('.route-stop').length + 1;
+
+                        var newStopHtml = `
+                    <div class="route-stop d-flex gap-2 mb-2 align-items-center">
+                        <span class="badge bg-secondary">${count}</span>
+                        <div class="flex-grow-1 position-relative">
+                            <input type="text" class="form-control form-control-sm route-stop-input" placeholder="${count}. Durak">
+                            <button type="button" class="btn btn-sm text-danger position-absolute end-0 top-0 mt-1 me-1" onclick="this.closest('.route-stop').remove();" style="z-index:10; padding:2px 6px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="suggestions" style="position: absolute; width:100%;"></div>
+                        </div>
+                    </div>
+                `;
+
+                        var div = document.createElement('div');
+                        div.innerHTML = newStopHtml;
+                        var newEl = div.firstElementChild;
+                        container.appendChild(newEl);
+
+                        var input = newEl.querySelector('input');
+                        var sug = newEl.querySelector('.suggestions');
+                        attachAutocomplete(input, sug);
+                    };
+
+                    window.calculateMultiRoute = async function (itemId) {
+                        var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
+                        updateRouteLoadingState(item, true, 'Rota Hesaplanıyor...');
+
+                        try {
+                            var inputs = item.querySelectorAll('.route-stop-input');
+                            var points = [];
+                            var routeDesc = [];
+
+                            for (var i = 0; i < inputs.length; i++) {
+                                var val = inputs[i].value.trim();
+                                if (val) {
+                                    points.push(val);
+                                    routeDesc.push(val);
+                                }
+                            }
+
+                            if (points.length < 2) {
+                                throw new Error('En az 2 durak girmelisiniz.');
+                            }
+
+                            var coords = [];
+                            for (var place of points) {
+                                if (coords.length > 0) await new Promise(r => setTimeout(r, 150));
+
+                                var c = await window.geocodeCity(place);
+                                if (!c) {
+                                    throw new Error(`Durak "${place}" için adres bulunamadı. Lütfen listeden bir öneri seçerek veya adresi değiştirerek tekrar deneyin.`);
+                                }
+                                coords.push(c);
+                            }
+
+                            var coordString = coords.map(c => `${c.lon},${c.lat}`).join(';');
+                            var osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=false`;
+
+                            const osrmRes = await fetch(osrmUrl);
+                            const osrmData = await osrmRes.json();
+
+                            if (osrmData.code !== 'Ok') { throw new Error('Rota hesaplanamadı.'); }
+
+                            const totalKm = osrmData.routes[0].distance / 1000;
+
+                            updateRouteResult(item, totalKm, routeDesc.join(' → '));
+
+                        } catch (e) {
+                            console.error(e);
+                            alert('Hata: ' + e.message);
+                        } finally {
+                            updateRouteLoadingState(item, false);
+                        }
+                    };
+
+                    function updateRouteLoadingState(item, isLoading, text) {
+                        var btns = item.querySelectorAll('button[onclick*="calculate"]');
+                        btns.forEach(b => {
+                            b.disabled = isLoading;
+                            if (isLoading) {
+                                b.dataset.originalText = b.innerHTML;
+                                b.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${text || '...'}`;
+                            } else {
+                                b.innerHTML = b.dataset.originalText || b.innerHTML;
+                            }
+                        });
+                    }
+
+                    function updateRouteResult(item, km, desc) {
+                        var kmInput = item.querySelector('.kilometer-field');
+                        var routeField = item.querySelector('.route-full');
+
+                        kmInput.value = km.toFixed(2);
+                        if (routeField) routeField.value = desc;
+
+                        window.calcFuelCost(kmInput);
+                    }
+
+                    window.handleSubmit = async function (e) {
+                        e.preventDefault();
+                        var spinner = document.getElementById("spinner");
+                        if (spinner) spinner.style.display = "block";
+                        try {
+                            await new Promise(function (r) { setTimeout(r, 1000); });
+                            alert("Form başarıyla gönderildi (Simülasyon)");
+                        } catch (err) {
+                            var errMsg = document.getElementById('errorMessage');
+                            if (errMsg) errMsg.textContent = err.message;
+                        } finally {
+                            if (spinner) spinner.style.display = "none";
+                        }
+                    };
+
+                    window.saveIban = function () {
+                        var iban = document.getElementById('iban').value;
+                        if (!iban) {
+                            alert("Lütfen IBAN giriniz.");
+                            return;
+                        }
+
+                        fetch('/api/save_iban.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ iban: iban })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert(data.message);
+                                } else {
+                                    alert("Hata: " + data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert("IBAN kaydetme servisi henüz aktif değil (simülasyon).");
+                            });
+                    };
+
+                    window.formatIban = function (input) {
+                        let value = input.value.replace(/\s+/g, '').toUpperCase();
+                        let formatted = '';
+                        if (value.length > 0) {
+                            formatted = value.match(/.{1,4}/g).join(' ');
+                        }
+                        input.value = formatted;
+                    };
+
+
+                    function initExpenseForm() {
+                        var container = document.getElementById('itemsContainer');
+                        if (!container) return; // Eğer container yoksa (örn tab farklıysa) çık
+
+                        // Container temizle (çift yüklenmesini önlemek için)
+                        container.innerHTML = '';
+                        itemCounter = 0;
+
+                        // İlk kalemi ekle
+                        if (typeof window.addItem === 'function') {
+                            window.addItem();
+                        }
+
+                        var ibanInput = document.getElementById('iban');
+                        if (ibanInput && ibanInput.value) {
+                            window.formatIban(ibanInput);
+                        }
+                    }
+
+                    // Global erişim
+                    window.initExpenseForm = initExpenseForm;
+
+                    // Sayfa yüklendiğinde çalıştır
+                    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                        setTimeout(initExpenseForm, 100);
+                    } else {
+                        document.addEventListener('DOMContentLoaded', initExpenseForm);
+                    }
+                </script>
+            <?php endif; ?>
         </div>
     </main>
 </div>
 <?php include __DIR__ . '/../includes/footer.php'; ?>
-<?php if ($hasPermissionUye): ?>
-    <script>
-        // Sabitler ve Ayarlar
-        var HESAPLAMA_BASE = '<?php echo $formBasePath; ?>';
-        var DEFAULT_BYK = '<?php echo htmlspecialchars($uyeBykKodu); ?>';
-        if (typeof ORS_API_KEY === 'undefined') {
-            var ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
-        }
-        var itemCounter = 0;
-        var AUTOCOMPLETE_DEBOUNCE_MS = 250;
-
-        if (window['pdfjsLib']) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        // Yardımcı Fonksiyonlar
-        function debounce(fn, delay) {
-            let t;
-            return (...args) => {
-                clearTimeout(t);
-                t = setTimeout(() => fn(...args), delay);
-            };
-        }
-
-        async function fetchAddressSuggestions(query) {
-            if (!query || query.length < 2) return [];
-            const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${encodeURIComponent(ORS_API_KEY)}&text=${encodeURIComponent(query)}&size=5&boundary.country=AT,DE,CH&lang=tr`;
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if (!data.features) return [];
-                return data.features.map(f => ({ label: f.properties.label || '', lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] }));
-            } catch (e) { console.error("Geocoding error", e); return []; }
-        }
-
-        function attachAutocomplete(inputEl, suggestionsEl) {
-            if (!inputEl || !suggestionsEl) return;
-
-            const render = (items) => {
-                suggestionsEl.innerHTML = '';
-                if (!items.length) { suggestionsEl.style.display = 'none'; return; }
-                suggestionsEl.style.display = 'block';
-                items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.textContent = item.label;
-                    div.onclick = () => {
-                        inputEl.value = item.label;
-                        suggestionsEl.style.display = 'none';
-                    };
-                    suggestionsEl.appendChild(div);
-                });
-            };
-            const debounced = debounce(async () => {
-                const q = inputEl.value.trim();
-                const items = await fetchAddressSuggestions(q).catch(() => []);
-                render(items);
-            }, AUTOCOMPLETE_DEBOUNCE_MS);
-
-            inputEl.addEventListener('input', debounced);
-            inputEl.addEventListener('blur', () => setTimeout(() => suggestionsEl.style.display = 'none', 150));
-            inputEl.addEventListener('focus', () => { if (inputEl.value.trim().length >= 2) debounced(); });
-        }
-
-        // -- Item Ekleme ve Yönetimi --
-
-        window.addItem = function () {
-            var container = document.getElementById('itemsContainer');
-            if (!container) return;
-
-            var newItem = document.createElement('div');
-            newItem.className = 'item card mb-3 border bg-white shadow-sm';
-            var itemId = itemCounter++;
-
-            newItem.innerHTML = getItemHtml(itemId);
-            container.appendChild(newItem);
-
-            // Autocomplete Bağla (Simple Mode)
-            const startInput = newItem.querySelector('.route-start');
-            const endInput = newItem.querySelector('.route-end');
-            const startSug = newItem.querySelector('.suggestions-start');
-            const endSug = newItem.querySelector('.suggestions-end');
-
-            if (startInput && startSug) attachAutocomplete(startInput, startSug);
-            if (endInput && endSug) attachAutocomplete(endInput, endSug);
-
-            // Autocomplete Bağla (Multi Mode - İlk 2 durak)
-            const multiStops = newItem.querySelectorAll('.route-stop-input');
-            const multiSuggs = newItem.querySelectorAll('.multi-route-mode .suggestions');
-            multiStops.forEach((input, idx) => {
-                if (multiSuggs[idx]) attachAutocomplete(input, multiSuggs[idx]);
-            });
-        };
-
-        function getItemHtml(itemId) {
-            var selectedAT = (DEFAULT_BYK === 'AT') ? 'selected' : '';
-            var selectedKT = (DEFAULT_BYK === 'KT') ? 'selected' : '';
-            var selectedGT = (DEFAULT_BYK === 'GT') ? 'selected' : '';
-            var selectedKGT = (DEFAULT_BYK === 'KGT') ? 'selected' : '';
-
-            // Not: PHP içinde JS string literal oluşturuyoruz, backslash kaçışlarına dikkat.
-            // HTML içinde data-item="${itemId}" gibi kullanılmalı.
-
-            return `
-            <div class="card-body position-relative">
-                <button type="button" class="btn btn-close position-absolute top-0 end-0 m-2" onclick="this.closest('.item').remove(); window.calculateTotal();"></button>
-                <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label small text-muted">Tarih</label><input type="date" class="form-control" name="position-datum[]" required></div>
-                    <div class="col-md-4"><label class="form-label small text-muted">Birim/BYK</label>
-                        <select class="form-select" name="region[]" required>
-                            <option value="AT" ${selectedAT}>AT</option>
-                            <option value="KT" ${selectedKT}>KT</option>
-                            <option value="GT" ${selectedGT}>GT</option>
-                            <option value="KGT" ${selectedKGT}>KGT</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4"><label class="form-label small text-muted">Birim</label>
-                        <select class="form-select" name="birim[]" required>
-                            <option value="baskan">Başkan</option>
-                            <option value="byk">BYK Üyesi</option>
-                            <option value="egitim">Eğitim</option>
-                            <option value="fuar">Fuar</option>
-                            <option value="gob">Spor/Gezi (GOB)</option>
-                            <option value="hacumre">Hac/Umre</option>
-                            <option value="idair">İdari İşler</option>
-                            <option value="irsad">İrşad</option>
-                            <option value="kurumsal">Kurumsal İletişim</option>
-                            <option value="muhasebe">Muhasebe</option>
-                            <option value="ortaogretim">Orta Öğretim</option>
-                            <option value="raggal">Raggal</option>
-                            <option value="sosyal">Sosyal Hizmetler</option>
-                            <option value="tanitma">Tanıtma</option>
-                            <option value="teftis">Teftiş</option>
-                            <option value="teskilatlanma">Teşkilatlanma</option>
-                            <option value="universiteler">Üniversiteler</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4"><label class="form-label small text-muted">Tür</label>
-                        <select class="form-select" name="gider-turu[]" required onchange="window.handleGiderTuruChange(this)">
-                            <option value="genel">Genel</option>
-                            <option value="ulasim_km">Ulaşım - Kilometre Hesaplama</option>
-                            <option value="ulasim_fatura">Ulaşım - Faturalı/Kasabon</option>
-                            <option value="yemek">Yemek/İkram</option>
-                            <option value="konaklama">Konaklama</option>
-                            <option value="malzeme">Malzeme</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4"><label class="form-label small text-muted">Ödeme Şekli</label>
-                        <select class="form-select" name="odeme-sekli[]" required onchange="window.handleOdemeSekliChange(this)">
-                            <option value="faturasiz">Faturasız</option>
-                            <option value="faturali">Faturalı</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="yakit-fields mt-3 p-3 bg-light border rounded" style="display:none;">
-                    <label class="small fw-bold text-primary mb-2 d-block">Mesafe Hesapla</label>
-                    
-                    <!-- Basit Mod: Başlangıç - Bitiş -->
-                    <div class="simple-route-mode">
-                        <div class="row g-2 mb-2">
-                            <div class="col-12 col-md-5 position-relative">
-                                <input type="text" class="form-control form-control-sm route-start" placeholder="Başlangıç (Şehir/Adres)" data-item="${itemId}">
-                                <div class="suggestions suggestions-start" style="position: absolute; width:100%;"></div>
-                            </div>
-                            <div class="col-12 col-md-1 text-center align-self-center">
-                                <i class="fas fa-arrow-right text-muted"></i>
-                            </div>
-                            <div class="col-12 col-md-5 position-relative">
-                                <input type="text" class="form-control form-control-sm route-end" placeholder="Bitiş (Şehir/Adres)">
-                                <div class="suggestions suggestions-end" style="position: absolute; width:100%;"></div>
-                            </div>
-                        </div>
-                        <div class="d-flex flex-wrap gap-2 mb-2">
-                            <button type="button" class="btn btn-primary btn-sm" onclick="window.calculateDistance(${itemId}, false)">
-                                <i class="fas fa-exchange-alt me-1"></i>Gidiş-Dönüş
-                            </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.calculateDistance(${itemId}, true)">
-                                <i class="fas fa-arrow-right me-1"></i>Tek Gidiş
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.showMultiRoute(${itemId})">
-                                <i class="fas fa-route me-1"></i>Rota Oluştur
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Çoklu Rota Modu -->
-                    <div class="multi-route-mode" style="display:none;">
-                        <div class="mb-2">
-                            <label class="small text-muted mb-1">Çoklu Durak Rotası (sırasıyla)</label>
-                            <div class="route-stops-container">
-                                <div class="route-stop d-flex gap-2 mb-2 align-items-center">
-                                    <span class="badge bg-primary">1</span>
-                                    <div class="flex-grow-1 position-relative">
-                                        <input type="text" class="form-control form-control-sm route-stop-input" placeholder="1. Durak (Başlangıç)">
-                                        <div class="suggestions" style="position: absolute; width:100%;"></div>
-                                    </div>
-                                </div>
-                                <div class="route-stop d-flex gap-2 mb-2 align-items-center">
-                                    <span class="badge bg-secondary">2</span>
-                                    <div class="flex-grow-1 position-relative">
-                                        <input type="text" class="form-control form-control-sm route-stop-input" placeholder="2. Durak">
-                                        <div class="suggestions" style="position: absolute; width:100%;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-2 mt-2">
-                                <button type="button" class="btn btn-outline-success btn-sm" onclick="window.addRouteStop(${itemId})">
-                                    <i class="fas fa-plus me-1"></i>Durak Ekle
-                                </button>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="window.calculateMultiRoute(${itemId})">
-                                    <i class="fas fa-calculator me-1"></i>Rotayı Hesapla
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.showSimpleRoute(${itemId})">
-                                    <i class="fas fa-times me-1"></i>Basit Mod
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-2">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <div class="input-group input-group-sm">
-                                    <input type="number" name="kilometer" class="form-control kilometer-field" placeholder="0.00" onchange="window.calcFuelCost(this)" step="0.01">
-                                    <span class="input-group-text">km</span>
-                                </div>
-                                <div class="form-text mt-1" style="font-size: 0.75rem;">
-                                    <i class="fas fa-info-circle me-1 text-primary"></i>Mesafe km başı 0,25 € olarak hesaplanmaktadır.
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <input type="text" name="route" class="form-control form-control-sm route-full" placeholder="Rota detayı" readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-1 align-items-end">
-                    <div class="col-md-2 amount-simple">
-                        <label class="form-label fw-bold small">Gider Miktari (€)</label>
-                        <input type="text" class="form-control" name="gider-miktari[]" required onchange="window.calculateTotal()" placeholder="0.00">
-                    </div>
-
-                    <div class="col-md-2 amount-detailed" style="display:none;">
-                        <label class="form-label fw-bold small" style="font-size:0.75rem;">Gider Miktari Netto</label>
-                        <input type="text" class="form-control" name="netto[]" onchange="window.calculateBrutto(this)" placeholder="Net">
-                    </div>
-                    <div class="col-md-2 amount-detailed" style="display:none;">
-                        <label class="form-label fw-bold small" style="font-size:0.75rem;">MwSt/KDV Miktari</label>
-                        <input type="text" class="form-control" name="mwst[]" onchange="window.calculateBrutto(this)" placeholder="KDV">
-                    </div>
-                    <div class="col-md-2 amount-detailed" style="display:none;">
-                        <label class="form-label fw-bold small" style="font-size:0.75rem;">Gider Miktari Brutto</label>
-                        <input type="text" class="form-control bg-light" name="brutto[]" readonly placeholder="Brüt">
-                    </div>
-
-                    <div class="col-md-4"><label class="form-label small text-muted">Açıklama</label><input type="text" class="form-control" name="beschreibung[]" placeholder="Detay..."></div>
-                    <div class="col-md-12"><label class="form-label small text-muted">Fiş/Fatura</label><input type="file" class="form-control item-documents" accept="image/*,.pdf" multiple></div>
-                </div>
-            </div>`;
-        }
-
-        window.handleGiderTuruChange = function (sel) {
-            var item = sel.closest('.item');
-            var yakit = item.querySelector('.yakit-fields');
-            var amount = item.querySelector('.amount-simple input');
-            var odemeSelect = item.querySelector('select[name="odeme-sekli[]"]');
-
-            if (sel.value === 'ulasim_km') {
-                yakit.style.display = 'block';
-                if (amount) amount.readOnly = true;
-                odemeSelect.value = 'faturasiz';
-                window.handleOdemeSekliChange(odemeSelect, true);
-            } else {
-                yakit.style.display = 'none';
-                if (amount) amount.readOnly = false;
-            }
-        };
-
-        window.handleOdemeSekliChange = function (sel, forceSimple) {
-            forceSimple = forceSimple || false;
-            var item = sel.closest('.item');
-            var isFaturali = (sel.value === 'faturali') && !forceSimple;
-
-            var simpleDiv = item.querySelector('.amount-simple');
-            var detailedDivs = item.querySelectorAll('.amount-detailed');
-            var simpleInput = simpleDiv.querySelector('input');
-
-            if (isFaturali) {
-                simpleDiv.style.display = 'none';
-                detailedDivs.forEach(function (d) { d.style.display = 'block'; });
-                simpleInput.removeAttribute('required');
-            } else {
-                simpleDiv.style.display = 'block';
-                detailedDivs.forEach(function (d) { d.style.display = 'none'; });
-                simpleInput.setAttribute('required', 'required');
-            }
-            window.calculateTotal();
-        };
-
-        window.calculateBrutto = function (input) {
-            var item = input.closest('.item');
-            var netEl = item.querySelector('input[name="netto[]"]');
-            var vatEl = item.querySelector('input[name="mwst[]"]');
-            var bruttoInput = item.querySelector('input[name="brutto[]"]');
-
-            var net = parseFloat(netEl.value.replace(',', '.')) || 0;
-            var vat = parseFloat(vatEl.value.replace(',', '.')) || 0;
-
-            var total = net + vat;
-            bruttoInput.value = total.toFixed(2);
-
-            var simpleInput = item.querySelector('.amount-simple input');
-            if (simpleInput) simpleInput.value = total.toFixed(2);
-
-            window.calculateTotal();
-        };
-
-        window.calcFuelCost = function (input) {
-            var km = parseFloat(input.value) || 0;
-            var cost = km * 0.25;
-            var amountInput = input.closest('.item').querySelector('.amount-simple input');
-            if (amountInput) amountInput.value = cost.toFixed(2);
-            window.calculateTotal();
-        };
-
-        window.calculateTotal = function () {
-            var total = 0;
-            var inputs = document.querySelectorAll('.amount-simple input');
-            inputs.forEach(function (i) {
-                total += parseFloat(i.value) || 0;
-            });
-            var totalField = document.getElementById('total');
-            if (totalField) totalField.value = total.toFixed(2);
-        };
-
-        // Geocoding: Adresi koordinata çevir (OpenRouteService)
-        window.geocodeCity = async function (cityName) {
-            const url = `https://api.openrouteservice.org/geocode/search?api_key=${encodeURIComponent(ORS_API_KEY)}&text=${encodeURIComponent(cityName)}&size=1&boundary.country=AT,DE,CH&lang=tr`;
-            const response = await fetch(url);
-            const data = await response.json();
-            if (!data.features || data.features.length === 0) return null;
-            const coords = data.features[0].geometry.coordinates; // [lon, lat]
-            return { lat: parseFloat(coords[1]), lon: parseFloat(coords[0]) };
-        };
-
-        window.calculateDistance = async function (id, isOneWay) {
-            try {
-                var item = document.querySelector('.route-start[data-item="' + id + '"]').closest('.item');
-                var startInput = item.querySelector('.route-start');
-                var endInput = item.querySelector('.route-end');
-
-                var start = startInput.value.trim();
-                var end = endInput.value.trim();
-
-                if (!start || !end) {
-                    alert('Lütfen başlangıç ve bitiş adreslerini girin.');
-                    return;
-                }
-
-                updateRouteLoadingState(item, true, 'Hesaplanıyor...');
-
-                // Geocoding (ORS) -> Rota (OSRM)
-                const startCoords = await window.geocodeCity(start);
-                const endCoords = await window.geocodeCity(end);
-
-                if (!startCoords || !endCoords) {
-                    throw new Error('Adres bulunamadı. Lütfen geçerli bir adres girin.');
-                }
-
-                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords.lon},${startCoords.lat};${endCoords.lon},${endCoords.lat}?overview=false`;
-                const osrmRes = await fetch(osrmUrl);
-                const osrmData = await osrmRes.json();
-
-                if (osrmData.code !== 'Ok') { throw new Error('OSRM rota bulamadı'); }
-
-                const oneWayKm = osrmData.routes[0].distance / 1000;
-                // Tek yön mü, Gidiş-Dönüş mü?
-                const totalKm = isOneWay ? oneWayKm : (oneWayKm * 2);
-
-                updateRouteResult(item, totalKm, `${start} → ${end} (${isOneWay ? 'Tek Yön' : 'Gidiş-Dönüş'})`);
-
-            } catch (e) {
-                console.error(e);
-                alert('Hata: ' + e.message);
-            } finally {
-                updateRouteLoadingState(item, false);
-            }
-        };
-
-        // Çoklu Rota - Arayüz Fonksiyonları
-        window.showMultiRoute = function (itemId) {
-            var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
-            item.querySelector('.simple-route-mode').style.display = 'none';
-            item.querySelector('.multi-route-mode').style.display = 'block';
-
-            // Mevcut değerleri taşı
-            var startVal = item.querySelector('.route-start').value;
-            var endVal = item.querySelector('.route-end').value;
-
-            var stops = item.querySelectorAll('.route-stop-input');
-            if (stops.length >= 2) {
-                if (startVal) stops[0].value = startVal;
-                if (endVal) stops[1].value = endVal;
-            }
-        };
-
-        window.showSimpleRoute = function (itemId) {
-            var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
-            item.querySelector('.multi-route-mode').style.display = 'none';
-            item.querySelector('.simple-route-mode').style.display = 'block';
-        };
-
-        window.addRouteStop = function (itemId) {
-            var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
-            var container = item.querySelector('.route-stops-container');
-            var count = container.querySelectorAll('.route-stop').length + 1;
-
-            var newStopHtml = `
-            <div class="route-stop d-flex gap-2 mb-2 align-items-center">
-                <span class="badge bg-secondary">${count}</span>
-                <div class="flex-grow-1 position-relative">
-                    <input type="text" class="form-control form-control-sm route-stop-input" placeholder="${count}. Durak">
-                    <button type="button" class="btn btn-sm text-danger position-absolute end-0 top-0 mt-1 me-1" onclick="this.closest('.route-stop').remove();" style="z-index:10; padding:2px 6px;">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <div class="suggestions" style="position: absolute; width:100%;"></div>
-                </div>
-            </div>
-        `;
-
-            // HTML string'i elemente çevir ekle (Autocomplete bağlayabilmek için)
-            var div = document.createElement('div');
-            div.innerHTML = newStopHtml;
-            var newEl = div.firstElementChild;
-            container.appendChild(newEl);
-
-            var input = newEl.querySelector('input');
-            var sug = newEl.querySelector('.suggestions');
-            attachAutocomplete(input, sug);
-        };
-
-        // Çoklu Rota Hesaplama
-        window.calculateMultiRoute = async function (itemId) {
-            var item = document.querySelector('.route-start[data-item="' + itemId + '"]').closest('.item');
-            updateRouteLoadingState(item, true, 'Rota Hesaplanıyor...');
-
-            try {
-                var inputs = item.querySelectorAll('.route-stop-input');
-                var points = [];
-                var routeDesc = [];
-
-                // Adresleri topla
-                for (var i = 0; i < inputs.length; i++) {
-                    var val = inputs[i].value.trim();
-                    if (val) {
-                        points.push(val);
-                        routeDesc.push(val);
-                    }
-                }
-
-                if (points.length < 2) {
-                    throw new Error('En az 2 durak girmelisiniz.');
-                }
-
-                // Koordinatları bul
-                var coords = [];
-                for (var place of points) {
-                    // Burst limitleri için çok kısa bir bekleme
-                    if (coords.length > 0) await new Promise(r => setTimeout(r, 150));
-
-                    var c = await window.geocodeCity(place);
-                    if (!c) {
-                        throw new Error(`Durak "${place}" için adres bulunamadı. Lütfen listeden bir öneri seçerek veya adresi değiştirerek tekrar deneyin.`);
-                    }
-                    coords.push(c);
-                }
-
-                // OSRM URL oluştur (noktaları ; ile birleştir)
-                var coordString = coords.map(c => `${c.lon},${c.lat}`).join(';');
-                // OSRM trip servisi yerine route servisi kullanalım (sıralı gitmesi için)
-                var osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=false`;
-
-                const osrmRes = await fetch(osrmUrl);
-                const osrmData = await osrmRes.json();
-
-                if (osrmData.code !== 'Ok') { throw new Error('Rota hesaplanamadı.'); }
-
-                const totalKm = osrmData.routes[0].distance / 1000;
-
-                updateRouteResult(item, totalKm, routeDesc.join(' → '));
-
-            } catch (e) {
-                console.error(e);
-                alert('Hata: ' + e.message);
-            } finally {
-                updateRouteLoadingState(item, false);
-            }
-        };
-
-        function updateRouteLoadingState(item, isLoading, text) {
-            var mode = item.querySelector('.multi-route-mode').style.display !== 'none' ? 'multi' : 'simple';
-            // İlgili butonları bul ve disable et
-            var btns = item.querySelectorAll('button[onclick*="calculate"]');
-            btns.forEach(b => {
-                b.disabled = isLoading;
-                if (isLoading) {
-                    b.dataset.originalText = b.innerHTML;
-                    b.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${text || '...'}`;
-                } else {
-                    b.innerHTML = b.dataset.originalText || b.innerHTML;
-                }
-            });
-        }
-
-        function updateRouteResult(item, km, desc) {
-            var kmInput = item.querySelector('.kilometer-field');
-            var routeField = item.querySelector('.route-full');
-
-            kmInput.value = km.toFixed(2);
-            if (routeField) routeField.value = desc;
-
-            window.calcFuelCost(kmInput);
-        }
-
-        // Form Gönderim
-        window.handleSubmit = async function (e) {
-            e.preventDefault();
-            var spinner = document.getElementById("spinner");
-            if (spinner) spinner.style.display = "block";
-            try {
-                // TODO: Buraya sunucuya gönderim veya PDF oluşturma kodu eklenecek.
-                // Şimdilik simülasyon.
-                await new Promise(function (r) { setTimeout(r, 1000); });
-                alert("Form başarıyla gönderildi (Simülasyon)");
-            } catch (err) {
-                var errMsg = document.getElementById('errorMessage');
-                if (errMsg) errMsg.textContent = err.message;
-            } finally {
-                if (spinner) spinner.style.display = "none";
-            }
-        };
-
-        window.saveIban = function () {
-            var iban = document.getElementById('iban').value;
-            if (!iban) {
-                alert("Lütfen IBAN giriniz.");
-                return;
-            }
-
-            // AJAX call to save IBAN
-            fetch('/api/save_iban.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ iban: iban })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                    } else {
-                        alert("Hata: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("IBAN kaydetme servisi henüz aktif değil (simülasyon).");
-                });
-        };
-
-        window.formatIban = function (input) {
-            let value = input.value.replace(/\s+/g, '').toUpperCase();
-            let formatted = '';
-            if (value.length > 0) {
-                formatted = value.match(/.{1,4}/g).join(' ');
-            }
-            input.value = formatted;
-        };
-
-        // Sayfa başlatma fonksiyonu
-        function initExpenseForm() {
-            var container = document.getElementById('itemsContainer');
-            if (!container) return;
-
-            // Container temizle (çift yüklenmesini önlemek için)
-            container.innerHTML = '';
-
-            // İlk kalemi ekle
-            window.addItem();
-
-            // Ekleme butonu dinleyicisi (HTML onclick kullanıldı)
-
-            // Format initial IBAN if exists
-            var ibanInput = document.getElementById('iban');
-            if (ibanInput && ibanInput.value) {
-                window.formatIban(ibanInput);
-            }
-        }
-
-        // Yükleme kontrolü
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initExpenseForm);
-        } else {
-            initExpenseForm();
-        }
-
-        // AJAX navigation desteği (jQuery varsa)
-        if (typeof jQuery !== 'undefined') {
-            $(document).on('page:loaded ajax:success', function () {
-                setTimeout(initExpenseForm, 200);
-            });
-        }
-    </script>
-<?php endif; ?>
