@@ -20,10 +20,10 @@ $roller = $db->fetchAll("SELECT * FROM roller ORDER BY rol_yetki_seviyesi DESC")
 
 // BYK'lar (filtre için) - Önce byk_categories'i kontrol et
 try {
-    $bykList = $db->fetchAll("SELECT id as byk_id, name as byk_adi, code as byk_kodu FROM byk_categories WHERE code IN ('AT', 'GT', 'KGT', 'gt') ORDER BY code");
+    $bykList = $db->fetchAll("SELECT id as byk_id, name as byk_adi, code as byk_kodu FROM byk_categories WHERE code IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY code");
 } catch (Exception $e) {
     // byk_categories yoksa eski byk tablosunu kullan
-    $bykList = $db->fetchAll("SELECT * FROM byk WHERE aktif = 1 AND byk_kodu IN ('AT', 'GT', 'KGT', 'gt') ORDER BY byk_adi");
+    $bykList = $db->fetchAll("SELECT * FROM byk WHERE aktif = 1 AND byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY byk_adi");
 }
 
 $errors = [];

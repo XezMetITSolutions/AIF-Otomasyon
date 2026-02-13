@@ -50,7 +50,7 @@ $projeler = $db->fetchAll($sql, $params);
 
 
 // BYK Listesi (Form için)
-$bykList = $db->fetchAll("SELECT * FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt') ORDER BY byk_adi ASC");
+$bykList = $db->fetchAll("SELECT * FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY byk_adi ASC");
 
 // Kullanıcı Listesi (Sorumlu seçimi için) - Sadece aktif kullanıcılar
 $usersList = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar WHERE aktif = 1 ORDER BY ad ASC");
@@ -234,7 +234,8 @@ include __DIR__ . '/../includes/header.php';
                             <option value="">Seçiniz...</option>
                             <?php foreach ($bykList as $byk): ?>
                                 <option value="<?php echo $byk['byk_id']; ?>">
-                                    <?php echo htmlspecialchars($byk['byk_adi']); ?></option>
+                                    <?php echo htmlspecialchars($byk['byk_adi']); ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
