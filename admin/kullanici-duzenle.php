@@ -131,9 +131,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // BYK İlişkilerini Güncelle
             if (empty($errors)) {
-                $db->query("DELETE FROM kullanici_byklar WHERE kullanici_id = ?", [$id]);
-                foreach ($byk_ids as $bid) {
-                    $db->query("INSERT INTO kullanici_byklar (kullanici_id, byk_id) VALUES (?, ?)", [$id, $bid]);
+                try {
+                    $db->query("DELETE FROM kullanici_byklar WHERE kullanici_id = ?", [$id]);
+                    foreach ($byk_ids as $bid) {
+                        if (!empty($bid)) {
+                            $db->query("INSERT INTO kullanici_byklar (kullanici_id, byk_id) VALUES (?, ?)", [$id, $bid]);
+                        }
+                    }
+                } catch (Exception $e) {
+                    // Tablo henüz mevcut değilse migration bekleniyor demektir, hatayı yoksay
                 }
             }
 

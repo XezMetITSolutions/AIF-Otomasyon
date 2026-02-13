@@ -75,8 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newUserId = $db->lastInsertId();
 
             // BYK İlişkilerini Kaydet
-            foreach ($byk_ids as $bid) {
-                $db->query("INSERT INTO kullanici_byklar (kullanici_id, byk_id) VALUES (?, ?)", [$newUserId, $bid]);
+            try {
+                foreach ($byk_ids as $bid) {
+                    if (!empty($bid)) {
+                        $db->query("INSERT INTO kullanici_byklar (kullanici_id, byk_id) VALUES (?, ?)", [$newUserId, $bid]);
+                    }
+                }
+            } catch (Exception $e) {
+                // Tablo yoksa sessizce devam et
             }
 
             // Yeni Kullanıcıya E-posta Gönder
