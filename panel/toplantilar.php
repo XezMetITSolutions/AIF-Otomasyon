@@ -573,178 +573,188 @@ include __DIR__ . '/../includes/header.php';
                 </div>
 
             <?php endif; ?>
+
+            <!-- Using existing Cancel/Delete Modals & JS logic (retained) -->
+            <div class="modal fade" id="cancelMeetingModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Toplantıyı İptal Et
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>⚠️ <strong id="meetingTitle"></strong> toplantısını iptal etmek istediğinize emin
+                                misiniz?</p>
+                            <p class="text-muted">Tüm katılımcılara iptal bildirimi e-postası gönderilecektir.</p>
+
+                            <div class="mb-3">
+                                <label for="cancelReason" class="form-label">İptal Nedeni (Opsiyonel)</label>
+                                <textarea class="form-control" id="cancelReason" rows="3"
+                                    placeholder="İptal nedenini buraya yazabilirsiniz..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                            <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                                <i class="fas fa-times-circle me-2"></i>Toplantıyı İptal Et
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                /* Custom Utilities */
+                .text-truncate-2 {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .text-truncate-3 {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 3;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .hover-shadow:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+                }
+
+                .transition-all {
+                    transition: all 0.3s ease;
+                }
+            </style>
+
+            <script>
+                // Filter and View Functions
+                function applyFilter(filterType, value) {
+                    const url = new URL(window.location);
+                    if (value) {
+                        url.searchParams.set(filterType, value);
+                    } else {
+                        url.searchParams.delete(filterType);
+                    }
+                    window.location = url;
+                }
+
+                function clearFilters() {
+                    const url = new URL(window.location);
+                    url.searchParams.delete('ay');
+                    url.searchParams.delete('byk');
+                    window.location = url;
+                }
+
+                function setView(viewType) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('view', viewType);
+                    window.location = url;
+                }
+
+                // Meeting Management Functions
+                let currentMeetingId = null;
+
+                function cancelMeeting(id, title) {
+                    currentMeetingId = id;
+                    document.getElementById('meetingTitle').textContent = title;
+                    document.getElementById('cancelReason').value = '';
+                    const modal = new bootstrap.Modal(document.getElementById('cancelMeetingModal'));
+                    modal.show();
+                }
+
+                document.getElementById('confirmCancelBtn')?.addEventListener('click', async function () {
+                    const reason = document.getElementById('cancelReason').value;
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>İptal Ediliyor...';
+
+                    try {
+                        const response = await fetch('/api/cancel-meeting.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                toplanti_id: currentMeetingId,
+                                iptal_nedeni: reason
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert('✅ ' + data.message);
+                            location.reload();
+                        } else {
+                            alert('❌ Hata: ' + data.message);
+                            btn.disabled = false;
+                            btn.innerHTML = originalText;
+                        }
+                    } catch (error) {
+                        alert('❌ Bir hata oluşti: ' + error.message);
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                });
+
+                window.deleteMeeting = function (id, title) {
+                    if (!confirm(`⚠️ "${title}" toplantısını kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve tüm ilgili veriler (katılımcılar, gündem, kararlar) silinecektir.`)) {
+                        return;
+                    }
+
+                    if (!confirm(`Son uyarı: Toplantıyı silmek istediğinize %100 emin misiniz?`)) {
+                        return;
+                    }
+
+                    // Explicitly get the button from event if possible, or use target
+                    const btn = (typeof event !== 'undefined' && event.target) ? event.target.closest('button') : null;
+                    const originalHTML = btn ? btn.innerHTML : '';
+
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    }
+
+                    fetch('/api/delete-meeting.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            toplanti_id: id
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('✅ ' + data.message);
+                                location.reload();
+                            } else {
+                                alert('❌ Hata: ' + data.message);
+                                if (btn) {
+                                    btn.disabled = false;
+                                    btn.innerHTML = originalHTML;
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            alert('❌ Bir hata olustu: ' + error.message);
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerHTML = originalHTML;
+                            }
+                        });
+                }
+            </script>
         </div>
     </main>
 </div>
-
-<!-- Using existing Cancel/Delete Modals & JS logic (retained) -->
-<div class="modal fade" id="cancelMeetingModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Toplantıyı İptal Et</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>⚠️ <strong id="meetingTitle"></strong> toplantısını iptal etmek istediğinize emin misiniz?</p>
-                <p class="text-muted">Tüm katılımcılara iptal bildirimi e-postası gönderilecektir.</p>
-
-                <div class="mb-3">
-                    <label for="cancelReason" class="form-label">İptal Nedeni (Opsiyonel)</label>
-                    <textarea class="form-control" id="cancelReason" rows="3"
-                        placeholder="İptal nedenini buraya yazabilirsiniz..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                <button type="button" class="btn btn-danger" id="confirmCancelBtn">
-                    <i class="fas fa-times-circle me-2"></i>Toplantıyı İptal Et
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    /* Custom Utilities */
-    .text-truncate-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .text-truncate-3 {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .hover-shadow:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
-    }
-
-    .transition-all {
-        transition: all 0.3s ease;
-    }
-</style>
-
-<script>
-    // Filter and View Functions
-    function applyFilter(filterType, value) {
-        const url = new URL(window.location);
-        if (value) {
-            url.searchParams.set(filterType, value);
-        } else {
-            url.searchParams.delete(filterType);
-        }
-        window.location = url;
-    }
-
-    function clearFilters() {
-        const url = new URL(window.location);
-        url.searchParams.delete('ay');
-        url.searchParams.delete('byk');
-        window.location = url;
-    }
-
-    function setView(viewType) {
-        const url = new URL(window.location);
-        url.searchParams.set('view', viewType);
-        window.location = url;
-    }
-
-    // Meeting Management Functions
-    let currentMeetingId = null;
-
-    function cancelMeeting(id, title) {
-        currentMeetingId = id;
-        document.getElementById('meetingTitle').textContent = title;
-        document.getElementById('cancelReason').value = '';
-        const modal = new bootstrap.Modal(document.getElementById('cancelMeetingModal'));
-        modal.show();
-    }
-
-    document.getElementById('confirmCancelBtn').addEventListener('click', async function () {
-        const reason = document.getElementById('cancelReason').value;
-        const btn = this;
-        const originalText = btn.innerHTML;
-
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>İptal Ediliyor...';
-
-        try {
-            const response = await fetch('/api/cancel-meeting.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    toplanti_id: currentMeetingId,
-                    iptal_nedeni: reason
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                alert('✅ ' + data.message);
-                location.reload();
-            } else {
-                alert('❌ Hata: ' + data.message);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        } catch (error) {
-            alert('❌ Bir hata oluştu: ' + error.message);
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    });
-
-    function deleteMeeting(id, title) {
-        if (!confirm(`⚠️ "${title}" toplantısını kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve tüm ilgili veriler (katılımcılar, gündem, kararlar) silinecektir.`)) {
-            return;
-        }
-
-        if (!confirm(`Son uyarı: Toplantıyı silmek istediğinize %100 emin misiniz?`)) {
-            return;
-        }
-
-        const btn = event.target.closest('button');
-        const originalHTML = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-        fetch('/api/delete-meeting.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                toplanti_id: id
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('✅ ' + data.message);
-                    location.reload();
-                } else {
-                    alert('❌ Hata: ' + data.message);
-                    btn.disabled = false;
-                    btn.innerHTML = originalHTML;
-                }
-            })
-            .catch(error => {
-                alert('❌ Bir hata oluştu: ' + error.message);
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
-            });
-    }
-</script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';

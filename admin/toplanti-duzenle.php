@@ -325,7 +325,7 @@ foreach ($katilimcilar as $k) {
 }
 
 // Admin Panel Variables (Admin is always creator/manager in this context)
-$isCreator = true; 
+$isCreator = true;
 $canManageContent = true;
 
 include __DIR__ . '/../includes/header.php';
@@ -421,10 +421,14 @@ include __DIR__ . '/../includes/header.php';
 
 
         </div>
+        <script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
+        <script>
+            if (typeof ToplantiYonetimi !== 'undefined') {
+                ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
+            }
+        </script>
     </div>
 </main>
-
-<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';

@@ -482,34 +482,23 @@ include __DIR__ . '/../includes/header.php';
             </div>
 
         </div>
+
+        <script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof ToplantiYonetimi !== 'undefined') {
+                    ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
+                }
+            });
+            // Also trigger for SPA
+            $(document).on('page:loaded', function () {
+                if (typeof ToplantiYonetimi !== 'undefined') {
+                    ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
+                }
+            });
+        </script>
     </div>
 </main>
-
-<!-- Tribute.js for @mentions -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.min.js"></script>
-
-<script>
-    // Prepare participants for Tribute.js
-    const MEETING_PARTICIPANTS = <?php
-    $participantsForJs = array_map(function ($p) {
-        return [
-            'key' => $p['ad'] . ' ' . $p['soyad'],
-            'value' => $p['ad'] . ' ' . $p['soyad'],
-            'email' => $p['email'],
-            'id' => $p['kullanici_id']
-        ];
-    }, $katilimcilar);
-    echo json_encode(array_values($participantsForJs));
-    ?>;
-</script>
-
-<script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
-    });
-</script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';

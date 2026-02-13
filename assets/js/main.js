@@ -278,3 +278,68 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
+/**
+ * Global Meeting Deletion Function
+ * Available on all pages
+ */
+window.deleteMeeting = function (id, title) {
+    if (!confirm(`⚠️ "${title}" toplantısını kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve tüm ilgili veriler (katılımcılar, gündem, kararlar) silinecektir.`)) {
+        return;
+    }
+
+    if (!confirm(`Son uyarı: Toplantıyı silmek istediğinize %100 emin misiniz?`)) {
+        return;
+    }
+
+    // Attempt to get button element for loading state
+    const btn = (typeof event !== 'undefined' && event.target) ? event.target.closest('button') : null;
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    }
+
+    fetch('/api/delete-meeting.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            toplanti_id: id
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof window.showAlert === 'function') {
+                    window.showAlert('success', data.message);
+                } else {
+                    alert('✅ ' + data.message);
+                }
+
+                // Reload or update view
+                setTimeout(() => {
+                    if (typeof loadPage === 'function') {
+                        loadPage(window.location.href);
+                    } else {
+                        window.location.reload();
+                    }
+                }, 1000);
+            } else {
+                alert('❌ Hata: ' + data.message);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Delete Error:', error);
+            alert('❌ Bir hata oluştu: ' + error.message);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        });
+};
+
