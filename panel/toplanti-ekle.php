@@ -166,12 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // OTOMATİK GÜNDEM (BYK/Bölge Toplantıları için)
-        // BYK bilgisini çek
+        // OTOMATİK GÜNDEM (Sadece AT/Birim Toplantıları için)
         $byk_info = $db->fetch("SELECT byk_kodu FROM byk WHERE byk_id = ?", [$byk_id]);
 
-        // Eğer BYK/Bölge birimi ise standart maddeleri ekle
-        if ($byk_info) {
+        if ($byk_info && strpos($byk_info['byk_kodu'], 'AT') !== false) {
             $standart_gundem = [
                 "Blg. Bşk. Yrd. | Teşkilatlanma Bşk.",
                 "Blg. Bşk. Yrd. | İrşad Bşk.",
@@ -296,24 +294,8 @@ include __DIR__ . '/../includes/header.php';
 
                             <div class="mb-3">
                                 <label for="aciklama" class="form-label">Gündem</label>
-                                <textarea class="form-control" id="aciklama" name="aciklama" rows="18"
-                                    placeholder="• Gündem maddesi 1&#10;• Gündem maddesi 2">• Blg. Bşk. Yrd. | Teşkilatlanma Bşk.
-• Blg. Bşk. Yrd. | İrşad Bşk.
-• Blg. Bşk. Yrd. | Eğitim Bşk.
-• Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.
-• Blg. Mali İşler Bşk.
-• Blg. Sekreteri
-• Blg. Dış Münasebetler Bşk.
-• Blg. Teftiş Kurulu Bşk.
-• Blg. Kurumsal İletişim Bşk.
-• Blg. Hac - Umre ve Seyahat Bşk.
-• Blg. UKBA Sorumlusu
-• Blg. GT Bşk.
-• Blg. KT Bşk.
-• Blg. KGT Bşk.
-• Blg. GM Üyelik Sorumlusu
-• Blg. Tanıtma Bşk.
-• Blg. İhsan Sohbeti Sorumlusu</textarea>
+                                <textarea class="form-control" id="aciklama" name="aciklama" rows="10"
+                                    placeholder="• Gündem maddesi 1&#10;• Gündem maddesi 2"></textarea>
                             </div>
 
                             <div class="row">
@@ -387,8 +369,20 @@ include __DIR__ . '/../includes/header.php';
 
             if (bykText.toLowerCase().includes('ana teşkilat') || bykText.toLowerCase().includes('merkez') || bykText.toLowerCase().includes('at')) {
                 divanCheckboxContainer.style.display = 'block';
+                // Gündemi otomatik doldur
+                const gundemTextarea = document.getElementById('aciklama');
+                if (gundemTextarea && (gundemTextarea.value.trim() === '' || gundemTextarea.value.includes('Blg. Bşk. Yrd.'))) {
+                    gundemTextarea.value = "• Blg. Bşk. Yrd. | Teşkilatlanma Bşk.\n• Blg. Bşk. Yrd. | İrşad Bşk.\n• Blg. Bşk. Yrd. | Eğitim Bşk.\n• Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.\n• Blg. Mali İşler Bşk.\n• Blg. Sekreteri\n• Blg. Dış Münasebetler Bşk.\n• Blg. Teftiş Kurulu Bşk.\n• Blg. Kurumsal İletişim Bşk.\n• Blg. Hac - Umre ve Seyahat Bşk.\n• Blg. UKBA Sorumlusu\n• Blg. GT Bşk.\n• Blg. KT Bşk.\n• Blg. KGT Bşk.\n• Blg. GM Üyelik Sorumlusu\n• Blg. Tanıtma Bşk.\n• Blg. İhsan Sohbeti Sorumlusu";
+                    gundemTextarea.rows = 18;
+                }
             } else {
                 divanCheckboxContainer.style.display = 'none';
+                // Gündemi temizle (eğer standart gündem varsa)
+                const gundemTextarea = document.getElementById('aciklama');
+                if (gundemTextarea && gundemTextarea.value.includes('Blg. Bşk. Yrd.')) {
+                    gundemTextarea.value = '';
+                    gundemTextarea.rows = 6;
+                }
             }
         }
 
