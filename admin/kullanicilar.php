@@ -51,8 +51,15 @@ if ($roleFilter) {
 }
 
 if ($bykFilter) {
-    $where[] = "EXISTS (SELECT 1 FROM kullanici_byklar kb WHERE kb.kullanici_id = k.kullanici_id AND kb.byk_id = ?)";
-    $params[] = $bykFilter;
+    try {
+        $where[] = "EXISTS (SELECT 1 FROM kullanici_byklar kb WHERE kb.kullanici_id = k.kullanici_id AND kb.byk_id = ?)";
+        $params[] = $bykFilter;
+        // Test query to see if table exists
+        $db->query("SELECT 1 FROM kullanici_byklar LIMIT 1");
+    } catch (Exception $e) {
+        $where[] = "k.byk_id = ?";
+        $params[] = $bykFilter;
+    }
 }
 
 $whereClause = implode(' AND ', $where);
@@ -68,7 +75,7 @@ $total = $db->fetch($totalQuery, $params)['count'];
 // Kullanıcılar - BYK bilgisini byk_categories'den al
 try {
     // Önce byk_categories tablosunu kullanarak kullanıcıları çek
-    $kullanicilar = $db->fetchAll("
+    $sql = "
         SELECT k.*, 
                COALESCE(r.rol_adi, 'Tanımsız') as rol_adi,
                (SELECT GROUP_CONCAT(COALESCE(bc.name, b2.byk_adi) SEPARATOR ', ') 
@@ -89,7 +96,19 @@ try {
         WHERE $whereClause
         ORDER BY k.olusturma_tarihi DESC
         LIMIT ? OFFSET ?
-    ", array_merge($params, [$perPage, $offset]));
+    ";
+
+    try {
+        $kullanicilar = $db->fetchAll($sql, array_merge($params, [$perPage, $offset]));
+    } catch (Exception $e) {
+        // Tablo henüz yoksa tum_byklar kısmını çıkararak tekrar dene
+        $sqlFallback = str_replace("(SELECT GROUP_CONCAT(COALESCE(bc.name, b2.byk_adi) SEPARATOR ', ') 
+                FROM kullanici_byklar kb 
+                JOIN byk b2 ON kb.byk_id = b2.byk_id 
+                LEFT JOIN byk_categories bc ON b2.byk_kodu = bc.code
+                WHERE kb.kullanici_id = k.kullanici_id) as tum_byklar,", "'' as tum_byklar,", $sql);
+        $kullanicilar = $db->fetchAll($sqlFallback, array_merge($params, [$perPage, $offset]));
+    }
 } catch (Exception $e) {
     // byk_categories yoksa eski sorguyu kullan
     $kullanicilar = $db->fetchAll(

@@ -45,8 +45,13 @@ class Auth
         }
 
         // BYK Listesini Al
-        $bykIds = $this->db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$user['kullanici_id']]);
-        $bykIds = array_column($bykIds, 'byk_id');
+        $bykIds = [];
+        try {
+            $rows = $this->db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$user['kullanici_id']]);
+            $bykIds = array_column($rows, 'byk_id');
+        } catch (Exception $e) {
+            // Migration henüz tamamlanmamış olabilir
+        }
         if (empty($bykIds) && $user['byk_id']) {
             $bykIds = [$user['byk_id']];
         }
@@ -340,8 +345,13 @@ class Auth
             );
 
             // BYK Listesini Al
-            $bykIds = $this->db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$userId]);
-            $bykIds = array_column($bykIds, 'byk_id');
+            $bykIds = [];
+            try {
+                $rows = $this->db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$userId]);
+                $bykIds = array_column($rows, 'byk_id');
+            } catch (Exception $e) {
+                // Migration henüz tamamlanmamış olabilir
+            }
             if (empty($bykIds) && $user['byk_id']) {
                 $bykIds = [$user['byk_id']];
             }

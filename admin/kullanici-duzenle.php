@@ -29,8 +29,13 @@ if (!$kullanici) {
 }
 
 // Kullanıcının BYK listesini al
-$userBykIds = $db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$id]);
-$userBykIds = array_column($userBykIds, 'byk_id');
+$userBykIds = [];
+try {
+    $rows = $db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$id]);
+    $userBykIds = array_column($rows, 'byk_id');
+} catch (Exception $e) {
+    // Tablo henüz mevcut değilse sessizce devam et
+}
 if (empty($userBykIds) && $kullanici['byk_id']) {
     $userBykIds = [$kullanici['byk_id']];
 }
