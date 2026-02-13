@@ -50,7 +50,7 @@ $projeler = $db->fetchAll($sql, $params);
 
 
 // BYK Listesi (Form için)
-$bykList = $db->fetchAll("SELECT * FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY byk_adi ASC");
+$bykList = $db->fetchAll("SELECT * FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'KT') ORDER BY byk_adi ASC");
 
 // Kullanıcı Listesi (Sorumlu seçimi için) - Sadece aktif kullanıcılar
 $usersList = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar WHERE aktif = 1 ORDER BY ad ASC");

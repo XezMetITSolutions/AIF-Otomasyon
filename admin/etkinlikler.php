@@ -71,9 +71,9 @@ $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // BYK listesi (filtre için)
 try {
-    $bykList = $db->fetchAll("SELECT id as byk_id, name as byk_adi, code as byk_kodu, color as byk_renk FROM byk_categories WHERE code IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY code");
+    $bykList = $db->fetchAll("SELECT id as byk_id, name as byk_adi, code as byk_kodu, color as byk_renk FROM byk_categories WHERE code IN ('AT', 'GT', 'KGT', 'gt', 'KT') ORDER BY code");
 } catch (Exception $e) {
-    $bykList = $db->fetchAll("SELECT * FROM byk WHERE aktif = 1 AND byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY byk_adi");
+    $bykList = $db->fetchAll("SELECT * FROM byk WHERE aktif = 1 AND byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'KT') ORDER BY byk_adi");
 }
 
 // Etkinlikler

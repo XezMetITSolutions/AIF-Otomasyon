@@ -70,7 +70,7 @@ $kararlar = $db->fetchAll("
 
 
 // BYK listesi
-$bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY byk_adi");
+$bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'KT') ORDER BY byk_adi");
 
 $error = '';
 $success = $_GET['success'] ?? '';

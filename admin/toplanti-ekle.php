@@ -16,7 +16,7 @@ $db = Database::getInstance();
 $pageTitle = 'Yeni Toplantı Ekle';
 
 // BYK listesini çek
-$bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'GZ') ORDER BY byk_adi");
+$bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'gt', 'KT') ORDER BY byk_adi");
 
 // Hata ve başarı mesajları
 $error = '';
