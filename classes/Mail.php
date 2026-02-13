@@ -6,41 +6,14 @@ class Mail
 
     public static function send($to, $subject, $message, $customConfig = null)
     {
+        // TESTING: E-posta gönderimi geçici olarak devre dışı bırakıldı
+        self::$lastLog = "E-posta gönderimi test için devre dışı bırakıldı.";
+        return true;
+
+        /*
         $config = require __DIR__ . '/../config/mail.php';
-
-        // Use custom config if provided (for testing), otherwise merge DB settings with file config
-        if ($customConfig) {
-            $smtpConfig = $customConfig;
-        } else {
-            $smtpConfig = [
-                'host'     => Config::get('smtp_host', $config['host']),
-                'port'     => (int)Config::get('smtp_port', $config['port']),
-                'username' => Config::get('smtp_user', $config['username']),
-                'password' => Config::get('smtp_pass', $config['password']),
-                'secure'   => Config::get('smtp_secure', $config['secure']),
-                'from_email' => Config::get('smtp_from_email', $config['from_email']),
-                'from_name'  => Config::get('smtp_from_name', $config['from_name'])
-            ];
-        }
-
-        require_once __DIR__ . '/SimpleSMTP.php';
-        $smtp = new SimpleSMTP($smtpConfig);
-
-        $result = $smtp->send(
-            $to,
-            $subject,
-            $message,
-            $smtpConfig['from_email'],
-            $smtpConfig['from_name']
-        );
-
-        self::$lastLog = $smtp->getLogs();
-
-        if (!$result) {
-            self::$lastError = $smtp->getLastError();
-        }
-
-        return $result;
+        ...
+        */
     }
 
     public static function getTemplate($kod)
