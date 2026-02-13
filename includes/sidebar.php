@@ -7,7 +7,7 @@ $user = $auth->getUser();
 if (!$user)
     return;
 
-$isSuperAdmin = $user['role'] === 'super_admin';
+$isSuperAdmin = $auth->isSuperAdmin();
 $isBaskan = $user['role'] === 'uye';
 $isUye = $user['role'] === 'uye';
 $currentPath = $_SERVER['PHP_SELF'];
@@ -320,7 +320,7 @@ if ($user) {
             $hasAnyManagement = false;
             foreach ($baskanSidebarSections as $section) {
                 // Check if user has ANY permission in this section
-                $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani, $isAT) {
+                $visibleManageLinks = array_filter($section['links'], function ($link) use ($auth, $isMuhasebeBaskani, $isAT, $isSuperAdmin) {
                     if ($isMuhasebeBaskani && in_array($link['key'], ['baskan_harcama_talepleri', 'baskan_iade_formlari'])) {
                         return true;
                     }

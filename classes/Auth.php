@@ -124,6 +124,12 @@ class Auth
             return false;
         }
 
+        // Eğer super_admin rolü isteniyorsa veya herhangi bir rol isteniyorsa
+        // ve kullanıcı bir super admin ise (level >= 90), erişime izin ver.
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
         return in_array($_SESSION['user_role'], $allowedRoles);
     }
 
@@ -153,11 +159,11 @@ class Auth
      */
     public function checkBykAccess($bykId)
     {
-        $user = $this->getUser();
-
-        if ($user['role'] === self::ROLE_SUPER_ADMIN) {
+        if ($this->isSuperAdmin()) {
             return true; // Ana yönetici tüm BYK'lara erişebilir
         }
+
+        $user = $this->getUser();
 
         // Üyeler kendi BYK'larından herhangi birine erişebilir
         $validByks = $user['byk_ids'] ?? [];

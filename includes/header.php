@@ -10,7 +10,7 @@ $enableCharts = $enableCharts ?? false;
 $enableAnimations = $enableAnimations ?? false;
 
 // Rol bazlı menü görünürlüğü
-$isSuperAdmin = $user && $user['role'] === 'super_admin';
+$isSuperAdmin = $auth->isSuperAdmin();
 $isUye = $user && $user['role'] === 'uye';
 ?>
 <!DOCTYPE html>
@@ -88,7 +88,7 @@ $isUye = $user && $user['role'] === 'uye';
             <div class="container-fluid">
                 <?php
                 $homeLink = '/index.php';
-                if ($user['role'] === 'super_admin') {
+                if ($isSuperAdmin) {
                     $homeLink = '/admin/dashboard.php';
                 } else {
                     $homeLink = '/panel/dashboard.php';
@@ -338,7 +338,7 @@ $isUye = $user && $user['role'] === 'uye';
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <?php
                                     $profileLink = '/panel/profil.php';
-                                    if ($user['role'] === 'super_admin') {
+                                    if ($isSuperAdmin) {
                                         $profileLink = '/admin/profil.php';
                                     }
                                     ?>
