@@ -11,6 +11,7 @@ Middleware::requireSuperAdmin();
 
 $auth = new Auth();
 $user = $auth->getUser();
+session_write_close();
 $db = Database::getInstance();
 
 $pageTitle = 'Yeni Toplantı Ekle';

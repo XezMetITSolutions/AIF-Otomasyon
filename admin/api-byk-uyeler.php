@@ -11,10 +11,11 @@ header('Content-Type: application/json');
 
 try {
     Middleware::requireRole([Auth::ROLE_SUPER_ADMIN, Auth::ROLE_UYE]);
-    
+
     $auth = new Auth();
     $user = $auth->getUser();
-    
+    session_write_close(); // Oturum kilidini serbest bırak (diğer istekleri engellememesi için)
+
     // Başkan sadece kendi BYK'sını görebilir
     if ($user['role'] === Auth::ROLE_UYE) {
         if (isset($_GET['byk_id']) && $_GET['byk_id'] != $user['byk_id']) {
@@ -23,15 +24,15 @@ try {
         // BYK ID'yi zorla kullanıcı BYK'sı yap (GET parametresi gelmese bile)
         $_GET['byk_id'] = $user['byk_id'];
     }
-    
+
     $db = Database::getInstance();
     $byk_id = $_GET['byk_id'] ?? null;
     $divan_only = isset($_GET['divan_only']) && $_GET['divan_only'] === 'true';
-    
+
     if (!$byk_id) {
         throw new Exception('BYK ID gereklidir');
     }
-    
+
     $whereClause = "k.byk_id = ? AND k.aktif = 1";
     if ($divan_only) {
         $whereClause .= " AND k.divan_uyesi = 1";
@@ -53,13 +54,13 @@ try {
         WHERE $whereClause
         ORDER BY k.ad, k.soyad
     ", [$byk_id]);
-    
+
     echo json_encode([
         'success' => true,
         'uyeler' => $uyeler,
         'count' => count($uyeler)
     ]);
-    
+
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode([

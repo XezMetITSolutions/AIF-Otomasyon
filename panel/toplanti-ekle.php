@@ -11,6 +11,7 @@ require_once __DIR__ . '/../classes/Database.php';
 
 $auth = new Auth();
 $user = $auth->getUser();
+session_write_close();
 $db = Database::getInstance();
 
 // Check if user belongs to 'AT' (Global Admin Unit)
@@ -349,7 +350,6 @@ include __DIR__ . '/../includes/header.php';
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const bykId = document.getElementById('byk_id').value;
         const katilimcilarContainer = document.getElementById('katilimcilar-container');
         const divanCheckboxContainer = document.getElementById('divan_checkbox_container');
         const divanCheckbox = document.getElementById('is_divan');
@@ -392,13 +392,23 @@ include __DIR__ . '/../includes/header.php';
         window.loadMembers = loadMembers;
 
         function loadMembers() {
-            if (!bykId) return;
+            const currentBykId = document.getElementById('byk_id').value;
+
+            if (!currentBykId) {
+                katilimcilarContainer.innerHTML = '<p class="text-muted text-center"><i class="fas fa-info-circle me-2"></i>Önce BYK seçiniz</p>';
+                return;
+            }
 
             katilimcilarContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="text-muted mt-2">Katılımcılar yükleniyor...</p></div>';
 
             const isDivan = document.getElementById('is_divan').checked;
-            fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan ? 'true' : 'false'}`)
-                .then(response => response.json())
+            fetch(`/admin/api-byk-uyeler.php?byk_id=${currentBykId}&divan_only=${isDivan ? 'true' : 'false'}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success && data.uyeler.length > 0) {
                         let html = '<div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">';
