@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $byk_id = $user['byk_id'];
         }
-        
+
         $baslik = trim($_POST['baslik'] ?? '');
         $aciklama = trim($_POST['aciklama'] ?? '');
         $toplanti_tarihi = $_POST['toplanti_tarihi'] ?? '';
@@ -44,14 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $is_divan = isset($_POST['is_divan']) ? 1 : 0;
         $toplanti_turu = $is_divan ? 'divan' : 'normal';
         $katilimcilar = $_POST['katilimcilar'] ?? [];
-        
+
         if (empty($baslik)) {
             throw new Exception('Toplantı başlığı zorunludur.');
         }
         if (empty($toplanti_tarihi)) {
             throw new Exception('Toplantı tarihi zorunludur.');
         }
-        
+
         // Toplantıyı ekle
         $db->query("
             INSERT INTO toplantilar (
@@ -67,15 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $toplanti_turu,
             $user['id']
         ]);
-        
+
         $toplanti_id = $db->lastInsertId();
-        
+
         // Katılımcıları ekle
         if (!empty($katilimcilar)) {
             foreach ($katilimcilar as $kullanici_id => $durum) {
                 if (!empty($durum)) {
                     $token = md5(uniqid($kullanici_id, true) . microtime());
-                    
+
                     try {
                         // Token ile birlikte eklemeyi dene
                         $db->query("
@@ -85,11 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ", [$toplanti_id, $kullanici_id, $durum, $token]);
                     } catch (Exception $e) {
                         $msg = $e->getMessage();
-                        
+
                         // 1. Durum: Token kolonu yoksa ekle ve tekrar dene
                         if (strpos($msg, 'Unknown column') !== false && strpos($msg, 'token') !== false) {
                             $db->query("ALTER TABLE toplanti_katilimcilar ADD COLUMN token VARCHAR(100) NULL AFTER kullanici_id");
-                             $db->query("ALTER TABLE toplanti_katilimcilar ADD INDEX (token)");
+                            $db->query("ALTER TABLE toplanti_katilimcilar ADD INDEX (token)");
                             $db->query("
                                 INSERT INTO toplanti_katilimcilar (
                                     toplanti_id, kullanici_id, katilim_durumu, token
@@ -112,10 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // E-posta ve Bildirim Gönderimi
                     if ($kullanici_id != $user['id']) {
                         $mailSent = false;
-                        
+
                         // Kullanıcı bilgilerini çek
                         $receiver = $db->fetch("SELECT email, ad, soyad FROM kullanicilar WHERE kullanici_id = ?", [$kullanici_id]);
-                        
+
                         // Zengin Davetiye E-postası Gönder (Mail sınıfı varsa ve alıcı e-postası varsa)
                         if ($receiver && !empty($receiver['email']) && class_exists('Mail') && method_exists('Mail', 'sendMeetingInvitation')) {
                             $mailData = [
@@ -132,17 +132,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         // Bildirim Ekle (Eğer mail gittiyse bildirim mailini kapat, gitmediyse aç)
                         Notification::add(
-                            $kullanici_id, 
-                            'Toplantı Daveti', 
-                            "Yeni bir toplantıya davet edildiniz: $baslik", 
-                            'uyari', 
+                            $kullanici_id,
+                            'Toplantı Daveti',
+                            "Yeni bir toplantıya davet edildiniz: $baslik",
+                            'uyari',
                             '/panel/toplantilar.php',
                             !$mailSent // Mail gönderilemediyse bildirim maili gitsin
                         );
                     }
                 }
             }
-            
+
             // Katılımcı sayısını güncelle
             $katilimci_sayisi = count($katilimcilar);
             try {
@@ -165,13 +165,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
-        
+
+        // OTOMATİK GÜNDEM (BYK/Bölge Toplantıları için)
+        // BYK bilgisini çek
+        $byk_info = $db->fetch("SELECT byk_kodu FROM byk WHERE byk_id = ?", [$byk_id]);
+
+        // Eğer BYK/Bölge birimi ise standart maddeleri ekle
+        if ($byk_info) {
+            $standart_gundem = [
+                "Blg. Bşk. Yrd. | Teşkilatlanma Bşk.",
+                "Blg. Bşk. Yrd. | İrşad Bşk.",
+                "Blg. Bşk. Yrd. | Eğitim Bşk.",
+                "Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.",
+                "Blg. Mali İşler Bşk.",
+                "Blg. Sekreteri",
+                "Blg. Dış Münasebetler Bşk.",
+                "Blg. Teftiş Kurulu Bşk.",
+                "Blg. Kurumsal İletişim Bşk.",
+                "Blg. Hac - Umre ve Seyahat Bşk.",
+                "Blg. UKBA Sorumlusu",
+                "Blg. GT Bşk.",
+                "Blg. KT Bşk.",
+                "Blg. KGT Bşk.",
+                "Blg. GM Üyelik Sorumlusu",
+                "Blg. Tanıtma Bşk.",
+                "Blg. İhsan Sohbeti Sorumlusu"
+            ];
+
+            $stmt_gundem = $db->getConnection()->prepare("
+                INSERT INTO toplanti_gundem (toplanti_id, sira_no, baslik, durum) 
+                VALUES (?, ?, ?, 'beklemede')
+            ");
+
+            $gsira = 1;
+            foreach ($standart_gundem as $madde) {
+                $stmt_gundem->execute([$toplanti_id, $gsira++, $madde]);
+            }
+        }
+
         $success = 'Toplantı başarıyla oluşturuldu!';
-        
+
         // Toplantı detay sayfasına yönlendir
         header("Location: /panel/toplanti-duzenle.php?id={$toplanti_id}&success=1");
         exit;
-        
+
     } catch (Exception $e) {
         $error = $e->getMessage();
     }
@@ -219,9 +256,11 @@ include __DIR__ . '/../includes/header.php';
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="byk_id" class="form-label">BYK <span class="text-danger">*</span></label>
+                                    <label for="byk_id" class="form-label">BYK <span
+                                            class="text-danger">*</span></label>
                                     <?php if ($isAdmin): ?>
-                                        <select class="form-select" id="byk_id" name="byk_id" required onchange="loadMembers()">
+                                        <select class="form-select" id="byk_id" name="byk_id" required
+                                            onchange="loadMembers()">
                                             <?php foreach ($bykler as $byk): ?>
                                                 <option value="<?php echo $byk['byk_id']; ?>" <?php echo $byk['byk_id'] == $user['byk_id'] ? 'selected' : ''; ?>>
                                                     <?php echo htmlspecialchars($byk['byk_adi']); ?>
@@ -229,14 +268,18 @@ include __DIR__ . '/../includes/header.php';
                                             <?php endforeach; ?>
                                         </select>
                                     <?php else: ?>
-                                        <input type="text" class="form-control" id="byk_display" value="<?php echo htmlspecialchars($bykler[0]['byk_adi']); ?>" readonly disabled>
-                                        <input type="hidden" id="byk_id" name="byk_id" value="<?php echo $user['byk_id']; ?>">
+                                        <input type="text" class="form-control" id="byk_display"
+                                            value="<?php echo htmlspecialchars($bykler[0]['byk_adi']); ?>" readonly
+                                            disabled>
+                                        <input type="hidden" id="byk_id" name="byk_id"
+                                            value="<?php echo $user['byk_id']; ?>">
                                     <?php endif; ?>
                                 </div>
 
                                 <div class="col-md-6 mb-3 d-flex align-items-end">
                                     <div class="form-check mb-2" id="divan_checkbox_container" style="display: none;">
-                                        <input class="form-check-input" type="checkbox" id="is_divan" name="is_divan" value="1">
+                                        <input class="form-check-input" type="checkbox" id="is_divan" name="is_divan"
+                                            value="1">
                                         <label class="form-check-label fw-bold" for="is_divan">
                                             <i class="fas fa-star text-warning me-1"></i>Divan Toplantısı
                                         </label>
@@ -245,28 +288,47 @@ include __DIR__ . '/../includes/header.php';
                             </div>
 
                             <div class="mb-3">
-                                <label for="baslik" class="form-label">Toplantı Başlığı <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="baslik" name="baslik" required 
-                                       placeholder="Örn: Bölge Değerlendirme Toplantısı">
+                                <label for="baslik" class="form-label">Toplantı Başlığı <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="baslik" name="baslik" required
+                                    placeholder="Örn: Bölge Değerlendirme Toplantısı">
                             </div>
 
                             <div class="mb-3">
                                 <label for="aciklama" class="form-label">Gündem</label>
-                                <textarea class="form-control" id="aciklama" name="aciklama" rows="6" 
-                                          placeholder="• Gündem maddesi 1&#10;• Gündem maddesi 2"></textarea>
+                                <textarea class="form-control" id="aciklama" name="aciklama" rows="18"
+                                    placeholder="• Gündem maddesi 1&#10;• Gündem maddesi 2">• Blg. Bşk. Yrd. | Teşkilatlanma Bşk.
+• Blg. Bşk. Yrd. | İrşad Bşk.
+• Blg. Bşk. Yrd. | Eğitim Bşk.
+• Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.
+• Blg. Mali İşler Bşk.
+• Blg. Sekreteri
+• Blg. Dış Münasebetler Bşk.
+• Blg. Teftiş Kurulu Bşk.
+• Blg. Kurumsal İletişim Bşk.
+• Blg. Hac - Umre ve Seyahat Bşk.
+• Blg. UKBA Sorumlusu
+• Blg. GT Bşk.
+• Blg. KT Bşk.
+• Blg. KGT Bşk.
+• Blg. GM Üyelik Sorumlusu
+• Blg. Tanıtma Bşk.
+• Blg. İhsan Sohbeti Sorumlusu</textarea>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label for="toplanti_tarihi" class="form-label">Tarih & Saat <span class="text-danger">*</span></label>
-                                    <input type="datetime-local" class="form-control" id="toplanti_tarihi" name="toplanti_tarihi" required>
+                                    <label for="toplanti_tarihi" class="form-label">Tarih & Saat <span
+                                            class="text-danger">*</span></label>
+                                    <input type="datetime-local" class="form-control" id="toplanti_tarihi"
+                                        name="toplanti_tarihi" required>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="konum" class="form-label">Konum</label>
-                                <input type="text" class="form-control" id="konum" name="konum" 
-                                       placeholder="Örn: Toplantı Salonu, Zoom Linki, vb.">
+                                <input type="text" class="form-control" id="konum" name="konum"
+                                    placeholder="Örn: Toplantı Salonu, Zoom Linki, vb.">
                             </div>
                         </div>
                     </div>
@@ -281,8 +343,9 @@ include __DIR__ . '/../includes/header.php';
                         <div class="card-body">
                             <div id="katilimcilar-container">
                                 <p class="text-muted text-center">
-                                    <div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div>
-                                    <span class="ms-2">Katılımcılar yükleniyor...</span>
+                                <div class="spinner-border spinner-border-sm" role="status"><span
+                                        class="visually-hidden">Yükleniyor...</span></div>
+                                <span class="ms-2">Katılımcılar yükleniyor...</span>
                                 </p>
                             </div>
                         </div>
@@ -303,51 +366,51 @@ include __DIR__ . '/../includes/header.php';
 </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const bykId = document.getElementById('byk_id').value;
-    const katilimcilarContainer = document.getElementById('katilimcilar-container');
-    const divanCheckboxContainer = document.getElementById('divan_checkbox_container');
-    const divanCheckbox = document.getElementById('is_divan');
-    
-    // Sayfa yüklenince otomatik üyeleri yükle
-    checkDivanStatus();
-    loadMembers();
+    document.addEventListener('DOMContentLoaded', function () {
+        const bykId = document.getElementById('byk_id').value;
+        const katilimcilarContainer = document.getElementById('katilimcilar-container');
+        const divanCheckboxContainer = document.getElementById('divan_checkbox_container');
+        const divanCheckbox = document.getElementById('is_divan');
 
-    function checkDivanStatus() {
-        const bykSelect = document.getElementById('byk_id');
-        let bykText = '';
-        if (bykSelect.tagName === 'SELECT') {
-            bykText = bykSelect.options[bykSelect.selectedIndex].text;
-        } else {
-            bykText = document.getElementById('byk_display').value;
+        // Sayfa yüklenince otomatik üyeleri yükle
+        checkDivanStatus();
+        loadMembers();
+
+        function checkDivanStatus() {
+            const bykSelect = document.getElementById('byk_id');
+            let bykText = '';
+            if (bykSelect.tagName === 'SELECT') {
+                bykText = bykSelect.options[bykSelect.selectedIndex].text;
+            } else {
+                bykText = document.getElementById('byk_display').value;
+            }
+
+            if (bykText.toLowerCase().includes('ana teşkilat') || bykText.toLowerCase().includes('merkez') || bykText.toLowerCase().includes('at')) {
+                divanCheckboxContainer.style.display = 'block';
+            } else {
+                divanCheckboxContainer.style.display = 'none';
+            }
         }
-        
-        if (bykText.toLowerCase().includes('ana teşkilat') || bykText.toLowerCase().includes('merkez') || bykText.toLowerCase().includes('at')) {
-            divanCheckboxContainer.style.display = 'block';
-        } else {
-            divanCheckboxContainer.style.display = 'none';
-        }
-    }
 
-    // Divan checkbox değiştiğinde
-    divanCheckbox.addEventListener('change', loadMembers);
+        // Divan checkbox değiştiğinde
+        divanCheckbox.addEventListener('change', loadMembers);
 
-    window.loadMembers = loadMembers;
+        window.loadMembers = loadMembers;
 
-    function loadMembers() {
-        if (!bykId) return;
-        
-        katilimcilarContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="text-muted mt-2">Katılımcılar yükleniyor...</p></div>';
-        
-        const isDivan = document.getElementById('is_divan').checked;
-        fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan ? 'true' : 'false'}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.uyeler.length > 0) {
-                    let html = '<div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">';
-                    
-                    data.uyeler.forEach(uye => {
-                        html += `
+        function loadMembers() {
+            if (!bykId) return;
+
+            katilimcilarContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="text-muted mt-2">Katılımcılar yükleniyor...</p></div>';
+
+            const isDivan = document.getElementById('is_divan').checked;
+            fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan ? 'true' : 'false'}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.uyeler.length > 0) {
+                        let html = '<div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">';
+
+                        data.uyeler.forEach(uye => {
+                            html += `
                             <div class="list-group-item px-0">
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" 
@@ -369,59 +432,59 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </select>
                             </div>
                         `;
-                    });
-                    
-                    html += '</div>';
-                    html += `<div class="mt-3 text-muted small"><i class="fas fa-info-circle me-1"></i>Toplam ${data.uyeler.length} üye</div>`;
-                    
-                    katilimcilarContainer.innerHTML = html;
-                    
-                    document.querySelectorAll('input[type="checkbox"][id^="katilimci_"]').forEach(checkbox => {
-                        const userId = checkbox.id.replace('katilimci_', '');
-                        const select = document.getElementById(`durum_${userId}`);
-                        
-                        checkbox.addEventListener('change', function() {
-                            if (this.checked) {
-                                select.disabled = false;
-                                select.value = 'beklemede';
-                            } else {
-                                select.disabled = true;
-                                select.value = '';
-                            }
                         });
-                    });
-                    
-                } else {
-                    katilimcilarContainer.innerHTML = '<p class="text-muted text-center"><i class="fas fa-exclamation-circle me-2"></i>Bu BYK\'de üye bulunamadı</p>';
+
+                        html += '</div>';
+                        html += `<div class="mt-3 text-muted small"><i class="fas fa-info-circle me-1"></i>Toplam ${data.uyeler.length} üye</div>`;
+
+                        katilimcilarContainer.innerHTML = html;
+
+                        document.querySelectorAll('input[type="checkbox"][id^="katilimci_"]').forEach(checkbox => {
+                            const userId = checkbox.id.replace('katilimci_', '');
+                            const select = document.getElementById(`durum_${userId}`);
+
+                            checkbox.addEventListener('change', function () {
+                                if (this.checked) {
+                                    select.disabled = false;
+                                    select.value = 'beklemede';
+                                } else {
+                                    select.disabled = true;
+                                    select.value = '';
+                                }
+                            });
+                        });
+
+                    } else {
+                        katilimcilarContainer.innerHTML = '<p class="text-muted text-center"><i class="fas fa-exclamation-circle me-2"></i>Bu BYK\'de üye bulunamadı</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    katilimcilarContainer.innerHTML = '<p class="text-danger text-center"><i class="fas fa-exclamation-triangle me-2"></i>Katılımcılar yüklenirken hata oluştu</p>';
+                });
+        }
+
+        // Gündem maddeleri için otomatik bullet point
+        const gundemTextarea = document.getElementById('aciklama');
+        if (gundemTextarea) {
+            gundemTextarea.addEventListener('focus', function () {
+                if (this.value.trim() === '') {
+                    this.value = '• ';
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                katilimcilarContainer.innerHTML = '<p class="text-danger text-center"><i class="fas fa-exclamation-triangle me-2"></i>Katılımcılar yüklenirken hata oluştu</p>';
             });
-    }
-    
-    // Gündem maddeleri için otomatik bullet point
-    const gundemTextarea = document.getElementById('aciklama');
-    if (gundemTextarea) {
-        gundemTextarea.addEventListener('focus', function() {
-            if (this.value.trim() === '') {
-                this.value = '• ';
-            }
-        });
-        gundemTextarea.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const start = this.selectionStart;
-                const end = this.selectionEnd;
-                const value = this.value;
-                const newValue = value.substring(0, start) + "\n• " + value.substring(end);
-                this.value = newValue;
-                this.selectionStart = this.selectionEnd = start + 3;
-            }
-        });
-    }
-});
+            gundemTextarea.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    const value = this.value;
+                    const newValue = value.substring(0, start) + "\n• " + value.substring(end);
+                    this.value = newValue;
+                    this.selectionStart = this.selectionEnd = start + 3;
+                }
+            });
+        }
+    });
 </script>
 
 <?php
