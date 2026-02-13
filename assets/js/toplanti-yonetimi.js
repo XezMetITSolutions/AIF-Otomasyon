@@ -297,22 +297,28 @@ var ToplantiYonetimi = {
     },
 
     atStandartGundemEkle: function () {
-        if (!confirm('Standart AT birim gündem maddeleri eklenecek. Onaylıyor musunuz?')) {
+        if (!confirm('Standart bölge gündem maddeleri eklenecek. Onaylıyor musunuz?')) {
             return;
         }
 
         const items = [
-            "Genel Başkanlık",
-            "Genel Sekreterlik",
-            "Sosyal Hizmetler",
-            "Teşkilatlanma",
-            "İrşad",
-            "Eğitim",
-            "Kadınlar Teşkilatı",
-            "Kadınlar Gençlik Teşkilatı",
-            "Gençlik Teşkilatı",
-            "Basın/Kurumsal Iletisim Baskanligi",
-            "Hacc Umre"
+            "Blg. Bşk. Yrd. | Teşkilatlanma Bşk.",
+            "Blg. Bşk. Yrd. | İrşad Bşk.",
+            "Blg. Bşk. Yrd. | Eğitim Bşk.",
+            "Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.",
+            "Blg. Mali İşler Bşk.",
+            "Blg. Sekreteri",
+            "Blg. Dış Münasebetler Bşk.",
+            "Blg. Teftiş Kurulu Bşk.",
+            "Blg. Kurumsal İletişim Bşk.",
+            "Blg. Hac - Umre ve Seyahat Bşk.",
+            "Blg. UKBA Sorumlusu",
+            "Blg. GT Bşk.",
+            "Blg. KT Bşk.",
+            "Blg. KGT Bşk.",
+            "Blg. GM Üyelik Sorumlusu",
+            "Blg. Tanıtma Bşk.",
+            "Blg. İhsan Sohbeti Sorumlusu"
         ];
 
         const btn = document.getElementById('atStandartGundemBtn');

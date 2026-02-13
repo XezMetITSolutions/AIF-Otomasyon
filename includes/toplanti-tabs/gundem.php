@@ -8,9 +8,9 @@
             <i class="fas fa-plus me-1"></i>Gündem Ekle
         </button>
         <?php endif; ?>
-        <?php if (strpos($toplanti['byk_kodu'], 'AT') !== false): ?>
+        <?php if ($canManageContent): ?>
             <button type="button" class="btn btn-sm btn-info text-white ms-2" id="atStandartGundemBtn">
-                <i class="fas fa-magic me-1"></i>Birim Gündemini Ekle
+                <i class="fas fa-magic me-1"></i>Standart Gündem Ekle
             </button>
         <?php endif; ?>
     </div>
