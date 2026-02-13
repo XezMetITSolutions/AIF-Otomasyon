@@ -51,27 +51,8 @@ if ($roleFilter) {
 }
 
 if ($bykFilter) {
-    try {
-        $bykCategory = $db->fetch("SELECT id, code FROM byk_categories WHERE id = ?", [$bykFilter]);
-        if ($bykCategory) {
-            $bykMatch = $db->fetch("SELECT byk_id FROM byk WHERE byk_kodu = ?", [$bykCategory['code']]);
-            if ($bykMatch && $bykMatch['byk_id'] != $bykFilter) {
-                // Hem kategori ID'sini hem de eşleşen byk_id'yi kontrol et
-                $where[] = "(k.byk_id = ? OR k.byk_id = ?)";
-                $params[] = $bykFilter;
-                $params[] = $bykMatch['byk_id'];
-            } else {
-                $where[] = "k.byk_id = ?";
-                $params[] = $bykFilter;
-            }
-        } else {
-            $where[] = "k.byk_id = ?";
-            $params[] = $bykFilter;
-        }
-    } catch (Exception $e) {
-        $where[] = "k.byk_id = ?";
-        $params[] = $bykFilter;
-    }
+    $where[] = "EXISTS (SELECT 1 FROM kullanici_byklar kb WHERE kb.kullanici_id = k.kullanici_id AND kb.byk_id = ?)";
+    $params[] = $bykFilter;
 }
 
 $whereClause = implode(' AND ', $where);
@@ -90,6 +71,11 @@ try {
     $kullanicilar = $db->fetchAll("
         SELECT k.*, 
                COALESCE(r.rol_adi, 'Tanımsız') as rol_adi,
+               (SELECT GROUP_CONCAT(COALESCE(bc.name, b2.byk_adi) SEPARATOR ', ') 
+                FROM kullanici_byklar kb 
+                JOIN byk b2 ON kb.byk_id = b2.byk_id 
+                LEFT JOIN byk_categories bc ON b2.byk_kodu = bc.code
+                WHERE kb.kullanici_id = k.kullanici_id) as tum_byklar,
                COALESCE(bc_dir.name, bc_via_b.name, b.byk_adi, '-') as byk_adi,
                COALESCE(bc_dir.code, bc_via_b.code, b.byk_kodu, '') as byk_kodu,
                COALESCE(bc_dir.color, bc_via_b.color, b.renk_kodu, '#009872') as byk_renk,
@@ -266,7 +252,11 @@ include __DIR__ . '/../includes/header.php';
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <?php if (!empty($kullanici['byk_adi']) && $kullanici['byk_adi'] !== '-'): ?>
+                                            <?php if (!empty($kullanici['tum_byklar'])): ?>
+                                                <span class="badge bg-secondary">
+                                                    <?php echo htmlspecialchars($kullanici['tum_byklar']); ?>
+                                                </span>
+                                            <?php elseif (!empty($kullanici['byk_adi']) && $kullanici['byk_adi'] !== '-'): ?>
                                                 <span class="badge"
                                                     style="background-color: <?php echo htmlspecialchars($kullanici['byk_renk'] ?? '#009872'); ?>; color: white;">
                                                     <?php echo htmlspecialchars($kullanici['byk_adi']); ?>

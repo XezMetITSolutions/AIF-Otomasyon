@@ -28,6 +28,13 @@ if (!$kullanici) {
     exit;
 }
 
+// Kullanıcının BYK listesini al
+$userBykIds = $db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$id]);
+$userBykIds = array_column($userBykIds, 'byk_id');
+if (empty($userBykIds) && $kullanici['byk_id']) {
+    $userBykIds = [$kullanici['byk_id']];
+}
+
 // Roller ve BYK'lar
 $roller = $db->fetchAll("SELECT * FROM roller ORDER BY rol_yetki_seviyesi DESC");
 // BYK'lar (filtre için) - Önce byk_categories'i kontrol et
@@ -68,7 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $sifre = $_POST['sifre'] ?? '';
     $rol_id = (int) ($_POST['rol_id'] ?? 0);
-    $byk_id = !empty($_POST['byk_id']) ? (int) $_POST['byk_id'] : null;
+    $byk_ids = $_POST['byk_ids'] ?? [];
+    $byk_id_primary = !empty($byk_ids) ? (int) $byk_ids[0] : null; // İlk seçileni ana birim yap (geri uyumluluk için)
     $alt_birim_id = !empty($_POST['alt_birim_id']) ? (int) $_POST['alt_birim_id'] : null;
     $aktif = isset($_POST['aktif']) ? 1 : 0;
     $divan_uyesi = isset($_POST['divan_uyesi']) ? 1 : 0;
@@ -105,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         UPDATE kullanicilar 
                         SET ad = ?, soyad = ?, email = ?, sifre = ?, rol_id = ?, byk_id = ?, alt_birim_id = ?, aktif = ?, divan_uyesi = ?
                         WHERE kullanici_id = ?
-                    ", [$ad, $soyad, $email, $sifre_hash, $rol_id, $byk_id, $alt_birim_id, $aktif, $divan_uyesi, $id]);
+                    ", [$ad, $soyad, $email, $sifre_hash, $rol_id, $byk_id_primary, $alt_birim_id, $aktif, $divan_uyesi, $id]);
                 }
             } else {
                 // Şifre değiştirilmedi
@@ -113,7 +121,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     UPDATE kullanicilar 
                     SET ad = ?, soyad = ?, email = ?, rol_id = ?, byk_id = ?, alt_birim_id = ?, aktif = ?, divan_uyesi = ?
                     WHERE kullanici_id = ?
-                ", [$ad, $soyad, $email, $rol_id, $byk_id, $alt_birim_id, $aktif, $divan_uyesi, $id]);
+                ", [$ad, $soyad, $email, $rol_id, $byk_id_primary, $alt_birim_id, $aktif, $divan_uyesi, $id]);
+            }
+
+            // BYK İlişkilerini Güncelle
+            if (empty($errors)) {
+                $db->query("DELETE FROM kullanici_byklar WHERE kullanici_id = ?", [$id]);
+                foreach ($byk_ids as $bid) {
+                    $db->query("INSERT INTO kullanici_byklar (kullanici_id, byk_id) VALUES (?, ?)", [$id, $bid]);
+                }
             }
 
             if (empty($errors)) {
@@ -197,15 +213,15 @@ include __DIR__ . '/../includes/header.php';
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">BYK</label>
-                            <select class="form-select" name="byk_id">
-                                <option value="">BYK Seçiniz (Opsiyonel)</option>
+                            <label class="form-label">BYK (Birden fazla seçilebilir)</label>
+                            <select class="form-select select2-multiple" name="byk_ids[]" multiple>
                                 <?php foreach ($bykList as $byk): ?>
-                                    <option value="<?php echo $byk['byk_id']; ?>" <?php echo (isset($_POST['byk_id']) ? $_POST['byk_id'] : $kullanici['byk_id']) == $byk['byk_id'] ? 'selected' : ''; ?>>
+                                    <option value="<?php echo $byk['byk_id']; ?>" <?php echo in_array($byk['byk_id'], $userBykIds) ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($byk['byk_adi']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <small class="text-muted">Birden fazla birim seçmek için Ctrl tuşuna basılı tutun.</small>
                         </div>
                     </div>
 

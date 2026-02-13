@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['setup'])) {
         }
 
         // 4. Toplantı Yönetimi Tabloları
-        
+
         // Toplantılar
         $db->query("
             CREATE TABLE IF NOT EXISTS `toplantilar` (
@@ -173,6 +173,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['setup'])) {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
         $messages[] = "✓ Toplantı tutanak tablosu oluşturuldu/kontrol edildi.";
+
+        // 5. Kullanıcı-BYK İlişki Tablosu (Çoklu BYK desteği)
+        $db->query("
+            CREATE TABLE IF NOT EXISTS `kullanici_byklar` (
+                `kullanici_id` INT NOT NULL,
+                `byk_id` INT NOT NULL,
+                PRIMARY KEY (`kullanici_id`, `byk_id`),
+                FOREIGN KEY (`kullanici_id`) REFERENCES `kullanicilar`(`kullanici_id`) ON DELETE CASCADE,
+                FOREIGN KEY (`byk_id`) REFERENCES `byk`(`byk_id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $messages[] = "✓ Kullanıcı-BYK ilişkisi tablosu oluşturuldu/kontrol edildi.";
+
+        // Mevcut byk_id'leri migrate et
+        try {
+            $db->query("
+                INSERT IGNORE INTO `kullanici_byklar` (kullanici_id, byk_id)
+                SELECT kullanici_id, byk_id FROM kullanicilar WHERE byk_id IS NOT NULL
+            ");
+            $messages[] = "✓ Mevcut BYK ilişkileri migrate edildi.";
+        } catch (Exception $e) {
+            $messages[] = "ℹ Migration sırasında hata (zaten yapılmış olabilir): " . $e->getMessage();
+        }
 
         $messages[] = "<strong>✓ Tüm tablolar başarıyla oluşturuldu!</strong>";
 
@@ -282,8 +305,9 @@ include __DIR__ . '/../includes/header.php';
                             <li><code>raggal_talepleri</code> - Raggal rezervasyon talepleri</li>
                             <li><code>demirbas_talepleri</code> - Demirbaş rezervasyon talepleri</li>
                         </ul>
-                        
-                        <form method="POST" onsubmit="return confirm('Tabloları oluşturmak istediğinize emin misiniz?');">
+
+                        <form method="POST"
+                            onsubmit="return confirm('Tabloları oluşturmak istediğinize emin misiniz?');">
                             <button type="submit" name="setup" class="btn btn-primary btn-lg w-100">
                                 <i class="fas fa-cog me-2"></i>Tabloları Oluştur / Kontrol Et
                             </button>

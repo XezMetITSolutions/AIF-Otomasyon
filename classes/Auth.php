@@ -4,24 +4,27 @@
  * AIF Otomasyon Sistemi
  */
 
-class Auth {
+class Auth
+{
     private $db;
     private $modulePermissionsCacheUser = null;
     private $modulePermissionsCache = [];
     private $accountingHeadCache = []; // Cache for accounting head status
-    
+
     // Rol sabitleri
     const ROLE_SUPER_ADMIN = 'super_admin';
     const ROLE_UYE = 'uye';
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->db = Database::getInstance();
     }
-    
+
     /**
      * Kullanıcı girişi
      */
-    public function login($email, $password, $remember = false) {
+    public function login($email, $password, $remember = false)
+    {
         $user = $this->db->fetch(
             "SELECT u.*, r.rol_adi, r.rol_yetki_seviyesi 
              FROM kullanicilar u 
@@ -29,18 +32,25 @@ class Auth {
              WHERE u.email = ? AND u.aktif = 1",
             [$email]
         );
-        
+
         if (!$user || !password_verify($password, $user['sifre'])) {
             return false;
         }
-        
+
         // İlk giriş kontrolü - şifre değiştirme zorunluluğu
         if ($user['ilk_giris_zorunlu'] == 1) {
             $_SESSION['requires_password_change'] = true;
             $_SESSION['temp_user_id'] = $user['kullanici_id'];
             return 'password_change_required';
         }
-        
+
+        // BYK Listesini Al
+        $bykIds = $this->db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$user['kullanici_id']]);
+        $bykIds = array_column($bykIds, 'byk_id');
+        if (empty($bykIds) && $user['byk_id']) {
+            $bykIds = [$user['byk_id']];
+        }
+
         // Oturum bilgilerini kaydet
         $_SESSION['user_id'] = $user['kullanici_id'];
         $_SESSION['user_email'] = $user['email'];
@@ -48,74 +58,79 @@ class Auth {
         $_SESSION['user_role'] = $user['rol_adi'];
         $_SESSION['role_level'] = $user['rol_yetki_seviyesi'];
         $_SESSION['byk_id'] = $user['byk_id'] ?? null;
+        $_SESSION['byk_ids'] = $bykIds;
         $_SESSION['alt_birim_id'] = $user['alt_birim_id'] ?? null;
         $_SESSION['logged_in'] = true;
         $_SESSION['login_time'] = time();
-        
+
         // Son giriş zamanını güncelle
         $this->db->query(
             "UPDATE kullanicilar SET son_giris = NOW() WHERE kullanici_id = ?",
             [$user['kullanici_id']]
         );
-        
+
         return true;
     }
-    
+
     /**
      * Kullanıcı çıkışı
      */
-    public function logout() {
+    public function logout()
+    {
         session_destroy();
         header('Location: /index.php');
         exit;
     }
-    
+
     /**
      * Oturum kontrolü
      */
-    public function checkAuth() {
+    public function checkAuth()
+    {
         if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             return false;
         }
-        
+
         // Oturum süresi kontrolü
         $appConfig = require __DIR__ . '/../config/app.php';
         $sessionLifetime = $appConfig['security']['session_lifetime'];
-        
+
         if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time']) > $sessionLifetime) {
             $this->logout();
             return false;
         }
-        
+
         // Oturum süresini yenile
         $_SESSION['login_time'] = time();
-        
+
         return true;
     }
-    
+
     /**
      * Rol kontrolü
      */
-    public function checkRole($allowedRoles) {
+    public function checkRole($allowedRoles)
+    {
         if (!is_array($allowedRoles)) {
             $allowedRoles = [$allowedRoles];
         }
-        
+
         if (!$this->checkAuth()) {
             return false;
         }
-        
+
         return in_array($_SESSION['user_role'], $allowedRoles);
     }
-    
+
     /**
      * Kullanıcı bilgilerini getir
      */
-    public function getUser() {
+    public function getUser()
+    {
         if (!$this->checkAuth()) {
             return null;
         }
-        
+
         return [
             'id' => $_SESSION['user_id'],
             'email' => $_SESSION['user_email'],
@@ -123,28 +138,36 @@ class Auth {
             'role' => $_SESSION['user_role'],
             'role_level' => $_SESSION['role_level'],
             'byk_id' => $_SESSION['byk_id'],
+            'byk_ids' => $_SESSION['byk_ids'] ?? [],
             'alt_birim_id' => $_SESSION['alt_birim_id']
         ];
     }
-    
+
     /**
      * BYK kontrolü - Kullanıcı kendi BYK'sına erişebilir
      */
-    public function checkBykAccess($bykId) {
+    public function checkBykAccess($bykId)
+    {
         $user = $this->getUser();
-        
+
         if ($user['role'] === self::ROLE_SUPER_ADMIN) {
             return true; // Ana yönetici tüm BYK'lara erişebilir
         }
-        
-        // Üyeler sadece kendi BYK'larına erişebilir
-        return $user['byk_id'] == $bykId;
+
+        // Üyeler kendi BYK'larından herhangi birine erişebilir
+        $validByks = $user['byk_ids'] ?? [];
+        if ($user['byk_id']) {
+            $validByks[] = $user['byk_id'];
+        }
+
+        return in_array($bykId, $validByks);
     }
 
     /**
      * Süper admin mi?
      */
-    public function isSuperAdmin() {
+    public function isSuperAdmin()
+    {
         $user = $this->getUser();
         return $user && ($user['role'] === self::ROLE_SUPER_ADMIN || ($user['role_level'] ?? 0) >= 90);
     }
@@ -152,7 +175,8 @@ class Auth {
     /**
      * Üye mi?
      */
-    public function isUye() {
+    public function isUye()
+    {
         $user = $this->getUser();
         return $user && $user['role'] === self::ROLE_UYE;
     }
@@ -160,7 +184,8 @@ class Auth {
     /**
      * Kullanıcının Muhasebe Başkanı olup olmadığını kontrol et
      */
-    public function isAccountingHead($userId) {
+    public function isAccountingHead($userId)
+    {
         if (isset($this->accountingHeadCache[$userId])) {
             return $this->accountingHeadCache[$userId];
         }
@@ -174,11 +199,12 @@ class Auth {
             return false;
         }
     }
-    
+
     /**
      * Modül yetkisi kontrolü
      */
-    public function hasModulePermission($moduleKey) {
+    public function hasModulePermission($moduleKey)
+    {
         $user = $this->getUser();
         if (!$user) {
             return false;
@@ -213,7 +239,7 @@ class Auth {
         // Eğer veritabanında bu modül için explicit (açıkça) bir yetki tanımlanmışsa,
         // ROL KONTROLÜNDEN ÖNCE bunu dikkate al.
         if (array_key_exists($moduleKey, $modulePermissions)) {
-            return (bool)$modulePermissions[$moduleKey];
+            return (bool) $modulePermissions[$moduleKey];
         }
 
         // Eğer modül kategorisi 'baskan' ise ve özel yetki verilmemişse, 
@@ -222,11 +248,12 @@ class Auth {
             return false;
         }
 
-        $default = (bool)($moduleConfig['default'] ?? true);
+        $default = (bool) ($moduleConfig['default'] ?? true);
         return $default;
     }
 
-    private function getModuleDefinitions() {
+    private function getModuleDefinitions()
+    {
         static $definitions = null;
         if ($definitions === null) {
             $configPath = __DIR__ . '/../config/baskan_modules.php';
@@ -235,7 +262,8 @@ class Auth {
         return $definitions;
     }
 
-    private function getCachedModulePermissions($userId) {
+    private function getCachedModulePermissions($userId)
+    {
         if ($this->modulePermissionsCacheUser !== $userId) {
             $this->modulePermissionsCache = $this->loadModulePermissions($userId);
             $this->modulePermissionsCacheUser = $userId;
@@ -243,7 +271,8 @@ class Auth {
         return $this->modulePermissionsCache;
     }
 
-    private function loadModulePermissions($userId) {
+    private function loadModulePermissions($userId)
+    {
         try {
             $rows = $this->db->fetchAll("
                 SELECT module_key, can_view 
@@ -257,48 +286,50 @@ class Auth {
 
         $result = [];
         foreach ($rows as $row) {
-            $result[$row['module_key']] = (bool)$row['can_view'];
+            $result[$row['module_key']] = (bool) $row['can_view'];
         }
         return $result;
     }
-    
+
     /**
      * Şifre değiştirme
      */
-    public function changePassword($userId, $oldPassword, $newPassword) {
+    public function changePassword($userId, $oldPassword, $newPassword)
+    {
         $user = $this->db->fetch(
             "SELECT sifre FROM kullanicilar WHERE kullanici_id = ?",
             [$userId]
         );
-        
+
         if (!password_verify($oldPassword, $user['sifre'])) {
             return false;
         }
-        
+
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->db->query(
             "UPDATE kullanicilar SET sifre = ?, ilk_giris_zorunlu = 0 WHERE kullanici_id = ?",
             [$hashedPassword, $userId]
         );
-        
+
         return true;
     }
-    
+
     /**
      * İlk giriş şifre değiştirme
      */
-    public function changePasswordFirstLogin($userId, $newPassword) {
+    public function changePasswordFirstLogin($userId, $newPassword)
+    {
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->db->query(
             "UPDATE kullanicilar SET sifre = ?, ilk_giris_zorunlu = 0 WHERE kullanici_id = ?",
             [$hashedPassword, $userId]
         );
-        
+
         // Geçici oturumu gerçek oturuma dönüştür
         if (isset($_SESSION['temp_user_id']) && $_SESSION['temp_user_id'] == $userId) {
             unset($_SESSION['temp_user_id']);
             unset($_SESSION['requires_password_change']);
-            
+
             // Normal oturum oluştur
             $user = $this->db->fetch(
                 "SELECT u.*, r.rol_adi, r.rol_yetki_seviyesi 
@@ -307,18 +338,26 @@ class Auth {
                  WHERE u.kullanici_id = ?",
                 [$userId]
             );
-            
+
+            // BYK Listesini Al
+            $bykIds = $this->db->fetchAll("SELECT byk_id FROM kullanici_byklar WHERE kullanici_id = ?", [$userId]);
+            $bykIds = array_column($bykIds, 'byk_id');
+            if (empty($bykIds) && $user['byk_id']) {
+                $bykIds = [$user['byk_id']];
+            }
+
             $_SESSION['user_id'] = $user['kullanici_id'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_name'] = $user['ad'] . ' ' . $user['soyad'];
             $_SESSION['user_role'] = $user['rol_adi'];
             $_SESSION['role_level'] = $user['rol_yetki_seviyesi'];
             $_SESSION['byk_id'] = $user['byk_id'] ?? null;
+            $_SESSION['byk_ids'] = $bykIds;
             $_SESSION['alt_birim_id'] = $user['alt_birim_id'] ?? null;
             $_SESSION['logged_in'] = true;
             $_SESSION['login_time'] = time();
         }
-        
+
         return true;
     }
 }
