@@ -220,6 +220,13 @@ try {
     $tableStatus['demirbas_talepleri'] = false;
 }
 
+try {
+    $result = $db->fetchAll("SHOW TABLES LIKE 'kullanici_byklar'");
+    $tableStatus['kullanici_byklar'] = !empty($result);
+} catch (Exception $e) {
+    $tableStatus['kullanici_byklar'] = false;
+}
+
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -287,6 +294,16 @@ include __DIR__ . '/../includes/header.php';
                                         <?php endif; ?>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td><code>kullanici_byklar</code></td>
+                                    <td>
+                                        <?php if ($tableStatus['kullanici_byklar']): ?>
+                                            <span class="badge bg-success">✓ Mevcut</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-danger">✗ Yok</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -304,6 +321,7 @@ include __DIR__ . '/../includes/header.php';
                         <ul>
                             <li><code>raggal_talepleri</code> - Raggal rezervasyon talepleri</li>
                             <li><code>demirbas_talepleri</code> - Demirbaş rezervasyon talepleri</li>
+                            <li><code>kullanici_byklar</code> - Çoklu BYK desteği</li>
                         </ul>
 
                         <form method="POST"
