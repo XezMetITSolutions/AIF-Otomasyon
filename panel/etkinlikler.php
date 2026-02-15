@@ -519,7 +519,10 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    function initCalendar() {
+        if (window.calendarInitialized) return;
+        window.calendarInitialized = true;
+        
         const calendarViewBtn = document.getElementById('calendarViewBtn');
         const listViewBtn = document.getElementById('listViewBtn');
         const calendarView = document.getElementById('calendarView');
@@ -765,8 +768,18 @@ include __DIR__ . '/../includes/header.php';
                     // Ideally, sidebar/footer global scripts handle .confirm-delete delegation.
                 }
             }
+            }
         });
-    });
+    }
+
+    // Initialize on load and on SPA navigation
+    document.addEventListener('DOMContentLoaded', initCalendar);
+    $(document).on('page:loaded', initCalendar);
+    
+    // Immediate call if page:loaded already fired or if script is appended late
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initCalendar();
+    }
 </script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

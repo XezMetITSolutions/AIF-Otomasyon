@@ -656,7 +656,7 @@ include __DIR__ . '/../includes/header.php';
                 }
 
                 // Meeting Management Functions
-                let currentMeetingId = null;
+                var currentMeetingId = null;
 
                 function cancelMeeting(id, title) {
                     currentMeetingId = id;

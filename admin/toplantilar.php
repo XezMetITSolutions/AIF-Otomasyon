@@ -144,8 +144,8 @@ include __DIR__ . '/../includes/header.php';
         <script>
             // Use a block or check to prevent re-declaration if needed, 
             // but SPA loader usually executes scripts in a way that's fine.
-            (function() {
-                let currentMeetingId = null;
+            // Meeting Management Functions
+            var currentMeetingId = null;
 
                 window.cancelMeeting = function(id, title) {
                     currentMeetingId = id;
@@ -157,7 +157,7 @@ include __DIR__ . '/../includes/header.php';
                     modal.show();
                 };
 
-                const confirmBtn = document.getElementById('confirmCancelBtn');
+                var confirmBtn = document.getElementById('confirmCancelBtn');
                 if (confirmBtn) {
                     // Remove old listeners to avoid multiple calls
                     const newBtn = confirmBtn.cloneNode(true);
@@ -251,7 +251,6 @@ include __DIR__ . '/../includes/header.php';
                             }
                         });
                 };
-            })();
         </script>
     </div>
 </main>
