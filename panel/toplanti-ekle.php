@@ -354,17 +354,33 @@ include __DIR__ . '/../includes/header.php';
         const divanCheckboxContainer = document.getElementById('divan_checkbox_container');
         const divanCheckbox = document.getElementById('is_divan');
 
+        // BYK Seçimi değiştiğinde
+        const bykSelect = document.getElementById('byk_id');
+        if (bykSelect && bykSelect.tagName === 'SELECT') {
+            bykSelect.onchange = function() {
+                checkDivanStatus();
+                loadMembers();
+            };
+        }
+
         // Sayfa yüklenince otomatik üyeleri yükle
         checkDivanStatus();
         loadMembers();
 
         function checkDivanStatus() {
             const bykSelect = document.getElementById('byk_id');
+            if (!bykSelect) return;
+
             let bykText = '';
             if (bykSelect.tagName === 'SELECT') {
-                bykText = bykSelect.options[bykSelect.selectedIndex].text;
+                if (bykSelect.selectedIndex > -1) {
+                    bykText = bykSelect.options[bykSelect.selectedIndex].text;
+                }
             } else {
-                bykText = document.getElementById('byk_display').value;
+                const displayEl = document.getElementById('byk_display');
+                if (displayEl) {
+                    bykText = displayEl.value;
+                }
             }
 
             if (bykText.toLowerCase().includes('ana teşkilat') || bykText.toLowerCase().includes('merkez') || bykText.toLowerCase().includes('at')) {
@@ -377,6 +393,9 @@ include __DIR__ . '/../includes/header.php';
                 }
             } else {
                 divanCheckboxContainer.style.display = 'none';
+                if (divanCheckbox) {
+                    divanCheckbox.checked = false;
+                }
                 // Gündemi temizle (eğer standart gündem varsa)
                 const gundemTextarea = document.getElementById('aciklama');
                 if (gundemTextarea && gundemTextarea.value.includes('Blg. Bşk. Yrd.')) {
