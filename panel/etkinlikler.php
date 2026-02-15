@@ -627,7 +627,7 @@ include __DIR__ . '/../includes/header.php';
 
             if (<?php echo $canManage ? 'true' : 'false'; ?>) {
                 html += `<div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-                <a href="/panel/baskan_etkinlik-ekle.php?id=${event.id}" class="btn btn-primary btn-sm"><i class="fas fa-edit me-1"></i>Düzenle</a>
+                <a href="/panel/etkinlik-ekle.php?id=${event.id}" class="btn btn-primary btn-sm"><i class="fas fa-edit me-1"></i>Düzenle</a>
              </div>`;
             }
 
@@ -750,7 +750,7 @@ include __DIR__ . '/../includes/header.php';
                     actions = `
                 <td>
                     <div class="btn-group">
-                        <a href="/panel/baskan_etkinlik-ekle.php?id=${raw.id}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                        <a href="/panel/etkinlik-ekle.php?id=${raw.id}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
                         <button type="button" class="btn btn-sm btn-outline-danger confirm-delete" data-id="${raw.id}" data-name="${e.title}"><i class="fas fa-trash"></i></button>
                     </div>
                 </td>`;
@@ -791,7 +791,6 @@ include __DIR__ . '/../includes/header.php';
                 }
             }
         });
-    }
 
     // Initialize on load and on SPA navigation
     document.addEventListener('DOMContentLoaded', initCalendar);
