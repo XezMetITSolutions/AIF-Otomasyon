@@ -14,7 +14,8 @@ try {
 
     $auth = new Auth();
     $user = $auth->getUser();
-    session_write_close(); // Oturum kilidini serbest bırak (diğer istekleri engellememesi için)
+    error_log("AIF API: Request received for BYK " . ($_GET['byk_id'] ?? 'null') . " by user " . ($user['id'] ?? 'unknown'));
+    session_write_close(); 
 
     // Başkan sadece kendi BYK'sını görebilir
     if ($user['role'] === Auth::ROLE_UYE) {

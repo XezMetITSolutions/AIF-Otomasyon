@@ -289,157 +289,153 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </main>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
+    /**
+     * Toplantı Ekleme (Admin) Başlatıcı (Ultra-Agresif)
+     * SPA yapılarındaki takılmaları önlemek için polling ve retry içerir.
+     */
+    function initAdminToplantiEkle() {
+        const container = document.getElementById('katilimcilar-container');
+        if (!container || container.dataset.aggroLoaded === 'true') return;
+
         const bykSelect = document.getElementById('byk_id');
-        const katilimcilarContainer = document.getElementById('katilimcilar-container');
-        const divanCheckboxContainer = document.getElementById('divan_checkbox_container');
+        if (!bykSelect) return;
+        
+        container.dataset.aggroLoaded = 'true';
+        console.log('%c AIF Admin: Modül uyandırıldı. ', 'background: #2c3e50; color: #fff');
+
         const divanCheckbox = document.getElementById('is_divan');
+        const divanContainer = document.getElementById('divan_checkbox_container');
+        const aciklama = document.getElementById('aciklama');
 
-        // BYK değiştiğinde
-        bykSelect.addEventListener('change', function () {
-            const selectedOption = this.options[this.selectedIndex];
-            const bykText = selectedOption.text.toLowerCase();
-
-            // Ana Teşkilat kontrolü (İsim veya kod kontrolü)
-            if (bykText.includes('ana teşkilat') || bykText.includes('merkez') || bykText.includes('at')) {
-                divanCheckboxContainer.style.display = 'block';
-                // Gündemi otomatik doldur
-                const gundemTextarea = document.getElementById('aciklama');
-                if (gundemTextarea && (gundemTextarea.value.trim() === '' || gundemTextarea.value.includes('Blg. Bşk. Yrd.'))) {
-                    gundemTextarea.value = "• Blg. Bşk. Yrd. | Teşkilatlanma Bşk.\n• Blg. Bşk. Yrd. | İrşad Bşk.\n• Blg. Bşk. Yrd. | Eğitim Bşk.\n• Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.\n• Blg. Mali İşler Bşk.\n• Blg. Sekreteri\n• Blg. Dış Münasebetler Bşk.\n• Blg. Teftiş Kurulu Bşk.\n• Blg. Kurumsal İletişim Bşk.\n• Blg. Hac - Umre ve Seyahat Bşk.\n• Blg. UKBA Sorumlusu\n• Blg. GT Bşk.\n• Blg. KT Bşk.\n• Blg. KGT Bşk.\n• Blg. GM Üyelik Sorumlusu\n• Blg. Tanıtma Bşk.\n• Blg. İhsan Sohbeti Sorumlusu";
-                    gundemTextarea.rows = 18;
-                }
-            } else {
-                divanCheckboxContainer.style.display = 'none';
-                divanCheckbox.checked = false;
-                // Gündemi temizle (eğer standart gündem varsa)
-                const gundemTextarea = document.getElementById('aciklama');
-                if (gundemTextarea && gundemTextarea.value.includes('Blg. Bşk. Yrd.')) {
-                    gundemTextarea.value = '';
-                    gundemTextarea.rows = 6;
-                }
-            }
-
-            loadMembers();
-        });
-
-        // Divan checkbox değiştiğinde
-        divanCheckbox.addEventListener('change', loadMembers);
-
-        window.loadMembers = loadMembers;
-
-        function loadMembers() {
+        window.loadMembers = function(retry = 0) {
             const bykId = bykSelect.value;
-
             if (!bykId) {
-                katilimcilarContainer.innerHTML = '<p class="text-muted text-center"><i class="fas fa-info-circle me-2"></i>Önce BYK seçiniz</p>';
+                container.innerHTML = '<div class="alert alert-info py-2 small text-center">Lütfen BYK seçiniz.</div>';
                 return;
             }
 
-            // Loading göster
-            katilimcilarContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Yükleniyor...</span></div><p class="text-muted mt-2">Katılımcılar yükleniyor...</p></div>';
+            if (retry === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5" id="admin-aggro-spinner" style="cursor:pointer">
+                        <div class="spinner-border text-primary spinner-border-sm mb-2"></div>
+                        <p class="text-muted small">Üye listesi hazırlanıyor...</p>
+                        <small class="text-secondary">(Takılırsa buraya tıklayın)</small>
+                    </div>`;
+                document.getElementById('admin-aggro-spinner').onclick = () => window.loadMembers(0);
+            }
 
-            // AJAX ile katılımcıları getir
-            const isDivan = document.getElementById('is_divan').checked;
-            fetch(`/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan}`)
-                .then(response => response.json())
+            const isDivan = divanCheckbox ? divanCheckbox.checked : false;
+            const apiUrl = `/admin/api-byk-uyeler.php?byk_id=${bykId}&divan_only=${isDivan}&_v=${Date.now()}`;
+
+            fetch(apiUrl)
+                .then(res => res.json())
                 .then(data => {
-                    if (data.success && data.uyeler.length > 0) {
-                        let html = '<div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">';
-
-                        data.uyeler.forEach(uye => {
-                            html += `
-                            <div class="list-group-item px-0">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" 
-                                           id="katilimci_${uye.kullanici_id}" 
-                                           name="katilimcilar[${uye.kullanici_id}]" 
-                                           value="beklemede" checked>
-                                    <label class="form-check-label" for="katilimci_${uye.kullanici_id}">
-                                        <strong>${uye.ad} ${uye.soyad}</strong>
-                                    </label>
-                                </div>
-                                <select class="form-select form-select-sm" 
-                                        name="katilimcilar[${uye.kullanici_id}]"
-                                        id="durum_${uye.kullanici_id}">
-                                    <option value="beklemede">Davet Edildi</option>
-                                    <option value="katildi">Katıldı</option>
-                                    <option value="ozur_diledi">Özür Diledi</option>
-                                    <option value="izinli">İzinli</option>
-                                    <option value="">Katılmadı</option>
-                                </select>
-                            </div>
-                        `;
-                        });
-
-                        html += '</div>';
-                        html += `<div class="mt-3 text-muted small"><i class="fas fa-info-circle me-1"></i>Toplam ${data.uyeler.length} üye</div>`;
-
-                        katilimcilarContainer.innerHTML = html;
-
-                        // Checkbox ile select'i senkronize et
-                        document.querySelectorAll('input[type="checkbox"][id^="katilimci_"]').forEach(checkbox => {
-                            const userId = checkbox.id.replace('katilimci_', '');
-                            const select = document.getElementById(`durum_${userId}`);
-
-                            checkbox.addEventListener('change', function () {
-                                if (this.checked) {
-                                    select.disabled = false;
-                                    select.value = 'beklemede';
-                                } else {
-                                    select.disabled = true;
-                                    select.value = '';
-                                }
-                            });
-                        });
-
+                    if (data.success && data.uyeler) {
+                        renderAdminMembers(data.uyeler);
                     } else {
-                        katilimcilarContainer.innerHTML = '<p class="text-muted text-center"><i class="fas fa-exclamation-circle me-2"></i>Bu BYK\'de üye bulunamadı</p>';
+                        throw new Error(data.error || 'Boş yanıt');
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    katilimcilarContainer.innerHTML = '<p class="text-danger text-center"><i class="fas fa-exclamation-triangle me-2"></i>Katılımcılar yüklenirken hata oluştu</p>';
+                .catch(err => {
+                    if (retry < 2) {
+                        setTimeout(() => window.loadMembers(retry + 1), 1000);
+                    } else {
+                        container.innerHTML = '<div class="alert alert-danger py-3 small text-center">Yükleme başarısız. <a href="javascript:loadMembers(0)">Tekrar dene</a></div>';
+                    }
                 });
+        };
+
+        function renderAdminMembers(uyeler) {
+            if (uyeler.length === 0) {
+                container.innerHTML = '<div class="alert alert-light border text-center py-3 small text-muted">Üye bulunamadı.</div>';
+                return;
+            }
+
+            let html = '<div class="list-group list-group-flush border rounded-3 overflow-auto" style="max-height: 400px;">';
+            uyeler.forEach(uye => {
+                const uid = uye.kullanici_id;
+                html += `
+                    <div class="list-group-item py-2 px-3 list-group-item-action">
+                        <div class="form-check">
+                            <input class="form-check-input admin-cb" type="checkbox" id="ka_${uid}" name="katilimcilar[${uid}]" value="beklemede" checked>
+                            <label class="form-check-label w-100" for="ka_${uid}">
+                                <div class="fw-bold fs-7">${uye.ad} ${uye.soyad}</div>
+                                <div class="text-muted extra-small">${uye.alt_birim_adi || ''} ${uye.rol_adi || ''}</div>
+                            </label>
+                        </div>
+                        <div class="mt-2">
+                            <select class="form-select form-select-sm" name="katilimcilar[${uid}]" id="du_${uid}">
+                                <option value="beklemede">Davet Edildi</option>
+                                <option value="katildi">Katıldı</option>
+                                <option value="ozur_diledi">Özür Diledi</option>
+                                <option value="izinli">İzinli</option>
+                                <option value="">Katılmadı</option>
+                            </select>
+                        </div>
+                    </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+
+            container.querySelectorAll('.admin-cb').forEach(cb => {
+                cb.onchange = function() {
+                    const uid = this.id.substring(3);
+                    const sel = document.getElementById('du_' + uid);
+                    if (sel) {
+                        sel.disabled = !this.checked;
+                        if (!this.checked) sel.value = '';
+                        else if (sel.value === '') sel.value = 'beklemede';
+                    }
+                };
+            });
         }
 
-        // Form validasyonu
-        document.getElementById('toplantiForm').addEventListener('submit', function (e) {
-            const baslik = document.getElementById('baslik').value.trim();
-            const bykId = document.getElementById('byk_id').value;
-            const toplanti_tarihi = document.getElementById('toplanti_tarihi').value;
+        function onBykChangeAdmin() {
+            const selectedOption = bykSelect.options[bykSelect.selectedIndex];
+            if (!selectedOption) return;
+            const bykText = selectedOption.text.toLowerCase();
 
-            if (!bykId || !baslik || !toplanti_tarihi) {
-                e.preventDefault();
-                alert('Lütfen zorunlu alanları doldurunuz!');
-                return false;
+            const isAT = /ana teşkilat|merkez|at|gt|kgt/i.test(bykText);
+            if (divanContainer) divanContainer.style.display = isAT ? 'block' : 'none';
+
+            if (isAT && aciklama && (aciklama.value.trim() === '' || aciklama.value.includes('Blg. Bşk. Yrd.'))) {
+                aciklama.value = "• Blg. Bşk. Yrd. | Teşkilatlanma Bşk.\n• Blg. Bşk. Yrd. | İrşad Bşk.\n• Blg. Bşk. Yrd. | Eğitim Bşk.\n• Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.\n• Blg. Mali İşler Bşk.\n• Blg. Sekreteri\n• Blg. Dış Münasebetler Bşk.\n• Blg. Teftiş Kurulu Bşk.\n• Blg. Kurumsal İletişim Bşk.\n• Blg. Hac - Umre ve Seyahat Bşk.\n• Blg. UKBA Sorumlusu\n• Blg. GT Bşk.\n• Blg. KT Bşk.\n• Blg. KGT Bşk.\n• Blg. GM Üyelik Sorumlusu\n• Blg. Tanıtma Bşk.\n• Blg. İhsan Sohbeti Sorumlusu";
+                aciklama.rows = 18;
             }
-        });
+            window.loadMembers(0);
+        }
 
-        // Gündem maddeleri için otomatik bullet point
-        const gundemTextarea = document.getElementById('aciklama');
+        bykSelect.addEventListener('change', onBykChangeAdmin);
+        if (divanCheckbox) divanCheckbox.addEventListener('change', () => window.loadMembers(0));
 
-        if (gundemTextarea) {
-            gundemTextarea.addEventListener('focus', function () {
-                if (this.value.trim() === '') {
-                    this.value = '• ';
-                }
-            });
-
-            gundemTextarea.addEventListener('keydown', function (e) {
+        if (aciklama) {
+            aciklama.addEventListener('focus', function() { if (this.value.trim() === '') this.value = '• '; });
+            aciklama.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const start = this.selectionStart;
-                    const end = this.selectionEnd;
-                    const value = this.value;
-                    const newValue = value.substring(0, start) + "\n• " + value.substring(end);
-                    this.value = newValue;
+                    this.value = this.value.substring(0, start) + "\n• " + this.value.substring(this.selectionEnd);
                     this.selectionStart = this.selectionEnd = start + 3;
                 }
             });
         }
-    });
+        
+        if (bykSelect.value) onBykChangeAdmin();
+    }
+
+    (function pollAdmin() {
+        initAdminToplantiEkle();
+        let att = 0;
+        const i = setInterval(() => {
+            att++;
+            const c = document.getElementById('katilimcilar-container');
+            if (c && c.dataset.aggroLoaded === 'true') clearInterval(i);
+            else if (att > 15) clearInterval(i);
+            else initAdminToplantiEkle();
+        }, 500);
+    })();
+
+    if (typeof jQuery !== 'undefined') $(document).on('page:loaded', initAdminToplantiEkle);
 </script>
 
 <?php

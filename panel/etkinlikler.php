@@ -524,30 +524,32 @@ include __DIR__ . '/../includes/header.php';
         if (!calendarEl || calendarEl.dataset.initialized === 'true') return;
         calendarEl.dataset.initialized = 'true';
         
+        console.log('AIF: Takvim modülü başlatılıyor...');
+
         const calendarViewBtn = document.getElementById('calendarViewBtn');
         const listViewBtn = document.getElementById('listViewBtn');
         const calendarView = document.getElementById('calendarView');
         const listView = document.getElementById('listView');
 
-        // View Toggles
-        calendarViewBtn.addEventListener('click', () => {
-            calendarViewBtn.classList.add('active');
-            listViewBtn.classList.remove('active');
-            calendarView.classList.remove('d-none');
-            listView.classList.add('d-none');
-            if (window.calendar) window.calendar.render();
-        });
+        if (calendarViewBtn && listViewBtn) {
+            calendarViewBtn.onclick = () => {
+                calendarViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+                calendarView.classList.remove('d-none');
+                listView.classList.add('d-none');
+                if (window.calendar) window.calendar.render();
+            };
 
-        listViewBtn.addEventListener('click', () => {
-            listViewBtn.classList.add('active');
-            calendarViewBtn.classList.remove('active');
-            listView.classList.remove('d-none');
-            calendarView.classList.add('d-none');
-        });
+            listViewBtn.onclick = () => {
+                listViewBtn.classList.add('active');
+                calendarViewBtn.classList.remove('active');
+                listView.classList.remove('d-none');
+                calendarView.classList.add('d-none');
+            };
+        }
 
         // Calendar Init
         const initialEvents = <?php echo json_encode($calendarEvents, JSON_UNESCAPED_UNICODE) ?: '[]'; ?>;
-        const calendarEl = document.getElementById('calendar');
 
         if (calendarEl) {
             try {
@@ -578,20 +580,34 @@ include __DIR__ . '/../includes/header.php';
                     window.calendar.render();
                 } else {
                     console.error('FullCalendar library not loaded.');
-                    calendarEl.innerHTML = '<div class="alert alert-danger">Takvim kütüphanesi yüklenemedi. Lütfen sayfayı yenileyiniz.</div>';
+                    calendarEl.innerHTML = '<div class="alert alert-danger">Takvim kütüphanesi yüklenemedi.</div>';
                 }
             } catch (e) {
                 console.error('Calendar init error:', e);
-                calendarEl.innerHTML = '<div class="alert alert-danger">Takvim yüklenirken bir hata oluştu.</div>';
+                calendarEl.innerHTML = '<div class="alert alert-danger">Takvim yüklenirken hata oluştu.</div>';
             }
         }
+    }
 
-        function showEventModal(event) {
-            const props = event.extendedProps;
-            const modalBody = document.getElementById('eventModalBody');
-            document.getElementById('eventModalLabel').textContent = event.title;
+    // Auto-init for SPA
+    (function aggroCalendar() {
+        initCalendar();
+        let att = 0;
+        const i = setInterval(() => {
+            att++;
+            const c = document.getElementById('calendar');
+            if (c && c.dataset.initialized === 'true') clearInterval(i);
+            else if (att > 20) clearInterval(i);
+            else initCalendar();
+        }, 500);
+    })();
 
-            let html = `
+    function showEventModal(event) {
+        const props = event.extendedProps;
+        const modalBody = document.getElementById('eventModalBody');
+        document.getElementById('eventModalLabel').textContent = event.title;
+
+        let html = `
             <div class="mb-3"><strong>Başlık:</strong> ${event.title}</div>
             ${props.byk ? `<div class="mb-3"><strong>BYK:</strong> <span class="badge" style="background-color: ${event.backgroundColor};">${props.byk}</span></div>` : ''}
             <div class="mb-3"><strong>Başlangıç:</strong> ${event.start ? event.start.toLocaleString('tr-TR') : ''}</div>

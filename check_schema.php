@@ -1,11 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/init.php';
-require_once __DIR__ . '/classes/Database.php';
-
+require 'includes/init.php';
 $db = Database::getInstance();
-
-echo "EXPLAIN kullanicilar:\n";
-print_r($db->fetchAll("EXPLAIN kullanicilar"));
-
-echo "\nSHOW TABLES LIKE 'kullanici_byklar':\n";
-print_r($db->fetchAll("SHOW TABLES LIKE 'kullanici_byklar'"));
+try {
+    $rows = $db->fetchAll("DESCRIBE kullanicilar");
+    print_r($rows);
+} catch (Exception $e) {
+    echo $e->getMessage();
+}
