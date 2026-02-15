@@ -788,11 +788,7 @@ include __DIR__ . '/../includes/header.php';
                 // Trigger your global delete confirmation logic here or standard alert
                 if (confirm(btn.dataset.name + ' etkinliğini silmek istediğinize emin misiniz?')) {
                     // Proceed with delete... URL or Form submit
-                    // Since we are strictly doing Filter AJAX here, actual Deletion might be standard page load
-                    // For now, let's just allow standard click which might fail if event listeners aren't attached.
-                    // Ideally, sidebar/footer global scripts handle .confirm-delete delegation.
                 }
-            }
             }
         });
     }
