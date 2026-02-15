@@ -169,17 +169,13 @@ if ($isAjax) {
 }
 
 $pageTitle = 'Çalışma Takvimi';
-$pageSpecificCSS = [
-    'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css'
-];
-
-$pageSpecificJS = [
-    'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js',
-    'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js'
-];
-
 include __DIR__ . '/../includes/header.php';
 ?>
+
+<!-- FullCalendar Library -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
 <!-- Modern Design Assets -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
