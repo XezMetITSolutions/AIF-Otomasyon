@@ -520,8 +520,9 @@ include __DIR__ . '/../includes/header.php';
 
 <script>
     function initCalendar() {
-        if (window.calendarInitialized) return;
-        window.calendarInitialized = true;
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl || calendarEl.dataset.initialized === 'true') return;
+        calendarEl.dataset.initialized = 'true';
         
         const calendarViewBtn = document.getElementById('calendarViewBtn');
         const listViewBtn = document.getElementById('listViewBtn');

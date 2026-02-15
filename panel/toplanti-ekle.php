@@ -349,23 +349,33 @@ include __DIR__ . '/../includes/header.php';
 </main>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    function initToplantiEkle() {
         const katilimcilarContainer = document.getElementById('katilimcilar-container');
+        if (!katilimcilarContainer || katilimcilarContainer.dataset.initialized === 'true') return;
+        katilimcilarContainer.dataset.initialized = 'true';
+
         const divanCheckboxContainer = document.getElementById('divan_checkbox_container');
         const divanCheckbox = document.getElementById('is_divan');
+        const bykSelect = document.getElementById('byk_id');
+
+        if (!bykSelect) {
+            console.error('Required elements not found: byk_id');
+            return;
+        }
 
         // BYK Seçimi değiştiğinde
-        const bykSelect = document.getElementById('byk_id');
-        if (bykSelect && bykSelect.tagName === 'SELECT') {
+        if (bykSelect.tagName === 'SELECT') {
             bykSelect.onchange = function() {
                 checkDivanStatus();
                 loadMembers();
             };
         }
 
-        // Sayfa yüklenince otomatik üyeleri yükle
-        checkDivanStatus();
-        loadMembers();
+        // Sayfa yüklenince otomatik üyeleri yükle (Race condition önlemek için kısa bir gecikme)
+        setTimeout(() => {
+            checkDivanStatus();
+            loadMembers();
+        }, 50);
 
         function checkDivanStatus() {
             const bykSelect = document.getElementById('byk_id');
@@ -406,7 +416,9 @@ include __DIR__ . '/../includes/header.php';
         }
 
         // Divan checkbox değiştiğinde
-        divanCheckbox.addEventListener('change', loadMembers);
+        if (divanCheckbox) {
+            divanCheckbox.addEventListener('change', loadMembers);
+        }
 
         window.loadMembers = loadMembers;
 
@@ -482,8 +494,8 @@ include __DIR__ . '/../includes/header.php';
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    katilimcilarContainer.innerHTML = '<p class="text-danger text-center"><i class="fas fa-exclamation-triangle me-2"></i>Katılımcılar yüklenirken hata oluştu</p>';
+                    console.error('LoadMembers Fetch Error:', error);
+                    katilimcilarContainer.innerHTML = `<p class="text-danger text-center"><i class="fas fa-exclamation-triangle me-2"></i>Katılımcılar yüklenirken hata oluştu: ${error.message}</p>`;
                 });
         }
 
@@ -507,7 +519,17 @@ include __DIR__ . '/../includes/header.php';
                 }
             });
         }
-    });
+        }
+    }
+
+    // Initialize on both standard load and SPA page transitions
+    document.addEventListener('DOMContentLoaded', initToplantiEkle);
+    $(document).on('page:loaded', initToplantiEkle);
+
+    // Immediate attempt in case of late execution or already loaded DOM
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initToplantiEkle();
+    }
 </script>
 
 <?php
