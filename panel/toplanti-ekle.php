@@ -20,7 +20,7 @@ $isAdmin = ($userByk && $userByk['byk_kodu'] === 'AT');
 
 // BYK listesi
 if ($isAdmin) {
-    $bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk ORDER BY byk_adi");
+    $bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'KT') ORDER BY byk_adi");
 } else {
     $bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_id = ?", [$user['byk_id']]);
 }
