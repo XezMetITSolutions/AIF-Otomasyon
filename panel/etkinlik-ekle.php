@@ -21,6 +21,19 @@ $csrfToken = Middleware::generateCSRF();
 $message = null;
 $messageType = 'success';
 
+// Check if user is Super Admin
+$isAdmin = $auth->isSuperAdmin();
+
+// BYK listesi (Sadece Super Admin için)
+$bykler = [];
+if ($isAdmin) {
+    try {
+        $bykler = $db->fetchAll("SELECT id as byk_id, name as byk_adi, code as byk_kodu FROM byk_categories WHERE code IN ('AT', 'GT', 'KGT', 'KT') ORDER BY code");
+    } catch (Exception $e) {
+        $bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'KT') ORDER BY byk_adi");
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!Middleware::verifyCSRF()) {
         $message = 'Güvenlik doğrulaması başarısız.';
@@ -40,11 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Bitiş tarihi başlangıç tarihinden önce olamaz.';
             $messageType = 'danger';
         } else {
+            $byk_id = ($isAdmin && !empty($_POST['byk_id'])) ? $_POST['byk_id'] : $user['byk_id'];
+            
             $db->query("
                 INSERT INTO etkinlikler (byk_id, baslik, aciklama, baslangic_tarihi, bitis_tarihi, konum, renk_kodu, olusturan_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ", [
-                $user['byk_id'],
+                $byk_id,
                 $baslik,
                 $aciklama ?: null,
                 $baslangic,
@@ -54,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user['id']
             ]);
             $message = 'Etkinlik başarıyla oluşturuldu.';
-            header('Location: /panel/baskan_etkinlikler.php?success=1');
+            header('Location: /panel/etkinlikler.php?success=1');
             exit;
         }
     }
@@ -88,14 +103,30 @@ include __DIR__ . '/../includes/header.php';
                         <form method="post" class="row g-3">
                             <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                             
-                            <div class="col-12">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Birim (BYK) <span class="text-danger">*</span></label>
+                                <?php if ($isAdmin): ?>
+                                    <select name="byk_id" class="form-select" required>
+                                        <?php foreach ($bykler as $byk): ?>
+                                            <option value="<?php echo $byk['byk_id']; ?>" <?php echo $byk['byk_id'] == $user['byk_id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($byk['byk_adi']); ?> (<?php echo $byk['byk_kodu']; ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php else: ?>
+                                    <input type="text" class="form-control" value="Anateşkilat (AT)" readonly disabled>
+                                    <input type="hidden" name="byk_id" value="<?php echo $user['byk_id']; ?>">
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Başlık <span class="text-danger">*</span></label>
                                 <input type="text" name="baslik" class="form-control" required placeholder="Örn. Haftalık İstişare Toplantısı">
                             </div>
 
                             <div class="col-12">
                                 <label class="form-label fw-bold">Açıklama</label>
-                                <textarea name="aciklama" class="form-control" rows="4" placeholder="Etkinlik hakkında detaylı bilgi..."></textarea>
+                                <textarea name="aciklama" class="form-control" rows="3" placeholder="Etkinlik hakkında detaylı bilgi..."></textarea>
                             </div>
 
                             <div class="col-12">

@@ -14,9 +14,8 @@ $user = $auth->getUser();
 session_write_close();
 $db = Database::getInstance();
 
-// Check if user belongs to 'AT' (Global Admin Unit)
-$userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
-$isAdmin = ($userByk && $userByk['byk_kodu'] === 'AT');
+// Check if user is Super Admin for multi-BYK access
+$isAdmin = $auth->isSuperAdmin();
 
 // BYK listesi
 if ($isAdmin) {

@@ -54,6 +54,11 @@ if ($birimFilter) {
 
 $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
+// Check if user is Super Admin for full filter access
+$isAdmin = $auth->isSuperAdmin();
+$userByk = $db->fetch("SELECT b.* FROM byk b JOIN kullanicilar k ON b.byk_id = k.byk_id WHERE k.kullanici_id = ?", [$user['id']]);
+$userBykKodu = $userByk['byk_kodu'] ?? '';
+
 // Etkinlikler
 try {
     $etkinlikler = $db->fetchAll("
@@ -305,7 +310,7 @@ include __DIR__ . '/../includes/header.php';
                         <i class="fas fa-file-export me-2"></i>Takvime Aktar
                     </a>
                     <?php if ($canManage): ?>
-                        <a href="/panel/baskan_etkinlik-ekle.php" class="btn btn-primary">
+                        <a href="/panel/etkinlik-ekle.php" class="btn btn-primary">
                             <i class="fas fa-plus me-2"></i>Yeni Etkinlik Ekle
                         </a>
                     <?php endif; ?>
@@ -383,6 +388,9 @@ include __DIR__ . '/../includes/header.php';
                                 <?php
                                 $availableTypes = $db->fetchAll("SELECT DISTINCT byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'KGT', 'KT', 'GT') ORDER BY FIELD(byk_kodu, 'AT', 'KGT', 'KT', 'GT')");
                                 foreach ($availableTypes as $type):
+                                    // Restrict filters for non-admins
+                                    if (!$isAdmin && $type['byk_kodu'] !== $userBykKodu) continue;
+                                    
                                     $label = $type['byk_kodu'];
                                     $isActive = ($birimFilter == $type['byk_kodu']);
                                     ?>

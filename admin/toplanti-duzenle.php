@@ -70,7 +70,11 @@ $kararlar = $db->fetchAll("
 
 
 // BYK listesi
-$bykler = $db->fetchAll("SELECT byk_id, byk_adi, byk_kodu FROM byk WHERE byk_kodu IN ('AT', 'GT', 'KGT', 'KT') ORDER BY byk_adi");
+try {
+    $bykler = $db->fetchAll("SELECT id as byk_id, name as byk_adi, code as byk_kodu FROM byk_categories WHERE UPPER(code) IN ('AT', 'GT', 'KGT', 'KT') ORDER BY code");
+} catch (Exception $e) {
+    $bykler = $db->fetchAll("SELECT * FROM byk WHERE aktif = 1 AND UPPER(byk_kodu) IN ('AT', 'GT', 'KGT', 'KT') ORDER BY byk_adi");
+}
 
 $error = '';
 $success = $_GET['success'] ?? '';

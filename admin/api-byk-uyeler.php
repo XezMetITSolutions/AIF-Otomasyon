@@ -34,14 +34,39 @@ try {
         throw new Exception('BYK ID gereklidir');
     }
 
-    $whereClause = "k.byk_id = ? AND k.aktif = 1";
-    if ($divan_only) {
-        $whereClause .= " AND k.divan_uyesi = 1";
+    // Seçilen BYK'nın kodunu bul (byk tablosundan veya byk_categories'den)
+    $bykCode = null;
+    $byk = $db->fetch("SELECT byk_kodu FROM byk WHERE byk_id = ?", [$byk_id]);
+    if ($byk) {
+        $bykCode = $byk['byk_kodu'];
+    } else {
+        try {
+            $cat = $db->fetch("SELECT code FROM byk_categories WHERE id = ?", [$byk_id]);
+            if ($cat) $bykCode = $cat['code'];
+        } catch (Exception $e) {}
     }
 
-    // BYK'ye ait aktif üyeleri getir
+    // Eğer kod AT, GT, KGT, KT ise, bu koda sahip TÜM birimlerin üyelerini getir
+    $targetBykIds = [$byk_id];
+    if ($bykCode && in_array(strtoupper($bykCode), ['AT', 'GT', 'KGT', 'KT'])) {
+        $code = strtoupper($bykCode);
+        // byk tablosundaki aynı kodlu ID'leri ekle
+        $relatedByks = $db->fetchAll("SELECT byk_id FROM byk WHERE UPPER(byk_kodu) = ?", [$code]);
+        foreach ($relatedByks as $rb) $targetBykIds[] = $rb['byk_id'];
+        
+        // byk_categories tablosundaki aynı kodlu ID'leri ekle
+        try {
+            $relatedCats = $db->fetchAll("SELECT id FROM byk_categories WHERE UPPER(code) = ?", [$code]);
+            foreach ($relatedCats as $rc) $targetBykIds[] = $rc['id'];
+        } catch (Exception $e) {}
+    }
+    
+    $targetBykIds = array_unique(array_filter($targetBykIds));
+    $placeholders = implode(',', array_fill(0, count($targetBykIds), '?'));
+
+    // BYK'ye ait aktif üyeleri getir (Hem ana BYK hem de ikincil BYK'lar)
     $uyeler = $db->fetchAll("
-        SELECT 
+        SELECT DISTINCT
             k.kullanici_id,
             k.ad,
             k.soyad,
@@ -52,14 +77,18 @@ try {
         FROM kullanicilar k
         LEFT JOIN roller r ON k.rol_id = r.rol_id
         LEFT JOIN alt_birimler ab ON k.alt_birim_id = ab.alt_birim_id
-        WHERE $whereClause
+        LEFT JOIN kullanici_byklar kb ON k.kullanici_id = kb.kullanici_id
+        WHERE (k.byk_id IN ($placeholders) OR kb.byk_id IN ($placeholders)) AND k.aktif = 1
+        " . ($divan_only ? " AND k.divan_uyesi = 1" : "") . "
         ORDER BY k.ad, k.soyad
-    ", [$byk_id]);
+    ", array_merge($targetBykIds, $targetBykIds));
 
     echo json_encode([
         'success' => true,
         'uyeler' => $uyeler,
-        'count' => count($uyeler)
+        'count' => count($uyeler),
+        'debug_code' => $bykCode,
+        'debug_ids' => $targetBykIds
     ]);
 
 } catch (Exception $e) {
