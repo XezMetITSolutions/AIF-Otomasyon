@@ -174,6 +174,33 @@ var ToplantiYonetimi = {
                 }, 1000);
             });
         });
+
+        // Değerlendirme İşlemleri
+        document.getElementById('btnSaveEvaluation')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            const toplantiId = btn.dataset.toplantiId;
+            const textarea = document.getElementById('baskanDegerlendirmeInput');
+            const text = textarea.value.trim();
+
+            this.saveEvaluationManual(toplantiId, text, btn);
+        });
+
+        const baskanInput = document.getElementById('baskanDegerlendirmeInput');
+        if (baskanInput) {
+            let debounceTimer;
+            baskanInput.addEventListener('input', (e) => {
+                const toplantiId = e.target.dataset.toplantiId;
+                const text = e.target.value.trim();
+                const statusSpan = document.getElementById('evalSaveStatus');
+
+                if (statusSpan) statusSpan.textContent = 'Kaydediliyor...';
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    this.autoSaveEvaluation(toplantiId, text, statusSpan);
+                }, 1500);
+            });
+        }
     },
 
     // ==================== KATILIMCI İŞLEMLERİ ====================
@@ -602,6 +629,65 @@ var ToplantiYonetimi = {
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     this.showAlert('danger', result.error);
+                }
+            });
+    },
+
+    saveEvaluationManual: function (toplantiId, text, btn) {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...';
+        btn.disabled = true;
+
+        const data = {
+            toplanti_id: toplantiId,
+            degerlendirme: text
+        };
+
+        this.apiRequest('/api/update-meeting-evaluation.php', data)
+            .then(result => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+
+                if (result.success) {
+                    this.showAlert('success', 'Değerlendirme kaydedildi');
+                } else {
+                    this.showAlert('danger', result.message || 'Hata oluştu');
+                }
+            });
+    },
+
+    autoSaveEvaluation: function (toplantiId, text, statusSpan) {
+        const data = {
+            toplanti_id: toplantiId,
+            degerlendirme: text
+        };
+
+        fetch('/api/update-meeting-evaluation.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (statusSpan) {
+                    if (result.success) {
+                        statusSpan.textContent = 'Kaydedildi';
+                        statusSpan.classList.add('text-success');
+                        setTimeout(() => {
+                            statusSpan.textContent = '';
+                            statusSpan.classList.remove('text-success');
+                        }, 2000);
+                    } else {
+                        statusSpan.textContent = 'Hata!';
+                        statusSpan.classList.add('text-danger');
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (statusSpan) {
+                    statusSpan.textContent = 'Hata!';
+                    statusSpan.classList.add('text-danger');
                 }
             });
     },

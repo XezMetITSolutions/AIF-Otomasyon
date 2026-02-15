@@ -186,6 +186,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strpos($msg, 'sekreter_id') !== false) {
                 $db->query("ALTER TABLE toplantilar ADD COLUMN sekreter_id INT NULL DEFAULT NULL");
             }
+            if (strpos($msg, 'baskan_degerlendirmesi') !== false) {
+                $db->query("ALTER TABLE toplantilar ADD COLUMN baskan_degerlendirmesi TEXT NULL");
+            }
             // Retry Update
             $db->query("
                 UPDATE toplantilar SET
@@ -457,9 +460,8 @@ include __DIR__ . '/../includes/header.php';
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="pill" href="#kararlar">
-                        <i class="fas fa-gavel me-2"></i>Kararlar
-                        <span class="badge bg-white text-primary ms-1"><?php echo count($kararlar); ?></span>
+                    <a class="nav-link" data-bs-toggle="pill" href="#degerlendirme">
+                        <i class="fas fa-clipboard-check me-2"></i>Değerlendirme
                     </a>
                 </li>
 
@@ -477,8 +479,8 @@ include __DIR__ . '/../includes/header.php';
             <div class="tab-pane fade" id="gundem">
                 <?php include __DIR__ . '/../includes/toplanti-tabs/gundem.php'; ?>
             </div>
-            <div class="tab-pane fade" id="kararlar">
-                <?php include __DIR__ . '/../includes/toplanti-tabs/kararlar.php'; ?>
+            <div class="tab-pane fade" id="degerlendirme">
+                <?php include __DIR__ . '/../includes/toplanti-tabs/degerlendirme.php'; ?>
             </div>
 
         </div>

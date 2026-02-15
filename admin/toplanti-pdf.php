@@ -179,28 +179,12 @@ if (!empty($gundem_maddeleri)) {
     $html .= '<br>';
 }
 
-// Kararlar
-if (!empty($kararlar)) {
-    $html .= '<h2 style="color:#0d6efd;">Alınan Kararlar</h2>';
-    foreach ($kararlar as $index => $k) {
-        $html .= '<h3>Karar ' . ($index + 1);
-        if ($k['karar_no']) {
-            $html .= ' (' . htmlspecialchars($k['karar_no']) . ')';
-        }
-        $html .= '</h3>';
-        $html .= '<p><strong>' . htmlspecialchars($k['baslik']) . '</strong></p>';
-        // Apply formatting here
-        $html .= '<p>' . nl2br(formatMentions($k['karar_metni'])) . '</p>';
-        
-        if ($k['oylama_yapildi']) {
-            $html .= '<p><strong>Oylama Sonuçları:</strong> ';
-            $html .= 'Kabul: ' . $k['kabul_oyu'] . ', ';
-            $html .= 'Red: ' . $k['red_oyu'] . ', ';
-            $html .= 'Çekimser: ' . $k['cekinser_oyu'];
-            $html .= ' - <strong>Sonuç: ' . strtoupper($k['karar_sonucu']) . '</strong></p>';
-        }
-        $html .= '<hr>';
-    }
+// Değerlendirme
+if (!empty($toplanti['baskan_degerlendirmesi'])) {
+    $html .= '<h2 style="color:#0d6efd;">Bölge Başkanı Değerlendirmesi</h2>';
+    $html .= '<div style="background-color:#f8f9fa; padding:15px; border: 1px solid #e9ecef; border-radius: 5px;">';
+    $html .= nl2br(formatMentions($toplanti['baskan_degerlendirmesi']));
+    $html .= '</div>';
     $html .= '<br>';
 }
 

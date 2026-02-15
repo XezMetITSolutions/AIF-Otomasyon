@@ -116,6 +116,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sekreter_id,
                 $toplanti_id
             ]);
+            // Attempt to update evaluation if present in POST (optional, but good for sync)
+            if (isset($_POST['baskan_degerlendirmesi'])) {
+                 try {
+                    $db->query("UPDATE toplantilar SET baskan_degerlendirmesi = ? WHERE toplanti_id = ?", [$_POST['baskan_degerlendirmesi'], $toplanti_id]);
+                 } catch(Exception $e) {}
+            }
 
             $success = 'Toplantı bilgileri güncellendi!';
 
@@ -392,9 +398,8 @@ include __DIR__ . '/../includes/header.php';
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#kararlar">
-                    <i class="fas fa-gavel me-2"></i>Kararlar
-                    <span class="badge bg-primary ms-1"><?php echo count($kararlar); ?></span>
+                <a class="nav-link" data-bs-toggle="tab" href="#degerlendirme">
+                    <i class="fas fa-clipboard-check me-2"></i>Değerlendirme
                 </a>
             </li>
 
@@ -418,9 +423,9 @@ include __DIR__ . '/../includes/header.php';
                 <?php include __DIR__ . '/../includes/toplanti-tabs/gundem.php'; ?>
             </div>
 
-            <!-- Kararlar Tab -->
-            <div class="tab-pane fade" id="kararlar">
-                <?php include __DIR__ . '/../includes/toplanti-tabs/kararlar.php'; ?>
+            <!-- Değerlendirme Tab -->
+            <div class="tab-pane fade" id="degerlendirme">
+                <?php include __DIR__ . '/../includes/toplanti-tabs/degerlendirme.php'; ?>
             </div>
 
 
