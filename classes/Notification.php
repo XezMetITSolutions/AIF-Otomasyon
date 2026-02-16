@@ -4,8 +4,9 @@
  * Handles creating and managing user notifications
  */
 
-class Notification {
-    
+class Notification
+{
+
     /**
      * Add a new notification
      * 
@@ -16,14 +17,15 @@ class Notification {
      * @param string|null $link Optional link to redirect
      * @return bool Success status
      */
-    public static function add($userId, $title, $message, $type = 'bilgi', $link = null, $sendEmail = true) {
+    public static function add($userId, $title, $message, $type = 'bilgi', $link = null, $sendEmail = true)
+    {
         $db = Database::getInstance();
-        
+
         try {
             // 1. Veritabanına Ekle
             $sql = "INSERT INTO bildirimler (kullanici_id, baslik, mesaj, tip, link, okundu, olusturma_tarihi) 
                     VALUES (?, ?, ?, ?, ?, 0, NOW())";
-            
+
             $db->query($sql, [$userId, $title, $message, $type, $link]);
 
             // 2. E-posta Gönder (Eğer isteniyorsa)
@@ -31,14 +33,14 @@ class Notification {
                 // Config ve Mail sınıflarının yüklü olduğundan emin olalım (init.php otomatik yükler ama yine de kontrol)
                 if (class_exists('Mail') && class_exists('Config')) {
                     $user = $db->fetch("SELECT email, ad, soyad FROM kullanicilar WHERE kullanici_id = ?", [$userId]);
-                    
+
                     if ($user && !empty($user['email'])) {
-                        $appName = Config::get('app_name', 'AİF Otomasyon');
+                        $appName = Config::get('app_name', 'AİFNET');
                         $appUrl = rtrim(Config::get('app_url', 'https://aifnet.islamfederasyonu.at'), '/');
                         $fullLink = $link ? (strpos($link, 'http') === 0 ? $link : $appUrl . '/' . ltrim($link, '/')) : $appUrl;
-                        
+
                         $subject = "Bildirim: " . $title;
-                        
+
                         // Basit HTML Şablonu
                         $emailBody = "
                         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;'>
@@ -66,7 +68,8 @@ class Notification {
     /**
      * Mark a notification as read
      */
-    public static function markAsRead($notificationId, $userId) {
+    public static function markAsRead($notificationId, $userId)
+    {
         $db = Database::getInstance();
         $db->query("UPDATE bildirimler SET okundu = 1 WHERE bildirim_id = ? AND kullanici_id = ?", [$notificationId, $userId]);
     }
@@ -74,7 +77,8 @@ class Notification {
     /**
      * Mark all notifications as read for a user
      */
-    public static function markAllAsRead($userId) {
+    public static function markAllAsRead($userId)
+    {
         $db = Database::getInstance();
         $db->query("UPDATE bildirimler SET okundu = 1 WHERE kullanici_id = ?", [$userId]);
     }

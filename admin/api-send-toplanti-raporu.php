@@ -56,8 +56,8 @@ try {
     $pdfName = 'Toplanti_Raporu_' . $toplanti_id . '.pdf';
 
     // Mail Gönder
-    $subject = 'Toplantı Raporu: ' . $toplanti['baslik'];
     $tarih = date('d.m.Y', strtotime($toplanti['toplanti_tarihi']));
+    $subject = 'Toplantı Raporu: ' . $tarih . ' ' . $toplanti['baslik'] . ' Toplantısı';
     $sekreter = !empty($toplanti['sekreter_adi']) ? $toplanti['sekreter_adi'] : $toplanti['olusturan'];
 
     $message = "
