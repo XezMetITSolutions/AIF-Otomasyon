@@ -61,9 +61,28 @@ class MeetingPDF
     {
         if (empty($text))
             return '';
-        $pattern = '/@([\w\s\p{L}]+?)(?=\s|$|<|\.|,)/u';
-        $replacement = '$1';
-        return preg_replace($pattern, $replacement, htmlspecialchars($text));
+
+        // XSS korunması için önce htmlspecialchars yapıyoruz
+        $safeText = htmlspecialchars($text);
+
+        // Regex: @isim ve isteğe bağlı peşinden gelen iki nokta
+        // @([^:@\n]+?) -> İsim (iki nokta, @ veya yeni satır olmayan karakterler)
+        // (:)? -> İsteğe bağlı iki nokta
+        $pattern = '/@([^:@\n]+?)(:)?(\s|$|<|\n)/u';
+
+        return preg_replace_callback($pattern, function ($matches) {
+            $name = $matches[1];
+            $hasColon = !empty($matches[2]);
+            $suffix = $matches[3]; // Boşluk, newline veya son karakter
+
+            if ($hasColon) {
+                // Altı çizili isim ve iki nokta
+                return '<u>' . $name . ':</u>';
+            } else {
+                // Sadece isim (başında @ olmadan)
+                return $name . $suffix;
+            }
+        }, $safeText);
     }
 
     public static function generate($toplanti_id, $outputMode = 'I')

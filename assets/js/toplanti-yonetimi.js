@@ -18,7 +18,7 @@ var ToplantiYonetimi = {
         const tribute = new Tribute({
             values: MEETING_PARTICIPANTS,
             selectTemplate: function (item) {
-                return '@' + item.original.value;
+                return '@' + item.original.value + ': \n';
             },
             menuItemTemplate: function (item) {
                 return item.string;
