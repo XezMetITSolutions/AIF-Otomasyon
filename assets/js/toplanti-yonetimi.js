@@ -757,6 +757,41 @@ var ToplantiYonetimi = {
         setTimeout(() => {
             alertDiv.remove();
         }, duration);
+    },
+
+    sendReport: function (btn) {
+        if (!confirm('Toplantı raporu test adresine (mete.burcak@gmx.at) gönderilecek. Devam etmek istiyor musunuz?')) {
+            return;
+        }
+
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gönderiliyor...';
+
+        const formData = new FormData();
+        formData.append('id', this.toplanti_id);
+
+        fetch('/admin/api-send-toplanti-raporu.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(result => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+
+                if (result.success) {
+                    this.showAlert('success', result.message);
+                } else {
+                    this.showAlert('danger', result.message || 'Hata oluştu');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                this.showAlert('danger', 'Bağlantı hatası oluştu');
+            });
     }
 };
 
