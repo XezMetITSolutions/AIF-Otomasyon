@@ -234,35 +234,3 @@
         </form>
     </div>
 </div>
-
-<div class="card mt-3">
-    <div class="card-header bg-light">
-        <h6 class="mb-0">İstatistikler</h6>
-    </div>
-    <div class="card-body">
-        <div class="row text-center">
-            <div class="col-md-3">
-                <div class="stat-box">
-                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                    <h4><?php echo count($katilimcilar); ?></h4>
-                    <p class="text-muted mb-0">Toplam Katılımcı</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-box">
-                    <i class="fas fa-list fa-2x text-info mb-2"></i>
-                    <h4><?php echo count($gundem_maddeleri); ?></h4>
-                    <p class="text-muted mb-0">Gündem Maddesi</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-box">
-                    <i class="fas fa-gavel fa-2x text-success mb-2"></i>
-                    <h4><?php echo count($kararlar); ?></h4>
-                    <p class="text-muted mb-0">Alınan Karar</p>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
