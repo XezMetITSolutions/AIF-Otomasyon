@@ -34,7 +34,15 @@ if (!$toplanti_id) {
 
 try {
     // Toplantı bilgilerini ve yetki kontrolünü getir
-    $toplanti = $db->fetch("SELECT * FROM toplantilar WHERE toplanti_id = ? AND byk_id = ?", [$toplanti_id, $user['byk_id']]);
+    $toplanti = $db->fetch("
+        SELECT t.*, 
+               CONCAT(u_ols.ad, ' ', u_ols.soyad) as olusturan,
+               CONCAT(u_sek.ad, ' ', u_sek.soyad) as sekreter_adi
+        FROM toplantilar t
+        INNER JOIN kullanicilar u_ols ON t.olusturan_id = u_ols.kullanici_id
+        LEFT JOIN kullanicilar u_sek ON t.sekreter_id = u_sek.kullanici_id
+        WHERE t.toplanti_id = ? AND t.byk_id = ?
+    ", [$toplanti_id, $user['byk_id']]);
 
     if (!$toplanti) {
         throw new Exception('Toplantı bulunamadı veya bu toplantıya erişim yetkiniz yok.');
@@ -48,32 +56,22 @@ try {
     $pdfName = 'Toplanti_Raporu_' . $toplanti_id . '.pdf';
 
     // Mail Gönder
-    // Mail İçeriği (Profesyonel Şablon)
     $subject = 'Toplantı Raporu: ' . $toplanti['baslik'];
-    $appName = Config::get('app_name', 'AİFNET');
-    $appUrl = rtrim(Config::get('app_url', 'https://aifnet.islamfederasyonu.at'), '/');
+    $tarih = date('d.m.Y', strtotime($toplanti['toplanti_tarihi']));
+    $sekreter = !empty($toplanti['sekreter_adi']) ? $toplanti['sekreter_adi'] : $toplanti['olusturan'];
 
     $message = "
-    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;'>
-        <div style='text-align: center; margin-bottom: 20px;'>
-            <h2 style='color: #00936F; margin: 0;'>{$appName}</h2>
-            <p style='color: #666; font-size: 14px;'>Toplantı Yönetim Sistemi</p>
-        </div>
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>
-            <h3 style='margin-top: 0; color: #333;'>Toplantı Raporu Hazırlandı</h3>
-            <p><strong>Toplantı:</strong> " . htmlspecialchars($toplanti['baslik']) . "</p>
-            <p><strong>Tarih:</strong> " . date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])) . "</p>
-        </div>
-        <p>Merhaba,</p>
-        <p>Gerçekleştirilen toplantıya ait detaylı rapor (katılımcı durumları, alınan kararlar ve görüşme notları) ekte PDF formatında sunulmuştur.</p>
-        <div style='margin: 30px 0; text-align: center;'>
-            <a href='{$appUrl}/panel/toplanti-duzenle.php?id={$toplanti_id}' style='background-color: #00936F; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Sistemde Görüntüle</a>
-        </div>
-        <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
-        <p style='font-size: 12px; color: #999; text-align: center;'>
-            Bu e-posta {$appName} tarafından otomatik olarak oluşturulmuştur.<br>
-            Lütfen bu mesajı yanıtlamayınız.
-        </p>
+    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 10px; line-height: 1.6; color: #333;'>
+        <p>Değerli Başkanlarım,</p>
+        
+        <p><strong>{$tarih}</strong> tarihinde gerçekleştirmiş olduğumuz <strong>" . htmlspecialchars($toplanti['baslik']) . "</strong> toplantısına ait tutanak ekte bilginize sunulmuştur.</p>
+        
+        <p>Toplantı sırasında alınan kararlar ve değerlendirilen hususlar tutanağa işlenmiş olup, incelemenizi rica ederiz. İlave edilmesini istediğiniz hususlar veya düzeltme önerileriniz olması hâlinde tarafımıza bildirmenizi memnuniyetle rica ederiz.</p>
+        
+        <p style='margin-top: 30px;'>Selam ve Dua ile,</p>
+        
+        <p style='margin-bottom: 0;'><strong>{$sekreter}</strong></p>
+        <p style='margin-top: 0; color: #00936F; font-weight: bold;'>Avusturya İslam Federasyonu</p>
     </div>";
 
     // Alıcıları Belirle
