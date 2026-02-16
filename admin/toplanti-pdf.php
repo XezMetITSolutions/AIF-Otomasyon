@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Toplantı PDF Raporu Oluşturma
  */
