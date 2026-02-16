@@ -176,30 +176,41 @@ var ToplantiYonetimi = {
         });
 
         // Değerlendirme İşlemleri
+        // Değerlendirme İşlemleri
         document.getElementById('btnSaveEvaluation')?.addEventListener('click', (e) => {
             const btn = e.target.closest('button');
             const toplantiId = btn.dataset.toplantiId;
             const textarea = document.getElementById('baskanDegerlendirmeInput');
+            const bitisInput = document.getElementById('toplantiBitisInput');
             const text = textarea.value.trim();
+            const bitisTarihi = bitisInput ? bitisInput.value : '';
 
-            this.saveEvaluationManual(toplantiId, text, btn);
+            this.saveEvaluationManual(toplantiId, text, bitisTarihi, btn);
         });
 
         const baskanInput = document.getElementById('baskanDegerlendirmeInput');
+        const bitisTimeInput = document.getElementById('toplantiBitisInput');
+
+        const handleAutoSave = (element) => {
+            const toplantiId = element.dataset.toplantiId;
+            const text = document.getElementById('baskanDegerlendirmeInput').value.trim();
+            const bitisTarihi = document.getElementById('toplantiBitisInput') ? document.getElementById('toplantiBitisInput').value : '';
+            const statusSpan = document.getElementById('evalSaveStatus');
+
+            if (statusSpan) statusSpan.textContent = 'Kaydediliyor...';
+
+            clearTimeout(this.evalDebounceTimer);
+            this.evalDebounceTimer = setTimeout(() => {
+                this.autoSaveEvaluation(toplantiId, text, bitisTarihi, statusSpan);
+            }, 1500);
+        };
+
         if (baskanInput) {
-            let debounceTimer;
-            baskanInput.addEventListener('input', (e) => {
-                const toplantiId = e.target.dataset.toplantiId;
-                const text = e.target.value.trim();
-                const statusSpan = document.getElementById('evalSaveStatus');
-
-                if (statusSpan) statusSpan.textContent = 'Kaydediliyor...';
-
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    this.autoSaveEvaluation(toplantiId, text, statusSpan);
-                }, 1500);
-            });
+            baskanInput.addEventListener('input', (e) => handleAutoSave(e.target));
+        }
+        if (bitisTimeInput) {
+            bitisTimeInput.addEventListener('change', (e) => handleAutoSave(e.target));
+            bitisTimeInput.addEventListener('input', (e) => handleAutoSave(e.target));
         }
     },
 
@@ -633,14 +644,15 @@ var ToplantiYonetimi = {
             });
     },
 
-    saveEvaluationManual: function (toplantiId, text, btn) {
+    saveEvaluationManual: function (toplantiId, text, bitisTarihi, btn) {
         const originalHtml = btn.innerHTML;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...';
         btn.disabled = true;
 
         const data = {
             toplanti_id: toplantiId,
-            degerlendirme: text
+            degerlendirme: text,
+            bitis_tarihi: bitisTarihi
         };
 
         this.apiRequest('/api/update-meeting-evaluation.php', data)
@@ -656,10 +668,11 @@ var ToplantiYonetimi = {
             });
     },
 
-    autoSaveEvaluation: function (toplantiId, text, statusSpan) {
+    autoSaveEvaluation: function (toplantiId, text, bitisTarihi, statusSpan) {
         const data = {
             toplanti_id: toplantiId,
-            degerlendirme: text
+            degerlendirme: text,
+            bitis_tarihi: bitisTarihi
         };
 
         fetch('/api/update-meeting-evaluation.php', {

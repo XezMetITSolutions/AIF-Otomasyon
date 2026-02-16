@@ -34,6 +34,14 @@
                       data-toplanti-id="<?php echo $toplanti_id; ?>"
                       style="font-size: 1.05rem; line-height: 1.6; border-color: #f1f5f9;"><?php echo htmlspecialchars($toplanti['baskan_degerlendirmesi'] ?? ''); ?></textarea>
             
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary">Toplantı Bitiş Zamanı</label>
+                <input type="datetime-local" id="toplantiBitisInput" 
+                       class="form-control rounded-3 shadow-none border-2"
+                       value="<?php echo !empty($toplanti['bitis_tarihi']) ? date('Y-m-d\TH:i', strtotime($toplanti['bitis_tarihi'])) : ''; ?>"
+                       data-toplanti-id="<?php echo $toplanti_id; ?>">
+            </div>
+
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="small text-muted">
                     <i class="fas fa-sync-alt me-1"></i>Otomatik olarak kaydedilir
