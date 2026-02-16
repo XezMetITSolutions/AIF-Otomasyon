@@ -36,10 +36,15 @@
             
             <div class="mb-3">
                 <label class="form-label fw-bold text-secondary">Toplantı Bitiş Zamanı</label>
-                <input type="datetime-local" id="toplantiBitisInput" 
-                       class="form-control rounded-3 shadow-none border-2"
-                       value="<?php echo !empty($toplanti['bitis_tarihi']) ? date('Y-m-d\TH:i', strtotime($toplanti['bitis_tarihi'])) : ''; ?>"
-                       data-toplanti-id="<?php echo $toplanti_id; ?>">
+                <div class="input-group">
+                    <input type="datetime-local" id="toplantiBitisInput" 
+                        class="form-control rounded-start-3 shadow-none border-2"
+                        value="<?php echo !empty($toplanti['bitis_tarihi']) ? date('Y-m-d\TH:i', strtotime($toplanti['bitis_tarihi'])) : ''; ?>"
+                        data-toplanti-id="<?php echo $toplanti_id; ?>">
+                    <button type="button" id="btnSetCurrentTime" class="btn btn-outline-secondary" title="Şu Anki Saati Ayarla">
+                        <i class="fas fa-clock me-1"></i>Şu An
+                    </button>
+                </div>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mt-3">

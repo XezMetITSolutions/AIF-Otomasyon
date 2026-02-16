@@ -212,6 +212,27 @@ var ToplantiYonetimi = {
             bitisTimeInput.addEventListener('change', (e) => handleAutoSave(e.target));
             bitisTimeInput.addEventListener('input', (e) => handleAutoSave(e.target));
         }
+
+        // Şu anki saati alma butonu
+        const btnSetCurrentTime = document.getElementById('btnSetCurrentTime');
+        if (btnSetCurrentTime && bitisTimeInput) {
+            btnSetCurrentTime.addEventListener('click', () => {
+                const now = new Date();
+                // Format for datetime-local: YYYY-MM-DDTHH:mm
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+
+                const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+                bitisTimeInput.value = formatted;
+
+                // Trigger auto save
+                handleAutoSave(bitisTimeInput);
+            });
+        }
     },
 
     // ==================== KATILIMCI İŞLEMLERİ ====================
