@@ -60,6 +60,12 @@ try {
 }
 
 // 2. BYK Üyelerini Bul (E-posta alıcıları)
+// TEST MODE: Sadece belirli adrese gönder
+$recipients = [
+    ['email' => 'mete.burcak@gmx.at', 'ad' => 'Test', 'soyad' => 'User']
+];
+
+/*
 // Aktif ve ilgili BYK'ya ait kullanıcılar
 $recipients = $db->fetchAll("
     SELECT ad, soyad, email 
@@ -71,6 +77,7 @@ if (empty($recipients)) {
     echo json_encode(['success' => false, 'error' => 'Bu BYK için e-posta adresi kayıtlı üye bulunamadı.']);
     exit;
 }
+*/
 
 // 3. E-posta Gönderimi
 $subject = "Toplantı Tutanağı: " . $toplanti['baslik'];
@@ -78,7 +85,7 @@ $message = "
 <p>Değerli Başkanlarım,</p>
 <p><strong>" . date('d.m.Y', strtotime($toplanti['toplanti_tarihi'])) . "</strong> tarihinde yapmış olduğumuz <strong>" . htmlspecialchars($toplanti['baslik']) . "</strong> toplantımızın tutanağı ekte bilgilerinize sunulmuştur.</p>
 <br>
-<p>Saygılarımızla,<br>AİF Yönetimi</p>
+<p>Saygılarımızla,<br>Avusturya İslam Federasyonu</p>
 ";
 
 $successCount = 0;
