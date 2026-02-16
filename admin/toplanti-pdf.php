@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Toplantı PDF Raporu Oluşturma
  */
@@ -87,17 +87,18 @@ class AIF_PDF extends TCPDF {
         // Logo
         $logoFile = __DIR__ . '/AIF.png';
         if (file_exists($logoFile)) {
-            $this->Image($logoFile, 110, 8, 80, 0, 'PNG');
+            $this->Image($logoFile, 150, 8, 40, 0, 'PNG');
         } else {
             $logoAssets = __DIR__ . '/../assets/img/AIF.png';
             if (file_exists($logoAssets)) {
-                $this->Image($logoAssets, 110, 8, 80, 0, 'PNG');
+                $this->Image($logoAssets, 150, 8, 40, 0, 'PNG');
             }
         }
         
         $this->SetY(40);
-        $this->SetFont('dejavusans', 'B', 14);
-        $this->Cell(0, 10, 'TOPLANTI TUTANAĞI', 0, 1, 'C');
+        // $this->SetFont('dejavusans', 'B', 14);
+        // $this->Cell(0, 10, 'TOPLANTI TUTANAĞI', 0, 1, 'C');
+        $this->Ln(5);
         $this->Ln(5);
     }
 
