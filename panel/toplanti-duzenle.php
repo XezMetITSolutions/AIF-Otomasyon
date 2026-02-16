@@ -9,6 +9,8 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 
+$auth = new Auth();
+$user = $auth->getUser();
 $db = Database::getInstance();
 
 $pageSpecificCSS = [
@@ -31,15 +33,15 @@ $toplanti = $db->fetch("
     WHERE t.toplanti_id = ? AND t.byk_id = ?
 ", [$toplanti_id, $user['byk_id']]);
 
-$currentUserId = $user['id'] ?? $user['kullanici_id'];
-$isCreator = ($toplanti['olusturan_id'] == $currentUserId);
-$isSecretary = (isset($toplanti['sekreter_id']) && $toplanti['sekreter_id'] == $currentUserId);
-$canManageContent = $isCreator || $isSecretary;
-
 if (!$toplanti) {
     header('Location: /panel/toplantilar.php');
     exit;
 }
+
+$currentUserId = $user['id'] ?? $user['kullanici_id'];
+$isCreator = ($toplanti['olusturan_id'] == $currentUserId);
+$isSecretary = (isset($toplanti['sekreter_id']) && $toplanti['sekreter_id'] == $currentUserId);
+$canManageContent = $isCreator || $isSecretary;
 
 // Katılımcıları getir
 $katilimcilar = $db->fetchAll("
