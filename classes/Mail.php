@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/SimpleSMTP.php';
 
 class Mail
 {
@@ -12,33 +12,27 @@ class Mail
             $config = require __DIR__ . '/../config/mail.php';
         }
 
-        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+        $smtp = new SimpleSMTP($config);
 
         try {
-            // Server settings
-            $mail->isSMTP();
-            $mail->Host = $config['host'];
-            $mail->SMTPAuth = true;
-            $mail->Username = $config['username'];
-            $mail->Password = $config['password'];
-            $mail->SMTPSecure = $config['secure'];
-            $mail->Port = $config['port'];
-            $mail->CharSet = 'UTF-8';
+            $result = $smtp->send(
+                $to,
+                $subject,
+                $message,
+                $config['from_email'],
+                $config['from_name'],
+                true
+            );
 
-            // Recipients
-            $mail->setFrom($config['from_email'], $config['from_name']);
-            $mail->addAddress($to);
+            if (!$result) {
+                self::$lastError = $smtp->getLastError();
+                self::$lastLog = $smtp->getLogs();
+                return false;
+            }
 
-            // Content
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body = $message;
-            $mail->AltBody = strip_tags($message);
-
-            $mail->send();
             return true;
         } catch (Exception $e) {
-            self::$lastError = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            self::$lastError = $e->getMessage();
             return false;
         }
     }
@@ -46,36 +40,35 @@ class Mail
     public static function sendWithAttachment($to, $subject, $message, $attachmentData, $attachmentName)
     {
         $config = require __DIR__ . '/../config/mail.php';
-        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+        $smtp = new SimpleSMTP($config);
 
         try {
-            // Server settings
-            $mail->isSMTP();
-            $mail->Host = $config['host'];
-            $mail->SMTPAuth = true;
-            $mail->Username = $config['username'];
-            $mail->Password = $config['password'];
-            $mail->SMTPSecure = $config['secure'];
-            $mail->Port = $config['port'];
-            $mail->CharSet = 'UTF-8';
+            $attachments = [
+                [
+                    'name' => $attachmentName,
+                    'data' => $attachmentData
+                ]
+            ];
 
-            // Recipients
-            $mail->setFrom($config['from_email'], $config['from_name']);
-            $mail->addAddress($to);
+            $result = $smtp->send(
+                $to,
+                $subject,
+                $message,
+                $config['from_email'],
+                $config['from_name'],
+                true,
+                $attachments
+            );
 
-            // Attachment
-            $mail->addStringAttachment($attachmentData, $attachmentName);
+            if (!$result) {
+                self::$lastError = $smtp->getLastError();
+                self::$lastLog = $smtp->getLogs();
+                return false;
+            }
 
-            // Content
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body = $message;
-            $mail->AltBody = strip_tags($message);
-
-            $mail->send();
             return true;
         } catch (Exception $e) {
-            self::$lastError = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            self::$lastError = $e->getMessage();
             return false;
         }
     }
