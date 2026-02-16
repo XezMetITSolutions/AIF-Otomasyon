@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Toplantı PDF Raporu Oluşturma
  */
@@ -85,11 +85,9 @@ function formatMentions($text) {
 class AIF_PDF extends TCPDF {
     public function Header() {
         // Logo
-        $logoFile = __DIR__ . '/AIF.jpg';
+        $logoFile = __DIR__ . '/AIF.png';
         if (file_exists($logoFile)) {
-            $this->Image($logoFile, 110, 8, 80, 0, 'JPG');
-        } elseif (file_exists(__DIR__ . '/AIF.png')) {
-            $this->Image(__DIR__ . '/AIF.png', 110, 8, 80, 0, 'PNG');
+            $this->Image($logoFile, 110, 8, 80, 0, 'PNG');
         } else {
             $logoAssets = __DIR__ . '/../assets/img/AIF.png';
             if (file_exists($logoAssets)) {
