@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
@@ -32,7 +33,17 @@ if ($user['role'] === Auth::ROLE_UYE && $toplanti['byk_id'] != $user['byk_id']) 
 
 // Generate PDF Output
 try {
+    // Clear any output that appeared before PDF generation (like Deprecated notices)
+    if (ob_get_length())
+        ob_end_clean();
+
+    // Disable error display and deprecated warnings for the PDF generation phase
+    error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
+    ini_set('display_errors', 0);
+
     MeetingPDF::generate($toplanti_id, 'I');
 } catch (Exception $e) {
+    if (ob_get_length())
+        ob_end_clean();
     die('Hata: ' . $e->getMessage());
 }

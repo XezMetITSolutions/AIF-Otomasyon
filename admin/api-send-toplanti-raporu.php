@@ -10,7 +10,7 @@ require_once __DIR__ . '/../classes/MeetingPDF.php';
 
 // Turn off displaying errors to prevent HTML in JSON response
 ini_set('display_errors', 0);
-error_reporting(E_ALL);
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 header('Content-Type: application/json');
 
