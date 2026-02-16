@@ -199,34 +199,46 @@ class MeetingPDF
 
         // Gündem ve Alınan Kararlar
         if (!empty($gundem_maddeleri)) {
-            $html .= '<h2 style="color:#0d6efd;">Gündem ve Alınan Kararlar</h2>';
+            $hasContent = false;
+            $gundemHtml = '<h2 style="color:#0d6efd;">Gündem ve Alınan Kararlar</h2>';
 
             foreach ($gundem_maddeleri as $index => $g) {
-                $html .= '<div style="background-color: #f8f9fa; padding: 10px; border-left: 4px solid #0d6efd; margin-bottom: 15px;">';
-                $html .= '<h3>' . ($index + 1) . '. ' . htmlspecialchars($g['baslik']) . '</h3>';
+                // Bu gündem maddesine bağlı kararları bul
+                $ilgili_kararlar = array_filter($kararlar, fn($k) => $k['gundem_id'] == $g['gundem_id']);
+
+                // Eğer açıklama, notlar ve kararlar boşsa bu maddeyi gösterme
+                if (empty($g['aciklama']) && empty($g['gorusme_notlari']) && empty($ilgili_kararlar)) {
+                    continue;
+                }
+
+                $hasContent = true;
+                $gundemHtml .= '<div style="background-color: #f8f9fa; padding: 10px; border-left: 4px solid #0d6efd; margin-bottom: 15px;">';
+                $gundemHtml .= '<h3>' . htmlspecialchars($g['baslik']) . '</h3>';
 
                 if ($g['aciklama']) {
-                    $html .= '<p><i>' . nl2br(htmlspecialchars($g['aciklama'])) . '</i></p>';
+                    $gundemHtml .= '<p><i>' . nl2br(htmlspecialchars($g['aciklama'])) . '</i></p>';
                 }
 
                 if (!empty($g['gorusme_notlari'])) {
-                    $html .= '<div style="margin-top: 10px; padding: 10px; border-top: 1px solid #dee2e6;">';
-                    $html .= '<strong>Notlar:</strong><br>';
-                    $html .= nl2br(self::formatMentions($g['gorusme_notlari']));
-                    $html .= '</div>';
+                    $gundemHtml .= '<div style="margin-top: 10px; padding: 10px; border-top: 1px solid #dee2e6;">';
+                    $gundemHtml .= '<strong>Notlar:</strong><br>';
+                    $gundemHtml .= nl2br(self::formatMentions($g['gorusme_notlari']));
+                    $gundemHtml .= '</div>';
                 }
 
-                // Bu gündem maddesine bağlı kararları bul
-                $ilgili_kararlar = array_filter($kararlar, fn($k) => $k['gundem_id'] == $g['gundem_id']);
                 if (!empty($ilgili_kararlar)) {
-                    $html .= '<div style="margin-top: 10px; background-color: #e7f1ff; padding: 10px; border-radius: 5px;">';
-                    $html .= '<strong>Karar:</strong><br>';
+                    $gundemHtml .= '<div style="margin-top: 10px; background-color: #e7f1ff; padding: 10px; border-radius: 5px;">';
+                    $gundemHtml .= '<strong>Karar:</strong><br>';
                     foreach ($ilgili_kararlar as $k) {
-                        $html .= nl2br(self::formatMentions($k['karar_notu']));
+                        $gundemHtml .= nl2br(self::formatMentions($k['karar_notu']));
                     }
-                    $html .= '</div>';
+                    $gundemHtml .= '</div>';
                 }
-                $html .= '</div><br>';
+                $gundemHtml .= '</div><br>';
+            }
+
+            if ($hasContent) {
+                $html .= $gundemHtml;
             }
         }
 
