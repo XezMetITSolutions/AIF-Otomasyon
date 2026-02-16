@@ -212,7 +212,7 @@ class MeetingPDF
                 }
 
                 $hasContent = true;
-                $gundemHtml .= '<div style="background-color: #f8f9fa; padding: 10px; border-left: 4px solid #0d6efd; margin-bottom: 15px;">';
+                $gundemHtml .= '<div nobr="true" style="background-color: #f8f9fa; padding: 10px; border-left: 4px solid #0d6efd; margin-bottom: 15px;">';
                 $gundemHtml .= '<h3>' . htmlspecialchars($g['baslik']) . '</h3>';
 
                 if ($g['aciklama']) {
@@ -244,9 +244,11 @@ class MeetingPDF
 
         // Genel Değerlendirme
         if (!empty($toplanti['baskan_degerlendirmesi'])) {
+            $html .= '<div nobr="true">';
             $html .= '<h2 style="color:#0d6efd;">Bölge Başkanı Değerlendirmesi</h2>';
             $html .= '<div style="background-color: #e9ecef; padding: 15px; border-radius: 5px;">';
             $html .= nl2br(self::formatMentions($toplanti['baskan_degerlendirmesi']));
+            $html .= '</div>';
             $html .= '</div>';
         }
 
