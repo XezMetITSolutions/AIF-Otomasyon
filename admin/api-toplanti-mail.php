@@ -75,10 +75,8 @@ if (empty($recipients)) {
 // 3. E-posta Gönderimi
 $subject = "Toplantı Tutanağı: " . $toplanti['baslik'];
 $message = "
-<p>Değerli Üyemiz,</p>
-<p><strong>" . htmlspecialchars($toplanti['baslik']) . "</strong> konulu toplantımızın tutanağı ekte bilgilerinize sunulmuştur.</p>
-<p><strong>Tarih:</strong> " . date('d.m.Y H:i', strtotime($toplanti['toplanti_tarihi'])) . "</p>
-<p><strong>Konum:</strong> " . htmlspecialchars($toplanti['konum'] ?? '-') . "</p>
+<p>Değerli Başkanlarım,</p>
+<p><strong>" . date('d.m.Y', strtotime($toplanti['toplanti_tarihi'])) . "</strong> tarihinde yapmış olduğumuz <strong>" . htmlspecialchars($toplanti['baslik']) . "</strong> toplantımızın tutanağı ekte bilgilerinize sunulmuştur.</p>
 <br>
 <p>Saygılarımızla,<br>AİF Yönetimi</p>
 ";
