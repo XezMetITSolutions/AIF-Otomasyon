@@ -2,8 +2,10 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/Database.php';
 
-class AIF_PDF extends TCPDF {
-    public function Header() {
+class AIF_PDF extends TCPDF
+{
+    public function Header()
+    {
         // Logo
         $logoFile = __DIR__ . '/../admin/AIF.png';
         if (file_exists($logoFile)) {
@@ -14,16 +16,17 @@ class AIF_PDF extends TCPDF {
                 $this->Image($logoAssets, 150, 8, 40, 0, 'PNG');
             }
         }
-        
+
         $this->SetY(40);
         $this->Ln(5);
         $this->Ln(5);
     }
 
-    public function Footer() {
+    public function Footer()
+    {
         $this->SetY(-30);
         $this->SetFont('dejavusans', '', 8);
-        
+
         // Footer Line
         $this->Line(15, $this->GetY(), 195, $this->GetY());
         $this->Ln(2);
@@ -34,7 +37,7 @@ class AIF_PDF extends TCPDF {
             <tr><td>Amberggasse 10 | A-6800 Feldkirch | T +43 5522 21756 | ZVR-Zahl 777051661</td></tr>
             <tr><td>info@islamfederasyonu.at | www.islamfederasyonu.at</td></tr>
         </table>';
-        
+
         // Bank Info (Right)
         $html_right = '<table border="0" cellpadding="1" align="right">
             <tr><td><strong>Hypo Vorarlberg</strong></td></tr>
@@ -44,31 +47,38 @@ class AIF_PDF extends TCPDF {
 
         $this->writeHTMLCell(120, 20, 15, $this->GetY(), $html_left, 0, 0, false, true, 'L');
         $this->writeHTMLCell(60, 20, 135, $this->GetY(), $html_right, 0, 0, false, true, 'R');
-        
+
         // Page number
         $this->SetY(-15);
-        $this->Cell(0, 10, 'Sayfa '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        $this->Cell(0, 10, 'Sayfa ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
     }
 }
 
-class MeetingPDF {
-    
-    private static function formatMentions($text) {
-        if (empty($text)) return '';
+class MeetingPDF
+{
+
+    private static function formatMentions($text)
+    {
+        if (empty($text))
+            return '';
         $pattern = '/@([\w\s\p{L}]+?)(?=\s|$|<|\.|,)/u';
         $replacement = '$1';
         return preg_replace($pattern, $replacement, htmlspecialchars($text));
     }
 
-    public static function generate($toplanti_id, $outputMode = 'I') {
+    public static function generate($toplanti_id, $outputMode = 'I')
+    {
         $db = Database::getInstance();
-        
+
         // Toplantı bilgilerini getir
         $toplanti = $db->fetch("
-            SELECT t.*, b.byk_adi, b.byk_kodu, CONCAT(u.ad, ' ', u.soyad) as olusturan
+            SELECT t.*, b.byk_adi, b.byk_kodu, 
+                   CONCAT(u_ols.ad, ' ', u_ols.soyad) as olusturan,
+                   CONCAT(u_sek.ad, ' ', u_sek.soyad) as sekreter_adi
             FROM toplantilar t
             INNER JOIN byk b ON t.byk_id = b.byk_id
-            INNER JOIN kullanicilar u ON t.olusturan_id = u.kullanici_id
+            INNER JOIN kullanicilar u_ols ON t.olusturan_id = u_ols.kullanici_id
+            LEFT JOIN kullanicilar u_sek ON t.sekreter_id = u_sek.kullanici_id
             WHERE t.toplanti_id = ?
         ", [$toplanti_id]);
 
@@ -141,11 +151,13 @@ class MeetingPDF {
             $start = new DateTime($toplanti['toplanti_tarihi']);
             $end = new DateTime($toplanti['bitis_tarihi']);
             $diff = $start->diff($end);
-            
+
             $duration = [];
-            if ($diff->h > 0) $duration[] = $diff->h . ' saat';
-            if ($diff->i > 0) $duration[] = $diff->i . ' dakika';
-            
+            if ($diff->h > 0)
+                $duration[] = $diff->h . ' saat';
+            if ($diff->i > 0)
+                $duration[] = $diff->i . ' dakika';
+
             $tarihStr .= ' - ' . $end->format('H:i');
             if (!empty($duration)) {
                 $tarihStr .= ' (' . implode(' ', $duration) . ')';
@@ -153,7 +165,8 @@ class MeetingPDF {
         }
         $html .= '<tr><td><strong>Tarih:</strong></td><td>' . $tarihStr . '</td></tr>';
         $html .= '<tr><td><strong>Konum:</strong></td><td>' . htmlspecialchars($toplanti['konum'] ?? '-') . '</td></tr>';
-        $html .= '<tr><td><strong>Toplantı Sekreteri:</strong></td><td>' . htmlspecialchars($toplanti['olusturan']) . '</td></tr>';
+        $sekreter = !empty($toplanti['sekreter_adi']) ? $toplanti['sekreter_adi'] : $toplanti['olusturan'];
+        $html .= '<tr><td><strong>Toplantı Sekreteri:</strong></td><td>' . htmlspecialchars($sekreter) . '</td></tr>';
         $html .= '</table>';
         $html .= '<br>';
 
@@ -187,22 +200,22 @@ class MeetingPDF {
         // Gündem ve Alınan Kararlar
         if (!empty($gundem_maddeleri)) {
             $html .= '<h2 style="color:#0d6efd;">Gündem ve Alınan Kararlar</h2>';
-            
+
             foreach ($gundem_maddeleri as $index => $g) {
                 $html .= '<div style="background-color: #f8f9fa; padding: 10px; border-left: 4px solid #0d6efd; margin-bottom: 15px;">';
                 $html .= '<h3>' . ($index + 1) . '. ' . htmlspecialchars($g['baslik']) . '</h3>';
-                
+
                 if ($g['aciklama']) {
                     $html .= '<p><i>' . nl2br(htmlspecialchars($g['aciklama'])) . '</i></p>';
                 }
-                
+
                 if (!empty($g['gorusme_notlari'])) {
                     $html .= '<div style="margin-top: 10px; padding: 10px; border-top: 1px solid #dee2e6;">';
                     $html .= '<strong>Notlar:</strong><br>';
                     $html .= nl2br(self::formatMentions($g['gorusme_notlari']));
                     $html .= '</div>';
                 }
-                
+
                 // Bu gündem maddesine bağlı kararları bul
                 $ilgili_kararlar = array_filter($kararlar, fn($k) => $k['gundem_id'] == $g['gundem_id']);
                 if (!empty($ilgili_kararlar)) {
@@ -230,7 +243,7 @@ class MeetingPDF {
 
         // PDF çıktısı
         $filename = 'Toplanti_' . date('Y-m-d', strtotime($toplanti['toplanti_tarihi'])) . '_' . $toplanti['toplanti_id'] . '.pdf';
-        
+
         return $pdf->Output($filename, $outputMode);
     }
 }
