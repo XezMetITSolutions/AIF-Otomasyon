@@ -120,6 +120,7 @@ class SimpleSMTP
             $headers[] = "From: =?UTF-8?B?" . base64_encode($fromName) . "?= <" . $fromEmail . ">";
             $headers[] = "To: <" . $to . ">";
             $headers[] = "Reply-To: <" . $fromEmail . ">";
+            $headers[] = "Return-Path: <" . $this->username . ">";
             $headers[] = "Subject: =?UTF-8?B?" . base64_encode($subject) . "?=";
 
             $hostDomain = parse_url($host, PHP_URL_HOST) ?? $this->host;
@@ -127,6 +128,8 @@ class SimpleSMTP
             $headers[] = "Message-ID: " . $messageId;
             $headers[] = "X-Mailer: AIF CRM Mailer v1.0";
             $headers[] = "X-Priority: 3";
+            $headers[] = "Precedence: bulk";
+            $headers[] = "Importance: normal";
 
             if (!empty($attachments)) {
                 $headers[] = "Content-Type: multipart/mixed; boundary=\"$boundary\"";
