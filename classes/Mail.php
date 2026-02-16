@@ -4,16 +4,78 @@ class Mail
     public static $lastError = null;
     public static $lastLog = null;
 
-    public static function send($to, $subject, $message, $customConfig = null)
+    public static function send($to, $subject, $message, $config = null)
     {
-        // TESTING: E-posta gönderimi geçici olarak devre dışı bırakıldı
-        self::$lastLog = "E-posta gönderimi test için devre dışı bırakıldı.";
-        return true;
+        if ($config === null) {
+            $config = require __DIR__ . '/../config/mail.php';
+        }
 
-        /*
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host       = $config['host'];
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $config['username'];
+            $mail->Password   = $config['password'];
+            $mail->SMTPSecure = $config['secure'];
+            $mail->Port       = $config['port'];
+            $mail->CharSet    = 'UTF-8';
+
+            // Recipients
+            $mail->setFrom($config['from_email'], $config['from_name']);
+            $mail->addAddress($to);
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $message;
+            $mail->AltBody = strip_tags($message);
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            self::$lastError = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            return false;
+        }
+    }
+
+    public static function sendWithAttachment($to, $subject, $message, $attachmentData, $attachmentName)
+    {
         $config = require __DIR__ . '/../config/mail.php';
-        ...
-        */
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host       = $config['host'];
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $config['username'];
+            $mail->Password   = $config['password'];
+            $mail->SMTPSecure = $config['secure'];
+            $mail->Port       = $config['port'];
+            $mail->CharSet    = 'UTF-8';
+
+            // Recipients
+            $mail->setFrom($config['from_email'], $config['from_name']);
+            $mail->addAddress($to);
+
+            // Attachment
+            $mail->addStringAttachment($attachmentData, $attachmentName);
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $message;
+            $mail->AltBody = strip_tags($message);
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            self::$lastError = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            return false;
+        }
     }
 
     public static function getTemplate($kod)

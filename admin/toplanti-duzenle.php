@@ -354,6 +354,9 @@ include __DIR__ . '/../includes/header.php';
                 <i class="fas fa-edit me-2"></i><?php echo htmlspecialchars($toplanti['baslik']); ?>
             </h1>
             <div>
+                <button onclick="sendReportToBYK(<?php echo $toplanti_id; ?>)" class="btn btn-warning me-2">
+                    <i class="fas fa-envelope me-2"></i>Tüm BYK'ya Gönder
+                </button>
                 <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-danger" target="_blank">
                     <i class="fas fa-file-pdf me-2"></i>PDF İndir
                 </a>
@@ -434,6 +437,42 @@ include __DIR__ . '/../includes/header.php';
         <script>
             if (typeof ToplantiYonetimi !== 'undefined') {
                 ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
+            }
+
+            function sendReportToBYK(id) {
+                if (!confirm('Tüm BYK üyelerine toplantı tutanağını e-posta ile göndermek istediğinize emin misiniz?')) {
+                    return;
+                }
+                
+                // Show loading state
+                const btn = event.currentTarget;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Gönderiliyor...';
+                btn.disabled = true;
+
+                fetch('/admin/api-toplanti-mail.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ toplanti_id: id })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert('Hata: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Bir hata oluştu.');
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
             }
         </script>
     </div>
