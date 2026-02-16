@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Toplantı PDF Raporu Oluşturma
  */
@@ -8,8 +8,10 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$auth = Auth::getInstance();
-Middleware::checkRole([Auth::ROLE_ADMIN, Auth::ROLE_BASKAN, Auth::ROLE_UYE]);
+$auth = new Auth();
+if (!$auth->checkAuth()) {
+    die('Oturum açmanız gerekmektedir.');
+}
 $user = $auth->getUser();
 
 $db = Database::getInstance();
