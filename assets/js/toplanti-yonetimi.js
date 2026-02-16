@@ -759,17 +759,24 @@ var ToplantiYonetimi = {
         }, duration);
     },
 
-    sendReport: function (btn) {
-        if (!confirm('Toplantı raporu test adresine (mete.burcak@gmx.at) gönderilecek. Devam etmek istiyor musunuz?')) {
+    sendReport: function (btn, isTest = false) {
+        let msg = isTest
+            ? 'Toplantı raporu SADECE test adresine (mete.burcak@gmx.at) gönderilecek. Devam etmek istiyor musunuz?'
+            : 'Toplantı raporu TÜM katılımcılara gönderilecek. Onaylıyor musunuz?';
+
+        if (!confirm(msg)) {
             return;
         }
 
         const originalHtml = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gönderiliyor...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + (isTest ? 'Test Gönderiliyor...' : 'Gönderiliyor...');
 
         const formData = new FormData();
         formData.append('id', this.toplanti_id);
+        if (isTest) {
+            formData.append('is_test', '1');
+        }
 
         fetch('/admin/api-send-toplanti-raporu.php', {
             method: 'POST',

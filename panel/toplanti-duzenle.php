@@ -417,6 +417,9 @@ include __DIR__ . '/../includes/header.php';
                         target="_blank">
                         <i class="fas fa-file-pdf me-2"></i>Rapor Al
                     </a>
+                    <button type="button" class="btn btn-warning" onclick="ToplantiYonetimi.sendReport(this, true)">
+                        <i class="fas fa-flask me-2"></i>Test Gönder
+                    </button>
                     <button type="button" class="btn btn-success" onclick="ToplantiYonetimi.sendReport(this)">
                         <i class="fas fa-paper-plane me-2"></i>Raporu Gönder
                     </button>

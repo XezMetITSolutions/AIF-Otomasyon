@@ -76,21 +76,28 @@ try {
         </p>
     </div>";
 
-    // Alıcıları Belirle (Katılımcılar ve Test Adresi)
+    // Alıcıları Belirle
+    $isTest = isset($_POST['is_test']) && $_POST['is_test'] === '1';
     $recipients = [];
-    $recipients[] = 'mete.burcak@gmx.at'; // Test adresi (istek üzerine)
+    $testEmail = 'mete.burcak@gmx.at';
 
-    // Toplantı katılımcılarını getir
-    $katilimcilar = $db->fetchAll("
-        SELECT k.email 
-        FROM toplanti_katilimcilar tk
-        JOIN kullanicilar k ON tk.kullanici_id = k.kullanici_id
-        WHERE tk.toplanti_id = ? AND k.email IS NOT NULL AND k.email != ''
-    ", [$toplanti_id]);
+    if ($isTest) {
+        $recipients[] = $testEmail;
+    } else {
+        // Asıl gönderim: Tüm katılımcılar + Test adresi
+        $recipients[] = $testEmail;
 
-    foreach ($katilimcilar as $k) {
-        if (!in_array($k['email'], $recipients)) {
-            $recipients[] = $k['email'];
+        $katilimcilar = $db->fetchAll("
+            SELECT k.email 
+            FROM toplanti_katilimcilar tk
+            JOIN kullanicilar k ON tk.kullanici_id = k.kullanici_id
+            WHERE tk.toplanti_id = ? AND k.email IS NOT NULL AND k.email != ''
+        ", [$toplanti_id]);
+
+        foreach ($katilimcilar as $k) {
+            if (!in_array($k['email'], $recipients)) {
+                $recipients[] = $k['email'];
+            }
         }
     }
 
@@ -112,8 +119,8 @@ try {
     if ($successCount > 0) {
         echo json_encode([
             'success' => true,
-            'message' => 'Toplantı raporu başarıyla gönderildi.',
-            'info' => "{$successCount} kişiye ulaştırıldı." . (!empty($errors) ? " (" . count($errors) . " hata)" : "")
+            'message' => $isTest ? 'Test raporu başarıyla gönderildi.' : 'Toplantı raporu başarıyla gönderildi.',
+            'info' => $isTest ? "Alıcı: {$testEmail}" : "{$successCount} kişiye ulaştırıldı." . (!empty($errors) ? " (" . count($errors) . " hata)" : "")
         ]);
     } else {
         throw new Exception(!empty($errors) ? implode(", ", $errors) : 'E-posta gönderilemedi.');
