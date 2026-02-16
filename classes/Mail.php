@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
+
 class Mail
 {
     public static $lastError = null;
@@ -15,13 +17,13 @@ class Mail
         try {
             // Server settings
             $mail->isSMTP();
-            $mail->Host       = $config['host'];
-            $mail->SMTPAuth   = true;
-            $mail->Username   = $config['username'];
-            $mail->Password   = $config['password'];
+            $mail->Host = $config['host'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $config['username'];
+            $mail->Password = $config['password'];
             $mail->SMTPSecure = $config['secure'];
-            $mail->Port       = $config['port'];
-            $mail->CharSet    = 'UTF-8';
+            $mail->Port = $config['port'];
+            $mail->CharSet = 'UTF-8';
 
             // Recipients
             $mail->setFrom($config['from_email'], $config['from_name']);
@@ -30,7 +32,7 @@ class Mail
             // Content
             $mail->isHTML(true);
             $mail->Subject = $subject;
-            $mail->Body    = $message;
+            $mail->Body = $message;
             $mail->AltBody = strip_tags($message);
 
             $mail->send();
@@ -49,13 +51,13 @@ class Mail
         try {
             // Server settings
             $mail->isSMTP();
-            $mail->Host       = $config['host'];
-            $mail->SMTPAuth   = true;
-            $mail->Username   = $config['username'];
-            $mail->Password   = $config['password'];
+            $mail->Host = $config['host'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $config['username'];
+            $mail->Password = $config['password'];
             $mail->SMTPSecure = $config['secure'];
-            $mail->Port       = $config['port'];
-            $mail->CharSet    = 'UTF-8';
+            $mail->Port = $config['port'];
+            $mail->CharSet = 'UTF-8';
 
             // Recipients
             $mail->setFrom($config['from_email'], $config['from_name']);
@@ -67,7 +69,7 @@ class Mail
             // Content
             $mail->isHTML(true);
             $mail->Subject = $subject;
-            $mail->Body    = $message;
+            $mail->Body = $message;
             $mail->AltBody = strip_tags($message);
 
             $mail->send();
