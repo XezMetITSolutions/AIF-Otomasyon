@@ -26,7 +26,7 @@ var ToplantiYonetimi = {
         });
 
         // Attach to existing inputs
-        const inputs = document.querySelectorAll('.gorusme-notu-input, .decision-text-input');
+        const inputs = document.querySelectorAll('.gorusme-notu-input, .decision-text-input, #baskanDegerlendirmeInput, #gundem_aciklama, #edit_gundem_aciklama, #karar_metni, #edit_karar_metni');
         if (inputs.length > 0) {
             tribute.attach(inputs);
         }

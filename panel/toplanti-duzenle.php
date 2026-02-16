@@ -9,10 +9,11 @@ require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
 
-
-$auth = new Auth();
-$user = $auth->getUser();
 $db = Database::getInstance();
+
+$pageSpecificCSS = [
+    'https://cdn.jsdelivr.net/npm/tributejs@5.1.3/dist/tribute.css'
+];
 
 $pageTitle = 'Toplantı Detayı';
 
@@ -490,6 +491,83 @@ include __DIR__ . '/../includes/header.php';
             </div>
 
         </div>
+
+        <style>
+            /* Tribute.js Custom Styles */
+            .tribute-container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: auto;
+                max-height: 300px;
+                max-width: 500px;
+                overflow: auto;
+                display: block;
+                z-index: 999999;
+                background-color: #fff;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                border-radius: 12px;
+                border: 1px solid #eef2f6;
+                font-family: inherit;
+            }
+
+            .tribute-container ul {
+                margin: 0;
+                padding: 8px 0;
+                list-style: none;
+            }
+
+            .tribute-container li {
+                padding: 10px 16px;
+                cursor: pointer;
+                font-size: 14px;
+                color: #475569;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+            }
+
+            .tribute-container li:before {
+                content: '@';
+                margin-right: 8px;
+                color: #00936F;
+                font-weight: bold;
+                opacity: 0.5;
+            }
+
+            .tribute-container li.highlight {
+                background-color: #f0fdf4;
+                color: #00936F;
+            }
+
+            .tribute-container li span {
+                font-weight: 500;
+            }
+
+            .tribute-container .tribute-no-match {
+                padding: 12px 16px;
+                color: #94a3b8;
+                font-size: 13px;
+            }
+        </style>
+
+        <!-- Tribute.js for @mentions -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tributejs@5.1.3/dist/tribute.css">
+        <script src="https://cdn.jsdelivr.net/npm/tributejs@5.1.3/dist/tribute.min.js"></script>
+
+        <script>
+            // Prepare participants for @mentions
+            const MEETING_PARTICIPANTS = <?php
+            $participants = array_map(function ($k) {
+                $fullName = $k['ad'] . ' ' . $k['soyad'];
+                return [
+                    'key' => $fullName,
+                    'value' => $fullName
+                ];
+            }, $katilimcilar);
+            echo json_encode($participants);
+            ?>;
+        </script>
 
         <script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
         <script>
