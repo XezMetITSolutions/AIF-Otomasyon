@@ -241,3 +241,30 @@ export async function getUyelerAction(params: { q?: string }) {
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Çalışma Takvimi - Etkinlikleri Getir
+ */
+export async function getEtkinliklerAction(params: { ay?: string; yil?: string; birim?: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    if (params.ay) queryParams.append("ay", params.ay);
+    if (params.yil) queryParams.append("yil", params.yil);
+    if (params.birim) queryParams.append("birim", params.birim);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/etkinlikler.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
