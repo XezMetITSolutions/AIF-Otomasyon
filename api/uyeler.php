@@ -23,8 +23,13 @@ $canManage = $auth->hasModulePermission('baskan_uyeler');
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $q = trim($_GET['q'] ?? '');
     
-    $params = [$user['byk_id']];
-    $where = 'WHERE k.byk_id = ?';
+    $params = [];
+    $where = 'WHERE 1=1';
+
+    if (!$auth->isSuperAdmin()) {
+        $where .= ' AND k.byk_id = ?';
+        $params[] = $user['byk_id'] ?? 0;
+    }
 
     if ($q !== '') {
         $where .= " AND (CONCAT(k.ad, ' ', k.soyad) LIKE ? OR k.email LIKE ? OR k.telefon LIKE ?)";

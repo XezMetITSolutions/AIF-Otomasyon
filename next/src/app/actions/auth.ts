@@ -563,3 +563,25 @@ export async function saveAdminYetkilerAction(permissions: any) {
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Yönetim - Demirbaşları Getir
+ */
+export async function getDemirbaslarAction() {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/demirbaslar.php`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
