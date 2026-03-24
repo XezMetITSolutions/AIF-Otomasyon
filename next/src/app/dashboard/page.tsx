@@ -161,7 +161,7 @@ export default function DashboardPage() {
                  initial={{ opacity: 0, scale: 0.95 }} 
                  animate={{ opacity: 1, scale: 1 }} 
                  exit={{ opacity: 0, scale: 0.95 }} 
-                 onClick={(e) => e.stopPropagation()}
+                 onClick={(e: any) => e.stopPropagation()}
                  className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl relative"
               >
                   <button onClick={() => setConfigModalOpen(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
