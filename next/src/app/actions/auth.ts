@@ -517,3 +517,49 @@ export async function deleteAdminAltBirimAction(altBirimId: number) {
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Yönetim - Yetkileri Getir
+ */
+export async function getAdminYetkilerAction() {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/admin-yetkiler.php`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Yönetim - Yetkileri Kaydet
+ */
+export async function saveAdminYetkilerAction(permissions: any) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/admin-yetkiler.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify({ action: "save_permissions", permissions }),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
