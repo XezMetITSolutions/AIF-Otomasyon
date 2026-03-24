@@ -189,3 +189,30 @@ export async function toggleDuyuruAction(data: { action: string; duyuru_id: numb
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Toplantıları Getir
+ */
+export async function getToplantilarAction(params: { tab?: string; ay?: string; byk?: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    if (params.tab) queryParams.append("tab", params.tab);
+    if (params.ay) queryParams.append("ay", params.ay);
+    if (params.byk) queryParams.append("byk", params.byk);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/toplantilar.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
