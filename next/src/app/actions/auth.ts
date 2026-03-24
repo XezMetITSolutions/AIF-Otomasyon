@@ -119,3 +119,73 @@ export async function getDashboardStats() {
     return { success: false, error: err.message || "Dashboard bağlantı hatası." };
   }
 }
+
+
+
+/**
+ * Duyuruları Getir
+ */
+export async function getDuyurularAction() {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/duyurular.php", {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Duyuru Ekle
+ */
+export async function createDuyuruAction(data: { action: string; baslik: string; icerik: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/duyurular.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Duyuru Durumunu Değiştir
+ */
+export async function toggleDuyuruAction(data: { action: string; duyuru_id: number }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/duyurular.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
