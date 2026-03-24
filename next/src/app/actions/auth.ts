@@ -84,3 +84,38 @@ export async function getProfileAction() {
     return { success: false, error: err.message || "Profil bağlantı hatası." };
   }
 }
+
+
+/**
+ * Dashboard Özet Verilerini Getir - Çerez (PHPSESSID) ile tünel isteği yapar.
+ */
+export async function getDashboardStats() {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+
+    if (!sessionId) {
+      return { success: false, error: "Oturum bulunamadı." };
+    }
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/dashboard.php", {
+      headers: {
+        "Cookie": `PHPSESSID=${sessionId}`,
+      },
+    });
+
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      return { success: false, error: result.error || "Veri yüklenemedi." };
+    }
+
+    return { 
+      success: true, 
+      stats: result.stats, 
+      meetings: result.meetings, 
+      announcements: result.announcements 
+    };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Dashboard bağlantı hatası." };
+  }
+}

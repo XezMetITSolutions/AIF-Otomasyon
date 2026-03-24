@@ -1,28 +1,48 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { getDashboardStats } from "../actions/auth";
 import { 
   Calendar, Users, Bell, FileText, 
   ArrowUpRight, Clock, CheckCircle2, AlertCircle 
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const stats = [
-    { label: "Yaklaşan Toplantı", value: "3", icon: Users, color: "emerald", class: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
-    { label: "Aktif Duyuru", value: "12", icon: Bell, color: "blue", class: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
-    { label: "Bekleyen İzin", value: "1", icon: Clock, color: "amber", class: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
-    { label: "Aylık Harcama", value: "€450", icon: FileText, color: "red", class: "bg-red-500/10 text-red-500 border-red-500/20" },
-  ];
+  const [stats, setStats] = useState<any[]>([]);
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const meetings = [
-    { title: "BYK Olağan Toplantısı", date: "26.03.2026", time: "19:00", type: "Genel", status: "katilacak" },
-    { title: "Birim İçi Değerlendirme", date: "28.03.2026", time: "20:30", type: "Birim", status: "beklemede" },
-  ];
+  useEffect(() => {
+    async function load() {
+      const res = await getDashboardStats();
+      if (res.success) {
+        setStats([
+          { label: "Yaklaşan Toplantı", value: res.stats.upcoming_meetings.toString(), icon: Users, class: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
+          { label: "Aktif Duyuru", value: res.stats.active_announcements.toString(), icon: Bell, class: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+          { label: "Bekleyen İzin", value: res.stats.pending_leaves.toString(), icon: Clock, class: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+          { label: "Aylık Harcama", value: `€${res.stats.expenses}`, icon: FileText, class: "bg-red-500/10 text-red-500 border-red-500/20" },
+        ]);
+        setMeetings(res.meetings);
+        setAnnouncements(res.announcements);
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
 
-  const announcements = [
-    { title: "Ramazan Ayı Çalışma Takvimi", date: "Bugün", description: "Ramazan ayı boyunca mesai ve toplantı saatleri güncellenmiştir..." },
-    { title: "Yeni Yönetim Kurulu Duyurusu", date: "Dün", description: "Merkez yönetim kurulu kararıyla yeni birim başkanları atanmıştır..." },
-  ];
+  const formatDate = (dateString: string) => {
+    if (!dateString) return { day: "-", month: "-", time: "-" };
+    const d = new Date(dateString);
+    return {
+      day: d.getDate(),
+      month: d.toLocaleString('tr-TR', { month: 'short' }),
+      time: d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+    };
+  };
+
+  if (loading) return <div className="min-h-[400px] flex items-center justify-center text-emerald-500 font-bold">Veriler Yükleniyor...</div>;
 
   return (
     <div className="space-y-6">
@@ -38,7 +58,9 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
-          return (
+          if (loading) return <div className="min-h-[400px] flex items-center justify-center text-emerald-500 font-bold">Veriler Yükleniyor...</div>;
+
+  return (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 15 }}
@@ -113,17 +135,23 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="p-4 space-y-4">
-            {announcements.map((item, index) => (
-              <div key={index} className="p-4 bg-zinc-800/50 border border-white/5 rounded-xl space-y-2 hover:border-white/10 hover:bg-zinc-800 transition-all cursor-pointer">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-zinc-200">{item.title}</h3>
-                  <span className="text-[11px] text-zinc-600">{item.date}</span>
+            {announcements.length === 0 ? (
+              <div className="p-4 text-center text-zinc-500 text-sm">Yeni duyuru yok.</div>
+            ) : announcements.map((item, index) => {
+              const dParts = formatDate(item.olusturma_tarihi);
+              if (loading) return <div className="min-h-[400px] flex items-center justify-center text-emerald-500 font-bold">Veriler Yükleniyor...</div>;
+
+  return (
+                <div key={index} className="p-4 bg-zinc-800/50 border border-white/5 rounded-xl space-y-2 hover:border-white/10 hover:bg-zinc-800 transition-all cursor-pointer">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-zinc-200">{item.baslik}</h3>
+                    <span className="text-[11px] text-zinc-600">{dParts.day} {dParts.month}</span>
+                  </div>
+                  <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.icerik }}>
+                  </p>
                 </div>
-                <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
