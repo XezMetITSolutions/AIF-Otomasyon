@@ -41,6 +41,7 @@ export default function DashboardLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<any[]>(baseMenu);
   const pathname = usePathname();
@@ -213,10 +214,32 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-4">
             {/* Notification */}
-            <button className="relative p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/20" />
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="relative p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+              >
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/20" />
+              </button>
+              
+              <AnimatePresence>
+                {notificationsOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className="absolute right-0 mt-2 w-72 bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl p-4 space-y-3 z-50 text-left"
+                  >
+                     <h4 className="font-bold text-sm text-zinc-100 border-b border-white/5 pb-2">Bildirimler</h4>
+                     <div className="flex flex-col items-center justify-center py-4 text-center opacity-70">
+                        <Bell className="w-8 h-8 text-zinc-500 mb-2" />
+                        <p className="text-xs font-semibold text-zinc-300">Yeni bildirim bulunmuyor.</p>
+                     </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             
             {/* User Profile */}
             <button className="flex items-center gap-2 p-1 pl-3 rounded-xl border border-white/5 bg-zinc-900 hover:bg-zinc-800 hover:border-white/10 transition-all">
