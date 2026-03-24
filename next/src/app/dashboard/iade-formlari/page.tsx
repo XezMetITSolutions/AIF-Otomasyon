@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileText, Send, CheckCircle2, XCircle, AlertCircle, Plus } from "lucide-react";
+import { getIadeFormlariAction, actionHarcamaTalebi } from "../../actions/auth";
 
 export default function IadeFormlariPage() {
   const [activeTab, setActiveTab] = useState<"talebim" | "onay">("talebim");
@@ -24,10 +25,11 @@ export default function IadeFormlariPage() {
   async function loadRequests() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/iade-formlari.php?tab=${activeTab}`);
-      const data = await res.json();
-      if (data.success) {
-        setRequests(data.requests || []);
+      const res = await getIadeFormlariAction({ tab: activeTab });
+      if (res.success) {
+        setRequests(res.requests || []);
+      } else {
+        setMessage({ text: res.error || "Talepler yüklenemedi.", type: "error" });
       }
     } catch (e) {
       setMessage({ text: "Veriler yüklenirken hata oluştu.", type: "error" });
@@ -41,19 +43,14 @@ export default function IadeFormlariPage() {
     setSubmitLoading(true);
 
     try {
-      const res = await fetch("/api/harcama-talepleri.php", { // harcama_talepleri tablosuyla ortak olduğu için
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "yeni_harcama", baslik, tutar, kategori: "İade", aciklama })
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await actionHarcamaTalebi({ action: "yeni_harcama", baslik, tutar, kategori: "İade", aciklama });
+      if (res.success) {
         setIsModalOpen(false);
         setBaslik(""); setTutar(""); setAciklama("");
         setMessage({ text: "İade talebi başarıyla oluşturuldu.", type: "success" });
         loadRequests();
       } else {
-        setMessage({ text: data.error || "Hata oluştu.", type: "error" });
+        setMessage({ text: res.error || "Hata oluştu.", type: "error" });
       }
     } catch (e) {
       setMessage({ text: "Talep gönderilemedi.", type: "error" });

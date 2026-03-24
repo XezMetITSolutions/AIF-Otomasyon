@@ -585,3 +585,73 @@ export async function getDemirbaslarAction() {
     return { success: false, error: err.message };
   }
 }
+
+/**
+ * İade Formlarını Getir
+ */
+export async function getIadeFormlariAction(params: { tab: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("tab", params.tab);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/iade-formlari.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Demirbaş Taleplerini Getir
+ */
+export async function getDemirbasTalepleriAction(params: { tab: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("tab", params.tab);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/demirbas-talepleri.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Demirbaş İşlemleri (Oluşturma)
+ */
+export async function actionDemirbasTalebi(data: any) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/demirbas-talepleri.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}

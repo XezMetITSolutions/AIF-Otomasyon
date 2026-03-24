@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Box, Send, CheckCircle2, XCircle, AlertCircle, Plus } from "lucide-react";
+import { getDemirbasTalepleriAction, actionDemirbasTalebi } from "../../actions/auth";
 
 export default function DemirbasTalepleriPage() {
   const [activeTab, setActiveTab] = useState<"talep" | "onay">("talep");
@@ -24,10 +25,11 @@ export default function DemirbasTalepleriPage() {
   async function loadRequests() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/demirbas-talepleri.php?tab=${activeTab}`);
-      const data = await res.json();
-      if (data.success) {
-        setRequests(data.requests || []);
+      const res = await getDemirbasTalepleriAction({ tab: activeTab });
+      if (res.success) {
+        setRequests(res.requests || []);
+      } else {
+        setMessage({ text: res.error || "Talepler yüklenemedi.", type: "error" });
       }
     } catch (e) {
       setMessage({ text: "Veriler yüklenirken hata oluştu.", type: "error" });
@@ -41,19 +43,14 @@ export default function DemirbasTalepleriPage() {
     setSubmitLoading(true);
 
     try {
-      const res = await fetch("/api/demirbas-talepleri.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "yeni_talep", demirbas_adi: demirbasAdi, materyal, aciklama })
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await actionDemirbasTalebi({ action: "yeni_talep", demirbas_adi: demirbasAdi, materyal, aciklama });
+      if (res.success) {
         setIsModalOpen(false);
         setDemirbasAdi(""); setMateryal(""); setAciklama("");
-        setMessage({ text: "Demirbaş talebe başarıyla oluşturuldu.", type: "success" });
+        setMessage({ text: "Demirbaş talebi başarıyla oluşturuldu.", type: "success" });
         loadRequests();
       } else {
-        setMessage({ text: data.error || "Hata oluştu.", type: "error" });
+        setMessage({ text: res.error || "Hata oluştu.", type: "error" });
       }
     } catch (e) {
       setMessage({ text: "Talep gönderilemedi.", type: "error" });
