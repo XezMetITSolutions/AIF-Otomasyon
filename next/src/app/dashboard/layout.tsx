@@ -68,15 +68,15 @@ export default function DashboardLayout({
             {
               title: "EKSTRALAR",
               links: [
-                { href: "/dashboard/admin/demirbaslar", label: "Demirbaş Yönetimi", icon: Box, match: "demirbaslar" },
+                { href: "/dashboard/demirbaslar", label: "Demirbaş Yönetimi", icon: Box, match: "demirbaslar" },
               ]
             },
             {
               title: "RAPORLAR & AYARLAR",
               links: [
-                { href: "/dashboard/admin/raporlar", label: "Raporlar & Analiz", icon: FilePieChart, match: "raporlar" },
-                { href: "/dashboard/admin/ayarlar", label: "Sistem Ayarları", icon: ShieldCheck, match: "ayarlar" },
-                { href: "/dashboard/admin/email-sablonlari", label: "E-posta Şablonları", icon: MailOpen, match: "email-sablonlari" },
+                { href: "/dashboard/raporlar", label: "Raporlar & Analiz", icon: FilePieChart, match: "raporlar" },
+                { href: "/dashboard/ayarlar", label: "Sistem Ayarları", icon: ShieldCheck, match: "ayarlar" },
+                { href: "/dashboard/sablonlar", label: "E-posta Şablonları", icon: MailOpen, match: "sablonlar" },
               ]
             }
           );
