@@ -38,7 +38,7 @@ try {
         ob_end_clean();
 
     // Disable error display and deprecated warnings for the PDF generation phase
-    error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
+    error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
     ini_set('display_errors', 0);
 
     MeetingPDF::generate($toplanti_id, 'I');

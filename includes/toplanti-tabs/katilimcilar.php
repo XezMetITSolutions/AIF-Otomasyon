@@ -295,7 +295,10 @@ $isCreator = ($toplanti['olusturan_id'] == $currentUserId);
             const selectAllCheck = document.getElementById('modal_select_all_users');
             const countBadge = document.getElementById('selected_count_badge');
 
-            if (!bykSelect || !userListContainer) return; // Not the right page or elements missing
+            if (!bykSelect || !userListContainer) return; 
+
+            if (userListContainer.dataset.loaded === 'true') return;
+            userListContainer.dataset.loaded = 'true';
 
             // Robust PHP to JS conversion
             let rawIds = <?php echo !empty($katilimcilar) ? json_encode(array_column($katilimcilar, 'kullanici_id')) : '[]'; ?>;
@@ -445,12 +448,17 @@ $isCreator = ($toplanti['olusturan_id'] == $currentUserId);
         }
     }
 
-    // Standart sayfa yükleme
-    document.addEventListener('DOMContentLoaded', initKatilimcilarTab);
-    // AJAX (SPA) sayfa yükleme
-    $(document).on('page:loaded', initKatilimcilarTab);
-    // Hemen çalıştır
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    (function pollKatilimcilar() {
         initKatilimcilarTab();
-    }
+        let att = 0;
+        const i = setInterval(() => {
+            att++;
+            const c = document.getElementById('modal_user_list');
+            if (c && c.dataset.loaded === 'true') clearInterval(i);
+            else if (att > 15) clearInterval(i);
+            else initKatilimcilarTab();
+        }, 500);
+    })();
+
+    if (typeof jQuery !== 'undefined') $(document).on('page:loaded', initKatilimcilarTab);
 </script>
