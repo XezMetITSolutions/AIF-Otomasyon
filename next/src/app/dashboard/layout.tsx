@@ -9,7 +9,7 @@ import {
   Settings, FolderKanban, LogOut, Menu, X, 
   UserCircle, Bell, ChevronDown, ShieldCheck, 
   Building, Network, Sliders, ClipboardList, 
-  Box, FilePieChart, MailOpen
+  Box, FilePieChart, MailOpen, Wallet
 } from "lucide-react";
 import { getProfileAction, logoutAction } from "../actions/auth";
 
@@ -23,6 +23,13 @@ const baseMenu = [
       { href: "/dashboard/takvim", label: "Çalışma Takvimi", icon: Calendar, match: "takvim" },
       { href: "/dashboard/toplantilar", label: "Toplantılar", icon: Users, match: "toplantilar" },
       { href: "/dashboard/uyeler", label: "Üyeler", icon: Users, match: "uyeler" },
+    ]
+  },
+  {
+    title: "İŞLEMLER (ONAY)",
+    links: [
+      { href: "/dashboard/izin-talepleri", label: "İzin Talepleri", icon: Calendar, match: "izin-talepleri" },
+      { href: "/dashboard/harcama-talepleri", label: "Harcama Talepleri", icon: Wallet, match: "harcama-talepleri" },
     ]
   }
 ];
@@ -59,10 +66,8 @@ export default function DashboardLayout({
               ]
             },
             {
-              title: "İŞLEMLER",
+              title: "EKSTRALAR",
               links: [
-                { href: "/dashboard/admin/izin-talepleri", label: "İzin Talepleri", icon: Calendar, match: "izin-talepleri" },
-                { href: "/dashboard/admin/harcama-talepleri", label: "Harcama Talepleri", icon: ClipboardList, match: "harcama-talepleri" },
                 { href: "/dashboard/admin/demirbaslar", label: "Demirbaş Yönetimi", icon: Box, match: "demirbaslar" },
               ]
             },
