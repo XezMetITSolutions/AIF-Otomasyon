@@ -9,30 +9,12 @@ import {
   Settings, FolderKanban, LogOut, Menu, X, 
   UserCircle, Bell, ChevronDown, ShieldCheck, 
   Building, Network, Sliders, ClipboardList, 
-  Box, FilePieChart, MailOpen, Wallet
+  Box, FilePieChart, MailOpen, Wallet, FileText, MapPin
 } from "lucide-react";
 import { getProfileAction, logoutAction } from "../actions/auth";
 
 // Menüler kategori bazlı gruplanır
-const baseMenu = [
-  {
-    title: "GENEL",
-    links: [
-      { href: "/dashboard", label: "Kontrol Paneli", icon: Gauge, match: "/dashboard" },
-      { href: "/dashboard/duyurular", label: "Duyurular", icon: Megaphone, match: "duyurular" },
-      { href: "/dashboard/takvim", label: "Çalışma Takvimi", icon: Calendar, match: "takvim" },
-      { href: "/dashboard/toplantilar", label: "Toplantılar", icon: Users, match: "toplantilar" },
-      { href: "/dashboard/uyeler", label: "Üyeler", icon: Users, match: "uyeler" },
-    ]
-  },
-  {
-    title: "İŞLEMLER (ONAY)",
-    links: [
-      { href: "/dashboard/izin-talepleri", label: "İzin Talepleri", icon: Calendar, match: "izin-talepleri" },
-      { href: "/dashboard/harcama-talepleri", label: "Harcama Talepleri", icon: Wallet, match: "harcama-talepleri" },
-    ]
-  }
-];
+const baseMenu: any[] = [];
 
 export default function DashboardLayout({
   children,
@@ -43,16 +25,67 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [menuItems, setMenuItems] = useState<any[]>(baseMenu);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
   const pathname = usePathname();
 
   useEffect(() => {
     async function loadProfile() {
-      const res = await getProfileAction();
+      const res: any = await getProfileAction();
       if (res.success) {
         setUser(res.user);
         
-        const dynamicMenu = [...baseMenu];
+        const dynamicMenu = [
+          {
+            title: "GENEL",
+            links: [
+              { href: "/dashboard", label: "Kontrol Paneli", icon: Gauge, match: "/dashboard" },
+              { href: "/dashboard/duyurular", label: "Duyurular", icon: Megaphone, match: "duyurular" },
+              { href: "/dashboard/takvim", label: "Çalışma Takvimi", icon: Calendar, match: "takvim" },
+              { href: "/dashboard/toplantilar", label: "Toplantılar", icon: Users, match: "toplantilar" },
+              { href: "/dashboard/uyeler", label: "Üyeler", icon: Users, match: "uyeler" },
+            ]
+          }
+        ];
+
+        // İŞLEMLER (ONAY) - Dynamic push
+        const baskanLinks = [
+          { key: 'baskan_izin_talepleri', href: "/dashboard/izin-talepleri", label: "İzin Onayları", icon: Calendar, match: "izin-talepleri" },
+          { key: 'baskan_harcama_talepleri', href: "/dashboard/harcama-talepleri", label: "Harcama Onayları", icon: Wallet, match: "harcama-talepleri" },
+          { key: 'baskan_iade_formlari', href: "/panel/iade-formlari.php?tab=yonetim", label: "İade Onayları", icon: Wallet, match: "iade-formlari", php: true },
+          { key: 'baskan_demirbas_talepleri', href: "/panel/demirbas-talepleri.php?tab=onay", label: "Demirbaş Talepleri", icon: Box, match: "demirbas-talepleri", php: true },
+          { key: 'baskan_raggal_talepleri', href: "/panel/raggal-talepleri.php?tab=yonetim", label: "Raggal Talepleri", icon: Calendar, match: "raggal-talepleri", php: true },
+          { key: 'baskan_projeler', href: "/panel/projelerim", label: "Proje Yönetimi", icon: FolderKanban, match: "projelerim", php: true },
+          { key: 'baskan_sube_ziyaretleri', href: "/panel/sube-ziyaretleri.php", label: "Şube Ziyaretleri", icon: MapPin, match: "sube-ziyaretleri", php: true },
+          { key: 'baskan_raporlar', href: "/panel/baskan_raporlar.php", label: "Raporlar", icon: FilePieChart, match: "baskan_raporlar", php: true },
+        ];
+
+        const activeBaskanLinks = baskanLinks.filter(item => {
+           if (res.isMuhasebeBaskani && ['baskan_harcama_talepleri', 'baskan_iade_formlari'].includes(item.key)) return true;
+           if (item.key === 'baskan_sube_ziyaretleri' && !res.isAT) return false;
+           return res.permissions.includes(item.key);
+        });
+
+        if (activeBaskanLinks.length > 0) {
+           dynamicMenu.push({
+             title: "İŞLEMLER (ONAY)",
+             links: activeBaskanLinks
+           });
+        }
+
+        // KİŞİSEL / TALEPLER - Dynamic push
+        const uyeLinks = [
+          { key: 'uye_izin_talepleri', href: "/dashboard/izin-talepleri", label: "İzin Taleplerim", icon: Calendar, match: "izin-talepleri" },
+          { key: 'uye_harcama_talepleri', href: "/dashboard/harcama-talepleri", label: "Harcama Taleplerim", icon: Wallet, match: "harcama-talepleri" },
+          { key: 'uye_iade_formu', href: "/panel/iade-formlari.php?tab=form", label: "İade Talebi Oluştur", icon: FileText, match: "iade-formu", php: true },
+          { key: 'uye_demirbas_talep', href: "/panel/demirbas-talepleri.php?tab=talep", label: "Demirbaş Talep", icon: Box, match: "demirbas-talep", php: true },
+          { key: 'uye_raggal_talep', href: "/panel/raggal-talepleri.php?tab=takvim", label: "Raggal Rezervasyon", icon: Calendar, match: "raggal-talep", php: true },
+          { key: 'uye_projeler', href: "/panel/projelerim", label: "Projelerim", icon: FolderKanban, match: "projeler", php: true },
+        ];
+
+        dynamicMenu.push({
+          title: "KİŞİSEL",
+          links: uyeLinks
+        });
         
         if (res.user.role === "super_admin" || parseInt(res.user.role_level) >= 90) {
           // Super Admin için Kategori Bazlı Menüler
@@ -154,30 +187,37 @@ export default function DashboardLayout({
                 const isActive = pathname === item.href || (item.match !== "/dashboard" && pathname.includes(item.match));
                 const Icon = item.icon;
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative
-                      ${isActive 
+                  const tagProps = {
+                    key: item.href,
+                    href: item.href,
+                    className: `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative ${
+                      isActive 
                         ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/10" 
                         : "text-zinc-400 hover:text-white hover:bg-white/5"
-                      }
-                    `}
-                  >
-                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-white" : "text-zinc-500 group-hover:text-emerald-400 transition-colors"}`} />
-                    {sidebarOpen && (
-                      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        {item.label}
-                      </motion.span>
-                    )}
-                    {!sidebarOpen && (
-                      <div className="absolute left-14 invisible group-hover:visible opacity-0 group-hover:opacity-100 bg-zinc-800 border border-white/10 px-2.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap shadow-xl z-50 transition-all">
-                        {item.label}
-                      </div>
-                    )}
-                  </Link>
-                );
+                    }`
+                  };
+
+                  const content = (
+                    <>
+                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-white" : "text-zinc-500 group-hover:text-emerald-400 transition-colors"}`} />
+                      {sidebarOpen && (
+                        <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                          {item.label}
+                        </motion.span>
+                      )}
+                      {!sidebarOpen && (
+                        <div className="absolute left-14 invisible group-hover:visible opacity-0 group-hover:opacity-100 bg-zinc-800 border border-white/10 px-2.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap shadow-xl z-50 transition-all">
+                          {item.label}
+                        </div>
+                      )}
+                    </>
+                  );
+
+                  return item.php ? (
+                    <a {...tagProps} target="_self">{content}</a>
+                  ) : (
+                    <Link {...tagProps}>{content}</Link>
+                  );
               })}
             </div>
           ))}
