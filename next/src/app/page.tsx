@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, Check, AlertCircle } from "lucide-react";
+import { loginAction } from "./actions/auth";
 
 const bgImages = [
   "https://images.unsplash.com/photo-1519817650390-64a93db51149?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
@@ -41,10 +42,13 @@ export default function LoginPage() {
     }
 
     try {
-      // Mock Login timeout
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      // Add custom redirect setup later
-      setError("Giriş API bağlantısı henüz entegre edilmedi.");
+      const res = await loginAction({ email, password, remember });
+      if (res.success) {
+        // Giriş başarılı - Dashboard'a yönlendir (İlerleyen aşamada sayfa oluşturulunca)
+        window.location.href = "/dashboard"; 
+      } else {
+        setError(res.error || "Giriş başarısız.");
+      }
     } catch (err) {
       setError("Bağlantı hatası oluştu.");
     } finally {
