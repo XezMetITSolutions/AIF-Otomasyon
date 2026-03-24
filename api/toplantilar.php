@@ -21,6 +21,7 @@ $db = Database::getInstance();
 $canManage = $auth->hasModulePermission('baskan_toplantilar');
 
 // Check if user belongs to 'AT' (Global Admin Unit)
+$userByk = $db->fetch("SELECT * FROM byk WHERE byk_id = ?", [$user['byk_id']]);
 $isAdmin = ($auth->isSuperAdmin() || ($userByk && $userByk['byk_kodu'] === 'AT'));
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
