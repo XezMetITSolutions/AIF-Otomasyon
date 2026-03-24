@@ -268,3 +268,53 @@ export async function getEtkinliklerAction(params: { ay?: string; yil?: string; 
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * İzin Taleplerini Getir
+ */
+export async function getIzinTalepleriAction(params: { tab: string; durum?: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("tab", params.tab);
+    if (params.durum) queryParams.append("durum", params.durum);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/izin-talepleri.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * İzin İşlemleri (Oluşturma, Onaylama, Reddetme, Silme)
+ */
+export async function actionIzinTalebi(data: any) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/izin-talepleri.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
