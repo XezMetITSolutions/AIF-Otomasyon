@@ -8,7 +8,7 @@ import {
   Gauge, Users, Calendar, Megaphone, 
   Settings, FolderKanban, LogOut, Menu, X, 
   UserCircle, Bell, ChevronDown, ShieldCheck, 
-  Building, Sitemap, Sliders, ClipboardList, 
+  Building, Network, Sliders, ClipboardList, 
   Box, FilePieChart, MailOpen
 } from "lucide-react";
 import { getProfileAction, logoutAction } from "../actions/auth";
@@ -54,7 +54,7 @@ export default function DashboardLayout({
               links: [
                 { href: "/dashboard/admin/kullanicilar", label: "Kullanıcı Yönetimi", icon: UserCircle, match: "kullanicilar" },
                 { href: "/dashboard/admin/byk", label: "BYK Yönetimi", icon: Building, match: "byk" },
-                { href: "/dashboard/admin/alt-birimler", label: "Alt Birimler", icon: Sitemap, match: "alt-birimler" },
+                { href: "/dashboard/admin/alt-birimler", label: "Alt Birimler", icon: Network, match: "alt-birimler" },
                 { href: "/dashboard/admin/yetkiler", label: "Üye Yetkileri", icon: Sliders, match: "yetkiler" },
               ]
             },
