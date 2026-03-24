@@ -54,8 +54,8 @@ export default function DashboardLayout({
           { key: 'baskan_iade_formlari', href: "/dashboard/iade-formlari", label: "İade Onayları", icon: Wallet, match: "iade-formlari" },
           { key: 'baskan_demirbas_talepleri', href: "/dashboard/demirbas-talepleri", label: "Demirbaş Talepleri", icon: Box, match: "demirbas-talepleri" },
           { key: 'baskan_raggal_talepleri', href: "/dashboard/raggal-talepleri", label: "Raggal Talepleri", icon: Calendar, match: "raggal-talepleri" },
-          { key: 'baskan_projeler', href: "https://aifnet.islamfederasyonu.at/panel/projelerim", label: "Proje Yönetimi", icon: FolderKanban, match: "projelerim", php: true },
-          { key: 'baskan_sube_ziyaretleri', href: "https://aifnet.islamfederasyonu.at/panel/sube-ziyaretleri.php", label: "Şube Ziyaretleri", icon: MapPin, match: "sube-ziyaretleri", php: true },
+          { key: 'baskan_projeler', href: "/dashboard/projeler", label: "Proje Yönetimi", icon: FolderKanban, match: "projeler" },
+          { key: 'baskan_sube_ziyaretleri', href: "/dashboard/sube-ziyaretleri", label: "Şube Ziyaretleri", icon: MapPin, match: "sube-ziyaretleri" },
           { key: 'baskan_raporlar', href: "https://aifnet.islamfederasyonu.at/panel/baskan_raporlar.php", label: "Raporlar", icon: FilePieChart, match: "baskan_raporlar", php: true },
         ];
 
@@ -79,7 +79,7 @@ export default function DashboardLayout({
           { key: 'uye_iade_formu', href: "/dashboard/iade-formlari", label: "İade Talebi Oluştur", icon: FileText, match: "iade-formu" },
           { key: 'uye_demirbas_talep', href: "/dashboard/demirbas-talepleri", label: "Demirbaş Talep", icon: Box, match: "demirbas-talep" },
           { key: 'uye_raggal_talep', href: "/dashboard/raggal-talepleri", label: "Raggal Rezervasyon", icon: Calendar, match: "raggal-talep" },
-          { key: 'uye_projeler', href: "https://aifnet.islamfederasyonu.at/panel/projelerim", label: "Projelerim", icon: FolderKanban, match: "projeler", php: true },
+          { key: 'uye_projeler', href: "/dashboard/projeler", label: "Projelerim", icon: FolderKanban, match: "projeler" },
         ];
 
         dynamicMenu.push({
