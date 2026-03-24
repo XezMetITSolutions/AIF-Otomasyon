@@ -1,21 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Gauge, Users, Calendar, Megaphone, 
   Settings, FolderKanban, LogOut, Menu, X, 
-  UserCircle, Bell, ChevronDown
+  UserCircle, Bell, ChevronDown, ShieldCheck
 } from "lucide-react";
+import { getProfileAction, logoutAction } from "../actions/auth";
 
-const menuItems = [
-  { href: "/dashboard", label: "Kontrol Paneli", icon: Gauge },
-  { href: "/dashboard/duyurular", label: "Duyurular", icon: Megaphone },
-  { href: "/dashboard/takvim", label: "Çalışma Takvimi", icon: Calendar },
-  { href: "/dashboard/toplantilar", label: "Toplantılar", icon: Users },
-  { href: "/dashboard/uyeler", label: "Üyeler", icon: Users },
+// Menüler başlangıçta temel rotayı tutar
+const baseMenu = [
+  { href: "/dashboard", label: "Kontrol Paneli", icon: Gauge, match: "/dashboard" },
+  { href: "/dashboard/duyurular", label: "Duyurular", icon: Megaphone, match: "duyurular" },
+  { href: "/dashboard/takvim", label: "Çalışma Takvimi", icon: Calendar, match: "takvim" },
+  { href: "/dashboard/toplantilar", label: "Toplantılar", icon: Users, match: "toplantilar" },
+  { href: "/dashboard/uyeler", label: "Üyeler", icon: Users, match: "uyeler" },
 ];
 
 export default function DashboardLayout({
@@ -25,7 +27,37 @@ export default function DashboardLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [menuItems, setMenuItems] = useState(baseMenu);
   const pathname = usePathname();
+
+  useEffect(() => {
+    async function loadProfile() {
+      const res = await getProfileAction();
+      if (res.success) {
+        setUser(res.user);
+        
+        // Rol Bazlı Menü Koşulları
+        const dynamicMenu = [...baseMenu];
+        
+        if (res.user.role === "super_admin" || parseInt(res.user.role_level) >= 90) {
+          dynamicMenu.push(
+            { href: "/dashboard/admin/kullanicilar", label: "Kullanıcı Yönetimi", icon: UserCircle, match: "kullanicilar" },
+            { href: "/dashboard/admin/ayarlar", label: "Sistem Ayarları", icon: ShieldCheck, match: "ayarlar" }
+          );
+        }
+        setMenuItems(dynamicMenu);
+      } else {
+        window.location.href = "/";
+      }
+    }
+    loadProfile();
+  }, []);
+
+  const handleLogout = async () => {
+    await logoutAction();
+    window.location.href = "/";
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex overflow-hidden font-sans">
@@ -76,7 +108,7 @@ export default function DashboardLayout({
         {/* Sidebar Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || (item.match !== "/dashboard" && pathname.includes(item.match));
             const Icon = item.icon;
 
             return (
@@ -113,7 +145,7 @@ export default function DashboardLayout({
             <Settings className="w-5 h-5 shrink-0 text-zinc-500 group-hover:text-emerald-400" />
             {sidebarOpen && <span>Ayarlar</span>}
           </Link>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/5 group">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/5 group">
             <LogOut className="w-5 h-5 shrink-0 text-red-500/70 group-hover:text-red-400" />
             {sidebarOpen && <span>Çıkış Yap</span>}
           </button>
@@ -146,8 +178,8 @@ export default function DashboardLayout({
             {/* User Profile */}
             <button className="flex items-center gap-2 p-1 pl-3 rounded-xl border border-white/5 bg-zinc-900 hover:bg-zinc-800 hover:border-white/10 transition-all">
               <div className="flex flex-col items-end text-right">
-                <span className="text-xs font-semibold text-zinc-200">Kullanıcı Name</span>
-                <span className="text-[10px] font-medium text-zinc-500">Üye</span>
+                <span className="text-xs font-semibold text-zinc-200">{user ? user.name : "Yükleniyor..."}</span>
+                <span className="text-[10px] font-medium text-zinc-500 capitalize">{user ? user.role : "-"}</span>
               </div>
               <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-emerald-400 border border-white/10">
                 <UserCircle className="w-5 h-5" />
