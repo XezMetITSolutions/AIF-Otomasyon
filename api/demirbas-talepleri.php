@@ -18,6 +18,32 @@ if (!$auth->checkAuth()) {
 $user = $auth->getUser();
 $db = Database::getInstance();
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $action = $input['action'] ?? '';
+
+    if ($action === 'yeni_talep') {
+        $demirbas_adi = trim($input['demirbas_adi'] ?? '');
+        $materyal = trim($input['materyal'] ?? '');
+        $aciklama = trim($input['aciklama'] ?? '');
+
+        if (empty($demirbas_adi)) {
+            echo json_encode(['success' => false, 'error' => 'Demirbaş adı zorunludur.']);
+            exit;
+        }
+
+        try {
+            $db->query("INSERT INTO demirbas_talepleri (kullanici_id, demirbas_adi, materyal, aciklama, durum, created_at) VALUES (?, ?, ?, ?, 'beklemede', NOW())", [
+                $user['id'], $demirbas_adi, $materyal, $aciklama
+            ]);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        exit;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $tab = $_GET['tab'] ?? 'talep'; 
     
