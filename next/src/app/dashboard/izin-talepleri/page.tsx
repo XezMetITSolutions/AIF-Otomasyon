@@ -315,7 +315,7 @@ export default function IzinTalepleriPage() {
                       
                       <div className="flex items-center gap-3 mb-4 border-b border-white/5 pb-4">
                         <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-zinc-400 shadow-inner text-sm">
-                          {req.kullanici_adi.split(' ').map((n: string) => n[0]).join('')}
+                          {req.kullanici_adi?.split(' ')?.map((n: string) => n[0])?.join('') || "-"}
                         </div>
                         <div>
                           <h3 className="font-bold text-white text-sm leading-tight">{req.kullanici_adi}</h3>

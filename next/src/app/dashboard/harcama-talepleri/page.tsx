@@ -331,9 +331,9 @@ export default function HarcamaTalepleriPage() {
                         </div>
                         
                         <div className="flex items-center gap-3 mb-4 border-b border-white/5 pb-4">
-                          <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-zinc-400 shadow-inner text-sm uppercase">
-                            {req.kullanici_adi.split(' ').map((n: string) => n[0]).join('')}
-                          </div>
+                             <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-zinc-400 shadow-inner text-sm uppercase">
+                               {req.kullanici_adi?.split(' ')?.map((n: string) => n[0])?.join('') || "-"}
+                             </div>
                           <div className="flex-1">
                             <h3 className="font-bold text-white text-sm leading-tight">{req.kullanici_adi}</h3>
                             <span className="text-[10px] text-zinc-500">{req.email}</span>

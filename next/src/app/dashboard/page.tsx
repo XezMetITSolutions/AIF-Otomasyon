@@ -102,8 +102,8 @@ export default function DashboardPage() {
               <div key={index} className="p-3 flex items-center justify-between hover:bg-white/5 rounded-xl transition-all cursor-pointer">
                 <div className="flex items-center gap-3">
                   <div className="bg-zinc-800 p-2.5 rounded-xl text-center min-w-[50px] border border-white/5">
-                    <span className="text-xs font-bold text-zinc-200 block">{meeting.date.split('.')[0]}</span>
-                    <span className="text-[10px] text-zinc-500 font-medium">{meeting.date.split('.')[1]} ay</span>
+                    <span className="text-xs font-bold text-zinc-200 block">{meeting.date?.split('.')?.[0] || "-"}</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">{meeting.date?.split('.')?.[1] || "-"} ay</span>
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-zinc-300">{meeting.title}</h3>
