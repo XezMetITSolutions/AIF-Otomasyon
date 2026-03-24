@@ -1,0 +1,11 @@
+{
+  "name": "aif-workspace",
+  "private": true,
+  "workspaces": [
+    "next"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=next",
+    "dev": "npm run dev --workspace=next"
+  }
+}
