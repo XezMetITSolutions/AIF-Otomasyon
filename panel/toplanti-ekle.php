@@ -488,20 +488,24 @@ include __DIR__ . '/../includes/header.php';
         }
 
         function checkGundemAutomation() {
-            let bykText = '';
-            if (bykSelect.tagName === 'SELECT') {
-                bykText = bykSelect.options[bykSelect.selectedIndex]?.text || '';
-            } else {
-                bykText = document.getElementById('byk_display')?.value || '';
-            }
+            try {
+                let bykText = '';
+                if (bykSelect.tagName === 'SELECT') {
+                    bykText = (bykSelect.selectedIndex >= 0 && bykSelect.options[bykSelect.selectedIndex]) ? bykSelect.options[bykSelect.selectedIndex].text : '';
+                } else {
+                    bykText = document.getElementById('byk_display')?.value || '';
+                }
 
-            const isAT = /ana teşkilat|merkez|at|gt|kgt/i.test(bykText);
-            const divanCont = document.getElementById('divan_checkbox_container');
-            if (divanCont) divanCont.style.display = isAT ? 'block' : 'none';
+                const isAT = /ana teşkilat|merkez|at|gt|kgt/i.test(bykText);
+                const divanCont = document.getElementById('divan_checkbox_container');
+                if (divanCont) divanCont.style.display = isAT ? 'block' : 'none';
 
-            if (isAT && aciklama && (aciklama.value.trim() === '' || aciklama.value.includes('Blg. Bşk. Yrd.'))) {
-                aciklama.value = "• Blg. Bşk. Yrd. | Teşkilatlanma Bşk.\n• Blg. Bşk. Yrd. | İrşad Bşk.\n• Blg. Bşk. Yrd. | Eğitim Bşk.\n• Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.\n• Blg. Mali İşler Bşk.\n• Blg. Sekreteri\n• Blg. Dış Münasebetler Bşk.\n• Blg. Teftiş Kurulu Bşk.\n• Blg. Kurumsal İletişim Bşk.\n• Blg. Hac - Umre ve Seyahat Bşk.\n• Blg. UKBA Sorumlusu\n• Blg. GT Bşk.\n• Blg. KT Bşk.\n• Blg. KGT Bşk.\n• Blg. GM Üyelik Sorumlusu\n• Blg. Tanıtma Bşk.\n• Blg. İhsan Sohbeti Sorumlusu";
-                aciklama.rows = 18;
+                if (isAT && aciklama && (aciklama.value.trim() === '' || aciklama.value.includes('Blg. Bşk. Yrd.'))) {
+                    aciklama.value = "• Blg. Bşk. Yrd. | Teşkilatlanma Bşk.\n• Blg. Bşk. Yrd. | İrşad Bşk.\n• Blg. Bşk. Yrd. | Eğitim Bşk.\n• Blg. Bşk. Yrd. | Sosyal Hizmetler Bşk.\n• Blg. Mali İşler Bşk.\n• Blg. Sekreteri\n• Blg. Dış Münasebetler Bşk.\n• Blg. Teftiş Kurulu Bşk.\n• Blg. Kurumsal İletişim Bşk.\n• Blg. Hac - Umre ve Seyahat Bşk.\n• Blg. UKBA Sorumlusu\n• Blg. GT Bşk.\n• Blg. KT Bşk.\n• Blg. KGT Bşk.\n• Blg. GM Üyelik Sorumlusu\n• Blg. Tanıtma Bşk.\n• Blg. İhsan Sohbeti Sorumlusu";
+                    aciklama.rows = 18;
+                }
+            } catch (e) {
+                console.error("Gündem otomasyon hatası:", e);
             }
         }
 
@@ -521,7 +525,7 @@ include __DIR__ . '/../includes/header.php';
         }
 
         // İlk Çalıştırma
-        checkGundemAutomation();
+        try { checkGundemAutomation(); } catch (e) { console.error(e); }
         window.loadMembers(0);
     }
 
