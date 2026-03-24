@@ -421,3 +421,49 @@ export async function deleteAdminUserAction(userId: number) {
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Yönetim - BYK'ları Getir
+ */
+export async function getAdminByksAction() {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/admin-byk.php`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Yönetim - BYK Silme
+ */
+export async function deleteAdminBykAction(bykId: number) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/admin-byk.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify({ action: "delete", byk_id: bykId }),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
