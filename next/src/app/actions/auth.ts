@@ -467,3 +467,53 @@ export async function deleteAdminBykAction(bykId: number) {
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Yönetim - Alt Birimleri Getir
+ */
+export async function getAdminAltBirimlerAction(params: { search?: string; byk?: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    if (params.search) queryParams.append("search", params.search);
+    if (params.byk) queryParams.append("byk", params.byk);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/admin-alt-birimler.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Yönetim - Alt Birim Silme
+ */
+export async function deleteAdminAltBirimAction(altBirimId: number) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/admin-alt-birimler.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify({ action: "delete", alt_birim_id: altBirimId }),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
