@@ -7,17 +7,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Gauge, Users, Calendar, Megaphone, 
   Settings, FolderKanban, LogOut, Menu, X, 
-  UserCircle, Bell, ChevronDown, ShieldCheck
+  UserCircle, Bell, ChevronDown, ShieldCheck, 
+  Building, Sitemap, Sliders, ClipboardList, 
+  Box, FilePieChart, MailOpen
 } from "lucide-react";
 import { getProfileAction, logoutAction } from "../actions/auth";
 
-// Menüler başlangıçta temel rotayı tutar
+// Menüler kategori bazlı gruplanır
 const baseMenu = [
-  { href: "/dashboard", label: "Kontrol Paneli", icon: Gauge, match: "/dashboard" },
-  { href: "/dashboard/duyurular", label: "Duyurular", icon: Megaphone, match: "duyurular" },
-  { href: "/dashboard/takvim", label: "Çalışma Takvimi", icon: Calendar, match: "takvim" },
-  { href: "/dashboard/toplantilar", label: "Toplantılar", icon: Users, match: "toplantilar" },
-  { href: "/dashboard/uyeler", label: "Üyeler", icon: Users, match: "uyeler" },
+  {
+    title: "GENEL",
+    links: [
+      { href: "/dashboard", label: "Kontrol Paneli", icon: Gauge, match: "/dashboard" },
+      { href: "/dashboard/duyurular", label: "Duyurular", icon: Megaphone, match: "duyurular" },
+      { href: "/dashboard/takvim", label: "Çalışma Takvimi", icon: Calendar, match: "takvim" },
+      { href: "/dashboard/toplantilar", label: "Toplantılar", icon: Users, match: "toplantilar" },
+      { href: "/dashboard/uyeler", label: "Üyeler", icon: Users, match: "uyeler" },
+    ]
+  }
 ];
 
 export default function DashboardLayout({
@@ -28,7 +35,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [menuItems, setMenuItems] = useState(baseMenu);
+  const [menuItems, setMenuItems] = useState<any[]>(baseMenu);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -37,13 +44,36 @@ export default function DashboardLayout({
       if (res.success) {
         setUser(res.user);
         
-        // Rol Bazlı Menü Koşulları
         const dynamicMenu = [...baseMenu];
         
         if (res.user.role === "super_admin" || parseInt(res.user.role_level) >= 90) {
+          // Super Admin için Kategori Bazlı Menüler
           dynamicMenu.push(
-            { href: "/dashboard/admin/kullanicilar", label: "Kullanıcı Yönetimi", icon: UserCircle, match: "kullanicilar" },
-            { href: "/dashboard/admin/ayarlar", label: "Sistem Ayarları", icon: ShieldCheck, match: "ayarlar" }
+            {
+              title: "YÖNETİM",
+              links: [
+                { href: "/dashboard/admin/kullanicilar", label: "Kullanıcı Yönetimi", icon: UserCircle, match: "kullanicilar" },
+                { href: "/dashboard/admin/byk", label: "BYK Yönetimi", icon: Building, match: "byk" },
+                { href: "/dashboard/admin/alt-birimler", label: "Alt Birimler", icon: Sitemap, match: "alt-birimler" },
+                { href: "/dashboard/admin/yetkiler", label: "Üye Yetkileri", icon: Sliders, match: "yetkiler" },
+              ]
+            },
+            {
+              title: "İŞLEMLER",
+              links: [
+                { href: "/dashboard/admin/izin-talepleri", label: "İzin Talepleri", icon: Calendar, match: "izin-talepleri" },
+                { href: "/dashboard/admin/harcama-talepleri", label: "Harcama Talepleri", icon: ClipboardList, match: "harcama-talepleri" },
+                { href: "/dashboard/admin/demirbaslar", label: "Demirbaş Yönetimi", icon: Box, match: "demirbaslar" },
+              ]
+            },
+            {
+              title: "RAPORLAR & AYARLAR",
+              links: [
+                { href: "/dashboard/admin/raporlar", label: "Raporlar & Analiz", icon: FilePieChart, match: "raporlar" },
+                { href: "/dashboard/admin/ayarlar", label: "Sistem Ayarları", icon: ShieldCheck, match: "ayarlar" },
+                { href: "/dashboard/admin/email-sablonlari", label: "E-posta Şablonları", icon: MailOpen, match: "email-sablonlari" },
+              ]
+            }
           );
         }
         setMenuItems(dynamicMenu);
@@ -106,37 +136,45 @@ export default function DashboardLayout({
         </div>
 
         {/* Sidebar Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href || (item.match !== "/dashboard" && pathname.includes(item.match));
-            const Icon = item.icon;
+        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+          {menuItems.map((section, sIndex) => (
+            <div key={sIndex} className="space-y-1">
+              {sidebarOpen && section.title && (
+                <div className="px-3 text-[10px] font-bold text-zinc-600 tracking-wider mb-2">
+                  {section.title}
+                </div>
+              )}
+              {section.links.map((item: any) => {
+                const isActive = pathname === item.href || (item.match !== "/dashboard" && pathname.includes(item.match));
+                const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative
-                  ${isActive 
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/10" 
-                    : "text-zinc-400 hover:text-white hover:bg-white/5"
-                  }
-                `}
-              >
-                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-white" : "text-zinc-500 group-hover:text-emerald-400 transition-colors"}`} />
-                {sidebarOpen && (
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {item.label}
-                  </motion.span>
-                )}
-                {/* Tooltip on collapse */}
-                {!sidebarOpen && (
-                  <div className="absolute left-14 invisible group-hover:visible opacity-0 group-hover:opacity-100 bg-zinc-800 border border-white/10 px-2.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap shadow-xl z-50 transition-all">
-                    {item.label}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative
+                      ${isActive 
+                        ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/10" 
+                        : "text-zinc-400 hover:text-white hover:bg-white/5"
+                      }
+                    `}
+                  >
+                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-white" : "text-zinc-500 group-hover:text-emerald-400 transition-colors"}`} />
+                    {sidebarOpen && (
+                      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        {item.label}
+                      </motion.span>
+                    )}
+                    {!sidebarOpen && (
+                      <div className="absolute left-14 invisible group-hover:visible opacity-0 group-hover:opacity-100 bg-zinc-800 border border-white/10 px-2.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap shadow-xl z-50 transition-all">
+                        {item.label}
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Sidebar Footer */}
