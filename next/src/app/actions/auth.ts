@@ -318,3 +318,53 @@ export async function actionIzinTalebi(data: any) {
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Harcama Taleplerini Getir
+ */
+export async function getHarcamaTalepleriAction(params: { tab: string; durum?: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("tab", params.tab);
+    if (params.durum) queryParams.append("durum", params.durum);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/harcama-talepleri.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Harcama İşlemleri (Oluşturma, Onaylama, Reddetme, Silme)
+ */
+export async function actionHarcamaTalebi(data: any) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/harcama-talepleri.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
