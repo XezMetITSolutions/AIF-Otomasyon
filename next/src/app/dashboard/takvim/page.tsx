@@ -186,7 +186,7 @@ export default function TakvimPage() {
       <AnimatePresence>
          {selectedDayEvents && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDayEvents(null)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-               <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} className="bg-zinc-900 border border-white/5 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+               <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e: any) => e.stopPropagation()} className="bg-zinc-900 border border-white/5 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
                   <div className="flex justify-between items-center border-b border-white/5 pb-3">
                      <h3 className="font-bold text-white text-base">Planlanmış Etkinlikler</h3>
                      <button onClick={() => setSelectedDayEvents(null)} className="p-1 hover:bg-white/5 rounded-lg text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
