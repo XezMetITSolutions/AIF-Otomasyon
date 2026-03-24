@@ -368,3 +368,56 @@ export async function actionHarcamaTalebi(data: any) {
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Yönetim - Kullanıcıları Getir
+ */
+export async function getAdminUsersAction(params: { page?: number; search?: string; rol?: string; byk?: string; status?: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.search) queryParams.append("search", params.search);
+    if (params.rol) queryParams.append("rol", params.rol);
+    if (params.byk) queryParams.append("byk", params.byk);
+    if (params.status) queryParams.append("status", params.status);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/admin-kullanicilar.php?action=list&${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Yönetim - Kullanıcı Silme
+ */
+export async function deleteAdminUserAction(userId: number) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/admin-kullanicilar.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify({ action: "delete", kullanici_id: userId }),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
