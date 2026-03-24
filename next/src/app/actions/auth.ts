@@ -216,3 +216,28 @@ export async function getToplantilarAction(params: { tab?: string; ay?: string; 
     return { success: false, error: err.message };
   }
 }
+
+
+
+/**
+ * Üyeleri Getir
+ */
+export async function getUyelerAction(params: { q?: string }) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const queryParams = new URLSearchParams();
+    if (params.q) queryParams.append("q", params.q);
+
+    const res = await fetch(`https://aifnet.islamfederasyonu.at/api/uyeler.php?${queryParams.toString()}`, {
+      headers: { "Cookie": `PHPSESSID=${sessionId}` },
+      cache: "no-store",
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
