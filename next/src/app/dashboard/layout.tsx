@@ -51,12 +51,12 @@ export default function DashboardLayout({
         const baskanLinks = [
           { key: 'baskan_izin_talepleri', href: "/dashboard/izin-talepleri", label: "İzin Onayları", icon: Calendar, match: "izin-talepleri" },
           { key: 'baskan_harcama_talepleri', href: "/dashboard/harcama-talepleri", label: "Harcama Onayları", icon: Wallet, match: "harcama-talepleri" },
-          { key: 'baskan_iade_formlari', href: "/panel/iade-formlari.php?tab=yonetim", label: "İade Onayları", icon: Wallet, match: "iade-formlari", php: true },
-          { key: 'baskan_demirbas_talepleri', href: "/panel/demirbas-talepleri.php?tab=onay", label: "Demirbaş Talepleri", icon: Box, match: "demirbas-talepleri", php: true },
-          { key: 'baskan_raggal_talepleri', href: "/panel/raggal-talepleri.php?tab=yonetim", label: "Raggal Talepleri", icon: Calendar, match: "raggal-talepleri", php: true },
-          { key: 'baskan_projeler', href: "/panel/projelerim", label: "Proje Yönetimi", icon: FolderKanban, match: "projelerim", php: true },
-          { key: 'baskan_sube_ziyaretleri', href: "/panel/sube-ziyaretleri.php", label: "Şube Ziyaretleri", icon: MapPin, match: "sube-ziyaretleri", php: true },
-          { key: 'baskan_raporlar', href: "/panel/baskan_raporlar.php", label: "Raporlar", icon: FilePieChart, match: "baskan_raporlar", php: true },
+          { key: 'baskan_iade_formlari', href: "https://aifnet.islamfederasyonu.at/panel/iade-formlari.php?tab=yonetim", label: "İade Onayları", icon: Wallet, match: "iade-formlari", php: true },
+          { key: 'baskan_demirbas_talepleri', href: "https://aifnet.islamfederasyonu.at/panel/demirbas-talepleri.php?tab=onay", label: "Demirbaş Talepleri", icon: Box, match: "demirbas-talepleri", php: true },
+          { key: 'baskan_raggal_talepleri', href: "https://aifnet.islamfederasyonu.at/panel/raggal-talepleri.php?tab=yonetim", label: "Raggal Talepleri", icon: Calendar, match: "raggal-talepleri", php: true },
+          { key: 'baskan_projeler', href: "https://aifnet.islamfederasyonu.at/panel/projelerim", label: "Proje Yönetimi", icon: FolderKanban, match: "projelerim", php: true },
+          { key: 'baskan_sube_ziyaretleri', href: "https://aifnet.islamfederasyonu.at/panel/sube-ziyaretleri.php", label: "Şube Ziyaretleri", icon: MapPin, match: "sube-ziyaretleri", php: true },
+          { key: 'baskan_raporlar', href: "https://aifnet.islamfederasyonu.at/panel/baskan_raporlar.php", label: "Raporlar", icon: FilePieChart, match: "baskan_raporlar", php: true },
         ];
 
         const activeBaskanLinks = baskanLinks.filter(item => {
@@ -76,10 +76,10 @@ export default function DashboardLayout({
         const uyeLinks = [
           { key: 'uye_izin_talepleri', href: "/dashboard/izin-talepleri", label: "İzin Taleplerim", icon: Calendar, match: "izin-talepleri" },
           { key: 'uye_harcama_talepleri', href: "/dashboard/harcama-talepleri", label: "Harcama Taleplerim", icon: Wallet, match: "harcama-talepleri" },
-          { key: 'uye_iade_formu', href: "/panel/iade-formlari.php?tab=form", label: "İade Talebi Oluştur", icon: FileText, match: "iade-formu", php: true },
-          { key: 'uye_demirbas_talep', href: "/panel/demirbas-talepleri.php?tab=talep", label: "Demirbaş Talep", icon: Box, match: "demirbas-talep", php: true },
-          { key: 'uye_raggal_talep', href: "/panel/raggal-talepleri.php?tab=takvim", label: "Raggal Rezervasyon", icon: Calendar, match: "raggal-talep", php: true },
-          { key: 'uye_projeler', href: "/panel/projelerim", label: "Projelerim", icon: FolderKanban, match: "projeler", php: true },
+          { key: 'uye_iade_formu', href: "https://aifnet.islamfederasyonu.at/panel/iade-formlari.php?tab=form", label: "İade Talebi Oluştur", icon: FileText, match: "iade-formu", php: true },
+          { key: 'uye_demirbas_talep', href: "https://aifnet.islamfederasyonu.at/panel/demirbas-talepleri.php?tab=talep", label: "Demirbaş Talep", icon: Box, match: "demirbas-talep", php: true },
+          { key: 'uye_raggal_talep', href: "https://aifnet.islamfederasyonu.at/panel/raggal-talepleri.php?tab=takvim", label: "Raggal Rezervasyon", icon: Calendar, match: "raggal-talep", php: true },
+          { key: 'uye_projeler', href: "https://aifnet.islamfederasyonu.at/panel/projelerim", label: "Projelerim", icon: FolderKanban, match: "projeler", php: true },
         ];
 
         dynamicMenu.push({
