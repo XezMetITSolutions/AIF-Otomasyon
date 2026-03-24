@@ -62,7 +62,7 @@ export default function DashboardLayout({
         const activeBaskanLinks = baskanLinks.filter(item => {
            if (res.isMuhasebeBaskani && ['baskan_harcama_talepleri', 'baskan_iade_formlari'].includes(item.key)) return true;
            if (item.key === 'baskan_sube_ziyaretleri' && !res.isAT) return false;
-           return res.permissions.includes(item.key);
+           return (res.permissions || []).includes(item.key);
         });
 
         if (activeBaskanLinks.length > 0) {
