@@ -83,7 +83,7 @@ export default function UyelerPage() {
         </div>
       </div>
 
-      {/* MEMBERS GRID */}
+      {/* MEMBERS LIST (TABLE) */}
       {loading && uyeler.length === 0 ? (
         <div className="flex justify-center items-center py-20 text-emerald-500 font-bold">Üyeler Yükleniyor...</div>
       ) : uyeler.length === 0 ? (
@@ -97,87 +97,115 @@ export default function UyelerPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {uyeler.map((uye, idx) => (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: idx * 0.05 }}
-              key={uye.kullanici_id}
-              className="bg-zinc-900 relative rounded-2xl border border-white/5 hover:border-white/10 hover:bg-zinc-800/50 transition-all group overflow-hidden"
-            >
-              {Number(uye.aktif) === 0 && (
-                <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
-                  <div className="absolute transform rotate-45 bg-zinc-700 text-center text-white font-bold text-[8px] tracking-wider py-1 right-[-20px] top-[16px] w-[85px] shadow-md">
-                    PASİF
-                  </div>
-                </div>
-              )}
-
-              <div className="p-5">
-                {/* Profile Header Block */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner ${
-                    Number(uye.aktif) === 1 ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-500 border border-white/5'
-                  }`}>
-                    {uye.ad.charAt(0)}{uye.soyad.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-zinc-100 leading-tight">
-                      {uye.ad} {uye.soyad}
-                    </h3>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      {uye.rol_adi === 'baskan' || uye.rol_adi === 'admin' ? (
-                        <span className="text-[10px] font-bold tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3" /> YÖNETİCİ
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold tracking-wider text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20 flex items-center gap-1">
-                          <Shield className="w-3 h-3" /> ÜYE
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Profile Details */}
-                <div className="space-y-2.5 mt-5">
-                  {canManage ? (
-                    <>
-                      <div className="flex items-center gap-3 text-sm">
-                        <div className="w-7 h-7 rounded-lg bg-zinc-950 flex items-center justify-center border border-white/5 shrink-0">
-                          <Mail className="w-3.5 h-3.5 text-zinc-500" />
-                        </div>
-                        <span className="text-zinc-300 truncate" title={uye.email}>{uye.email}</span>
-                      </div>
-                      
-                      {uye.telefon && (
-                        <div className="flex items-center gap-3 text-sm">
-                          <div className="w-7 h-7 rounded-lg bg-zinc-950 flex items-center justify-center border border-white/5 shrink-0">
-                            <Phone className="w-3.5 h-3.5 text-zinc-500" />
+        <div className="overflow-x-auto">
+          <div className="inline-block min-w-full align-middle">
+            <div className="overflow-hidden border border-white/5 rounded-2xl bg-zinc-900/50 backdrop-blur-sm">
+              <table className="min-w-full divide-y divide-white/5">
+                <thead className="bg-zinc-900/80">
+                  <tr>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Üye Bilgileri</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Yetki Düzeyi</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">İletişim</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Son Giriş</th>
+                    <th scope="col" className="hidden md:table-cell px-6 py-4 text-right text-xs font-bold text-zinc-400 uppercase tracking-wider">Durum</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 bg-transparent">
+                  {uyeler.map((uye, idx) => (
+                    <motion.tr 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.03 }}
+                      key={uye.kullanici_id}
+                      className="hover:bg-white/5 transition-colors group"
+                    >
+                      {/* Member Info */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-inner shrink-0 ${
+                            Number(uye.aktif) === 1 ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-500 border border-white/5'
+                          }`}>
+                            {uye.ad.charAt(0)}{uye.soyad.charAt(0)}
                           </div>
-                          <span className="text-zinc-400">{uye.telefon}</span>
-                        </div>
-                      )}
-
-                      {uye.son_giris && (
-                        <div className="flex items-center gap-3 text-xs mt-2 pt-2 border-t border-white/5">
-                          <div className="w-7 h-7 rounded-lg bg-zinc-950 flex items-center justify-center border border-white/5 shrink-0">
-                            <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                          <div>
+                            <div className="text-sm font-bold text-zinc-100">{uye.ad} {uye.soyad}</div>
+                            <div className="text-xs text-zinc-500 md:hidden flex items-center gap-1 mt-0.5">
+                              {Number(uye.aktif) === 1 ? (
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              ) : (
+                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+                              )}
+                              {Number(uye.aktif) === 1 ? 'Aktif' : 'Pasif'}
+                            </div>
                           </div>
-                          <span className="text-zinc-500 font-medium">Son Giriş: <span className="text-zinc-400">{formatDate(uye.son_giris)}</span></span>
                         </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="bg-zinc-950 border border-white/5 rounded-xl p-3 text-center text-zinc-600 text-[11px] font-medium flex items-center justify-center gap-2">
-                       <Shield className="w-3.5 h-3.5" /> İletişim bilgileri kısıtlıdır
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+                      </td>
+
+                      {/* Role Info */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {uye.rol_adi === 'baskan' || uye.rol_adi === 'admin' ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                            <ShieldCheck className="w-3 h-3" /> YÖNETİCİ
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20">
+                            <Shield className="w-3 h-3" /> ÜYE
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Contact Info */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {canManage ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-xs text-zinc-300">
+                              <Mail className="w-3 h-3 text-zinc-500" /> {uye.email}
+                            </div>
+                            {uye.telefon && (
+                              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                                <Phone className="w-3 h-3 text-zinc-600" /> {uye.telefon}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-zinc-600 flex items-center gap-1.5">
+                            <Shield className="w-3 h-3 opacity-50" /> Kısıtlı
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Last Login */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                          <Clock className="w-3 h-3" />
+                          {uye.son_giris ? (
+                            <span className="text-zinc-400 font-medium">{formatDate(uye.son_giris)}</span>
+                          ) : (
+                            <span className="text-zinc-600 italic">Hiç girmedi</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Status (Desktop only) */}
+                      <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-right">
+                        {Number(uye.aktif) === 1 ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-bold border border-emerald-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            AKTİF
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-800 text-zinc-500 text-[10px] font-bold border border-white/5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+                            PASİF
+                          </span>
+                        )}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

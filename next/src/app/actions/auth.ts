@@ -655,3 +655,74 @@ export async function actionDemirbasTalebi(data: any) {
     return { success: false, error: err.message };
   }
 }
+/**
+ * Yönetim - Kullanıcı Kaydet (Yeni veya Güncelleme)
+ */
+export async function saveAdminUserAction(data: any) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/admin-kullanicilar.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Yönetim - BYK Kaydet (Yeni veya Güncelleme)
+ */
+export async function saveAdminBykAction(data: any) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/admin-byk.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Yönetim - Alt Birim Kaydet (Yeni veya Güncelleme)
+ */
+export async function saveAdminAltBirimAction(data: any) {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("PHPSESSID")?.value;
+    if (!sessionId) return { success: false, error: "Oturum bulunamadı." };
+
+    const res = await fetch("https://aifnet.islamfederasyonu.at/api/admin-alt-birimler.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": `PHPSESSID=${sessionId}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}

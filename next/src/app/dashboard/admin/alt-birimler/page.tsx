@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Network, Search, Trash2, Edit, Plus, AlertCircle, CheckCircle2, XCircle, MapPin, UserCheck, X } from "lucide-react";
-import { getAdminAltBirimlerAction, deleteAdminAltBirimAction } from "../../../actions/auth";
+import { getAdminAltBirimlerAction, deleteAdminAltBirimAction, saveAdminAltBirimAction } from "../../../actions/auth";
 
 export default function AdminAltBirimlerPage() {
   const [subUnits, setSubUnits] = useState<any[]>([]);
@@ -16,6 +16,16 @@ export default function AdminAltBirimlerPage() {
   const [byks, setByks] = useState<any[]>([]);
 
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedSub, setSelectedSub] = useState<any>(null);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    byk_id: "",
+    description: ""
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -46,6 +56,56 @@ export default function AdminAltBirimlerPage() {
     setTimeout(() => setMessage(null), 4000);
   };
 
+  const openModal = (sub: any = null) => {
+    if (sub) {
+      setSelectedSub(sub);
+      setFormData({
+        name: sub.name ?? sub.alt_birim_adi,
+        byk_id: sub.byk_category_id ?? sub.byk_id,
+        description: sub.description || ""
+      });
+    } else {
+      setSelectedSub(null);
+      setFormData({
+        name: "",
+        byk_id: bykFilter || "",
+        description: ""
+      });
+    }
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedSub(null);
+  };
+
+  const handleSaveSub = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitLoading(true);
+
+    try {
+      const data = {
+        action: selectedSub ? "update" : "create",
+        alt_birim_id: selectedSub ? (selectedSub.id ?? selectedSub.alt_birim_id) : undefined,
+        ...formData
+      };
+
+      const res = await saveAdminAltBirimAction(data);
+      if (res.success) {
+        showMessage(res.message || "Alt birim kaydedildi.", "success");
+        closeModal();
+        await loadSubUnits();
+      } else {
+        showMessage(res.error || "Bir hata oluştu.", "error");
+      }
+    } catch (err: any) {
+      showMessage(err.message || "Bağlantı hatası.", "error");
+    } finally {
+      setIsSubmitLoading(false);
+    }
+  };
+
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`"${name}" isimli alt birimi silmek istediğinize emin misiniz?`)) return;
 
@@ -74,7 +134,7 @@ export default function AdminAltBirimlerPage() {
           <p className="text-zinc-500 text-sm mt-1">Sisteme kayıtlı BYK şubelerinin tüm hiyerarşik alt organizasyonlarını yönetin. (Toplam: {subUnits.length})</p>
         </div>
         <div>
-          <button className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/20 w-full justify-center md:w-auto md:justify-start">
+          <button onClick={() => openModal()} className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/20 w-full justify-center md:w-auto md:justify-start">
             <Plus className="w-4 h-4" /> Yeni Alt Birim Ekle
           </button>
         </div>
@@ -93,6 +153,77 @@ export default function AdminAltBirimlerPage() {
             {message.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
             <span className="text-sm font-medium">{message.text}</span>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ALT BIRIM MODAL */}
+      <AnimatePresence>
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl relative"
+            >
+              <button onClick={closeModal} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+              
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                 {selectedSub ? <Edit className="w-6 h-6 text-sky-400" /> : <Plus className="w-6 h-6 text-emerald-400" />}
+                 {selectedSub ? "Alt Birimi Düzenle" : "Yeni Alt Birim Ekle"}
+              </h2>
+
+              <form onSubmit={handleSaveSub} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase">Birim Adı</label>
+                  <input 
+                    required
+                    type="text" 
+                    placeholder="Örn: Gençlik Kolları"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase">Bağlı BYK (Bölge / Şube)</label>
+                  <select 
+                    required
+                    value={formData.byk_id}
+                    onChange={(e) => setFormData({...formData, byk_id: e.target.value})}
+                    className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                  >
+                     <option value="">Seçiniz...</option>
+                     {byks.map(b => <option key={b.id} value={b.id}>{b.name} ({b.code})</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase">Açıklama / Not</label>
+                  <textarea 
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors resize-none text-sm"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button type="button" onClick={closeModal} className="px-6 py-3 rounded-xl text-zinc-400 hover:bg-white/5 transition-all text-sm font-bold">İptal</button>
+                  <button 
+                    disabled={isSubmitLoading} 
+                    type="submit" 
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl transition-all text-sm font-bold shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  >
+                    {isSubmitLoading ? "Kaydediliyor..." : selectedSub ? "Güncelle" : "Oluştur"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -196,7 +327,7 @@ export default function AdminAltBirimlerPage() {
                          <div className="text-[11px] font-mono text-zinc-500">{formatDate(b.created_at ?? b.olusturma_tarihi)}</div>
                       </td>
                       <td className="px-5 py-4 text-right pr-6 space-x-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button className="p-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg transition-colors inline-block" title="Düzenle">
+                         <button onClick={() => openModal(b)} className="p-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg transition-colors inline-block" title="Düzenle">
                             <Edit className="w-4 h-4" />
                          </button>
                          <button onClick={() => handleDelete(subId, name)} className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors inline-block" title="Sil">

@@ -142,13 +142,63 @@ try {
         $input = json_decode(file_get_contents('php://input'), true);
         $action = $input['action'] ?? '';
 
+        if ($action === 'create' || $action === 'update') {
+            $ad = $input['ad'] ?? '';
+            $soyad = $input['soyad'] ?? '';
+            $email = $input['email'] ?? '';
+            $password = $input['password'] ?? '';
+            $rol_id = (int)($input['rol_id'] ?? 0);
+            $byk_id = $input['byk_id'] ? (int)$input['byk_id'] : null;
+            $telefon = $input['telefon'] ?? '';
+            $divan_uyesi = (int)($input['divan_uyesi'] ?? 0);
+            $aktif = (int)($input['aktif'] ?? 1);
+
+            if (!$ad || !$soyad || !$email || !$rol_id) {
+                echo json_encode(['success' => false, 'error' => 'Gerekli alanları doldurunuz.']);
+                exit;
+            }
+
+            if ($action === 'create') {
+                if (!$password) {
+                    echo json_encode(['success' => false, 'error' => 'Şifre gereklidir.']);
+                    exit;
+                }
+                $hashed = password_hash($password, PASSWORD_DEFAULT);
+                $db->query("
+                    INSERT INTO kullanicilar (ad, soyad, email, sifre, rol_id, byk_id, telefon, divan_uyesi, aktif, olusturma_tarihi)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                ", [$ad, $soyad, $email, $hashed, $rol_id, $byk_id, $telefon, $divan_uyesi, $aktif]);
+                
+                echo json_encode(['success' => true, 'message' => 'Kullanıcı başarıyla oluşturuldu.']);
+            } else {
+                $id = (int)($input['kullanici_id'] ?? 0);
+                if (!$id) {
+                    echo json_encode(['success' => false, 'error' => 'Kullanıcı ID bulunamadı.']);
+                    exit;
+                }
+                
+                $sql = "UPDATE kullanicilar SET ad=?, soyad=?, email=?, rol_id=?, byk_id=?, telefon=?, divan_uyesi=?, aktif=? WHERE kullanici_id=?";
+                $params = [$ad, $soyad, $email, $rol_id, $byk_id, $telefon, $divan_uyesi, $aktif, $id];
+                
+                if ($password) {
+                    $sql = "UPDATE kullanicilar SET ad=?, soyad=?, email=?, sifre=?, rol_id=?, byk_id=?, telefon=?, divan_uyesi=?, aktif=? WHERE kullanici_id=?";
+                    $hashed = password_hash($password, PASSWORD_DEFAULT);
+                    $params = [$ad, $soyad, $email, $hashed, $rol_id, $byk_id, $telefon, $divan_uyesi, $aktif, $id];
+                }
+                
+                $db->query($sql, $params);
+                echo json_encode(['success' => true, 'message' => 'Kullanıcı başarıyla güncellendi.']);
+            }
+            exit;
+        }
+
         if ($action === 'delete') {
             $id = (int)($input['kullanici_id'] ?? 0);
-            if ($id === $user['id']) {
+            $currentUser = $auth->getUser();
+            if ($id === $currentUser['id']) {
                 echo json_encode(['success' => false, 'error' => 'Kendi hesabınızı silemezsiniz.']);
                 exit;
             }
-            // Ensure no hardcode dependency, use delete user query safely
             $db->query("DELETE FROM kullanicilar WHERE kullanici_id = ?", [$id]);
             echo json_encode(['success' => true, 'message' => 'Kullanıcı silindi.']);
             exit;

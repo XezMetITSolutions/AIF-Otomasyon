@@ -24,7 +24,7 @@ $canManage = $auth->hasModulePermission('baskan_projeler');
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $sql = "SELECT p.*, b.byk_adi, CONCAT(u.ad, ' ', u.soyad) as sorumlu
             FROM projeler p
-            INNER JOIN byk b ON p.byk_id = b.byk_id
+            LEFT JOIN byk b ON p.byk_id = b.byk_id
             LEFT JOIN kullanicilar u ON p.sorumlu_id = u.kullanici_id
             WHERE 1=1";
     
@@ -44,14 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     try {
         $projeler = $db->fetchAll($sql, $params);
+        echo json_encode([
+            'success' => true,
+            'requests' => $projeler,
+            'canManage' => $canManage
+        ]);
     } catch (Exception $e) {
-        $projeler = [];
+        echo json_encode([
+            'success' => false,
+            'error' => 'Database error: ' . $e->getMessage()
+        ]);
     }
-
-    echo json_encode([
-        'success' => true,
-        'requests' => $projeler,
-        'canManage' => $canManage
-    ]);
     exit;
 }

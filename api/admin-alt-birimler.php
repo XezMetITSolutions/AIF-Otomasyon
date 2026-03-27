@@ -114,6 +114,50 @@ try {
         $input = json_decode(file_get_contents('php://input'), true);
         $action = $input['action'] ?? '';
 
+        if ($action === 'create' || $action === 'update') {
+            $name = $input['name'] ?? '';
+            $byk_category_id = (int)($input['byk_id'] ?? 0);
+            $description = $input['description'] ?? '';
+
+            if (!$name || !$byk_category_id) {
+                echo json_encode(['success' => false, 'error' => 'Birim adı ve bağlı BYK gereklidir.']);
+                exit;
+            }
+
+            if ($action === 'create') {
+                try {
+                    $db->query("
+                        INSERT INTO byk_sub_units (byk_category_id, name, description, created_at)
+                        VALUES (?, ?, ?, NOW())
+                    ", [$byk_category_id, $name, $description]);
+                } catch (Exception $e) {
+                    $db->query("
+                        INSERT INTO alt_birimler (byk_id, alt_birim_adi, olusturma_tarihi)
+                        VALUES (?, ?, NOW())
+                    ", [$byk_category_id, $name]);
+                }
+                echo json_encode(['success' => true, 'message' => 'Alt birim başarıyla oluşturuldu.']);
+            } else {
+                $id = (int)($input['alt_birim_id'] ?? 0);
+                if (!$id) {
+                    echo json_encode(['success' => false, 'error' => 'ID bulunamadı.']);
+                    exit;
+                }
+                
+                try {
+                    $db->query("
+                        UPDATE byk_sub_units SET byk_category_id=?, name=?, description=?, updated_at=NOW() WHERE id=?
+                    ", [$byk_category_id, $name, $description, $id]);
+                } catch (Exception $e) {
+                    $db->query("
+                        UPDATE alt_birimler SET byk_id=?, alt_birim_adi=? WHERE alt_birim_id=?
+                    ", [$byk_category_id, $name, $id]);
+                }
+                echo json_encode(['success' => true, 'message' => 'Alt birim başarıyla güncellendi.']);
+            }
+            exit;
+        }
+
         if ($action === 'delete') {
             $id = (int)($input['alt_birim_id'] ?? 0);
             

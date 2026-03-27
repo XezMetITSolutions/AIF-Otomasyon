@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Search, Trash2, Edit, UserPlus, FileSpreadsheet, AlertCircle, CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
-import { getAdminUsersAction, deleteAdminUserAction } from "../../../actions/auth";
+import { getAdminUsersAction, deleteAdminUserAction, saveAdminUserAction } from "../../../actions/auth";
 import Link from "next/link";
 
 export default function AdminKullanicilarPage() {
@@ -82,6 +82,84 @@ export default function AdminKullanicilarPage() {
     }
   };
 
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    ad: "",
+    soyad: "",
+    email: "",
+    password: "",
+    rol_id: "",
+    byk_id: "",
+    telefon: "",
+    divan_uyesi: 0,
+    aktif: 1
+  });
+
+  const openModal = (user: any = null) => {
+    if (user) {
+      setSelectedUser(user);
+      setFormData({
+        ad: user.ad,
+        soyad: user.soyad,
+        email: user.email,
+        password: "", // Leave blank for edit
+        rol_id: user.rol_id,
+        byk_id: user.byk_id || "",
+        telefon: user.telefon || "",
+        divan_uyesi: user.divan_uyesi == 1 ? 1 : 0,
+        aktif: user.aktif == 1 ? 1 : 0
+      });
+    } else {
+      setSelectedUser(null);
+      setFormData({
+        ad: "",
+        soyad: "",
+        email: "",
+        password: "",
+        rol_id: "",
+        byk_id: "",
+        telefon: "",
+        divan_uyesi: 0,
+        aktif: 1
+      });
+    }
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitLoading(true);
+
+    try {
+      const data = {
+        action: selectedUser ? "update" : "create",
+        kullanici_id: selectedUser?.kullanici_id,
+        ...formData
+      };
+
+      const res = await saveAdminUserAction(data);
+      if (res.success) {
+        showMessage(res.message || "Kullanıcı kaydedildi.", "success");
+        closeModal();
+        await loadUsers();
+      } else {
+        showMessage(res.error || "Bir hata oluştu.", "error");
+      }
+    } catch (err: any) {
+      showMessage(err.message || "Bağlantı hatası.", "error");
+    } finally {
+      setIsSubmitLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* BAŞLIK */}
@@ -93,11 +171,10 @@ export default function AdminKullanicilarPage() {
           <p className="text-zinc-500 text-sm mt-1">Tüm sistem kullanıcılarını, görevlerini ve yetkilerini yönetin. (Toplam: {totalItems})</p>
         </div>
         <div className="flex gap-2">
-           {/* Add user href could link to a modal or a classic page. We'll use a placeholder or handle it later */}
           <button className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-sm border border-white/5 disabled:opacity-50">
             <FileSpreadsheet className="w-4 h-4" /> Dışa Aktar
           </button>
-          <button className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-50">
+          <button onClick={() => openModal()} className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-50">
             <UserPlus className="w-4 h-4" /> Yeni Ekle
           </button>
         </div>
@@ -116,6 +193,143 @@ export default function AdminKullanicilarPage() {
             {message.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
             <span className="text-sm font-medium">{message.text}</span>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* USER MODAL */}
+      <AnimatePresence>
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 border border-white/10 rounded-3xl p-6 w-full max-w-2xl shadow-2xl relative overflow-hidden"
+            >
+              <button onClick={closeModal} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">
+                <XCircle className="w-6 h-6" />
+              </button>
+              
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                 {selectedUser ? <Edit className="w-6 h-6 text-sky-400" /> : <UserPlus className="w-6 h-6 text-emerald-400" />}
+                 {selectedUser ? "Kullanıcıyı Düzenle" : "Yeni Kullanıcı Ekle"}
+              </h2>
+
+              <form onSubmit={handleSaveUser} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-500 uppercase">Ad</label>
+                    <input 
+                      required
+                      type="text" 
+                      value={formData.ad}
+                      onChange={(e) => setFormData({...formData, ad: e.target.value})}
+                      className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-500 uppercase">Soyad</label>
+                    <input 
+                      required
+                      type="text" 
+                      value={formData.soyad}
+                      onChange={(e) => setFormData({...formData, soyad: e.target.value})}
+                      className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs font-bold text-zinc-500 uppercase">E-posta</label>
+                    <input 
+                      required
+                      type="email" 
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-500 uppercase">{selectedUser ? "Yeni Şifre (Değiştirmek istemiyorsanız boş bırakın)" : "Şifre"}</label>
+                    <input 
+                      required={!selectedUser}
+                      type="password" 
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-500 uppercase">Telefon</label>
+                    <input 
+                      type="text" 
+                      placeholder="06..."
+                      value={formData.telefon}
+                      onChange={(e) => setFormData({...formData, telefon: e.target.value})}
+                      className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-500 uppercase">Rol</label>
+                    <select 
+                      required
+                      value={formData.rol_id}
+                      onChange={(e) => setFormData({...formData, rol_id: e.target.value})}
+                      className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    >
+                       <option value="">Seçiniz...</option>
+                       {roles.map(r => <option key={r.rol_id} value={r.rol_id}>{r.rol_adi}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-500 uppercase">Bağlı BYK</label>
+                    <select 
+                      value={formData.byk_id}
+                      onChange={(e) => setFormData({...formData, byk_id: e.target.value})}
+                      className="w-full bg-zinc-950 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    >
+                       <option value="">Genel (Bölge)</option>
+                       {byks.map(b => <option key={b.byk_id} value={b.byk_id}>{b.byk_adi}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-6 pt-2">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                     <div className="relative flex items-center">
+                        <input 
+                          type="checkbox" 
+                          checked={formData.divan_uyesi == 1}
+                          onChange={(e) => setFormData({...formData, divan_uyesi: e.target.checked ? 1 : 0})}
+                          className="w-5 h-5 rounded border-white/10 bg-zinc-950 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900"
+                        />
+                     </div>
+                     <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">Divan Üyesi</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                     <div className="relative flex items-center">
+                        <input 
+                          type="checkbox" 
+                          checked={formData.aktif == 1}
+                          onChange={(e) => setFormData({...formData, aktif: e.target.checked ? 1 : 0})}
+                          className="w-5 h-5 rounded border-white/10 bg-zinc-950 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900"
+                        />
+                     </div>
+                     <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">Hesap Aktif</span>
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button type="button" onClick={closeModal} className="px-6 py-3 rounded-xl text-zinc-400 hover:bg-white/5 transition-all text-sm font-bold">İptal</button>
+                  <button 
+                    disabled={isSubmitLoading} 
+                    type="submit" 
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl transition-all text-sm font-bold shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  >
+                    {isSubmitLoading ? "Kaydediliyor..." : selectedUser ? "Güncelle" : "Oluştur"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -262,7 +476,7 @@ export default function AdminKullanicilarPage() {
                              <ShieldCheck className="w-4 h-4" />
                           </button>
                        )}
-                       <button title="Düzenle" className="p-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg transition-colors">
+                       <button onClick={() => openModal(u)} title="Düzenle" className="p-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg transition-colors">
                           <Edit className="w-4 h-4" />
                        </button>
                        <button onClick={() => handleDelete(u.kullanici_id, `${u.ad} ${u.soyad}`)} title="Sil" className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors">

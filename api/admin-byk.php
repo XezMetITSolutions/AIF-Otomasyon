@@ -69,6 +69,51 @@ try {
         $input = json_decode(file_get_contents('php://input'), true);
         $action = $input['action'] ?? '';
 
+        if ($action === 'create' || $action === 'update') {
+            $name = $input['name'] ?? '';
+            $code = $input['code'] ?? '';
+            $color = $input['color'] ?? '#009872';
+            $description = $input['description'] ?? '';
+
+            if (!$name || !$code) {
+                echo json_encode(['success' => false, 'error' => 'İsim ve kod gereklidir.']);
+                exit;
+            }
+
+            if ($action === 'create') {
+                try {
+                    $db->query("
+                        INSERT INTO byk_categories (code, name, color, description, created_at)
+                        VALUES (?, ?, ?, ?, NOW())
+                    ", [$code, $name, $color, $description]);
+                } catch (Exception $e) {
+                    $db->query("
+                        INSERT INTO byk (byk_kodu, byk_adi, renk_kodu, olusturma_tarihi)
+                        VALUES (?, ?, ?, NOW())
+                    ", [$code, $name, $color]);
+                }
+                echo json_encode(['success' => true, 'message' => 'BYK/Bölge başarıyla oluşturuldu.']);
+            } else {
+                $id = (int)($input['byk_id'] ?? 0);
+                if (!$id) {
+                    echo json_encode(['success' => false, 'error' => 'ID bulunamadı.']);
+                    exit;
+                }
+                
+                try {
+                    $db->query("
+                        UPDATE byk_categories SET code=?, name=?, color=?, description=?, updated_at=NOW() WHERE id=?
+                    ", [$code, $name, $color, $description, $id]);
+                } catch (Exception $e) {
+                    $db->query("
+                        UPDATE byk SET byk_kodu=?, byk_adi=?, renk_kodu=? WHERE byk_id=?
+                    ", [$code, $name, $color, $id]);
+                }
+                echo json_encode(['success' => true, 'message' => 'BYK/Bölge başarıyla güncellendi.']);
+            }
+            exit;
+        }
+
         if ($action === 'delete') {
             $id = (int)($input['byk_id'] ?? 0);
             
