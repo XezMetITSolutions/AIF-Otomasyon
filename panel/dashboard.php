@@ -591,7 +591,7 @@ include __DIR__ . '/../includes/header.php';
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
-                        <i class="fas fa-wallet me-2 text-danger"></i>Harcama Taleplerim
+                        <i class="fas fa-calendar-check me-2 text-danger"></i>Rezervasyon Taleplerim
                     </div>
                     <a href="/panel/uye_harcama-talepleri.php"
                         class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0 pb-1" style="font-size:0.8rem;">
@@ -601,7 +601,7 @@ include __DIR__ . '/../includes/header.php';
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
                         <?php if (empty($son_harcamalar)): ?>
-                            <li class="list-group-item text-center text-muted small py-4">Harcama talebi bulunmamaktadır.</li>
+                            <li class="list-group-item text-center text-muted small py-4">Rezervasyon talebi bulunmamaktadır.</li>
                         <?php else: ?>
                             <?php foreach ($son_harcamalar as $h): ?>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -680,7 +680,7 @@ include __DIR__ . '/../includes/header.php';
                         </label>
                         <label class="list-group-item d-flex justify-content-between align-items-center pointer-cursor">
                             <div>
-                                <i class="fas fa-wallet text-danger me-2"></i>Harcama Talepleri
+                                <i class="fas fa-calendar-check text-danger me-2"></i>Rezervasyon Talepleri
                             </div>
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="harcama" <?php echo $showHarcama ? 'checked' : ''; ?>>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Ana Yönetici - Harcama Talebi Detayı ve Onay İşlemleri
+ * Ana Yönetici - Rezervasyon Talebi Detayı ve Onay İşlemleri
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
@@ -106,8 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($atAdmin) {
                 Mail::sendWithTemplate($atAdmin['email'], 'talep_yeni', [
                     'ad_soyad' => 'AT Muhasebe Yetkilisi',
-                    'talep_turu' => 'Harcama Talebi (AT Onayı Bekliyor)',
-                    'detay' => "{$talep['kullanici_adi']} tarafından oluşturulan " . number_format($talep['tutar'], 2, ',', '.') . " TL tutarındaki harcama talebi birim onayından geçti."
+                    'talep_turu' => 'Rezervasyon Talebi (AT Onayı Bekliyor)',
+                    'detay' => "{$talep['kullanici_adi']} tarafından oluşturulan " . number_format($talep['tutar'], 2, ',', '.') . " TL tutarındaki rezervasyon talebi birim onayından geçti."
                 ]);
             }
         }
@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Kullanıcıya Bildirim Gönder
         Mail::sendWithTemplate($talep['email'], 'talep_sonuc', [
             'ad_soyad' => $talep['kullanici_adi'],
-            'talep_turu' => 'Harcama Talebi',
+            'talep_turu' => 'Rezervasyon Talebi',
             'durum' => 'Onaylandı',
             'aciklama' => 'Talebiniz AT Muhasebe tarafından onaylanmıştır.'
         ]);
@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Kullanıcıya Bildirim Gönder
         Mail::sendWithTemplate($talep['email'], 'talep_sonuc', [
             'ad_soyad' => $talep['kullanici_adi'],
-            'talep_turu' => 'Harcama Talebi',
+            'talep_turu' => 'Rezervasyon Talebi',
             'durum' => 'Reddedildi',
             'aciklama' => 'Talebiniz yönetici tarafından reddedilmiştir.'
         ]);
@@ -173,7 +173,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="content-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 mb-0">
-                <i class="fas fa-file-invoice-dollar me-2"></i>Harcama Talebi Detayı
+                <i class="fas fa-calendar-check me-2"></i>Rezervasyon Talebi Detayı
             </h1>
             <a href="/admin/harcama-talepleri.php" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Geri Dön

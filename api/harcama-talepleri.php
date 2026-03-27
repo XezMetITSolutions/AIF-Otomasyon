@@ -1,6 +1,6 @@
 <?php
 /**
- * API - Harcama Talepleri (Next.js için)
+ * API - Rezervasyon Talepleri (Next.js için)
  */
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
@@ -183,10 +183,10 @@ try {
 
             $bykInfo = $db->fetch("SELECT muhasebe_baskani_id FROM byk WHERE byk_id = ?", [$user['byk_id']]);
             if ($bykInfo && $bykInfo['muhasebe_baskani_id']) {
-                Notification::add($bykInfo['muhasebe_baskani_id'], 'Yeni Harcama Talebi', "{$user['name']} harcama talebi oluşturdu: $baslik", 'bilgi', '/panel/harcama-talepleri.php?tab=onay');
+                Notification::add($bykInfo['muhasebe_baskani_id'], 'Yeni Rezervasyon Talebi', "{$user['name']} rezervasyon talebi oluşturdu: $baslik", 'bilgi', '/panel/harcama-talepleri.php?tab=onay');
             }
 
-            echo json_encode(['success' => true, 'message' => 'Harcama talebi başarıyla oluşturuldu.']);
+            echo json_encode(['success' => true, 'message' => 'Rezervasyon talebi başarıyla oluşturuldu.']);
             exit;
         }
 
@@ -209,7 +209,7 @@ try {
                     exit;
                 }
                 $db->query("UPDATE harcama_talepleri SET durum = 'reddedildi', onay_seviyesi = 0 WHERE talep_id = ?", [$talepId]);
-                Notification::add($talep['kullanici_id'], 'Harcama Reddedildi', "Talebiniz reddedildi.", 'hata', '/panel/harcama-talepleri.php?tab=talebim');
+                Notification::add($talep['kullanici_id'], 'Rezervasyon Reddedildi', "Talebiniz reddedildi.", 'hata', '/panel/harcama-talepleri.php?tab=talebim');
                 echo json_encode(['success' => true, 'message' => 'Talep reddedildi.']);
                 exit;
             }
@@ -220,18 +220,18 @@ try {
                 if ($isFirstApprover && $currentLevel == 0 && $currentStatus === 'beklemede') {
                     $db->query("UPDATE harcama_talepleri SET durum = 'ilk_onay', onay_seviyesi = 1, ilk_onaylayan_id = ?, ilk_onay_tarihi = NOW(), ilk_onay_aciklama = ? WHERE talep_id = ?", [$user['id'], $aciklama, $talepId]);
                     if (!empty($harcamaWorkflow['second_approver_user_id'])) {
-                        Notification::add($harcamaWorkflow['second_approver_user_id'], 'Harcama Onayı (2. Aşama)', "2. onay bekleniyor: {$talep['baslik']}", 'uyari', '/panel/harcama-talepleri.php?tab=onay');
+                        Notification::add($harcamaWorkflow['second_approver_user_id'], 'Rezervasyon Onayı (2. Aşama)', "2. onay bekleniyor: {$talep['baslik']}", 'uyari', '/panel/harcama-talepleri.php?tab=onay');
                     }
                     echo json_encode(['success' => true, 'message' => 'İlk onay tamamlandı.']);
                     exit;
                 } elseif ($isSecondApprover && $currentLevel == 1 && $currentStatus === 'ilk_onay') {
                     $db->query("UPDATE harcama_talepleri SET durum = 'onaylandi', onay_seviyesi = 2, ikinci_onaylayan_id = ?, ikinci_onay_tarihi = NOW(), ikinci_onay_aciklama = ? WHERE talep_id = ?", [$user['id'], $aciklama, $talepId]);
-                    Notification::add($talep['kullanici_id'], 'Harcama Onaylandı', "Talebiniz tamamen onaylandı.", 'basarili', '/panel/harcama-talepleri.php?tab=talebim');
+                    Notification::add($talep['kullanici_id'], 'Rezervasyon Onaylandı', "Talebiniz tamamen onaylandı.", 'basarili', '/panel/harcama-talepleri.php?tab=talebim');
                     echo json_encode(['success' => true, 'message' => 'İkinci onay tamamlandı.']);
                     exit;
                 } elseif ($isSuperAdmin) {
                     $db->query("UPDATE harcama_talepleri SET durum = 'onaylandi', onay_seviyesi = 2, ilk_onaylayan_id = ?, ikinci_onaylayan_id = ? WHERE talep_id = ?", [$user['id'], $user['id'], $talepId]);
-                    Notification::add($talep['kullanici_id'], 'Harcama Onaylandı', "Talebiniz onaylandı.", 'basarili', '/panel/harcama-talepleri.php?tab=talebim');
+                    Notification::add($talep['kullanici_id'], 'Rezervasyon Onaylandı', "Talebiniz onaylandı.", 'basarili', '/panel/harcama-talepleri.php?tab=talebim');
                     echo json_encode(['success' => true, 'message' => 'Talep direkt onaylandı.']);
                     exit;
                 }

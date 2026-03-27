@@ -13,7 +13,7 @@ $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
 
-$pageTitle = 'Harcama Talepleri';
+$pageTitle = 'Rezervasyon Talepleri';
 
 // Filtre
 $durum = $_GET['durum'] ?? '';
@@ -49,7 +49,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="content-wrapper">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0">
-                    <i class="fas fa-money-bill-wave me-2"></i>Harcama Talepleri
+                    <i class="fas fa-calendar-check me-2"></i>Rezervasyon Talepleri
                 </h1>
                 <div>
                     <a href="?durum=beklemede" class="btn btn-sm btn-warning">Bekleyenler</a>
@@ -61,7 +61,7 @@ include __DIR__ . '/../includes/header.php';
             
             <div class="card">
                 <div class="card-header">
-                    Toplam: <strong><?php echo count($harcamaTalepleri); ?></strong> harcama talebi
+                    Toplam: <strong><?php echo count($harcamaTalepleri); ?></strong> rezervasyon talebi
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -80,7 +80,7 @@ include __DIR__ . '/../includes/header.php';
                             <tbody>
                                 <?php if (empty($harcamaTalepleri)): ?>
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">Henüz harcama talebi bulunmamaktadır.</td>
+                                        <td colspan="7" class="text-center text-muted">Henüz rezervasyon talebi bulunmamaktadır.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($harcamaTalepleri as $talep): ?>

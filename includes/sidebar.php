@@ -93,8 +93,8 @@ if ($user) {
                 [
                     'key' => 'baskan_harcama_talepleri',
                     'path' => '/panel/harcama-talepleri.php?tab=onay',
-                    'icon' => 'fas fa-money-bill-wave',
-                    'label' => 'Harcama Onayları',
+                    'icon' => 'fas fa-calendar-check',
+                    'label' => 'Rezervasyon Onayları',
                     'match' => 'panel/harcama-talepleri',
                     'badge' => ['id' => 'pendingHarcamaCount', 'class' => 'bg-warning'],
                 ],
@@ -165,8 +165,8 @@ if ($user) {
         [
             'key' => 'uye_harcama_talepleri',
             'path' => '/panel/harcama-talepleri.php?tab=talebim',
-            'icon' => 'fas fa-wallet',
-            'label' => 'Harcama Taleplerim',
+            'icon' => 'fas fa-calendar-check',
+            'label' => 'Rezervasyon Taleplerim',
             'match' => 'panel/harcama-talepleri',
         ],
         [
@@ -268,7 +268,7 @@ if ($user) {
             </a>
             <a href="/admin/harcama-talepleri.php"
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'harcama-talepleri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-money-bill-wave me-2"></i>Harcama Talepleri
+                <i class="fas fa-calendar-check me-2"></i>Rezervasyon Talepleri
                 <span class="badge bg-warning float-end" id="pendingHarcamaCount">0</span>
             </a>
             <a href="/admin/demirbaslar.php"

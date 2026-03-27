@@ -6,13 +6,13 @@ import { Wallet, Send, CheckCircle2, XCircle, AlertCircle, Trash2, Tag, Calendar
 import { getHarcamaTalepleriAction, actionHarcamaTalebi } from "../../actions/auth";
 
 const kategoriListesi: Record<string, string> = {
-  genel: "Genel",
-  hediye: "Hediye & Ödül",
-  seyahat: "Seyahat",
-  etkinlik: "Etkinlik Organizasyonu",
-  ikram: "İkram / Ağırlama",
-  donanim: "Ekipman / Donanım",
-  egitim: "Eğitim / Seminer"
+  otel: "Otel Rezervasyonu",
+  ucak: "Uçak Bileti",
+  seminer: "Seminer Odası",
+  araba: "Kiralık Araba",
+  seyahat: "Seyahat / Diğer",
+  ikram: "İkram / Davet",
+  genel: "Diğer"
 };
 
 export default function HarcamaTalepleriPage() {
@@ -130,9 +130,9 @@ export default function HarcamaTalepleriPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Wallet className="w-6 h-6 text-emerald-400" /> Harcama Talepleri
+            <CalendarClock className="w-6 h-6 text-emerald-400" /> Rezervasyon Talepleri
           </h1>
-          <p className="text-zinc-500 text-sm mt-1">İki aşamalı güvenli harcama ve gider işlemleri yönetim modülü.</p>
+          <p className="text-zinc-500 text-sm mt-1">Seyahat, konaklama ve organizasyon rezervasyonlarını yönetin.</p>
         </div>
 
         {/* TABS */}
@@ -144,7 +144,7 @@ export default function HarcamaTalepleriPage() {
                 activeTab === "talebim" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "text-zinc-400 hover:text-white"
               }`}
             >
-              Taleplerim
+              Rezervasyon Taleplerim
             </button>
           )}
           {hasPermissionBaskan && (
@@ -154,7 +154,7 @@ export default function HarcamaTalepleriPage() {
                 activeTab === "onay" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "text-zinc-400 hover:text-white"
               }`}
             >
-              Yönetim (Onay)
+              Rezervasyon Onayları
             </button>
           )}
         </div>
@@ -213,7 +213,7 @@ export default function HarcamaTalepleriPage() {
             <div className="lg:col-span-1">
               <div className="bg-zinc-900 border border-white/5 rounded-2xl overflow-hidden sticky top-24">
                 <div className="p-5 border-b border-white/5 bg-zinc-900/50">
-                  <h2 className="font-semibold text-white">Yeni Harcama Talebi</h2>
+                  <h2 className="font-semibold text-white">Yeni Rezervasyon Talebi</h2>
                 </div>
                 <form onSubmit={handleCreate} className="p-5 space-y-4">
                   <div className="space-y-1.5 flex flex-col">
@@ -246,7 +246,7 @@ export default function HarcamaTalepleriPage() {
             <div className="lg:col-span-2 space-y-4">
               <div className="bg-zinc-900 border border-white/5 rounded-2xl overflow-hidden min-h-[400px]">
                 <div className="p-5 border-b border-white/5 bg-zinc-900/50 flex justify-between items-center">
-                  <h2 className="font-semibold text-white">Geçmiş Harcamalarım</h2>
+                  <h2 className="font-semibold text-white">Geçmiş Rezervasyonlarım</h2>
                   <span className="text-xs font-bold bg-zinc-800 text-zinc-400 px-2 py-1 rounded-md">{requests.length} Kayıt</span>
                 </div>
                 
@@ -254,7 +254,7 @@ export default function HarcamaTalepleriPage() {
                   {requests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 opacity-50">
                       <Wallet className="w-10 h-10 text-zinc-500 mb-2" />
-                      <p className="text-zinc-400 text-sm">Henüz bir harcama talebiniz bulunmuyor.</p>
+                      <p className="text-zinc-400 text-sm">Henüz bir rezervasyon talebiniz bulunmuyor.</p>
                     </div>
                   ) : (
                     requests.map(req => {
@@ -339,7 +339,7 @@ export default function HarcamaTalepleriPage() {
                             <span className="text-[10px] text-zinc-500">{req.email}</span>
                           </div>
                           <div className="text-right">
-                             <div className="text-[10px] text-zinc-500 tracking-wider">HARCAMA ID</div>
+                             <div className="text-[10px] text-zinc-500 tracking-wider">REZERVASYON ID</div>
                              <div className="text-xs font-mono font-bold text-zinc-400">#{req.talep_id}</div>
                           </div>
                         </div>

@@ -1,6 +1,6 @@
 # Onay Akışı Sistemi - Kullanım Kılavuzu
 
-Bu belge, sistemdeki izin ve harcama talepleri için oluşturulan iki seviyeli onay akışını açıklar.
+Bu belge, sistemdeki izin ve rezervasyon talepleri için oluşturulan iki seviyeli onay akışını açıklar.
 
 ## Onay Akışı Yapısı
 
@@ -9,8 +9,8 @@ Bu belge, sistemdeki izin ve harcama talepleri için oluşturulan iki seviyeli o
 - **Onaylayıcı**: Yasin Çakmak
 - **Akış**: Talep → Yasin Çakmak → Onay/Red
 
-### 2. Harcama Talepleri (İki Seviye)
-Harcama talepleri iki seviye onay sistemiyle çalışır:
+### 2. Rezervasyon Talepleri (İki Seviye)
+Rezervasyon talepleri iki seviye onay sistemiyle çalışır:
 - **1. Onaylayıcı**: Yasin Çakmak
 - **2. Onaylayıcı**: Muhammed Enes Sivrikaya (AT Muhasebe Başkanı)
 - **Akış**: Talep → Yasin Çakmak (1. Onay) → Muhammed Enes Sivrikaya (2. Onay) → Tamamen Onaylandı
@@ -24,7 +24,7 @@ php database/update_approval_workflow.php
 ```
 
 Bu script:
-- `harcama_talepleri` tablosuna yeni kolonlar ekler:
+- `harcama_talepleri` tablosuna yeni kolonlar ekler (Rezervasyon talepleri için):
   - `onay_seviyesi` (0=beklemede, 1=ilk onay, 2=tamamen onaylandı)
   - `ilk_onaylayan_id`, `ilk_onay_tarihi`, `ilk_onay_aciklama`
   - `ikinci_onaylayan_id`, `ikinci_onay_tarihi`, `ikinci_onay_aciklama`
@@ -40,7 +40,7 @@ Eğer kullanıcılar bulunamadıysa, manuel olarak `config/approval_workflow.php
 
 ## Durum Kodları
 
-### Harcama Talepleri
+### Rezervasyon Talepleri
 - `beklemede`: Henüz kimse onaylamamış (İlk onayı bekliyor)
 - `ilk_onay`: Yasin Çakmak onayladı, ikinci onayı bekliyor
 - `onaylandi`: Her iki onaylayıcı da onayladı
@@ -55,14 +55,14 @@ Eğer kullanıcılar bulunamadıysa, manuel olarak `config/approval_workflow.php
 ## Kullanıcı Arayüzü
 
 ### İlk Onaylayıcı (Yasin Çakmak)
-- **Göreceği Talepler**: Varsayılan olarak "Beklemede" durumundaki harcama talepleri
+- **Göreceği Talepler**: Varsayılan olarak "Beklemede" durumundaki rezervasyon talepleri
 - **Butonlar**: "1. Onay" (mavi) ve "Reddet" (kırmızı)
 - **İşlem Sonrası**: 
   - Onaylarsa → Durum "ilk_onay" olur, ikinci onaylayıcıya bildirim gider
   - Reddederse → Durum "reddedildi" olur, talep sahibine bildirim gider
 
 ### İkinci Onaylayıcı (Muhammed Enes Sivrikaya)
-- **Göreceği Talepler**: Varsayılan olarak "İlk Onay" durumundaki harcama talepleri
+- **Göreceği Talepler**: Varsayılan olarak "İlk Onay" durumundaki rezervasyon talepleri
 - **Butonlar**: "2. Onay" (yeşil) ve "Reddet" (kırmızı)
 - **İşlem Sonrası**:
   - Onaylarsa → Durum "onaylandi" olur, talep sahibine bildirim gider
@@ -83,19 +83,19 @@ Eğer kullanıcılar bulunamadıysa, manuel olarak `config/approval_workflow.php
 
 ### Yeni Talep Oluşturulduğunda
 - **Kime**: Yasin Çakmak (1. Onaylayıcı)
-- **E-posta**: "Yeni harcama talebi onayınızı bekliyor"
+- **E-posta**: "Yeni rezervasyon talebi onayınızı bekliyor"
 
 ### İlk Onay Verildiğinde
 - **Kime**: Muhammed Enes Sivrikaya (2. Onaylayıcı)
-- **E-posta**: "Yasin Çakmak tarafından onaylanan bir harcama talebi sizin onayınızı bekliyor"
+- **E-posta**: "Yasin Çakmak tarafından onaylanan bir rezervasyon talebi sizin onayınızı bekliyor"
 
 ### Talep Tamamen Onaylandığında
 - **Kime**: Talep Sahibi
-- **E-posta**: "Harcama talebiniz hem Yasin Çakmak hem de AT Muhasebe Başkanı tarafından onaylandı"
+- **E-posta**: "Rezervasyon talebiniz hem Yasin Çakmak hem de AT Muhasebe Başkanı tarafından onaylandı"
 
 ### Talep Reddedildiğinde
 - **Kime**: Talep Sahibi
-- **E-posta**: "Harcama talebiniz reddedildi" + Red açıklaması
+- **E-posta**: "Rezervasyon talebiniz reddedildi" + Red açıklaması
 
 ## Dosya Yapısı
 

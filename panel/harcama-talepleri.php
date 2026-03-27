@@ -1,6 +1,6 @@
 <?php
 /**
- * Harcama Talepleri Modülü
+ * Rezervasyon Talepleri Modülü
  * Taleplerim (Herkes) + Onay İşlemleri (Yetkili)
  * 
  * Onay Akışı:
@@ -50,7 +50,7 @@ if (!$hasPermissionBaskan && !$hasPermissionUye) {
 
 $activeTab = $_GET['tab'] ?? ($hasPermissionBaskan ? 'onay' : 'talebim');
 
-$pageTitle = 'Harcama Talepleri';
+$pageTitle = 'Rezervasyon Talepleri';
 $csrfTokenName = $appConfig['security']['csrf_token_name'] ?? 'csrf_token';
 $csrfToken = Middleware::generateCSRF();
 $errors = [];
@@ -65,13 +65,13 @@ $durumBadgeMap = [
 ];
 
 $kategoriListesi = [
-    'genel' => 'Genel',
-    'hediye' => 'Hediye & Ödül',
-    'seyahat' => 'Seyahat',
-    'etkinlik' => 'Etkinlik Organizasyonu',
-    'ikram' => 'İkram / Ağırlama',
-    'donanim' => 'Ekipman / Donanım',
-    'egitim' => 'Eğitim / Seminer'
+    'otel' => 'Otel Rezervasyonu',
+    'ucak' => 'Uçak Bileti',
+    'seminer' => 'Seminer Odası',
+    'araba' => 'Kiralık Araba',
+    'seyahat' => 'Seyahat / Diğer',
+    'ikram' => 'İkram / Davet',
+    'genel' => 'Diğer'
 ];
 
 // Helper functions for Meta handling
@@ -174,8 +174,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     Notification::add(
                         $bykInfo['muhasebe_baskani_id'],
-                        'Yeni Harcama Talebi',
-                        "{$user['name']} yeni bir harcama talebi oluşturdu: " . substr($baslik, 0, 30),
+                        'Yeni Rezervasyon Talebi',
+                        "{$user['name']} yeni bir rezervasyon talebi oluşturdu: " . substr($baslik, 0, 30),
                         'bilgi',
                         '/panel/harcama-talepleri.php?tab=onay',
                         false
@@ -185,13 +185,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($adminUser) {
                         Mail::sendWithTemplate($adminUser['email'], 'talep_yeni', [
                             'ad_soyad' => 'Muhasebe Başkanı',
-                            'talep_turu' => 'Harcama Talebi',
-                            'detay' => htmlspecialchars($user['name']) . " tarafından yeni bir harcama talebi oluşturuldu: " . htmlspecialchars($baslik) . " (" . number_format($tutar, 2, ',', '.') . " €)",
+                            'talep_turu' => 'Rezervasyon Talebi',
+                            'detay' => htmlspecialchars($user['name']) . " tarafından yeni bir rezervasyon talebi oluşturuldu: " . htmlspecialchars($baslik) . " (" . number_format($tutar, 2, ',', '.') . " €)",
                         ]);
                     }
                 }
 
-                $messages[] = 'Harcama talebiniz başarıyla oluşturuldu.';
+                $messages[] = 'Rezervasyon talebiniz başarıyla oluşturuldu.';
                 $activeTab = 'talebim';
             }
 
@@ -249,8 +249,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Bildirim
                         Notification::add(
                             $talep['kullanici_id'],
-                            'Harcama Talebi Reddedildi',
-                            "Harcama talebiniz reddedildi.",
+                            'Rezervasyon Talebi Reddedildi',
+                            "Rezervasyon talebiniz reddedildi.",
                             'hata', // veya reddedildi
                             '/panel/harcama-talepleri.php?tab=talebim',
                             false
@@ -259,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($requester) {
                             Mail::sendWithTemplate($requester['email'], 'talep_sonuc', [
                                 'ad_soyad' => $requester['name'],
-                                'talep_turu' => 'Harcama Talebi',
+                                'talep_turu' => 'Rezervasyon Talebi',
                                 'durum' => 'Reddedildi',
                                 'aciklama' => $aciklama ?: 'Talebiniz reddedilmiştir.'
                             ]);
@@ -298,8 +298,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if ($secondApprover) {
                                 Mail::sendWithTemplate($secondApprover['email'], 'talep_yeni', [
                                     'ad_soyad' => $secondApprover['name'],
-                                    'talep_turu' => 'Harcama Talebi (İkinci Onay Bekliyor)',
-                                    'detay' => "Yasin Çakmak tarafından onaylanan bir harcama talebi sizin onayınızı bekliyor: {$talep['baslik']} (" . number_format($talep['tutar'], 2, ',', '.') . " €)"
+                                    'talep_turu' => 'Rezervasyon Talebi (İkinci Onay Bekliyor)',
+                                    'detay' => "Yasin Çakmak tarafından onaylanan bir rezervasyon talebi sizin onayınızı bekliyor: {$talep['baslik']} (" . number_format($talep['tutar'], 2, ',', '.') . " €)"
                                 ]);
                             }
                         }
@@ -323,7 +323,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         Notification::add(
                             $talep['kullanici_id'],
-                            'Harcama Talebi Onaylandı',
+                            'Rezervasyon Talebi Onaylandı',
                             "Talebiniz tamamen onaylandı.",
                             'basarili',
                             '/panel/harcama-talepleri.php?tab=talebim',
@@ -333,9 +333,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($requester) {
                             Mail::sendWithTemplate($requester['email'], 'talep_sonuc', [
                                 'ad_soyad' => $requester['name'],
-                                'talep_turu' => 'Harcama Talebi',
+                                'talep_turu' => 'Rezervasyon Talebi',
                                 'durum' => 'Onaylandı',
-                                'aciklama' => 'Harcama talebiniz hem Yasin Çakmak hem de AT Muhasebe Başkanı tarafından onaylandı.'
+                                'aciklama' => 'Rezervasyon talebiniz hem Yasin Çakmak hem de AT Muhasebe Başkanı tarafından onaylandı.'
                             ]);
                         }
 
@@ -357,7 +357,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         Notification::add(
                             $talep['kullanici_id'],
-                            'Harcama Talebi Onaylandı',
+                            'Rezervasyon Talebi Onaylandı',
                             "Talebiniz başkan tarafından onaylandı.",
                             'basarili',
                             '/panel/harcama-talepleri.php?tab=talebim'
@@ -375,7 +375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $talepId = (int) ($_POST['talep_id'] ?? 0);
             if ($talepId) {
                 $db->query("DELETE FROM harcama_talepleri WHERE talep_id = ? AND byk_id = ?", [$talepId, $user['byk_id']]);
-                $messages[] = 'Harcama talebi silindi.';
+                $messages[] = 'Rezervasyon talebi silindi.';
                 $activeTab = 'onay';
             }
 
@@ -386,7 +386,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $placeholders = implode(',', array_fill(0, count($ids), '?'));
                 $params = array_merge($ids, [$user['byk_id']]);
                 $db->query("DELETE FROM harcama_talepleri WHERE talep_id IN ($placeholders) AND byk_id = ?", $params);
-                $messages[] = count($ids) . ' harcama talebi silindi.';
+                $messages[] = count($ids) . ' rezervasyon talebi silindi.';
                 $activeTab = 'onay';
             }
 
@@ -404,7 +404,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     SET baslik = ?, tutar = ?, durum = ?, aciklama = ?
                     WHERE talep_id = ? AND byk_id = ?
                 ", [$baslik, number_format((float) $tutar, 2, '.', ''), $durum, $aciklama, $talepId, $user['byk_id']]);
-                $messages[] = 'Harcama talebi güncellendi.';
+                $messages[] = 'Rezervasyon talebi güncellendi.';
                 $activeTab = 'onay';
             } else {
                 $errors[] = 'Tüm alanları doldurunuz.';
@@ -497,9 +497,9 @@ include __DIR__ . '/../includes/header.php';
          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
                 <h1 class="h3 mb-1">
-                    <i class="fas fa-wallet me-2"></i>Harcama Talepleri
+                    <i class="fas fa-calendar-check me-2"></i>Rezervasyon Talepleri
                 </h1>
-                <p class="text-muted mb-0">Harcama ve gider süreçlerini buradan yönetin.</p>
+                <p class="text-muted mb-0">Rezervasyon ve organizasyon süreçlerini buradan yönetin.</p>
             </div>
             
             <ul class="nav nav-pills bg-white p-1 rounded-4 border shadow-sm">
@@ -548,7 +548,7 @@ include __DIR__ . '/../includes/header.php';
                          <!-- Form -->
                         <div class="col-lg-4">
                             <div class="card h-100">
-                                 <div class="card-header bg-transparent border-bottom-0 fw-bold">Yeni Harcama Talebi</div>
+                                 <div class="card-header bg-transparent border-bottom-0 fw-bold">Yeni Rezervasyon Talebi</div>
                                  <div class="card-body pt-0">
                                     <form method="post">
                                         <input type="hidden" name="action" value="yeni_harcama">
@@ -620,7 +620,7 @@ include __DIR__ . '/../includes/header.php';
                                     <?php if (empty($myRequests)): ?>
                                             <div class="text-center p-5 text-muted">
                                                 <i class="fas fa-receipt fa-2x mb-3 opacity-25"></i>
-                                                <p>Henüz harcama talebiniz yok.</p>
+                                                <p>Henüz rezervasyon talebiniz yok.</p>
                                             </div>
                                     <?php else: ?>
                                             <div class="table-responsive">
@@ -814,7 +814,7 @@ include __DIR__ . '/../includes/header.php';
                                                                     <button class="btn btn-sm btn-primary" onclick='editHarcama(<?php echo json_encode($req); ?>)' title="Düzenle">
                                                                         <i class="fas fa-edit"></i>
                                                                     </button>
-                                                                    <form method="post" class="d-inline-block" onsubmit="return confirm('Bu harcama talebini silmek istediğinizden emin misiniz?');">
+                                                                    <form method="post" class="d-inline-block" onsubmit="return confirm('Bu rezervasyon talebini silmek istediğinizden emin misiniz?');">
                                                                         <input type="hidden" name="<?php echo $csrfTokenName; ?>" value="<?php echo $csrfToken; ?>">
                                                                         <input type="hidden" name="action" value="delete">
                                                                         <input type="hidden" name="talep_id" value="<?php echo $req['talep_id']; ?>">
@@ -865,7 +865,7 @@ include __DIR__ . '/../includes/header.php';
                             <input type="hidden" name="action" value="edit">
                             <input type="hidden" name="talep_id" id="edit_talep_id">
                             <div class="modal-header">
-                                <h5 class="modal-title">Harcama Talebini Düzenle</h5>
+                                <h5 class="modal-title">Rezervasyon Talebini Düzenle</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
@@ -941,7 +941,7 @@ include __DIR__ . '/../includes/header.php';
                             return;
                         }
                     
-                        if (!confirm(checked.length + ' harcama talebini silmek istediğinizden emin misiniz?')) {
+                        if (!confirm(checked.length + ' rezervasyon talebini silmek istediğinizden emin misiniz?')) {
                             return;
                         }
                     
