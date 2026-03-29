@@ -28,10 +28,14 @@ $db->query("
         secilen_4 VARCHAR(255) NOT NULL,
         secilen_5 VARCHAR(255) NOT NULL,
         notlar TEXT NULL,
-        tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_vote (voter_id)
+        tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ");
+
+// Eski UNIQUE KEY'i kaldır (Çoklu kayda izin vermek için)
+try {
+    $db->query("ALTER TABLE istisare_oylama DROP INDEX unique_vote");
+} catch (Exception $e) { }
 
 // Sütun tiplerini güncelle (INT'den VARCHAR'a geçiş ve eksik sütunlar)
 $cols = $db->fetchAll("DESC istisare_oylama");
@@ -57,39 +61,28 @@ $error = '';
 
 // Form gönderildi mi?
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_vote'])) {
-    // Voter ID artık metin olarak tutuluyor
     $voter_id = trim($_POST['voter_id'] ?? '');
     $sube_ismi = trim($_POST['sube_ismi'] ?? '');
-    $s1 = trim($_POST['secilen_1'] ?? '');
-    $s2 = trim($_POST['secilen_2'] ?? '');
-    $s3 = trim($_POST['secilen_3'] ?? '');
-    $s4 = trim($_POST['secilen_4'] ?? '');
-    $s5 = trim($_POST['secilen_5'] ?? '');
+    $s = [];
+    for($i=1; $i<=5; $i++) {
+        $s[$i] = trim($_POST['secilen_'.$i] ?? '');
+    }
     $notlar = $_POST['notlar'] ?? '';
 
-    $secimler = array_filter([$s1, $s2, $s3, $s4, $s5]);
+    $secimler = array_filter($s);
 
     if (empty($voter_id)) {
         $error = 'Lütfen oy veren kişiyi giriniz.';
-    } elseif (count($secimler) < 5) {
-        $error = 'Lütfen 5 isim de giriniz.';
-    } elseif (count(array_unique($secimler)) < 5) {
-        $error = 'Lütfen birbirinden farklı 5 isim giriniz.';
+    } elseif (empty($secimler)) {
+        $error = 'Lütfen en az bir aday ismi giriniz.';
+    } elseif (count(array_unique($secimler)) < count($secimler)) {
+        $error = 'Lütfen aynı ismi birden fazla kez girmeyiniz.';
     } else {
         try {
             $db->query("
                 INSERT INTO istisare_oylama (voter_id, sube_ismi, secilen_1, secilen_2, secilen_3, secilen_4, secilen_5, notlar)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE 
-                    sube_ismi = VALUES(sube_ismi),
-                    secilen_1 = VALUES(secilen_1),
-                    secilen_2 = VALUES(secilen_2),
-                    secilen_3 = VALUES(secilen_3),
-                    secilen_4 = VALUES(secilen_4),
-                    secilen_5 = VALUES(secilen_5),
-                    notlar = VALUES(notlar),
-                    tarih = CURRENT_TIMESTAMP
-            ", [$voter_id, $sube_ismi, $s1, $s2, $s3, $s4, $s5, $notlar]);
+            ", [$voter_id, $sube_ismi, $s[1], $s[2], $s[3], $s[4], $s[5], $notlar]);
             $message = 'İşlem başarıyla kaydedildi.';
         } catch (Exception $e) {
             $error = 'Hata oluştu: ' . $e->getMessage();
@@ -100,8 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_vote'])) {
 // Tüm adayları ve oy verenleri (kullanıcıları) getir
 $tumKullanicilar = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar WHERE aktif = 1 ORDER BY ad, soyad");
 
-// Mevcut oyunu getir (Sadece admin değilse veya admin kendi oyuna bakıyorsa)
-$mevcutOy = $db->fetch("SELECT * FROM istisare_oylama WHERE voter_id = ?", [$user['id']]);
+// Mevcut oyunu getir (Son girilen kaydı referans al)
+$mevcutOy = $db->fetch("SELECT * FROM istisare_oylama WHERE voter_id = ? ORDER BY tarih DESC LIMIT 1", [$user['name']]);
 
 // Sonuçları hesapla
 $sonuclar = [];
@@ -172,7 +165,7 @@ include __DIR__ . '/../includes/header.php';
                             <?php for($i=1; $i<=5; $i++): ?>
                             <div class="mb-3">
                                 <label class="form-label fw-bold"><?php echo $i; ?>. Aday Tercihi</label>
-                                <input type="text" name="secilen_<?php echo $i; ?>" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>" required>
+                                <input type="text" name="secilen_<?php echo $i; ?>" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>">
                             </div>
                             <?php endfor; ?>
 
