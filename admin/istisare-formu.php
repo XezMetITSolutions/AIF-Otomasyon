@@ -20,48 +20,61 @@ $pageTitle = 'Başkanlık İstişare Formu';
 $db->query("
     CREATE TABLE IF NOT EXISTS istisare_oylama (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        voter_id INT NOT NULL,
+        voter_id VARCHAR(255) NOT NULL,
         sube_ismi VARCHAR(255) NULL,
-        secilen_1 INT NOT NULL,
-        secilen_2 INT NOT NULL,
-        secilen_3 INT NOT NULL,
-        secilen_4 INT NOT NULL,
-        secilen_5 INT NOT NULL,
+        secilen_1 VARCHAR(255) NOT NULL,
+        secilen_2 VARCHAR(255) NOT NULL,
+        secilen_3 VARCHAR(255) NOT NULL,
+        secilen_4 VARCHAR(255) NOT NULL,
+        secilen_5 VARCHAR(255) NOT NULL,
         notlar TEXT NULL,
         tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY unique_vote (voter_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ");
 
-// Eksik sütunları ekle (mevcut tablo varsa)
+// Sütun tiplerini güncelle (INT'den VARCHAR'a geçiş ve eksik sütunlar)
 $cols = $db->fetchAll("DESC istisare_oylama");
 $colNames = array_column($cols, 'Field');
+$db->query("ALTER TABLE istisare_oylama MODIFY voter_id VARCHAR(255) NOT NULL");
 if (!in_array('sube_ismi', $colNames)) $db->query("ALTER TABLE istisare_oylama ADD COLUMN sube_ismi VARCHAR(255) NULL AFTER voter_id");
-if (!in_array('secilen_4', $colNames)) $db->query("ALTER TABLE istisare_oylama ADD COLUMN secilen_4 INT NOT NULL DEFAULT 0 AFTER secilen_3");
-if (!in_array('secilen_5', $colNames)) $db->query("ALTER TABLE istisare_oylama ADD COLUMN secilen_5 INT NOT NULL DEFAULT 0 AFTER secilen_4");
+$db->query("ALTER TABLE istisare_oylama MODIFY secilen_1 VARCHAR(255) NOT NULL");
+$db->query("ALTER TABLE istisare_oylama MODIFY secilen_2 VARCHAR(255) NOT NULL");
+$db->query("ALTER TABLE istisare_oylama MODIFY secilen_3 VARCHAR(255) NOT NULL");
+if (!in_array('secilen_4', $colNames)) {
+    $db->query("ALTER TABLE istisare_oylama ADD COLUMN secilen_4 VARCHAR(255) NOT NULL AFTER secilen_3");
+} else {
+    $db->query("ALTER TABLE istisare_oylama MODIFY secilen_4 VARCHAR(255) NOT NULL");
+}
+if (!in_array('secilen_5', $colNames)) {
+    $db->query("ALTER TABLE istisare_oylama ADD COLUMN secilen_5 VARCHAR(255) NOT NULL AFTER secilen_4");
+} else {
+    $db->query("ALTER TABLE istisare_oylama MODIFY secilen_5 VARCHAR(255) NOT NULL");
+}
 
 $message = '';
 $error = '';
 
 // Form gönderildi mi?
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_vote'])) {
-    $voter_id = $auth->isSuperAdmin() ? (int)$_POST['voter_id'] : $user['id'];
-    $sube_ismi = $_POST['sube_ismi'] ?? '';
-    $s1 = (int)$_POST['secilen_1'];
-    $s2 = (int)$_POST['secilen_2'];
-    $s3 = (int)$_POST['secilen_3'];
-    $s4 = (int)$_POST['secilen_4'];
-    $s5 = (int)$_POST['secilen_5'];
+    // Voter ID artık metin olarak tutuluyor
+    $voter_id = trim($_POST['voter_id'] ?? '');
+    $sube_ismi = trim($_POST['sube_ismi'] ?? '');
+    $s1 = trim($_POST['secilen_1'] ?? '');
+    $s2 = trim($_POST['secilen_2'] ?? '');
+    $s3 = trim($_POST['secilen_3'] ?? '');
+    $s4 = trim($_POST['secilen_4'] ?? '');
+    $s5 = trim($_POST['secilen_5'] ?? '');
     $notlar = $_POST['notlar'] ?? '';
 
     $secimler = array_filter([$s1, $s2, $s3, $s4, $s5]);
 
-    if ($voter_id === 0) {
-        $error = 'Lütfen oy veren kişiyi seçiniz.';
+    if (empty($voter_id)) {
+        $error = 'Lütfen oy veren kişiyi giriniz.';
     } elseif (count($secimler) < 5) {
-        $error = 'Lütfen 5 isim de seçiniz.';
+        $error = 'Lütfen 5 isim de giriniz.';
     } elseif (count(array_unique($secimler)) < 5) {
-        $error = 'Lütfen birbirinden farklı 5 isim seçiniz.';
+        $error = 'Lütfen birbirinden farklı 5 isim giriniz.';
     } else {
         try {
             $db->query("
@@ -96,21 +109,19 @@ $votes = $db->fetchAll("SELECT secilen_1, secilen_2, secilen_3, secilen_4, secil
 $counts = [];
 foreach ($votes as $v) {
     for($i=1; $i<=5; $i++) {
-        if ($v['secilen_'.$i]) {
-            $counts[$v['secilen_'.$i]] = ($counts[$v['secilen_'.$i]] ?? 0) + 1;
+        $name = trim($v['secilen_'.$i]);
+        if ($name) {
+            $counts[$name] = ($counts[$name] ?? 0) + 1;
         }
     }
 }
 arsort($counts);
 
-foreach ($counts as $uid => $count) {
-    $uInfo = $db->fetch("SELECT ad, soyad FROM kullanicilar WHERE kullanici_id = ?", [$uid]);
-    if ($uInfo) {
-        $sonuclar[] = [
-            'name' => $uInfo['ad'] . ' ' . $uInfo['soyad'],
-            'votes' => $count
-        ];
-    }
+foreach ($counts as $name => $count) {
+    $sonuclar[] = [
+        'name' => $name,
+        'votes' => $count
+    ];
 }
 
 include __DIR__ . '/../includes/header.php';
@@ -152,20 +163,8 @@ include __DIR__ . '/../includes/header.php';
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Oy Veren Kişi</label>
-                                <?php if ($auth->isSuperAdmin()): ?>
-                                    <select name="voter_id" class="form-select select2" required>
-                                        <option value="">Kişi Seçiniz...</option>
-                                        <?php foreach ($tumKullanicilar as $k): ?>
-                                            <option value="<?php echo $k['kullanici_id']; ?>" <?php echo ($mevcutOy && $mevcutOy['voter_id'] == $k['kullanici_id']) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($k['ad'] . ' ' . $k['soyad']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <div class="form-text">Admin olarak başkası adına oy girebilirsiniz.</div>
-                                <?php else: ?>
-                                    <div class="form-control bg-light"><?php echo htmlspecialchars($user['name']); ?></div>
-                                    <input type="hidden" name="voter_id" value="<?php echo $user['id']; ?>">
-                                <?php endif; ?>
+                                <input type="text" name="voter_id" class="form-control" placeholder="Oy veren kişinin ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['voter_id'] ?? ($auth->isSuperAdmin() ? '' : $user['name'])); ?>" required>
+                                <div class="form-text">Kim adına oy kullanıldığını belirtiniz.</div>
                             </div>
 
                             <hr>
@@ -173,14 +172,7 @@ include __DIR__ . '/../includes/header.php';
                             <?php for($i=1; $i<=5; $i++): ?>
                             <div class="mb-3">
                                 <label class="form-label fw-bold"><?php echo $i; ?>. Aday Tercihi</label>
-                                <select name="secilen_<?php echo $i; ?>" class="form-select select2" required>
-                                    <option value="">Seçiniz...</option>
-                                    <?php foreach ($tumKullanicilar as $k): ?>
-                                        <option value="<?php echo $k['kullanici_id']; ?>" <?php echo ($mevcutOy && $mevcutOy['secilen_'.$i] == $k['kullanici_id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($k['ad'] . ' ' . $k['soyad']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <input type="text" name="secilen_<?php echo $i; ?>" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>" required>
                             </div>
                             <?php endfor; ?>
 
@@ -271,31 +263,18 @@ include __DIR__ . '/../includes/header.php';
                             <tbody>
                                 <?php
                                 $lastVotes = $db->fetchAll("
-                                    SELECT i.*, 
-                                           CONCAT(v.ad, ' ', v.soyad) as voter_name,
-                                           CONCAT(s1.ad, ' ', s1.soyad) as s1_name,
-                                           CONCAT(s2.ad, ' ', s2.soyad) as s2_name,
-                                           CONCAT(s3.ad, ' ', s3.soyad) as s3_name,
-                                           CONCAT(s4.ad, ' ', s4.soyad) as s4_name,
-                                           CONCAT(s5.ad, ' ', s5.soyad) as s5_name
-                                    FROM istisare_oylama i
-                                    JOIN kullanicilar v ON i.voter_id = v.kullanici_id
-                                    LEFT JOIN kullanicilar s1 ON i.secilen_1 = s1.kullanici_id
-                                    LEFT JOIN kullanicilar s2 ON i.secilen_2 = s2.kullanici_id
-                                    LEFT JOIN kullanicilar s3 ON i.secilen_3 = s3.kullanici_id
-                                    LEFT JOIN kullanicilar s4 ON i.secilen_4 = s4.kullanici_id
-                                    LEFT JOIN kullanicilar s5 ON i.secilen_5 = s5.kullanici_id
-                                    ORDER BY i.tarih DESC LIMIT 50
+                                    SELECT * FROM istisare_oylama
+                                    ORDER BY tarih DESC LIMIT 50
                                 ");
                                 foreach ($lastVotes as $lv): ?>
                                     <tr class="small">
-                                        <td class="fw-bold"><?php echo htmlspecialchars($lv['voter_name']); ?></td>
+                                        <td class="fw-bold"><?php echo htmlspecialchars($lv['voter_id']); ?></td>
                                         <td><?php echo htmlspecialchars($lv['sube_ismi'] ?? '-'); ?></td>
-                                        <td><?php echo htmlspecialchars($lv['s1_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($lv['s2_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($lv['s3_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($lv['s4_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($lv['s5_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($lv['secilen_1']); ?></td>
+                                        <td><?php echo htmlspecialchars($lv['secilen_2']); ?></td>
+                                        <td><?php echo htmlspecialchars($lv['secilen_3']); ?></td>
+                                        <td><?php echo htmlspecialchars($lv['secilen_4']); ?></td>
+                                        <td><?php echo htmlspecialchars($lv['secilen_5']); ?></td>
                                         <td class="text-muted small italic"><?php echo htmlspecialchars($lv['notlar'] ?? '-'); ?></td>
                                         <td><?php echo date('H:i', strtotime($lv['tarih'])); ?></td>
                                     </tr>
