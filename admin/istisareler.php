@@ -7,11 +7,20 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireRole(['super_admin', 'uye']);
+Middleware::requireAuth();
 
 $db = Database::getInstance();
 $auth = new Auth();
 $user = $auth->getUser();
+
+// Erişim Kontrolü: Sadece SuperAdmin ve AT üyeleri erişebilir
+if (!$auth->isSuperAdmin()) {
+    $checkAT = $db->fetch("SELECT b.byk_kodu FROM byk b INNER JOIN kullanicilar k ON b.byk_id = k.byk_id WHERE k.kullanici_id = ?", [$user['id']]);
+    if (!$checkAT || $checkAT['byk_kodu'] !== 'AT') {
+        header('Location: /admin/dashboard.php?err=' . urlencode('İstişareler sayfasına sadece AT üyeleri ve Ana Yönetici erişebilir.'));
+        exit;
+    }
+}
 
 $message = '';
 $error = '';
