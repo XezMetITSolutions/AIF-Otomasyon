@@ -74,7 +74,8 @@ $error = '';
 // Form gönderildi mi?
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $voter_id = trim($_POST['voter_id'] ?? '');
-    $sube_ismi = trim($_POST['sube_ismi'] ?? '');
+    // Şube ismi zaten oturumda belirlendiği için oradan alıyoruz
+    $sube_ismi = $session['sube_ismi'];
     $s = [];
     for($i=1; $i<=4; $i++) {
         $s[$i] = trim($_POST['secilen_'.$i] ?? '');
@@ -226,8 +227,9 @@ include __DIR__ . '/../includes/header.php';
 
                         <form method="POST">
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Şube İsmi</label>
-                                <input type="text" name="sube_ismi" id="form_sube_ismi" class="form-control" placeholder="Şube ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['sube_ismi'] ?? $session['sube_ismi']); ?>" required>
+                                <label class="form-label fw-bold small text-uppercase text-muted">Şube</label>
+                                <input type="text" class="form-control bg-light" value="<?php echo htmlspecialchars($session['sube_ismi']); ?>" readonly tabindex="-1">
+                                <input type="hidden" name="sube_ismi" value="<?php echo htmlspecialchars($session['sube_ismi']); ?>">
                             </div>
 
                             <div class="mb-4">
