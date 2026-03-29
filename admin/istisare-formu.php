@@ -134,8 +134,14 @@ foreach ($votes as $v) {
     }
 }
 
-// Toplam oya göre sırala
+// 1. Sıra, 2. Sıra ... önceliğine göre sırala (Kim daha çok 1. tercih edildiyse o üstte)
 uasort($stats, function($a, $b) {
+    for ($i=1; $i<=5; $i++) {
+        if ($a['ranks'][$i] != $b['ranks'][$i]) {
+            return ($a['ranks'][$i] < $b['ranks'][$i]) ? 1 : -1;
+        }
+    }
+    // Eşitlik durumunda toplam oya bak
     if ($a['total'] == $b['total']) return 0;
     return ($a['total'] < $b['total']) ? 1 : -1;
 });
@@ -227,7 +233,10 @@ include __DIR__ . '/../includes/header.php';
                 <div class="card shadow-sm">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Güncel Sonuçlar</h5>
-                        <span class="badge bg-warning text-dark"><?php echo count($votes); ?> Toplam Oy</span>
+                        <div>
+                            <span class="badge bg-warning text-dark me-2"><?php echo count($votes); ?> Toplam Oy</span>
+                            <a href="istisare-pdf.php" target="_blank" class="btn btn-sm btn-outline-light" title="Sonuçları PDF olarak indir"><i class="fas fa-file-pdf"></i> PDF</a>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
