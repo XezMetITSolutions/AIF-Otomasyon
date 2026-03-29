@@ -2,6 +2,9 @@
 /**
  * İstişare Oylaması PDF Çıktısı
  */
+error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
+ob_start();
+
 require_once __DIR__ . '/../includes/init.php';
 require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
@@ -161,5 +164,8 @@ if ($auth->isSuperAdmin()) {
     $pdf->writeHTML($html2, true, false, true, false, '');
 }
 
-$pdf->Output('Istisare_Sonuclari_'.date('Ymd').'.pdf', 'I');
+if (ob_get_length()) {
+    ob_end_clean();
+}
 
+$pdf->Output('Istisare_Sonuclari_'.date('Ymd').'.pdf', 'I');
