@@ -73,38 +73,70 @@ include __DIR__ . '/../includes/header.php';
             </div>
         <?php endif; ?>
 
-        <div class="row">
-            <?php foreach ($sessions as $s): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100 border-0">
-                        <div class="card-header <?php echo $s['durum'] === 'aktif' ? 'bg-primary' : 'bg-secondary'; ?> text-white d-flex justify-content-between align-items-center">
-                            <span class="small fw-bold text-uppercase"><?php echo htmlspecialchars($s['sube_ismi']); ?></span>
-                            <?php if ($s['durum'] === 'aktif'): ?>
-                                <span class="badge bg-success">AKTİF</span>
-                            <?php else: ?>
-                                <span class="badge bg-light text-dark">KAPALI</span>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th width="50" class="text-center">#</th>
+                                <th>İstişare Başlığı</th>
+                                <th>Şube</th>
+                                <th>İstişare Kurulu</th>
+                                <th class="text-center">Katılım</th>
+                                <th>Başlangıç Tarihi</th>
+                                <th class="text-center">Durum</th>
+                                <th width="150" class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            $no = 1;
+                            foreach ($sessions as $s): ?>
+                                <tr>
+                                    <td class="text-center text-muted fw-bold"><?php echo $no++; ?></td>
+                                    <td>
+                                        <div class="fw-bold text-primary"><?php echo htmlspecialchars($s['baslik']); ?></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border"><?php echo htmlspecialchars($s['sube_ismi']); ?></span>
+                                    </td>
+                                    <td class="small">
+                                        <?php echo htmlspecialchars($s['kurul_uyeleri'] ?: '-'); ?>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-info text-dark">
+                                            <i class="fas fa-user-check me-1"></i><?php echo $s['voter_count']; ?>
+                                        </span>
+                                    </td>
+                                    <td class="small text-muted">
+                                        <?php echo date('d.m.Y H:i', strtotime($s['eklenme_tarihi'])); ?>
+                                    </td>
+                                    <td class="text-center">
+                                        <?php if ($s['durum'] === 'aktif'): ?>
+                                            <span class="badge bg-success-subtle text-success border border-success px-3">AKTİF</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary px-3">KAPALI</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="istisare-formu.php?id=<?php echo $s['id']; ?>" class="btn btn-sm btn-primary shadow-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i> Yönet
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($sessions)): ?>
+                                <tr>
+                                    <td colspan="8" class="text-center py-5 text-muted italic">
+                                        Henüz bir istişare oturumu başlatılmamış.
+                                    </td>
+                                </tr>
                             <?php endif; ?>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold mb-3"><?php echo htmlspecialchars($s['baslik']); ?></h5>
-                            <div class="small text-muted mb-2">
-                                <i class="fas fa-users me-2"></i><b>Kurul:</b> <?php echo htmlspecialchars($s['kurul_uyeleri'] ?: '-'); ?>
-                            </div>
-                            <div class="small text-muted mb-3">
-                                <i class="fas fa-id-card me-2"></i><b>Katılım:</b> <?php echo $s['voter_count']; ?> Kişi Oy Kullandı
-                            </div>
-                            <div class="d-grid">
-                                <a href="istisare-formu.php?id=<?php echo $s['id']; ?>" class="btn <?php echo $s['durum'] === 'aktif' ? 'btn-outline-primary' : 'btn-outline-secondary'; ?>">
-                                    <i class="fas fa-external-link-alt me-2"></i>İstişareye Git & Yönet
-                                </a>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white text-muted small border-top-0">
-                            <i class="far fa-clock me-1"></i> Başlangıç: <?php echo date('d.m.Y H:i', strtotime($s['eklenme_tarihi'])); ?>
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
-            <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </main>
