@@ -79,10 +79,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Lütfen aynı ismi birden fazla kez girmeyiniz.';
     } else {
         try {
-            $db->query("
-                INSERT INTO istisare_oylama (voter_id, sube_ismi, secilen_1, secilen_2, secilen_3, secilen_4, secilen_5, notlar)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ", [$voter_id, $sube_ismi, $s[1], $s[2], $s[3], $s[4], $s[5], $notlar]);
+            $existing = $db->fetch("SELECT id FROM istisare_oylama WHERE voter_id = ?", [$voter_id]);
+            if ($existing) {
+                $db->query("
+                    UPDATE istisare_oylama 
+                    SET sube_ismi=?, secilen_1=?, secilen_2=?, secilen_3=?, secilen_4=?, secilen_5=?, notlar=?, tarih=CURRENT_TIMESTAMP 
+                    WHERE id=?
+                ", [$sube_ismi, $s[1], $s[2], $s[3], $s[4], $s[5], $notlar, $existing['id']]);
+            } else {
+                $db->query("
+                    INSERT INTO istisare_oylama (voter_id, sube_ismi, secilen_1, secilen_2, secilen_3, secilen_4, secilen_5, notlar)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ", [$voter_id, $sube_ismi, $s[1], $s[2], $s[3], $s[4], $s[5], $notlar]);
+            }
+
             $message = 'İşlem başarıyla kaydedildi.';
         } catch (Exception $e) {
             $error = 'Hata oluştu: ' . $e->getMessage();
@@ -98,7 +108,15 @@ $mevcutOy = $db->fetch("SELECT * FROM istisare_oylama WHERE voter_id = ? ORDER B
 
 // Sonuçları hesapla
 $sonuclar = [];
-$votes = $db->fetchAll("SELECT secilen_1, secilen_2, secilen_3, secilen_4, secilen_5 FROM istisare_oylama");
+$votes = $db->fetchAll("
+    SELECT t1.secilen_1, t1.secilen_2, t1.secilen_3, t1.secilen_4, t1.secilen_5 
+    FROM istisare_oylama t1
+    INNER JOIN (
+        SELECT voter_id, MAX(id) AS latest_id
+        FROM istisare_oylama
+        GROUP BY voter_id
+    ) t2 ON t1.id = t2.latest_id
+");
 $stats = [];
 foreach ($votes as $v) {
     for($i=1; $i<=5; $i++) {
@@ -279,8 +297,14 @@ include __DIR__ . '/../includes/header.php';
                             <tbody>
                                 <?php
                                 $lastVotes = $db->fetchAll("
-                                    SELECT * FROM istisare_oylama
-                                    ORDER BY tarih DESC LIMIT 50
+                                    SELECT t1.* 
+                                    FROM istisare_oylama t1
+                                    INNER JOIN (
+                                        SELECT voter_id, MAX(id) AS latest_id
+                                        FROM istisare_oylama
+                                        GROUP BY voter_id
+                                    ) t2 ON t1.id = t2.latest_id
+                                    ORDER BY t1.tarih DESC LIMIT 50
                                 ");
                                 foreach ($lastVotes as $lv): ?>
                                     <tr class="small">
