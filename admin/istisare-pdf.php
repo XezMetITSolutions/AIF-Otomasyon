@@ -16,15 +16,23 @@ Middleware::requireRole(['super_admin', 'uye']);
 
 $db = Database::getInstance();
 
+$sessionId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($sessionId <= 0) die('Gecersiz ID');
+
+$session = $db->fetch("SELECT * FROM istisare_sessions WHERE id = ?", [$sessionId]);
+if (!$session) die('Istisare bulunamadi');
+
 $votes = $db->fetchAll("
     SELECT t1.secilen_1, t1.secilen_2, t1.secilen_3, t1.secilen_4, t1.secilen_5 
     FROM istisare_oylama t1
     INNER JOIN (
         SELECT voter_id, MAX(id) AS latest_id
         FROM istisare_oylama
+        WHERE session_id = ?
         GROUP BY voter_id
     ) t2 ON t1.id = t2.latest_id
-");
+    WHERE t1.session_id = ?
+", [$sessionId, $sessionId]);
 
 $stats = [];
 foreach ($votes as $v) {
@@ -78,8 +86,8 @@ $pdf->SetAutoPageBreak(TRUE, 30);
 $pdf->SetFont('dejavusans', '', 10);
 $pdf->AddPage();
 
-$html = '<h2 style="text-align:center; color:#0d6efd;">Başkanlık İstişare Sonuçları</h2>';
-$html .= '<p style="text-align:center;"><b>Şube:</b> AIF Innsbruck | <b>İstişare Kurulu:</b> Mete Burçak, İbrahim Çetin</p>';
+$html = '<h2 style="text-align:center; color:#0d6efd;">'.htmlspecialchars($session['baslik']).' Sonuçları</h2>';
+$html .= '<p style="text-align:center;"><b>Şube:</b> '.htmlspecialchars($session['sube_ismi']).' | <b>İstişare Kurulu:</b> '.htmlspecialchars($session['kurul_uyeleri']).'</p>';
 $html .= '<p style="text-align:center; font-size:10px;">Toplam Geçerli Oy Formu: <strong>'.count($votes).'</strong></p>';
 $html .= '<hr><br>';
 
@@ -128,10 +136,12 @@ if ($auth->isSuperAdmin()) {
         INNER JOIN (
             SELECT voter_id, MAX(id) AS latest_id
             FROM istisare_oylama
+            WHERE session_id = ?
             GROUP BY voter_id
         ) t2 ON t1.id = t2.latest_id
+        WHERE t1.session_id = ?
         ORDER BY t1.tarih DESC
-    ");
+    ", [$sessionId, $sessionId]);
 
     $pdf->AddPage();
     $html2 = '<h3 style="color:#0d6efd;">Detaylı Oy Dökümü</h3>';

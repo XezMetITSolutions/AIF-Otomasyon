@@ -70,10 +70,10 @@ if ($user) {
             'match' => 'panel/uyeler',
         ],
         [
-            'path' => '/admin/istisare-formu.php',
+            'path' => '/admin/istisareler.php',
             'icon' => 'fas fa-vote-yea',
             'label' => 'İstişareler',
-            'match' => 'admin/istisare-formu',
+            'match' => 'admin/istisare',
         ],
     ];
 
@@ -237,8 +237,8 @@ if ($user) {
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'alt-birimler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-sitemap me-2"></i>Alt Birimler
             </a>
-            <a href="/admin/istisare-formu.php"
-                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'istisare-formu') !== false ? 'active' : ''; ?>">
+            <a href="/admin/istisareler.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'istisare') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-vote-yea me-2"></i>İstişareler
             </a>
 

@@ -14,7 +14,19 @@ $auth = new Auth();
 $user = $auth->getUser();
 $db = Database::getInstance();
 
-$pageTitle = 'Başkanlık İstişare Formu';
+$sessionId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($sessionId <= 0) {
+    header('Location: istisareler.php');
+    exit;
+}
+
+$session = $db->fetch("SELECT * FROM istisare_sessions WHERE id = ?", [$sessionId]);
+if (!$session) {
+    header('Location: istisareler.php');
+    exit;
+}
+
+$pageTitle = 'İstişare Detayı: ' . $session['baslik'];
 
 // Tabloyu oluştur (eğer yoksa)
 $db->query("
@@ -80,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Lütfen aynı ismi birden fazla kez girmeyiniz.';
     } else {
         try {
-            $existing = $db->fetch("SELECT id FROM istisare_oylama WHERE voter_id = ?", [$voter_id]);
+            $existing = $db->fetch("SELECT id FROM istisare_oylama WHERE voter_id = ? AND session_id = ?", [$voter_id, $sessionId]);
             if ($existing) {
                 $db->query("
                     UPDATE istisare_oylama 
@@ -89,9 +101,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ", [$sube_ismi, $s[1], $s[2], $s[3], $s[4], $s[5], $notlar, $existing['id']]);
             } else {
                 $db->query("
-                    INSERT INTO istisare_oylama (voter_id, sube_ismi, secilen_1, secilen_2, secilen_3, secilen_4, secilen_5, notlar)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ", [$voter_id, $sube_ismi, $s[1], $s[2], $s[3], $s[4], $s[5], $notlar]);
+                    INSERT INTO istisare_oylama (voter_id, session_id, sube_ismi, secilen_1, secilen_2, secilen_3, secilen_4, secilen_5, notlar)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ", [$voter_id, $sessionId, $sube_ismi, $s[1], $s[2], $s[3], $s[4], $s[5], $notlar]);
             }
 
             $message = 'İşlem başarıyla kaydedildi.';
@@ -105,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $tumKullanicilar = $db->fetchAll("SELECT kullanici_id, ad, soyad FROM kullanicilar WHERE aktif = 1 ORDER BY ad, soyad");
 
 // Mevcut oyunu getir (Son girilen kaydı referans al)
-$mevcutOy = $db->fetch("SELECT * FROM istisare_oylama WHERE voter_id = ? ORDER BY tarih DESC LIMIT 1", [$user['name']]);
+$mevcutOy = $db->fetch("SELECT * FROM istisare_oylama WHERE voter_id = ? AND session_id = ? ORDER BY tarih DESC LIMIT 1", [$user['name'], $sessionId]);
 
 // Sonuçları hesapla
 $sonuclar = [];
@@ -115,9 +127,11 @@ $votes = $db->fetchAll("
     INNER JOIN (
         SELECT voter_id, MAX(id) AS latest_id
         FROM istisare_oylama
+        WHERE session_id = ?
         GROUP BY voter_id
     ) t2 ON t1.id = t2.latest_id
-");
+    WHERE t1.session_id = ?
+", [$sessionId, $sessionId]);
 $stats = [];
 foreach ($votes as $v) {
     for($i=1; $i<=4; $i++) {
@@ -183,12 +197,15 @@ include __DIR__ . '/../includes/header.php';
             <div class="col-12">
                 <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm">
                     <div>
-                        <h6 class="mb-1"><i class="fas fa-info-circle me-2"></i>Aktif İstişare Bilgileri</h6>
+                        <h6 class="mb-1"><i class="fas fa-info-circle me-2"></i>Aktif İstişare: <b><?php echo htmlspecialchars($session['baslik']); ?></b></h6>
                         <div class="small">
-                            <span class="me-3"><b>Şube:</b> AIF Innsbruck</span>
-                            <span><b>İstişare Kurulu:</b> AT BYKsından Mete Burçak ve İbrahim Çetin</span>
+                            <span class="me-3"><b>Şube:</b> <?php echo htmlspecialchars($session['sube_ismi']); ?></span>
+                            <span><b>İstişare Kurulu:</b> <?php echo htmlspecialchars($session['kurul_uyeleri']); ?></span>
                         </div>
                     </div>
+                    <a href="istisareler.php" class="btn btn-sm btn-light border">
+                        <i class="fas fa-list me-1"></i> Tüm Liste
+                    </a>
                 </div>
             </div>
         </div>
@@ -210,7 +227,7 @@ include __DIR__ . '/../includes/header.php';
                         <form method="POST">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Şube İsmi</label>
-                                <input type="text" name="sube_ismi" class="form-control" placeholder="Şube ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['sube_ismi'] ?? 'AIF Innsbruck'); ?>" required>
+                                <input type="text" name="sube_ismi" class="form-control" placeholder="Şube ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['sube_ismi'] ?? $session['sube_ismi']); ?>" required>
                             </div>
 
                             <div class="mb-4">
@@ -257,7 +274,7 @@ include __DIR__ . '/../includes/header.php';
                         <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Güncel Sonuçlar</h5>
                         <div>
                             <span class="badge bg-warning text-dark me-2"><?php echo count($votes); ?> Toplam Oy</span>
-                            <a href="istisare-pdf.php" target="_blank" class="btn btn-sm btn-outline-light" title="Sonuçları PDF olarak indir"><i class="fas fa-file-pdf"></i> PDF</a>
+                            <a href="istisare-pdf.php?id=<?php echo $sessionId; ?>" target="_blank" class="btn btn-sm btn-outline-light" title="Sonuçları PDF olarak indir"><i class="fas fa-file-pdf"></i> PDF</a>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -345,10 +362,12 @@ include __DIR__ . '/../includes/header.php';
                                     INNER JOIN (
                                         SELECT voter_id, MAX(id) AS latest_id
                                         FROM istisare_oylama
+                                        WHERE session_id = ?
                                         GROUP BY voter_id
                                     ) t2 ON t1.id = t2.latest_id
+                                    WHERE t1.session_id = ?
                                     ORDER BY t1.tarih DESC LIMIT 100
-                                ");
+                                ", [$sessionId, $sessionId]);
                                 $voterNo = 1;
                                 foreach ($lastVotes as $lv): ?>
                                     <tr class="small">
