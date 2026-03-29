@@ -1,6 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/init.php';
-require_once __DIR__ . '/classes/Database.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once __DIR__ . '/../includes/init.php';
+require_once __DIR__ . '/../classes/Database.php';
 
 $db = Database::getInstance();
 
@@ -62,11 +65,11 @@ $data = [
 ];
 
 foreach ($data as $vote) {
-    echo "Inserting vote from: " . $vote['voter'] . "\n";
+    echo "Inserting vote from: " . $vote['voter'] . "<br>";
     $db->query(
         "INSERT INTO istisare_oylama (voter_id, secilen_1, secilen_2, secilen_3, secilen_4, secilen_5, notlar) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [$vote['voter'], $vote['c1'], $vote['c2'], $vote['c3'], $vote['c4'], $vote['c5'], $vote['note']]
     );
 }
 
-echo "Done!\n";
+echo "Done!<br>";
