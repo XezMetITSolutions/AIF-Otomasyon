@@ -227,12 +227,12 @@ include __DIR__ . '/../includes/header.php';
                         <form method="POST">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Şube İsmi</label>
-                                <input type="text" name="sube_ismi" class="form-control" placeholder="Şube ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['sube_ismi'] ?? $session['sube_ismi']); ?>" required>
+                                <input type="text" name="sube_ismi" id="form_sube_ismi" class="form-control" placeholder="Şube ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['sube_ismi'] ?? $session['sube_ismi']); ?>" required>
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Oy Veren Kişi</label>
-                                <input type="text" name="voter_id" class="form-control" placeholder="Oy veren kişinin ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['voter_id'] ?? ($auth->isSuperAdmin() ? '' : $user['name'])); ?>" required>
+                                <input type="text" name="voter_id" id="form_voter_id" class="form-control" placeholder="Oy veren kişinin ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['voter_id'] ?? ($auth->isSuperAdmin() ? '' : $user['name'])); ?>" required>
                                 <div class="form-text">Kim adına oy kullanıldığını belirtiniz.</div>
                             </div>
 
@@ -251,13 +251,13 @@ include __DIR__ . '/../includes/header.php';
                             <?php for($i=1; $i<=4; $i++): ?>
                             <div class="mb-3">
                                 <label class="form-label fw-bold"><?php echo $i; ?>. Aday Tercihi</label>
-                                <input type="text" name="secilen_<?php echo $i; ?>" list="adayOnerileri" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>">
+                                <input type="text" name="secilen_<?php echo $i; ?>" id="form_secilen_<?php echo $i; ?>" list="adayOnerileri" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>">
                             </div>
                             <?php endfor; ?>
 
                             <div class="mb-3">
                                 <label class="form-label">Notlar</label>
-                                <textarea name="notlar" class="form-control" rows="2"></textarea>
+                                <textarea name="notlar" id="form_notlar" class="form-control" rows="2"><?php echo htmlspecialchars($mevcutOy['notlar'] ?? ''); ?></textarea>
                             </div>
 
                             <button type="submit" name="submit_vote" class="btn btn-primary btn-lg w-100 mt-2">
@@ -352,6 +352,7 @@ include __DIR__ . '/../includes/header.php';
                                     <th>4. Tercih</th>
                                     <th>Notlar</th>
                                     <th>Tarih</th>
+                                    <th width="40" class="text-center">İşlem</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -380,6 +381,12 @@ include __DIR__ . '/../includes/header.php';
                                         <td><?php echo htmlspecialchars($lv['secilen_4']); ?></td>
                                         <td class="text-muted small italic"><?php echo htmlspecialchars($lv['notlar'] ?? '-'); ?></td>
                                         <td><?php echo date('H:i', strtotime($lv['tarih'])); ?></td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" 
+                                                onclick='editVote(<?php echo json_encode($lv); ?>)' title="Düzenle">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -442,6 +449,25 @@ $(document).ready(function() {
         });
     }
 });
+
+function editVote(vote) {
+    $('#form_sube_ismi').val(vote.sube_ismi);
+    $('#form_voter_id').val(vote.voter_id);
+    $('#form_secilen_1').val(vote.secilen_1);
+    $('#form_secilen_2').val(vote.secilen_2);
+    $('#form_secilen_3').val(vote.secilen_3);
+    $('#form_secilen_4').val(vote.secilen_4);
+    $('#form_notlar').val(vote.notlar);
+    
+    // Formun başına kaydır
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Görsel geri bildirim
+    $('#form_voter_id').parent().addClass('bg-warning-subtle');
+    setTimeout(() => {
+        $('#form_voter_id').parent().removeClass('bg-warning-subtle');
+    }, 2000);
+}
 </script>
 
 <?php
