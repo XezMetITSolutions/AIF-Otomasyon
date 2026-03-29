@@ -366,7 +366,7 @@ include __DIR__ . '/../includes/header.php';
                                         GROUP BY voter_id
                                     ) t2 ON t1.id = t2.latest_id
                                     WHERE t1.session_id = ?
-                                    ORDER BY t1.tarih DESC LIMIT 100
+                                    ORDER BY t1.tarih ASC LIMIT 100
                                 ", [$sessionId, $sessionId]);
                                 $voterNo = 1;
                                 foreach ($lastVotes as $lv): ?>

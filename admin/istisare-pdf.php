@@ -140,7 +140,7 @@ if ($auth->isSuperAdmin()) {
             GROUP BY voter_id
         ) t2 ON t1.id = t2.latest_id
         WHERE t1.session_id = ?
-        ORDER BY t1.tarih DESC
+        ORDER BY t1.tarih ASC
     ", [$sessionId, $sessionId]);
 
     $pdf->AddPage();
