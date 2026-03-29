@@ -69,12 +69,6 @@ if ($user) {
             'label' => 'Üyeler',
             'match' => 'panel/uyeler',
         ],
-        [
-            'path' => '/admin/istisareler.php',
-            'icon' => 'fas fa-vote-yea',
-            'label' => 'İstişareler',
-            'match' => 'admin/istisare',
-        ],
     ];
 
     // Define Management Sections (Requires strictly 'baskan' permissions)
@@ -324,6 +318,13 @@ if ($user) {
                     <i class="<?php echo $link['icon']; ?> me-2"></i><?php echo htmlspecialchars($link['label']); ?>
                 </a>
             <?php endforeach; ?>
+
+            <?php if ($isAT): ?>
+                <a href="/admin/istisareler.php"
+                    class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'istisare') !== false ? 'active' : ''; ?>">
+                    <i class="fas fa-vote-yea me-2"></i>İstişareler
+                </a>
+            <?php endif; ?>
 
             <!-- MANAGE / BASKAN ALANI (Only if authorized/permissioned) -->
             <?php
