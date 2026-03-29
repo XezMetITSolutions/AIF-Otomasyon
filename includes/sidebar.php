@@ -69,6 +69,12 @@ if ($user) {
             'label' => 'Üyeler',
             'match' => 'panel/uyeler',
         ],
+        [
+            'path' => '/admin/istisare-formu.php',
+            'icon' => 'fas fa-vote-yea',
+            'label' => 'İstişare Formu',
+            'match' => 'admin/istisare-formu',
+        ],
     ];
 
     // Define Management Sections (Requires strictly 'baskan' permissions)
@@ -231,9 +237,9 @@ if ($user) {
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'alt-birimler') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-sitemap me-2"></i>Alt Birimler
             </a>
-            <a href="/admin/baskan-yetkileri.php"
-                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'baskan-yetkileri') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-sliders me-2"></i>Üye Yetkileri
+            <a href="/admin/istisare-formu.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'istisare-formu') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-vote-yea me-2"></i>İstişare Formu
             </a>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
