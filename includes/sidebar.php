@@ -241,6 +241,10 @@ if ($user) {
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'istisare') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-vote-yea me-2"></i>İstişareler
             </a>
+            <a href="/admin/subeler.php"
+                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'subeler') !== false ? 'active' : ''; ?>">
+                <i class="fas fa-map-marked-alt me-2"></i>Şubeler
+            </a>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
 
