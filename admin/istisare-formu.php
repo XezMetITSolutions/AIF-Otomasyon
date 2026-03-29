@@ -64,9 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $voter_id = trim($_POST['voter_id'] ?? '');
     $sube_ismi = trim($_POST['sube_ismi'] ?? '');
     $s = [];
-    for($i=1; $i<=5; $i++) {
+    for($i=1; $i<=4; $i++) {
         $s[$i] = trim($_POST['secilen_'.$i] ?? '');
     }
+    $s[5] = ''; // 5. tercih kaldırıldı, varsa temizle
     $notlar = $_POST['notlar'] ?? '';
 
     $secimler = array_filter($s);
@@ -119,25 +120,24 @@ $votes = $db->fetchAll("
 ");
 $stats = [];
 foreach ($votes as $v) {
-    for($i=1; $i<=5; $i++) {
+    for($i=1; $i<=4; $i++) {
         $name = trim($v['secilen_'.$i]);
         if (!empty($name)) {
             if (!isset($stats[$name])) {
                 $stats[$name] = [
                     'total' => 0,
                     'score' => 0,
-                    'ranks' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0]
+                    'ranks' => [1 => 0, 2 => 0, 3 => 0, 4 => 0]
                 ];
             }
             $stats[$name]['total']++;
             $stats[$name]['ranks'][$i]++;
             
-            // Puanlamaya göre ağırlıklı skor: 1: 1, 2: 0.5, 3: 0.33, 4: 0.25, 5: 0.20
+            // Puanlamaya göre ağırlıklı skor: 1: 1, 2: 0.5, 3: 0.33, 4: 0.25
             if ($i == 1) $stats[$name]['score'] += 1;
             elseif ($i == 2) $stats[$name]['score'] += 0.50;
             elseif ($i == 3) $stats[$name]['score'] += 0.33;
             elseif ($i == 4) $stats[$name]['score'] += 0.25;
-            elseif ($i == 5) $stats[$name]['score'] += 0.20;
         }
     }
 }
@@ -217,7 +217,7 @@ include __DIR__ . '/../includes/header.php';
                             </datalist>
                             <?php endif; ?>
 
-                            <?php for($i=1; $i<=5; $i++): ?>
+                            <?php for($i=1; $i<=4; $i++): ?>
                             <div class="mb-3">
                                 <label class="form-label fw-bold"><?php echo $i; ?>. Aday Tercihi</label>
                                 <input type="text" name="secilen_<?php echo $i; ?>" list="adayOnerileri" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>">
@@ -255,7 +255,7 @@ include __DIR__ . '/../includes/header.php';
                                         <th>Aday</th>
                                         <th class="text-center" width="100">Puan</th>
                                         <th class="text-center" width="100">Toplam Oy</th>
-                                        <th class="text-center" width="220">Sıralama (1. - 5.)</th>
+                                        <th class="text-center" width="220">Sıralama (1. - 4.)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -286,7 +286,6 @@ include __DIR__ . '/../includes/header.php';
                                                     <?php if($s['ranks'][2] > 0) echo '<span class="badge bg-primary" title="2. Sıra">2: '.$s['ranks'][2].'</span>'; ?>
                                                     <?php if($s['ranks'][3] > 0) echo '<span class="badge bg-info text-dark" title="3. Sıra">3: '.$s['ranks'][3].'</span>'; ?>
                                                     <?php if($s['ranks'][4] > 0) echo '<span class="badge bg-secondary" title="4. Sıra">4: '.$s['ranks'][4].'</span>'; ?>
-                                                    <?php if($s['ranks'][5] > 0) echo '<span class="badge bg-light text-dark border" title="5. Sıra">5: '.$s['ranks'][5].'</span>'; ?>
                                                 </div>
                                             </td>
                                         </tr>
@@ -305,13 +304,13 @@ include __DIR__ . '/../includes/header.php';
                         <table class="table table-sm table-bordered bg-white">
                             <thead>
                                 <tr class="table-light small">
+                                    <th width="30">#</th>
                                     <th>Oy Veren</th>
                                     <th>Şube</th>
                                     <th>1. Tercih</th>
                                     <th>2. Tercih</th>
                                     <th>3. Tercih</th>
                                     <th>4. Tercih</th>
-                                    <th>5. Tercih</th>
                                     <th>Notlar</th>
                                     <th>Tarih</th>
                                 </tr>
@@ -326,17 +325,18 @@ include __DIR__ . '/../includes/header.php';
                                         FROM istisare_oylama
                                         GROUP BY voter_id
                                     ) t2 ON t1.id = t2.latest_id
-                                    ORDER BY t1.tarih DESC LIMIT 50
+                                    ORDER BY t1.tarih DESC LIMIT 100
                                 ");
+                                $voterNo = 1;
                                 foreach ($lastVotes as $lv): ?>
                                     <tr class="small">
+                                        <td><?php echo $voterNo++; ?></td>
                                         <td class="fw-bold"><?php echo htmlspecialchars($lv['voter_id']); ?></td>
                                         <td><?php echo htmlspecialchars($lv['sube_ismi'] ?? '-'); ?></td>
                                         <td><?php echo htmlspecialchars($lv['secilen_1']); ?></td>
                                         <td><?php echo htmlspecialchars($lv['secilen_2']); ?></td>
                                         <td><?php echo htmlspecialchars($lv['secilen_3']); ?></td>
                                         <td><?php echo htmlspecialchars($lv['secilen_4']); ?></td>
-                                        <td><?php echo htmlspecialchars($lv['secilen_5']); ?></td>
                                         <td class="text-muted small italic"><?php echo htmlspecialchars($lv['notlar'] ?? '-'); ?></td>
                                         <td><?php echo date('H:i', strtotime($lv['tarih'])); ?></td>
                                     </tr>
