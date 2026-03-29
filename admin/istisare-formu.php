@@ -193,10 +193,20 @@ include __DIR__ . '/../includes/header.php';
 
                             <hr>
 
+                            <?php 
+                            // Aday önerileri için datalist
+                            if (!empty($stats)): ?>
+                            <datalist id="adayOnerileri">
+                                <?php foreach (array_keys($stats) as $aday): ?>
+                                    <option value="<?php echo htmlspecialchars($aday); ?>"></option>
+                                <?php endforeach; ?>
+                            </datalist>
+                            <?php endif; ?>
+
                             <?php for($i=1; $i<=5; $i++): ?>
                             <div class="mb-3">
                                 <label class="form-label fw-bold"><?php echo $i; ?>. Aday Tercihi</label>
-                                <input type="text" name="secilen_<?php echo $i; ?>" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>">
+                                <input type="text" name="secilen_<?php echo $i; ?>" list="adayOnerileri" class="form-control" placeholder="Adayın ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['secilen_'.$i] ?? ''); ?>">
                             </div>
                             <?php endfor; ?>
 
