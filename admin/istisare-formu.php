@@ -60,7 +60,7 @@ $message = '';
 $error = '';
 
 // Form gönderildi mi?
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_vote'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $voter_id = trim($_POST['voter_id'] ?? '');
     $sube_ismi = trim($_POST['sube_ismi'] ?? '');
     $s = [];
@@ -99,21 +99,34 @@ $mevcutOy = $db->fetch("SELECT * FROM istisare_oylama WHERE voter_id = ? ORDER B
 // Sonuçları hesapla
 $sonuclar = [];
 $votes = $db->fetchAll("SELECT secilen_1, secilen_2, secilen_3, secilen_4, secilen_5 FROM istisare_oylama");
-$counts = [];
+$stats = [];
 foreach ($votes as $v) {
     for($i=1; $i<=5; $i++) {
         $name = trim($v['secilen_'.$i]);
-        if ($name) {
-            $counts[$name] = ($counts[$name] ?? 0) + 1;
+        if (!empty($name)) {
+            if (!isset($stats[$name])) {
+                $stats[$name] = [
+                    'total' => 0,
+                    'ranks' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0]
+                ];
+            }
+            $stats[$name]['total']++;
+            $stats[$name]['ranks'][$i]++;
         }
     }
 }
-arsort($counts);
 
-foreach ($counts as $name => $count) {
+// Toplam oya göre sırala
+uasort($stats, function($a, $b) {
+    if ($a['total'] == $b['total']) return 0;
+    return ($a['total'] < $b['total']) ? 1 : -1;
+});
+
+foreach ($stats as $name => $data) {
     $sonuclar[] = [
         'name' => $name,
-        'votes' => $count
+        'votes' => $data['total'],
+        'ranks' => $data['ranks']
     ];
 }
 
@@ -151,7 +164,7 @@ include __DIR__ . '/../includes/header.php';
                         <form method="POST">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Şube İsmi</label>
-                                <input type="text" name="sube_ismi" class="form-control" placeholder="Şube ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['sube_ismi'] ?? ''); ?>" required>
+                                <input type="text" name="sube_ismi" class="form-control" placeholder="Şube ismini giriniz" value="<?php echo htmlspecialchars($mevcutOy['sube_ismi'] ?? 'AIF Innsbruck'); ?>" required>
                             </div>
 
                             <div class="mb-4">
@@ -195,14 +208,15 @@ include __DIR__ . '/../includes/header.php';
                                     <tr>
                                         <th width="50">#</th>
                                         <th>Aday</th>
-                                        <th class="text-center" width="150">Alınan Oy Sayısı</th>
+                                        <th class="text-center" width="100">Toplam Oy</th>
+                                        <th class="text-center" width="220">Sıralama (1. - 5.)</th>
                                         <th class="text-center" width="100">Oran</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($sonuclar)): ?>
                                         <tr>
-                                            <td colspan="4" class="text-center p-5 text-muted">
+                                            <td colspan="5" class="text-center p-5 text-muted">
                                                 <i class="fas fa-info-circle mb-2 d-block fa-2x"></i>
                                                 Henüz veri girilmemiş.
                                             </td>
@@ -220,8 +234,17 @@ include __DIR__ . '/../includes/header.php';
                                                 <span class="badge bg-primary fs-6"><?php echo $s['votes']; ?></span>
                                             </td>
                                             <td class="text-center">
+                                                <div class="d-flex justify-content-center gap-1 small">
+                                                    <?php if($s['ranks'][1] > 0) echo '<span class="badge bg-success" title="1. Sıra">1: '.$s['ranks'][1].'</span>'; ?>
+                                                    <?php if($s['ranks'][2] > 0) echo '<span class="badge bg-primary" title="2. Sıra">2: '.$s['ranks'][2].'</span>'; ?>
+                                                    <?php if($s['ranks'][3] > 0) echo '<span class="badge bg-info text-dark" title="3. Sıra">3: '.$s['ranks'][3].'</span>'; ?>
+                                                    <?php if($s['ranks'][4] > 0) echo '<span class="badge bg-secondary" title="4. Sıra">4: '.$s['ranks'][4].'</span>'; ?>
+                                                    <?php if($s['ranks'][5] > 0) echo '<span class="badge bg-light text-dark border" title="5. Sıra">5: '.$s['ranks'][5].'</span>'; ?>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="progress" style="height: 20px;">
-                                                    <div class="progress-bar" role="progressbar" style="width: <?php echo $percent; ?>%;" aria-valuenow="<?php echo $percent; ?>" aria-valuemin="0" aria-valuemax="100">
+                                                    <div class="progress-bar bg-dark" role="progressbar" style="width: <?php echo $percent; ?>%;" aria-valuenow="<?php echo $percent; ?>" aria-valuemin="0" aria-valuemax="100">
                                                         <?php echo $percent; ?>%
                                                     </div>
                                                 </div>
