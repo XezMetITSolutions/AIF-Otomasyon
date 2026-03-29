@@ -31,23 +31,30 @@ foreach ($votes as $v) {
             if (!isset($stats[$name])) {
                 $stats[$name] = [
                     'total' => 0,
+                    'score' => 0,
                     'ranks' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0]
                 ];
             }
             $stats[$name]['total']++;
             $stats[$name]['ranks'][$i]++;
+            
+            // Puanlamaya göre ağırlıklı skor: 1: 1, 2: 0.5, 3: 0.33, 4: 0.25, 5: 0.20
+            if ($i == 1) $stats[$name]['score'] += 1;
+            elseif ($i == 2) $stats[$name]['score'] += 0.50;
+            elseif ($i == 3) $stats[$name]['score'] += 0.33;
+            elseif ($i == 4) $stats[$name]['score'] += 0.25;
+            elseif ($i == 5) $stats[$name]['score'] += 0.20;
         }
     }
 }
 
-// 1. Sıra, 2. Sıra ... önceliğine göre sırala
+// Ağırlıklı puana göre sırala
 uasort($stats, function($a, $b) {
-    for ($i=1; $i<=5; $i++) {
-        if ($a['ranks'][$i] != $b['ranks'][$i]) {
-            return ($a['ranks'][$i] < $b['ranks'][$i]) ? 1 : -1;
-        }
+    if (abs($a['score'] - $b['score']) < 0.001) {
+        if ($a['total'] == $b['total']) return 0;
+        return ($a['total'] < $b['total']) ? 1 : -1;
     }
-    return 0;
+    return ($a['score'] < $b['score']) ? 1 : -1;
 });
 
 // PDF oluştur
@@ -77,8 +84,9 @@ $html .= '<table border="1" cellpadding="5" cellspacing="0" style="width:100%; b
 $html .= '<tr style="background-color:#f8f9fa; font-weight:bold; text-align:center;">
     <td width="30">#</td>
     <td width="150" style="text-align:left;">Aday İsmi</td>
-    <td width="200">Sıralama (1. - 5.)</td>
-    <td width="70">Toplam</td>
+    <td width="150">Sıralama (1. - 5.)</td>
+    <td width="60">Toplam</td>
+    <td width="60">Puan</td>
 </tr>';
 
 $rank = 1;
@@ -99,8 +107,9 @@ foreach ($stats as $name => $s) {
     $html .= '<tr style="'.$bg.' text-align:center;">
         <td width="30">'.$rank++.'</td>
         <td width="150" style="text-align:left; font-weight:bold;">'.htmlspecialchars($name).'</td>
-        <td width="200" style="text-align:left; font-size:9px;">'.$ranksHtml.'</td>
-        <td width="70" style="font-weight:bold;">'.$s['total'].'</td>
+        <td width="150" style="text-align:left; font-size:9px;">'.$ranksHtml.'</td>
+        <td width="60">'.$s['total'].'</td>
+        <td width="60" style="font-weight:bold;">'.number_format($s['score'], 2).'</td>
     </tr>';
 }
 

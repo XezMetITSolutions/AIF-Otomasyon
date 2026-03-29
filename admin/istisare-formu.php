@@ -125,34 +125,42 @@ foreach ($votes as $v) {
             if (!isset($stats[$name])) {
                 $stats[$name] = [
                     'total' => 0,
+                    'score' => 0,
                     'ranks' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0]
                 ];
             }
             $stats[$name]['total']++;
             $stats[$name]['ranks'][$i]++;
+            
+            // Puanlamaya göre ağırlıklı skor: 1: 1, 2: 0.5, 3: 0.33, 4: 0.25, 5: 0.20
+            if ($i == 1) $stats[$name]['score'] += 1;
+            elseif ($i == 2) $stats[$name]['score'] += 0.50;
+            elseif ($i == 3) $stats[$name]['score'] += 0.33;
+            elseif ($i == 4) $stats[$name]['score'] += 0.25;
+            elseif ($i == 5) $stats[$name]['score'] += 0.20;
         }
     }
 }
 
-// 1. Sıra, 2. Sıra ... önceliğine göre sırala (Kim daha çok 1. tercih edildiyse o üstte)
+// Ağırlıklı puana göre sırala
 uasort($stats, function($a, $b) {
-    for ($i=1; $i<=5; $i++) {
-        if ($a['ranks'][$i] != $b['ranks'][$i]) {
-            return ($a['ranks'][$i] < $b['ranks'][$i]) ? 1 : -1;
-        }
+    if (abs($a['score'] - $b['score']) < 0.001) {
+        // Puan eşitse toplam oy önceliği
+        if ($a['total'] == $b['total']) return 0;
+        return ($a['total'] < $b['total']) ? 1 : -1;
     }
-    // Eşitlik durumunda toplam oya bak
-    if ($a['total'] == $b['total']) return 0;
-    return ($a['total'] < $b['total']) ? 1 : -1;
+    return ($a['score'] < $b['score']) ? 1 : -1;
 });
 
 foreach ($stats as $name => $data) {
     $sonuclar[] = [
         'name' => $name,
         'votes' => $data['total'],
+        'score' => $data['score'],
         'ranks' => $data['ranks']
     ];
 }
+
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -245,9 +253,9 @@ include __DIR__ . '/../includes/header.php';
                                     <tr>
                                         <th width="50">#</th>
                                         <th>Aday</th>
+                                        <th class="text-center" width="100">Puan</th>
                                         <th class="text-center" width="100">Toplam Oy</th>
                                         <th class="text-center" width="220">Sıralama (1. - 5.)</th>
-                                        <th class="text-center" width="100">Oran</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -259,17 +267,19 @@ include __DIR__ . '/../includes/header.php';
                                             </td>
                                         </tr>
                                     <?php else: 
-                                        $totalMentions = count($votes) * 5;
                                         $rank = 1;
                                         foreach ($sonuclar as $s): 
-                                            $percent = round(($s['votes'] / ($totalMentions > 0 ? $totalMentions : 1)) * 100, 1);
                                     ?>
                                         <tr>
                                             <td><?php echo $rank++; ?></td>
                                             <td class="fw-bold"><?php echo htmlspecialchars($s['name']); ?></td>
                                             <td class="text-center">
-                                                <span class="badge bg-primary fs-6"><?php echo $s['votes']; ?></span>
+                                                <span class="badge bg-success fs-6"><?php echo number_format($s['score'], 2); ?></span>
                                             </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary"><?php echo $s['votes']; ?></span>
+                                            </td>
+
                                             <td class="text-center">
                                                 <div class="d-flex justify-content-center gap-1 small">
                                                     <?php if($s['ranks'][1] > 0) echo '<span class="badge bg-success" title="1. Sıra">1: '.$s['ranks'][1].'</span>'; ?>
@@ -277,13 +287,6 @@ include __DIR__ . '/../includes/header.php';
                                                     <?php if($s['ranks'][3] > 0) echo '<span class="badge bg-info text-dark" title="3. Sıra">3: '.$s['ranks'][3].'</span>'; ?>
                                                     <?php if($s['ranks'][4] > 0) echo '<span class="badge bg-secondary" title="4. Sıra">4: '.$s['ranks'][4].'</span>'; ?>
                                                     <?php if($s['ranks'][5] > 0) echo '<span class="badge bg-light text-dark border" title="5. Sıra">5: '.$s['ranks'][5].'</span>'; ?>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="progress" style="height: 20px;">
-                                                    <div class="progress-bar bg-dark" role="progressbar" style="width: <?php echo $percent; ?>%;" aria-valuenow="<?php echo $percent; ?>" aria-valuemin="0" aria-valuemax="100">
-                                                        <?php echo $percent; ?>%
-                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
