@@ -247,6 +247,14 @@ include __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                     <div class="card-body p-0">
+                        <!-- Puanlama Bilgisi -->
+                        <div class="bg-light p-2 small border-bottom text-center">
+                            <span class="badge bg-secondary">Puanlama Sistemi:</span>
+                            <span class="mx-2">1. Tercih: <b>1 Puan</b></span> | 
+                            <span class="mx-2">2. Tercih: <b>0.50 Puan</b></span> | 
+                            <span class="mx-2">3. Tercih: <b>0.33 Puan</b></span> | 
+                            <span class="mx-2">4. Tercih: <b>0.25 Puan</b></span>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
