@@ -79,7 +79,8 @@ $pdf->SetFont('dejavusans', '', 10);
 $pdf->AddPage();
 
 $html = '<h2 style="text-align:center; color:#0d6efd;">Başkanlık İstişare Sonuçları</h2>';
-$html .= '<p style="text-align:center;">Toplam Geçerli Oy Formu: <strong>'.count($votes).'</strong></p>';
+$html .= '<p style="text-align:center;"><b>Şube:</b> AIF Innsbruck | <b>İstişare Kurulu:</b> Mete Burçak, İbrahim Çetin</p>';
+$html .= '<p style="text-align:center; font-size:10px;">Toplam Geçerli Oy Formu: <strong>'.count($votes).'</strong></p>';
 $html .= '<hr><br>';
 
 $html .= '<table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse:collapse;">';

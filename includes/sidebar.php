@@ -72,7 +72,7 @@ if ($user) {
         [
             'path' => '/admin/istisare-formu.php',
             'icon' => 'fas fa-vote-yea',
-            'label' => 'İstişare Formu',
+            'label' => 'İstişareler',
             'match' => 'admin/istisare-formu',
         ],
     ];
@@ -239,7 +239,7 @@ if ($user) {
             </a>
             <a href="/admin/istisare-formu.php"
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'istisare-formu') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-vote-yea me-2"></i>İstişare Formu
+                <i class="fas fa-vote-yea me-2"></i>İstişareler
             </a>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>

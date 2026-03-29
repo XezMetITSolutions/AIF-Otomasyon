@@ -179,6 +179,20 @@ include __DIR__ . '/../includes/header.php';
             </button>
         </div>
 
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm">
+                    <div>
+                        <h6 class="mb-1"><i class="fas fa-info-circle me-2"></i>Aktif İstişare Bilgileri</h6>
+                        <div class="small">
+                            <span class="me-3"><b>Şube:</b> AIF Innsbruck</span>
+                            <span><b>İstişare Kurulu:</b> AT BYKsından Mete Burçak ve İbrahim Çetin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-5">
                 <div class="card shadow-sm mb-4">
