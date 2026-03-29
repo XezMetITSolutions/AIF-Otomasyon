@@ -70,8 +70,8 @@ $pdf->setPrintFooter(true);
 
 $pdf->SetMargins(15, 30, 15);
 $pdf->SetHeaderMargin(10);
-$pdf->SetFooterMargin(20);
-$pdf->SetAutoPageBreak(TRUE, 25);
+$pdf->SetFooterMargin(25);
+$pdf->SetAutoPageBreak(TRUE, 30);
 
 $pdf->SetFont('dejavusans', '', 10);
 $pdf->AddPage();
@@ -114,6 +114,7 @@ foreach ($stats as $name => $s) {
 }
 
 $html .= '</table>';
+$pdf->writeHTML($html, true, false, true, false, '');
 
 // Sadece Adminler Son Oyları Görebilsin
 $auth = new Auth();
@@ -129,9 +130,10 @@ if ($auth->isSuperAdmin()) {
         ORDER BY t1.tarih DESC
     ");
 
-    $html .= '<br><br><h3 style="color:#0d6efd;">Detaylı Oy Dökümü</h3>';
-    $html .= '<table border="1" cellpadding="4" cellspacing="0" style="width:100%; border-collapse:collapse; font-size:8px;">';
-    $html .= '<tr style="background-color:#e9ecef; font-weight:bold; text-align:left;">
+    $pdf->AddPage();
+    $html2 = '<h3 style="color:#0d6efd;">Detaylı Oy Dökümü</h3>';
+    $html2 .= '<table border="1" cellpadding="4" cellspacing="0" style="width:100%; border-collapse:collapse; font-size:8px;">';
+    $html2 .= '<tr style="background-color:#e9ecef; font-weight:bold; text-align:left;">
         <td width="60">Oy Veren</td>
         <td width="40">Şube</td>
         <td width="60">1. Tercih</td>
@@ -143,7 +145,7 @@ if ($auth->isSuperAdmin()) {
     </tr>';
 
     foreach ($lastVotes as $lv) {
-        $html .= '<tr>
+        $html2 .= '<tr nobr="true">
             <td>'.htmlspecialchars($lv['voter_id']).'</td>
             <td>'.htmlspecialchars($lv['sube_ismi'] ?? '-').'</td>
             <td>'.htmlspecialchars($lv['secilen_1']).'</td>
@@ -154,9 +156,10 @@ if ($auth->isSuperAdmin()) {
             <td>'.htmlspecialchars($lv['notlar'] ?? '-').'</td>
         </tr>';
     }
-    $html .= '</table>';
+    $html2 .= '</table>';
+    
+    $pdf->writeHTML($html2, true, false, true, false, '');
 }
 
-$pdf->writeHTML($html, true, false, true, false, '');
-
 $pdf->Output('Istisare_Sonuclari_'.date('Ymd').'.pdf', 'I');
+
