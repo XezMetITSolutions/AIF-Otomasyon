@@ -86,32 +86,33 @@ include __DIR__ . '/../includes/header.php';
 
 <main class="container-fluid mt-4">
     <div class="content-wrapper">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
             <h1 class="h3 mb-0"><i class="fas fa-vote-yea me-2 text-primary"></i>İstişareler Listesi</h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#yeniIstisareModal">
+            <button type="button" class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#yeniIstisareModal">
                 <i class="fas fa-plus me-2"></i>Yeni İstişare Başlat
             </button>
         </div>
 
         <?php if ($message): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
                 <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($message); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <?php if ($error): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
                 <i class="fas fa-exclamation-triangle me-2"></i><?php echo htmlspecialchars($error); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
-        <div class="card shadow-sm border-0">
+        <!-- Desktop View (Table) -->
+        <div class="d-none d-md-block card shadow-sm border-0 mb-4">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
+                        <thead class="bg-light text-muted small text-uppercase">
                             <tr>
                                 <th width="50" class="text-center">#</th>
                                 <th>İstişare Başlığı</th>
@@ -130,16 +131,16 @@ include __DIR__ . '/../includes/header.php';
                                 <tr>
                                     <td class="text-center text-muted fw-bold"><?php echo $no++; ?></td>
                                     <td>
-                                        <div class="fw-bold text-primary"><?php echo htmlspecialchars($s['baslik']); ?></div>
+                                        <div class="fw-bold text-dark"><?php echo htmlspecialchars($s['baslik']); ?></div>
                                     </td>
                                     <td>
                                         <span class="badge bg-light text-dark border"><?php echo htmlspecialchars($s['sube_ismi']); ?></span>
                                     </td>
-                                    <td class="small">
+                                    <td class="small text-muted">
                                         <?php echo htmlspecialchars($s['kurul_uyeleri'] ?: '-'); ?>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge rounded-pill bg-info text-dark">
+                                        <span class="badge rounded-pill bg-info-subtle text-info border border-info px-2">
                                             <i class="fas fa-user-check me-1"></i><?php echo $s['voter_count']; ?>
                                         </span>
                                     </td>
@@ -155,32 +156,78 @@ include __DIR__ . '/../includes/header.php';
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-primary shadow-sm edit-session-btn" 
+                                            <button type="button" class="btn btn-sm btn-outline-primary edit-session-btn" 
                                                     data-id="<?php echo $s['id']; ?>"
                                                     data-baslik="<?php echo htmlspecialchars($s['baslik']); ?>"
                                                     data-sube="<?php echo htmlspecialchars($s['sube_ismi']); ?>"
                                                     data-kurul="<?php echo htmlspecialchars($s['kurul_uyeleri'] ?? ''); ?>">
-                                                <i class="fas fa-edit me-1"></i> Düzenle
+                                                <i class="fas fa-edit"></i>
                                             </button>
-                                            <a href="istisare-formu.php?id=<?php echo $s['id']; ?>" class="btn btn-sm btn-primary shadow-sm ms-1">
-                                                <i class="fas fa-external-link-alt me-1"></i> Yönet
+                                            <a href="istisare-formu.php?id=<?php echo $s['id']; ?>" class="btn btn-sm btn-primary ms-1">
+                                                <i class="fas fa-external-link-alt"></i> Yönet
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                            <?php if (empty($sessions)): ?>
-                                <tr>
-                                    <td colspan="8" class="text-center py-5 text-muted italic">
-                                        Henüz bir istişare oturumu başlatılmamış.
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- Mobile View (Cards) -->
+        <div class="d-md-none">
+            <?php foreach ($sessions as $s): ?>
+                <div class="card shadow-sm border-0 mb-3 overflow-hidden">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="h6 fw-bold text-primary mb-0"><?php echo htmlspecialchars($s['baslik']); ?></h5>
+                            <?php if ($s['durum'] === 'aktif'): ?>
+                                <span class="badge bg-success text-white">AKTİF</span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary text-white">KAPALI</span>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-light text-dark border mb-1"><?php echo htmlspecialchars($s['sube_ismi']); ?></span>
+                            <div class="small text-muted mb-1">
+                                <i class="fas fa-users-cog me-1"></i> Kurul: <?php echo htmlspecialchars($s['kurul_uyeleri'] ?: '-'); ?>
+                            </div>
+                            <div class="small text-muted">
+                                <i class="fas fa-calendar-alt me-1"></i> <?php echo date('d.m.Y H:i', strtotime($s['eklenme_tarihi'])); ?>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded">
+                            <span class="small fw-bold text-muted">
+                                <i class="fas fa-user-check me-1"></i> Katılım: <?php echo $s['voter_count']; ?>
+                            </span>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary edit-session-btn" 
+                                        data-id="<?php echo $s['id']; ?>"
+                                        data-baslik="<?php echo htmlspecialchars($s['baslik']); ?>"
+                                        data-sube="<?php echo htmlspecialchars($s['sube_ismi']); ?>"
+                                        data-kurul="<?php echo htmlspecialchars($s['kurul_uyeleri'] ?? ''); ?>">
+                                    <i class="fas fa-edit me-1"></i> Düzenle
+                                </button>
+                                <a href="istisare-formu.php?id=<?php echo $s['id']; ?>" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i> Yönet
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php if (empty($sessions)): ?>
+            <div class="text-center py-5 bg-white rounded shadow-sm">
+                <i class="fas fa-vote-yea fa-3x text-light mb-3"></i>
+                <p class="text-muted italic mb-0">Henüz bir istişare oturumu başlatılmamış.</p>
+            </div>
+        <?php endif; ?>
     </div>
 </main>
 
