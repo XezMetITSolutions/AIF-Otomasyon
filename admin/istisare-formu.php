@@ -387,6 +387,46 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
                 <?php endif; ?>
+
+                <div class="mt-5 pt-4 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="fas fa-list me-2 text-primary"></i>Tüm İstişareler</h5>
+                        <a href="istisareler.php" class="btn btn-sm btn-outline-primary">Tümünü Yönet</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm border card-table">
+                            <thead class="table-light">
+                                <tr class="small">
+                                    <th>İstişare Başlığı / Şube</th>
+                                    <th class="text-center">Durum</th>
+                                    <th class="text-right text-end">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $allSessions = $db->fetchAll("SELECT * FROM istisare_sessions ORDER BY eklenme_tarihi DESC LIMIT 10");
+                                foreach ($allSessions as $as): ?>
+                                    <tr class="<?php echo $as['id'] == $sessionId ? 'table-primary' : ''; ?> small">
+                                        <td>
+                                            <b><?php echo htmlspecialchars($as['baslik']); ?></b><br>
+                                            <span class="text-muted"><?php echo htmlspecialchars($as['sube_ismi']); ?></span>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <?php if ($as['durum'] === 'aktif'): ?>
+                                                <span class="badge bg-success">AKTİF</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary">KAPALI</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-end align-middle">
+                                            <a href="istisare-formu.php?id=<?php echo $as['id']; ?>" class="btn btn-xs btn-primary py-0 px-2 fw-bold" style="font-size: 10px;">GİT</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

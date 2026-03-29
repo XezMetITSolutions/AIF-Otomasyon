@@ -25,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['baslik'])) {
     if (!empty($baslik) && !empty($sube)) {
         try {
             $db->query("INSERT INTO istisare_sessions (baslik, sube_ismi, kurul_uyeleri) VALUES (?, ?, ?)", [$baslik, $sube, $kurul]);
-            $message = 'Yeni istişare başarıyla oluşturuldu.';
+            header("Location: istisareler.php?msg=" . urlencode('Yeni istişare başarıyla oluşturuldu.'));
+            exit;
         } catch (Exception $e) {
             $error = 'Hata: ' . $e->getMessage();
         }
@@ -33,6 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['baslik'])) {
         $error = 'Lütfen başlık ve şube ismini doldurunuz.';
     }
 }
+
+if (isset($_GET['msg'])) $message = $_GET['msg'];
+if (isset($_GET['err'])) $error = $_GET['err'];
 
 $sessions = $db->fetchAll("
     SELECT s.*, 
@@ -57,7 +61,14 @@ include __DIR__ . '/../includes/header.php';
 
         <?php if ($message): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i><?php echo $message; ?>
+                <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($message); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i><?php echo htmlspecialchars($error); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
