@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Dimensions, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
@@ -64,7 +65,7 @@ export default function DashboardScreen() {
       >
         <View style={styles.headerContent}>
           <Text style={styles.greeting}>Hoş Geldiniz,</Text>
-          <Text style={styles.userName}>AİF Paneli</Text>
+          <Text style={styles.userName}>Yönetici Paneli</Text>
         </View>
         
         <BlurView intensity={70} tint={colorScheme === 'dark' ? 'dark' : 'light'} style={styles.statsContainer}>
@@ -87,29 +88,43 @@ export default function DashboardScreen() {
             title="Kullanıcılar" 
             value={stats?.toplam_kullanici || 0}
             icon="person.3.fill" 
-            color="#ec4899" 
-            onPress={() => {}} 
+            color="#6366f1" 
+            onPress={() => router.push('/(tabs)/menu')} 
           />
           <ServiceCard 
-            title="Aktif BYK" 
-            value={stats?.toplam_byk || 0}
-            icon="building.2.fill" 
-            color="#8b5cf6" 
-            onPress={() => {}} 
+            title="Toplantılar" 
+            value={stats?.toplam_toplanti || 0}
+            icon="calendar.badge.clock" 
+            color="#f59e0b" 
+            onPress={() => router.push('/(tabs)/menu')} 
           />
           <ServiceCard 
             title="Etkinlikler" 
             value={stats?.toplam_etkinlik || 0}
             icon="calendar" 
-            color="#06b6d4" 
-            onPress={() => {}} 
+            color="#ec4899" 
+            onPress={() => router.push('/(tabs)/menu')} 
+          />
+          <ServiceCard 
+            title="İzin Onayları" 
+            value={stats?.bekleyen_izin || 0}
+            icon="person.badge.shield.checkmark.fill" 
+            color="#ef4444" 
+            onPress={() => router.push('/(tabs)/menu')} 
           />
           <ServiceCard 
             title="Harcamalar" 
             value={stats?.bekleyen_harcama || 0}
             icon="creditcard.fill" 
             color="#f97316" 
-            onPress={() => {}} 
+            onPress={() => router.push('/(tabs)/menu')} 
+          />
+          <ServiceCard 
+            title="Aktif BYK" 
+            value={stats?.toplam_byk || 0}
+            icon="building.2.fill" 
+            color="#8b5cf6" 
+            onPress={() => router.push('/(tabs)/menu')} 
           />
         </View>
 
