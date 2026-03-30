@@ -55,8 +55,10 @@ export default function MenuScreen() {
                 key={item.id} 
                 style={[styles.item, { backgroundColor: theme.card, borderColor: theme.border }]}
                 onPress={() => {
-                  // Herhangi bir modüle gitmek için router kullanılabilir
-                  // router.push(`/(tabs)/${item.id}`);
+                  if (item.id === 'kullanicilar') router.push('/users');
+                  if (item.id === 'toplantilar') router.push('/meetings');
+                  if (item.id === 'izinler') router.push('/tasks?type=izin');
+                  if (item.id === 'harcamalar') router.push('/tasks?type=harcama');
                 }}
               >
                 <View style={[styles.iconBox, { backgroundColor: item.color + '15' }]}>

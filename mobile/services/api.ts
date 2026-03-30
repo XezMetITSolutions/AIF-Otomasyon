@@ -11,6 +11,33 @@ export async function fetchStats() {
   }
 }
 
+export async function fetchUsers() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users.php`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
+export async function fetchMeetings() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/meetings.php`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
+export async function fetchTasks(type: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks.php?type=${type}`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
 export async function login(email: string, password: string) {
   try {
     const response = await fetch(`${API_BASE_URL}/login.php`, {
