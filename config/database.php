@@ -5,7 +5,7 @@
  */
 
 return [
-    'host' => getenv('DB_HOST') ?: 'w0072b78.kasserver.com',
+    'host' => getenv('DB_HOST') ?: 'localhost',
     'dbname' => getenv('DB_NAME') ?: 'd045d2b0',
     'username' => getenv('DB_USER') ?: 'd045d2b0',
     'password' => getenv('DB_PASS') ?: '01528797Mb##',
