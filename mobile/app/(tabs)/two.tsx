@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SymbolView } from 'expo-symbols';
+import { router } from 'expo-router';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -9,6 +10,21 @@ import { useColorScheme } from '@/components/useColorScheme';
 export default function SettingsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Oturumu Kapat',
+      'Çıkış yapmak istediğinize emin misiniz?',
+      [
+        { text: 'İptal', style: 'cancel' },
+        { 
+          text: 'Çıkış Yap', 
+          style: 'destructive',
+          onPress: () => router.replace('/login') 
+        },
+      ]
+    );
+  };
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -61,6 +77,7 @@ export default function SettingsScreen() {
           title="Oturumu Kapat" 
           color="#ef4444" 
           hideChevron
+          onPress={handleLogout}
         />
       </View>
       
@@ -71,14 +88,17 @@ export default function SettingsScreen() {
   );
 }
 
-function SettingItem({ icon, title, subtitle, color, hideChevron }: any) {
+function SettingItem({ icon, title, subtitle, color, hideChevron, onPress }: any) {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
   return (
-    <Pressable style={[styles.item, { backgroundColor: theme.card, borderColor: theme.border }]}>
+    <Pressable 
+      style={[styles.item, { backgroundColor: theme.card, borderColor: theme.border }]}
+      onPress={onPress}
+    >
       <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
-        <SymbolView name={{ ios: icon, android: 'settings', web: 'settings' }} tintColor={color} size={20} />
+        <SymbolView name={{ ios: icon, android: 'settings', web: 'settings' } as any} tintColor={color} size={20} />
       </View>
       <View style={styles.itemContent}>
         <Text style={styles.itemTitle}>{title}</Text>
@@ -86,7 +106,7 @@ function SettingItem({ icon, title, subtitle, color, hideChevron }: any) {
       </View>
       {!hideChevron && (
         <SymbolView 
-          name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }} 
+          name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' } as any} 
           tintColor={theme.tabIconDefault} 
           size={16} 
         />
