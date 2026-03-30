@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://10.113.187.154/api';
+const API_BASE_URL = 'http://192.168.5.185/api';
 
 export async function fetchStats() {
   try {
