@@ -1,14 +1,12 @@
 import React from 'react';
-import { SymbolView } from 'expo-symbols';
-import { Link, Tabs } from 'expo-router';
-import { Platform, Pressable } from 'react-native';
+import { Tabs } from 'expo-router';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() ?? 'light';
 
   return (
     <Tabs
@@ -19,22 +17,14 @@ export default function TabLayout() {
           backgroundColor: Colors[colorScheme].background,
           borderTopColor: Colors[colorScheme].border,
         },
-        headerShown: false, // Custom header in screens
+        headerShown: false,
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Ana Sayfa',
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: 'house.fill',
-                android: 'home',
-                web: 'home',
-              }}
-              tintColor={color}
-              size={24}
-            />
+            <FontAwesome6 name="house" color={color} size={20} />
           ),
         }}
       />
@@ -43,11 +33,7 @@ export default function TabLayout() {
         options={{
           title: 'Menü',
           tabBarIcon: ({ color }) => (
-            <SymbolView 
-              name={{ ios: 'square.grid.2x2.fill', android: 'menu', web: 'menu' } as any} 
-              tintColor={color} 
-              size={24} 
-            />
+            <FontAwesome6 name="bars-staggered" color={color} size={20} />
           ),
         }}
       />
@@ -56,19 +42,10 @@ export default function TabLayout() {
         options={{
           title: 'Ayarlar',
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: 'gearshape.fill',
-                android: 'settings',
-                web: 'settings',
-              }}
-              tintColor={color}
-              size={24}
-            />
+            <FontAwesome6 name="gear" color={color} size={20} />
           ),
         }}
       />
     </Tabs>
-
   );
 }

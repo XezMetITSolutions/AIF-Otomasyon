@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -46,7 +46,7 @@ export default function TasksScreen() {
               </View>
               <Text style={styles.reason}>{item.sebep || item.aciklama}</Text>
               <View style={styles.cardFooter}>
-                <SymbolView name={{ ios: 'calendar', android: 'event', web: 'event' } as any} tintColor={theme.tabIconDefault} size={14} />
+                <FontAwesome6 name="calendar" color={theme.tabIconDefault} size={14} />
                 <Text style={styles.dateText}>{item.baslangic_tarihi || item.tarih} {item.bitis_tarihi ? `- ${item.bitis_tarihi}` : ''}</Text>
               </View>
             </Pressable>

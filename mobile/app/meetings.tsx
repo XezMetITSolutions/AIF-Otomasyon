@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl } from 'react-native';
 import { Stack, router } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -52,16 +52,16 @@ export default function MeetingsScreen() {
               <View style={styles.meetingInfo}>
                 <Text style={styles.meetingTitle}>{item.baslik}</Text>
                 <View style={styles.meetingDetails}>
-                    <SymbolView name={{ ios: 'clock.fill', android: 'schedule', web: 'schedule' } as any} tintColor={theme.tabIconDefault} size={12} />
+                    <FontAwesome6 name="clock" color={theme.tabIconDefault} size={12} />
                     <Text style={styles.detailText}>{item.saat}</Text>
-                    <SymbolView name={{ ios: 'person.2.fill', android: 'group', web: 'group' } as any} tintColor={theme.tabIconDefault} size={12} style={{marginLeft: 10}} />
+                    <FontAwesome6 name="user-group" color={theme.tabIconDefault} size={12} style={{marginLeft: 10}} />
                     <Text style={styles.detailText}>{item.katilimci_sayisi || 0} Kişi</Text>
                 </View>
                 <View style={[styles.statusBadge, { backgroundColor: item.durum === 'tamamlandi' ? '#10b981' : '#f59e0b' }]}>
                     <Text style={styles.statusText}>{item.durum.toUpperCase()}</Text>
                 </View>
               </View>
-              <SymbolView name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' } as any} tintColor={theme.tabIconDefault} size={16} />
+              <FontAwesome6 name="chevron-right" color={theme.tabIconDefault} size={14} />
             </Pressable>
           )}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.tint} />}

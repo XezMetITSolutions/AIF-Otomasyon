@@ -3,7 +3,7 @@ import { StyleSheet, ScrollView, Dimensions, Pressable, ActivityIndicator, Refre
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { SymbolView } from 'expo-symbols';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -87,44 +87,44 @@ export default function DashboardScreen() {
           <ServiceCard 
             title="Kullanıcılar" 
             value={stats?.toplam_kullanici || 0}
-            icon="person.3.fill" 
+            icon="users" 
             color="#6366f1" 
-            onPress={() => router.push('/(tabs)/menu')} 
+            onPress={() => router.push('/users')} 
           />
           <ServiceCard 
             title="Toplantılar" 
             value={stats?.toplam_toplanti || 0}
-            icon="calendar.badge.clock" 
+            icon="users-gear" 
             color="#f59e0b" 
-            onPress={() => router.push('/(tabs)/menu')} 
+            onPress={() => router.push('/meetings')} 
           />
           <ServiceCard 
             title="Etkinlikler" 
             value={stats?.toplam_etkinlik || 0}
-            icon="calendar" 
+            icon="calendar-days" 
             color="#ec4899" 
             onPress={() => router.push('/(tabs)/menu')} 
           />
           <ServiceCard 
             title="İzin Onayları" 
             value={stats?.bekleyen_izin || 0}
-            icon="person.badge.shield.checkmark.fill" 
+            icon="calendar-check" 
             color="#ef4444" 
-            onPress={() => router.push('/(tabs)/menu')} 
+            onPress={() => router.push('/tasks?type=izin')} 
           />
           <ServiceCard 
             title="Harcamalar" 
             value={stats?.bekleyen_harcama || 0}
-            icon="creditcard.fill" 
+            icon="receipt" 
             color="#f97316" 
-            onPress={() => router.push('/(tabs)/menu')} 
+            onPress={() => router.push('/tasks?type=harcama')} 
           />
           <ServiceCard 
             title="Aktif BYK" 
             value={stats?.toplam_byk || 0}
-            icon="building.2.fill" 
+            icon="building" 
             color="#8b5cf6" 
-            onPress={() => router.push('/(tabs)/menu')} 
+            onPress={() => router.push('/byk')} 
           />
         </View>
 
@@ -153,7 +153,7 @@ function ServiceCard({ title, value, icon, color, onPress }: any) {
   return (
     <Pressable style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={onPress}>
       <View style={[styles.iconContainer, { backgroundColor: color + '15' }]}>
-        <SymbolView name={{ ios: icon, android: 'description', web: 'description' } as any} tintColor={color} size={24} />
+        <FontAwesome6 name={icon} color={color} size={20} />
       </View>
       <View style={styles.cardContent}>
         <Text style={styles.cardValue}>{value}</Text>

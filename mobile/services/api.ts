@@ -38,6 +38,33 @@ export async function fetchTasks(type: string) {
   }
 }
 
+export async function fetchBYK() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/byk.php`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
+export async function fetchSubeler() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/subeler.php`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
+export async function fetchProjeler() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projeler.php`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
 export async function login(email: string, password: string) {
   try {
     const response = await fetch(`${API_BASE_URL}/login.php`, {

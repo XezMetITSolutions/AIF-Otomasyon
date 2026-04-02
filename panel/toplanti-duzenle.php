@@ -41,7 +41,7 @@ if (!$toplanti) {
 $currentUserId = $user['id'] ?? $user['kullanici_id'];
 $isCreator = ($toplanti['olusturan_id'] == $currentUserId);
 $isSecretary = (isset($toplanti['sekreter_id']) && $toplanti['sekreter_id'] == $currentUserId);
-$canManageContent = $isCreator || $isSecretary;
+$canManageContent = $isCreator || $isSecretary || $auth->isSuperAdmin();
 
 // Katılımcıları getir
 $katilimcilar = $db->fetchAll("
