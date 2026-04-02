@@ -99,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['setup'])) {
                 `olusturan_id` INT NOT NULL,
                 `olusturma_tarihi` DATETIME DEFAULT CURRENT_TIMESTAMP,
                 `guncelleme_tarihi` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                `baskan_degerlendirmesi` TEXT,
                 FOREIGN KEY (`byk_id`) REFERENCES `byk`(`byk_id`),
                 FOREIGN KEY (`olusturan_id`) REFERENCES `kullanicilar`(`kullanici_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -131,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['setup'])) {
                 `sira_no` INT NOT NULL,
                 `baslik` VARCHAR(255) NOT NULL,
                 `aciklama` TEXT,
+                `gorusme_notlari` TEXT,
                 `durum` VARCHAR(20) DEFAULT 'gorusulmedi',
                 `sure_dakika` INT DEFAULT 0,
                 FOREIGN KEY (`toplanti_id`) REFERENCES `toplantilar`(`toplanti_id`) ON DELETE CASCADE

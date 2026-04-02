@@ -41,8 +41,8 @@ try {
             if (!$toplanti)
                 throw new Exception('Toplantı bulunamadı');
 
-            if ($toplanti['olusturan_id'] != $currentUserId) {
-                throw new Exception('Sadece toplantıyı oluşturan kişi katılımcı ekleyebilir');
+            if (!$auth->isSuperAdmin() && $toplanti['olusturan_id'] != $currentUserId) {
+                throw new Exception('Sadece toplantıyı oluşturan kişi veya bir yönetici katılımcı ekleyebilir');
             }
 
             // Normalize to array
@@ -107,8 +107,8 @@ try {
 
             $toplanti = $db->fetch("SELECT olusturan_id FROM toplantilar WHERE toplanti_id = ?", [$katilimci['toplanti_id']]);
 
-            if ($toplanti['olusturan_id'] != $currentUserId) {
-                throw new Exception('Sadece toplantıyı oluşturan kişi katılımcı silebilir');
+            if (!$auth->isSuperAdmin() && $toplanti['olusturan_id'] != $currentUserId) {
+                throw new Exception('Sadece toplantıyı oluşturan kişi veya bir yönetici katılımcı silebilir');
             }
 
             $db->query("DELETE FROM toplanti_katilimcilar WHERE katilimci_id = ?", [$katilimci_id]);
