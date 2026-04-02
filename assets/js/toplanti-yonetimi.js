@@ -492,7 +492,7 @@ var ToplantiYonetimi = {
             notlar: notlar
         };
 
-        this.apiRequest('/api/update-agenda-note.php', data)
+        this.apiRequest('/admin/api-toplanti-gundem.php', { ...data, action: 'update_note' })
             .then(result => {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
@@ -511,12 +511,12 @@ var ToplantiYonetimi = {
             notlar: notlar
         };
 
-        fetch('/api/update-agenda-note.php', {
+        fetch('/admin/api-toplanti-gundem.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ ...data, action: 'update_note' })
         })
             .then(response => response.json())
             .then(result => {
@@ -550,7 +550,7 @@ var ToplantiYonetimi = {
             karar_metni: text
         };
 
-        this.apiRequest('/api/update-decision-text.php', data)
+        this.apiRequest('/admin/api-toplanti-karar.php', { ...data, action: 'update_text' })
             .then(result => {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
@@ -570,10 +570,12 @@ var ToplantiYonetimi = {
             karar_metni: text
         };
 
-        fetch('/api/update-decision-text.php', {
+        fetch('/admin/api-toplanti-karar.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ...data, action: 'update_text' })
         })
             .then(response => response.json())
             .then(result => {
@@ -676,7 +678,7 @@ var ToplantiYonetimi = {
             bitis_tarihi: bitisTarihi
         };
 
-        this.apiRequest('/api/update-meeting-evaluation.php', data)
+        this.apiRequest('/admin/api-toplanti-gundem.php', { ...data, action: 'update_evaluation' })
             .then(result => {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
@@ -696,10 +698,12 @@ var ToplantiYonetimi = {
             bitis_tarihi: bitisTarihi
         };
 
-        fetch('/api/update-meeting-evaluation.php', {
+        fetch('/admin/api-toplanti-gundem.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ...data, action: 'update_evaluation' })
         })
             .then(response => response.json())
             .then(result => {

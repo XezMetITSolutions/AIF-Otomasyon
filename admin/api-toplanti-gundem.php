@@ -120,6 +120,58 @@ try {
             echo json_encode(['success' => true, 'gundem' => $gundem]);
             break;
             
+        case 'update_note':
+            $gundem_id = $input['gundem_id'] ?? null;
+            $notlar = $input['notlar'] ?? '';
+            
+            if (!$gundem_id) {
+                throw new Exception('Gündem ID gereklidir');
+            }
+            
+            // Sütun kontrolü ve ekleme (Self-healing)
+            try {
+                $db->query("ALTER TABLE toplanti_gundem ADD COLUMN gorusme_notlari TEXT NULL AFTER aciklama");
+            } catch (Exception $e) {
+                // Zaten varsa hata verir, yoksay
+            }
+            
+            $db->query("UPDATE toplanti_gundem SET gorusme_notlari = ? WHERE gundem_id = ?", [$notlar, $gundem_id]);
+            
+            echo json_encode(['success' => true, 'message' => 'Not kaydedildi']);
+            break;
+            
+        case 'update_evaluation':
+            $toplanti_id = $input['toplanti_id'] ?? null;
+            $degerlendirme = $input['degerlendirme'] ?? '';
+            $bitis_tarihi = $input['bitis_tarihi'] ?? null;
+            
+            if (!$toplanti_id) {
+                throw new Exception('Toplantı ID gereklidir');
+            }
+            
+            // Sütun kontrolü ve ekleme (Self-healing)
+            try {
+                $db->query("ALTER TABLE toplantilar ADD COLUMN baskan_degerlendirmesi TEXT NULL AFTER guncelleme_tarihi");
+            } catch (Exception $e) {
+                // Zaten varsa hata verir, yoksay
+            }
+            
+            $query = "UPDATE toplantilar SET baskan_degerlendirmesi = ?";
+            $params = [$degerlendirme];
+            
+            if ($bitis_tarihi) {
+                $query .= ", bitis_tarihi = ?";
+                $params[] = $bitis_tarihi;
+            }
+            
+            $query .= " WHERE toplanti_id = ?";
+            $params[] = $toplanti_id;
+            
+            $db->query($query, $params);
+            
+            echo json_encode(['success' => true, 'message' => 'Değerlendirme kaydedildi']);
+            break;
+            
         default:
             throw new Exception('Geçersiz action');
     }

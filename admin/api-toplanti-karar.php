@@ -127,6 +127,38 @@ try {
             echo json_encode(['success' => true, 'karar' => $karar]);
             break;
             
+        case 'update_text':
+            $toplanti_id = $input['toplanti_id'] ?? null;
+            $gundem_id = $input['gundem_id'] ?? null;
+            $karar_metni = $input['karar_metni'] ?? '';
+            
+            if (!$toplanti_id || !$gundem_id) {
+                throw new Exception('Toplantı ID ve Gündem ID gereklidir');
+            }
+            
+            // Gündem maddesinin başlığını al (yeni karar oluşturulursa başlık olarak kullanmak için)
+            $gundem = $db->fetch("SELECT baslik FROM toplanti_gundem WHERE gundem_id = ?", [$gundem_id]);
+            $baslik = $gundem['baslik'] ?? 'Gündem Kararı';
+
+            // Bu gündem maddesi için mevcut bir karar var mı kontrol et
+            $mevcut_karar = $db->fetch("SELECT karar_id FROM toplanti_kararlar WHERE gundem_id = ? LIMIT 1", [$gundem_id]);
+            
+            if ($mevcut_karar) {
+                // Güncelle
+                $db->query("UPDATE toplanti_kararlar SET karar_metni = ? WHERE karar_id = ?", [$karar_metni, $mevcut_karar['karar_id']]);
+                $message = 'Karar güncellendi';
+            } else {
+                // Yeni oluştur
+                $db->query("
+                    INSERT INTO toplanti_kararlar (toplanti_id, gundem_id, baslik, karar_metni)
+                    VALUES (?, ?, ?, ?)
+                ", [$toplanti_id, $gundem_id, $baslik, $karar_metni]);
+                $message = 'Karar oluşturuldu ve kaydedildi';
+            }
+            
+            echo json_encode(['success' => true, 'message' => $message]);
+            break;
+            
         default:
             throw new Exception('Geçersiz action');
     }
