@@ -786,17 +786,52 @@ footer {
     }
 }
 
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+/* Tribute.js - @Mention Dropdown Stilleri */
+.tribute-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: auto;
+    max-height: 300px;
+    max-width: 500px;
+    overflow: auto;
+    display: block;
+    z-index: 999999;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.1);
+    margin-top: 5px;
 }
+
+.tribute-container ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: transparent;
+}
+
+.tribute-container li {
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.tribute-container li:last-child {
+    border-bottom: none;
+}
+
+.tribute-container li.highlight {
+    background: rgba(0, 152, 114, 0.1);
+}
+
+.tribute-container li.no-match {
+    padding: 10px 15px;
+    color: #666;
+    font-size: 13px;
+}
+
 
 .fade-in {
     animation: fadeIn 0.6s ease-out;

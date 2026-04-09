@@ -20,6 +20,9 @@ $isUye = $user && $user['role'] === 'uye';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Tribute.js CSS (Mentions) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tributejs@5.1.3/dist/tribute.css">
+
     <title>
         <?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?><?php echo Config::get('app_name', 'AİFNET'); ?>
     </title>
@@ -354,7 +357,6 @@ $isUye = $user && $user['role'] === 'uye';
                         <?php endif; ?>
                     </ul>
                 </div>
-            </div>
             </div>
         </nav>
     <?php endif; ?>

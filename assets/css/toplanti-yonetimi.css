@@ -1,10 +1,8 @@
-/**
- * Toplantı Yönetimi - CSS Stilleri
- */
+/* Toplantı Yönetimi - CSS Stilleri */
 
-/* Genel Stiller */
-.content-wrapper {
-    max-width: 1400px;
+/* Scoped Content Wrapper */
+.content-wrapper[data-toplanti-id] {
+    /* Removed max-width to allow full-width admin layout */
 }
 
 /* İstatistik Kutuları */
@@ -75,14 +73,14 @@
 }
 
 /* Katılımcı Listesi */
-.list-group-item {
+.content-wrapper .list-group-item {
     border-left: 3px solid transparent;
     transition: all 0.2s;
 }
 
-.list-group-item:hover {
-    border-left-color: #0d6efd;
-    background-color: #f8f9fa;
+.content-wrapper .list-group-item:hover {
+    border-left-color: #009872;
+    background-color: rgba(0, 152, 114, 0.05);
 }
 
 /* Tutanak Editörü */
@@ -124,23 +122,14 @@
     font-size: 0.75rem;
 }
 
-/* Kartlar */
-.card {
-    border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-radius: 10px;
-    transition: box-shadow 0.2s;
+/* Kartlar - style.css ile uyumlu hale getirildi */
+.content-wrapper .card {
+    /* Özel kart stilleri buraya, global olanları style.css'den alır */
 }
 
-.card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.card-header {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #e9ecef;
-    border-radius: 10px 10px 0 0 !important;
-    padding: 1rem 1.25rem;
+.content-wrapper .card-header {
+    background-color: rgba(0, 152, 114, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .card-header h5,
@@ -149,16 +138,9 @@
     font-weight: 600;
 }
 
-/* Butonlar */
-.btn {
-    border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+/* Butonlar - scope eklendi */
+.content-wrapper .btn:not(.navbar-btn) {
+    /* Global btn stilleri style.css'de */
 }
 
 .btn-group .btn {

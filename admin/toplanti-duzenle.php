@@ -354,12 +354,14 @@ include __DIR__ . '/../includes/header.php';
 
 <main class="container-fluid mt-4">
     <div class="content-wrapper" data-toplanti-id="<?php echo $toplanti_id; ?>">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-edit me-2"></i><?php echo htmlspecialchars($toplanti['baslik']); ?>
-            </h1>
-            <div>
-                <button onclick="sendReportToParticipants(<?php echo $toplanti_id; ?>)" class="btn btn-warning me-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div class="flex-grow-1">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-edit me-2"></i><?php echo htmlspecialchars($toplanti['baslik']); ?>
+                </h1>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button onclick="sendReportToParticipants(<?php echo $toplanti_id; ?>)" class="btn btn-warning">
                     <i class="fas fa-envelope me-2"></i>Raporu Gönder
                 </button>
                 <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-danger" target="_blank">
@@ -438,8 +440,22 @@ include __DIR__ . '/../includes/header.php';
 
 
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/tributejs@5.1.3/dist/tribute.min.js"></script>
         <script src="/assets/js/toplanti-yonetimi.js?v=<?php echo time(); ?>"></script>
         <script>
+            // Katılımcıları JS'ye ver (Mentions için)
+            const MEETING_PARTICIPANTS = <?php 
+                $participants_list = [];
+                foreach ($katilimcilar as $k) {
+                    $participants_list[] = [
+                        'key' => $k['ad'] . ' ' . $k['soyad'],
+                        'value' => $k['ad'] . ' ' . $k['soyad'],
+                        'email' => $k['email']
+                    ];
+                }
+                echo json_encode($participants_list);
+            ?>;
+
             if (typeof ToplantiYonetimi !== 'undefined') {
                 ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
             }

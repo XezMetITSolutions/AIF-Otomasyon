@@ -13,23 +13,50 @@ var ToplantiYonetimi = {
     },
 
     initMentions: function () {
-        if (typeof Tribute === 'undefined' || typeof MEETING_PARTICIPANTS === 'undefined') return;
+        if (typeof Tribute === 'undefined' || typeof MEETING_PARTICIPANTS === 'undefined' || MEETING_PARTICIPANTS.length === 0) {
+            console.warn('Mentions (Tribute) or PARTICIPANTS initialization skipped.');
+            return;
+        }
 
         const tribute = new Tribute({
             values: MEETING_PARTICIPANTS,
             selectTemplate: function (item) {
-                return '@' + item.original.value + ': \n';
+                return '@' + item.original.value;
             },
             menuItemTemplate: function (item) {
-                return item.string;
-            }
+                return `
+                    <div class="d-flex align-items-center p-2">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-size: 12px;">
+                            ${item.original.key.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="fw-bold">${item.original.key}</div>
+                            <small class="text-muted" style="font-size: 10px;">${item.original.email || ''}</small>
+                        </div>
+                    </div>
+                `;
+            },
+            noMatchTemplate: function () {
+                return '<span style="display:none;"></span>';
+            },
+            lookup: 'key',
+            fillAttr: 'value'
         });
 
-        // Attach to existing inputs
-        const inputs = document.querySelectorAll('.gorusme-notu-input, .decision-text-input, #baskanDegerlendirmeInput, #gundem_aciklama, #edit_gundem_aciklama, #karar_metni, #edit_karar_metni');
-        if (inputs.length > 0) {
-            tribute.attach(inputs);
-        }
+        // Detach function logic hidden by user...
+        const attachToInputs = () => {
+            const inputs = document.querySelectorAll('.gorusme-notu-input, .decision-text-input, #baskanDegerlendirmeInput, #gundem_aciklama, #edit_gundem_aciklama, #karar_metni, #edit_karar_metni');
+            if (inputs.length > 0) {
+                tribute.attach(inputs);
+            }
+        };
+
+        attachToInputs();
+
+        // Re-attach on tab changes or dynamic content
+        document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', attachToInputs);
+        });
     },
 
     initEventListeners: function () {
