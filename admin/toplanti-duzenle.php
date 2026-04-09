@@ -354,8 +354,8 @@ include __DIR__ . '/../includes/header.php';
                 <i class="fas fa-edit me-2"></i><?php echo htmlspecialchars($toplanti['baslik']); ?>
             </h1>
             <div>
-                <button onclick="sendReportToBYK(<?php echo $toplanti_id; ?>)" class="btn btn-warning me-2">
-                    <i class="fas fa-envelope me-2"></i>Tüm BYK'ya Gönder
+                <button onclick="sendReportToParticipants(<?php echo $toplanti_id; ?>)" class="btn btn-warning me-2">
+                    <i class="fas fa-envelope me-2"></i>Raporu Gönder
                 </button>
                 <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti_id; ?>" class="btn btn-danger" target="_blank">
                     <i class="fas fa-file-pdf me-2"></i>PDF İndir
@@ -439,8 +439,8 @@ include __DIR__ . '/../includes/header.php';
                 ToplantiYonetimi.init(<?php echo $toplanti_id; ?>);
             }
 
-            function sendReportToBYK(id) {
-                if (!confirm('Tüm BYK üyelerine toplantı tutanağını e-posta ile göndermek istediğinize emin misiniz?')) {
+            function sendReportToParticipants(id) {
+                if (!confirm('Tüm katılımcılara toplantı raporunu e-posta ile göndermek istediğinize emin misiniz?')) {
                     return;
                 }
                 

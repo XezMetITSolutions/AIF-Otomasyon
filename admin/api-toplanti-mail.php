@@ -59,25 +59,18 @@ try {
     exit;
 }
 
-// 2. BYK Üyelerini Bul (E-posta alıcıları)
-// TEST MODE: Sadece belirli adrese gönder
-$recipients = [
-    ['email' => 'mete.burcak@gmx.at', 'ad' => 'Test', 'soyad' => 'User']
-];
-
-/*
-// Aktif ve ilgili BYK'ya ait kullanıcılar
+// 2. Alıcıları Bul (Toplantıya davet edilen katılımcılar)
 $recipients = $db->fetchAll("
-    SELECT ad, soyad, email 
-    FROM kullanicilar 
-    WHERE byk_id = ? AND aktif = 1 AND email IS NOT NULL AND email != ''
-", [$toplanti['byk_id']]);
+    SELECT k.ad, k.soyad, k.email 
+    FROM toplanti_katilimcilar tk
+    INNER JOIN kullanicilar k ON tk.kullanici_id = k.kullanici_id
+    WHERE tk.toplanti_id = ? AND k.email IS NOT NULL AND k.email != ''
+", [$toplanti_id]);
 
 if (empty($recipients)) {
-    echo json_encode(['success' => false, 'error' => 'Bu BYK için e-posta adresi kayıtlı üye bulunamadı.']);
+    echo json_encode(['success' => false, 'error' => 'Bu toplantı için kayıtlı katılımcı bulunamadı.']);
     exit;
 }
-*/
 
 // 3. E-posta Gönderimi
 $subject = "Toplantı Tutanağı: " . $toplanti['baslik'];
