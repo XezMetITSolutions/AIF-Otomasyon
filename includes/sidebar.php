@@ -210,34 +210,42 @@ if ($user) {
     
     ?>
     <div class="list-group list-group-flush sidebar-scroll">
-        <?php if ($isSuperAdmin): ?>
+        <?php if ($isSuperAdmin): 
+            // Sadece super_admin rolü veya yetkili kişi görsün (Kullanıcı, BYK, Şube vb.)
+            $isRoot = ($user['role'] === 'super_admin' || $user['email'] == 'oemkut-neu@yahoo.de');
+        ?>
             <!-- Ana Yönetici Menüsü (Existing Code for Super Admin) -->
             <a href="/admin/dashboard.php"
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'dashboard') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
             </a>
 
-            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">YÖNETİM</div>
+            <?php if ($isRoot): ?>
+                <div class="list-group-item fw-bold text-muted small" style="cursor: default;">SİSTEM YÖNETİMİ</div>
 
-            <a href="/admin/kullanicilar.php"
-                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'kullanicilar') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-users me-2"></i>Kullanıcı Yönetimi
-            </a>
-            <a href="/admin/byk.php"
-                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'byk') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-building me-2"></i>BYK Yönetimi
-            </a>
-            <a href="/admin/alt-birimler.php"
-                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'alt-birimler') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-sitemap me-2"></i>Alt Birimler
-            </a>
+                <a href="/admin/kullanicilar.php"
+                    class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'kullanicilar') !== false ? 'active' : ''; ?>">
+                    <i class="fas fa-users me-2"></i>Kullanıcı Yönetimi
+                </a>
+                <a href="/admin/byk.php"
+                    class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'byk') !== false ? 'active' : ''; ?>">
+                    <i class="fas fa-building me-2"></i>BYK Yönetimi
+                </a>
+                <a href="/admin/alt-birimler.php"
+                    class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'alt-birimler') !== false ? 'active' : ''; ?>">
+                    <i class="fas fa-sitemap me-2"></i>Alt Birimler
+                </a>
+                <a href="/admin/subeler.php"
+                    class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'subeler') !== false ? 'active' : ''; ?>">
+                    <i class="fas fa-map-marked-alt me-2"></i>Şubeler
+                </a>
+            <?php endif; ?>
+
+            <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İSTİŞARE & RAPOR</div>
+
             <a href="/admin/istisareler.php"
                 class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'istisare') !== false ? 'active' : ''; ?>">
                 <i class="fas fa-vote-yea me-2"></i>İstişareler
-            </a>
-            <a href="/admin/subeler.php"
-                class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'subeler') !== false ? 'active' : ''; ?>">
-                <i class="fas fa-map-marked-alt me-2"></i>Şubeler
             </a>
 
             <div class="list-group-item fw-bold text-muted small" style="cursor: default;">İÇERİK</div>
