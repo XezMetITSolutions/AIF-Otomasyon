@@ -211,8 +211,8 @@ if ($user) {
     ?>
     <div class="list-group list-group-flush sidebar-scroll">
         <?php if ($isSuperAdmin): 
-            // Sadece super_admin rolü veya yetkili kişi görsün (Kullanıcı, BYK, Şube vb.)
-            $isRoot = ($user['role'] === 'super_admin' || $user['email'] == 'oemkut-neu@yahoo.de');
+            // Sadece super_admin rolü görsün (Ömer Bey bu 4 maddeyi görmeyecek)
+            $isRoot = ($user['role'] === 'super_admin' && $user['email'] !== 'oemkut-neu@yahoo.de');
         ?>
             <!-- Ana Yönetici Menüsü (Existing Code for Super Admin) -->
             <a href="/admin/dashboard.php"
