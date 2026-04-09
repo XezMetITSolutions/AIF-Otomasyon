@@ -63,12 +63,6 @@ if ($user) {
             'label' => 'Toplantılar',
             'match' => 'panel/toplantilar',
         ],
-        [
-            'path' => '/panel/uyeler.php',
-            'icon' => 'fas fa-users',
-            'label' => 'Üyeler',
-            'match' => 'panel/uyeler',
-        ],
     ];
 
     // Define Management Sections (Requires strictly 'baskan' permissions)
@@ -223,6 +217,10 @@ if ($user) {
             <?php if ($isRoot): ?>
                 <div class="list-group-item fw-bold text-muted small" style="cursor: default;">SİSTEM YÖNETİMİ</div>
 
+                <a href="/admin/uyeler.php"
+                    class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'uyeler') !== false ? 'active' : ''; ?>">
+                    <i class="fas fa-users me-2"></i>Üyeler
+                </a>
                 <a href="/admin/kullanicilar.php"
                     class="list-group-item list-group-item-action <?php echo strpos($currentPath, 'kullanicilar') !== false ? 'active' : ''; ?>">
                     <i class="fas fa-users me-2"></i>Kullanıcı Yönetimi

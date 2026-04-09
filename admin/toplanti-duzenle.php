@@ -453,7 +453,7 @@ include __DIR__ . '/../includes/header.php';
                         'email' => $k['email']
                     ];
                 }
-                echo json_encode($participants_list);
+                echo json_encode($participants_list, JSON_UNESCAPED_UNICODE);
             ?>;
 
             if (typeof ToplantiYonetimi !== 'undefined') {

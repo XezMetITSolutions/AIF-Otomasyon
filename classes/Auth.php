@@ -269,6 +269,19 @@ class Auth
         return $default;
     }
 
+    /**
+     * Tüm modül yetkilerini bir dizi olarak getir (Mobil entegrasyon için)
+     */
+    public function getAllModulePermissions()
+    {
+        $modules = $this->getModuleDefinitions();
+        $permissions = [];
+        foreach ($modules as $key => $config) {
+            $permissions[$key] = $this->hasModulePermission($key);
+        }
+        return $permissions;
+    }
+
     private function getModuleDefinitions()
     {
         static $definitions = null;

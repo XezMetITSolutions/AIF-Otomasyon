@@ -31,7 +31,8 @@ if ($result === true) {
             'id' => $user['id'],
             'name' => $user['name'] ?? 'Kullanıcı',
             'email' => $user['email'],
-            'role' => $user['role']
+            'role' => $user['role'],
+            'permissions' => $auth->getAllModulePermissions()
         ]
     ]);
 } elseif ($result === 'password_change_required') {

@@ -8,6 +8,7 @@ import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { login } from '@/services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (result.success) {
+      await AsyncStorage.setItem('user', JSON.stringify(result.user));
       router.replace('/(tabs)');
     } else {
       Alert.alert('Hata', result.message || 'Giriş başarısız.');

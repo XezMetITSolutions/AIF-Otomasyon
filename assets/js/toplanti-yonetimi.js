@@ -51,12 +51,20 @@ var ToplantiYonetimi = {
             }
         };
 
+        // Expose to window for debugging or manual re-attach
+        window.tribute = tribute;
+
         attachToInputs();
 
         // Re-attach on tab changes or dynamic content
         document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
-            tab.addEventListener('shown.bs.tab', attachToInputs);
+            tab.addEventListener('shown.bs.tab', () => {
+                setTimeout(attachToInputs, 100); // Slight delay for DOM stability
+            });
         });
+
+        // Global AJAX page load support
+        $(document).on('page:loaded', attachToInputs);
     },
 
     initEventListeners: function () {
