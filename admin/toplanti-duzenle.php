@@ -7,7 +7,7 @@ require_once __DIR__ . '/../classes/Auth.php';
 require_once __DIR__ . '/../classes/Middleware.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-Middleware::requireSuperAdmin();
+Middleware::requireAuth();
 
 $auth = new Auth();
 $user = $auth->getUser();
@@ -32,6 +32,11 @@ $toplanti = $db->fetch("
 if (!$toplanti) {
     header('Location: /admin/toplantilar.php');
     exit;
+}
+
+// Yetki Kontrolü: Admin, Oluşturan veya Sekreter
+if (!$auth->isSuperAdmin() && $toplanti['olusturan_id'] != $user['kullanici_id'] && $toplanti['sekreter_id'] != $user['kullanici_id']) {
+    Middleware::forbidden('Bu toplantıyı düzenleme yetkiniz yok.');
 }
 
 // Katılımcıları getir

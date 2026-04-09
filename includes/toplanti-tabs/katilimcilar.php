@@ -73,13 +73,16 @@ $isCreator = ($toplanti['olusturan_id'] == $currentUserId);
                                                 }
                                                 ?>
                                             </td>
-                                            <td>
-                                                <?php
-                                                $isDisabled = (!$isCreator && $katilimci['kullanici_id'] != $currentUserId) ? 'disabled' : '';
-                                                ?>
-                                                <select class="form-select form-select-sm katilim-durum-select" 
-                                                        data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>"
-                                                        <?php echo $isDisabled; ?>>
+                <?php
+                $isSecretary = ($toplanti['sekreter_id'] == $currentUserId);
+                $isAdmin = $auth->isSuperAdmin();
+                
+                // Edit enabled if: Admin, Creator, Secretary, or changing ONLY own status
+                $isDisabled = (!$isAdmin && !$isCreator && !$isSecretary && $katilimci['kullanici_id'] != $currentUserId) ? 'disabled' : '';
+                ?>
+                <select class="form-select form-select-sm katilim-durum-select" 
+                        data-katilimci-id="<?php echo $katilimci['katilimci_id']; ?>"
+                        <?php echo $isDisabled; ?>>
                                                     <option value="beklemede" <?php echo $katilimci['katilim_durumu'] === 'beklemede' ? 'selected' : ''; ?>>
                                                         ⌛ Davet Edildi
                                                     </option>

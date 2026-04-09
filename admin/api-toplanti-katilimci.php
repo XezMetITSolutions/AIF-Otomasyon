@@ -36,13 +36,13 @@ try {
                 throw new Exception('Toplantı ID ve Kullanıcı(lar) gereklidir');
             }
 
-            // Yetki Kontrolü: Sadece oluşturan ekleyebilir
-            $toplanti = $db->fetch("SELECT olusturan_id FROM toplantilar WHERE toplanti_id = ?", [$toplanti_id]);
+            // Yetki Kontrolü: Admin, Oluşturan veya Sekreter
+            $toplanti = $db->fetch("SELECT olusturan_id, sekreter_id FROM toplantilar WHERE toplanti_id = ?", [$toplanti_id]);
             if (!$toplanti)
                 throw new Exception('Toplantı bulunamadı');
 
-            if (!$auth->isSuperAdmin() && $toplanti['olusturan_id'] != $currentUserId) {
-                throw new Exception('Sadece toplantıyı oluşturan kişi veya bir yönetici katılımcı ekleyebilir');
+            if (!$auth->isSuperAdmin() && $toplanti['olusturan_id'] != $currentUserId && $toplanti['sekreter_id'] != $currentUserId) {
+                throw new Exception('Sadece toplantıyı oluşturan kişi, sekreter veya bir yönetici katılımcı ekleyebilir');
             }
 
             // Normalize to array
@@ -79,13 +79,16 @@ try {
             if (!$katilimci)
                 throw new Exception('Katılımcı bulunamadı');
 
-            $toplanti = $db->fetch("SELECT olusturan_id FROM toplantilar WHERE toplanti_id = ?", [$katilimci['toplanti_id']]);
+            // Yetki Kontrolü: Admin, Oluşturan ve Sekreter herkesi, Diğerleri sadece kendini
+            $toplanti = $db->fetch("SELECT olusturan_id, sekreter_id FROM toplantilar WHERE toplanti_id = ?", [$katilimci['toplanti_id']]);
 
             $isCreator = ($toplanti['olusturan_id'] == $currentUserId);
+            $isSecretary = ($toplanti['sekreter_id'] == $currentUserId);
             $isSelf = ($katilimci['kullanici_id'] == $currentUserId);
+            $isAdmin = $auth->isSuperAdmin();
 
-            if (!$isCreator && !$isSelf) {
-                throw new Exception('Başkalarının katılım durumunu değiştiremezsiniz');
+            if (!$isAdmin && !$isCreator && !$isSecretary && !$isSelf) {
+                throw new Exception('Bu katılım durumunu değiştirme yetkiniz yok');
             }
 
             $db->query("UPDATE toplanti_katilimcilar SET katilim_durumu = ? WHERE katilimci_id = ?", [$katilim_durumu, $katilimci_id]);
@@ -105,10 +108,10 @@ try {
             if (!$katilimci)
                 throw new Exception('Katılımcı bulunamadı');
 
-            $toplanti = $db->fetch("SELECT olusturan_id FROM toplantilar WHERE toplanti_id = ?", [$katilimci['toplanti_id']]);
+            $toplanti = $db->fetch("SELECT olusturan_id, sekreter_id FROM toplantilar WHERE toplanti_id = ?", [$katilimci['toplanti_id']]);
 
-            if (!$auth->isSuperAdmin() && $toplanti['olusturan_id'] != $currentUserId) {
-                throw new Exception('Sadece toplantıyı oluşturan kişi veya bir yönetici katılımcı silebilir');
+            if (!$auth->isSuperAdmin() && $toplanti['olusturan_id'] != $currentUserId && $toplanti['sekreter_id'] != $currentUserId) {
+                throw new Exception('Sadece toplantıyı oluşturan kişi, sekreter veya bir yönetici katılımcı silebilir');
             }
 
             $db->query("DELETE FROM toplanti_katilimcilar WHERE katilimci_id = ?", [$katilimci_id]);
