@@ -3,17 +3,78 @@
 $currentUserId = $user['id'] ?? $user['kullanici_id'];
 $isCreator = ($toplanti['olusturan_id'] == $currentUserId);
 ?>
+
+<!-- Katılım İstatistikleri (Yatay Görünüm) -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(45deg, #4e73df, #224abe); color: white;">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                    <i class="fas fa-users fa-2x opacity-50"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold"><?php echo count($katilimcilar); ?></h4>
+                    <div class="small opacity-75">Toplam Katılımcı</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(45deg, #1cc88a, #13855c); color: white;">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                    <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold"><?php echo $katilim_stats['katilacak'] ?? 0; ?></h4>
+                    <div class="small opacity-75">Katılacak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(45deg, #f6c23e, #dda20a); color: white;">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                    <i class="fas fa-hourglass-half fa-2x opacity-50"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold"><?php echo $katilim_stats['beklemede'] ?? 0; ?></h4>
+                    <div class="small opacity-75">Davet Edildi</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(45deg, #e74a3b, #be2617); color: white;">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                    <i class="fas fa-times-circle fa-2x opacity-50"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold"><?php echo $katilim_stats['katilmayacak'] ?? 0; ?></h4>
+                    <div class="small opacity-75">Katılmayacak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Katılımcı Listesi</h5>
-                <?php if ($isCreator): ?>
-                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                    data-bs-target="#katilimciEkleModal">
-                    <i class="fas fa-plus me-1"></i>Katılımcı Ekle
-                </button>
-                <?php endif; ?>
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="fas fa-user-friends text-primary me-2"></i>Katılımcı Listesi
+                    </h5>
+                    <?php if ($isCreator): ?>
+                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal"
+                        data-bs-target="#katilimciEkleModal">
+                        <i class="fas fa-plus me-1"></i>Katılımcı Ekle
+                    </button>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (empty($katilimcilar)): ?>
@@ -152,62 +213,6 @@ $isCreator = ($toplanti['olusturan_id'] == $currentUserId);
                     </script>
 
                 <?php endif; ?>
-                <?php
-                // Note: If adding more script blocks, ensure they are inside the conditional or correctly managed.
-                ?>
-
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Katılım İstatistikleri</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span><i class="fas fa-hourglass-half text-secondary me-2"></i>Davet Edildi</span>
-                        <span class="badge bg-secondary"><?php echo $katilim_stats['beklemede'] ?? 0; ?></span>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-secondary"
-                            style="width: <?php echo count($katilimcilar) > 0 ? (($katilim_stats['beklemede'] ?? 0) / count($katilimcilar) * 100) : 0; ?>%">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span><i class="fas fa-check-circle text-success me-2"></i>Katılacak</span>
-                        <span class="badge bg-success"><?php echo $katilim_stats['katilacak'] ?? 0; ?></span>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success"
-                            style="width: <?php echo count($katilimcilar) > 0 ? (($katilim_stats['katilacak'] ?? 0) / count($katilimcilar) * 100) : 0; ?>%">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span><i class="fas fa-times-circle text-danger me-2"></i>Katılmayacak</span>
-                        <span class="badge bg-danger"><?php echo $katilim_stats['katilmayacak'] ?? 0; ?></span>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-danger"
-                            style="width: <?php echo count($katilimcilar) > 0 ? (($katilim_stats['katilmayacak'] ?? 0) / count($katilimcilar) * 100) : 0; ?>%">
-                        </div>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="text-center">
-                    <h3 class="mb-0"><?php echo count($katilimcilar); ?></h3>
-                    <p class="text-muted mb-0">Toplam Katılımcı</p>
-                </div>
             </div>
         </div>
     </div>
