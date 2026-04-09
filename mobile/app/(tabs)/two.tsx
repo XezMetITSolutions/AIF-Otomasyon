@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -20,7 +21,10 @@ export default function SettingsScreen() {
         { 
           text: 'Çıkış Yap', 
           style: 'destructive',
-          onPress: () => router.replace('/login') 
+          onPress: async () => {
+            await AsyncStorage.removeItem('user');
+            router.replace('/login');
+          }
         },
       ]
     );
@@ -38,16 +42,19 @@ export default function SettingsScreen() {
           icon="person.fill" 
           title="Profil Bilgileri" 
           color="#3b82f6" 
+          onPress={() => router.push('/modal?type=profile')}
         />
         <SettingItem 
           icon="bell.fill" 
           title="Bildirimler" 
           color="#f59e0b" 
+          onPress={() => router.push('/modal?type=notifications')}
         />
         <SettingItem 
           icon="lock.shield.fill" 
           title="Güvenlik" 
           color="#10b981" 
+          onPress={() => router.push('/modal?type=security')}
         />
       </View>
 
@@ -57,12 +64,14 @@ export default function SettingsScreen() {
           icon="paintbrush.fill" 
           title="Görünüm" 
           color="#8b5cf6" 
+          onPress={() => router.push('/modal?type=appearance')}
         />
         <SettingItem 
           icon="globe" 
           title="Dil" 
           subtitle="Türkçe" 
           color="#ec4899" 
+          onPress={() => router.push('/modal?type=language')}
         />
       </View>
 
@@ -71,6 +80,7 @@ export default function SettingsScreen() {
           icon="info.circle.fill" 
           title="Hakkında" 
           color="#64748b" 
+          onPress={() => router.push('/modal?type=about')}
         />
         <SettingItem 
           icon="rectangle.portrait.and.arrow.right" 

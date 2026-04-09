@@ -86,11 +86,24 @@ export default function MenuScreen() {
 
     // Filter items within section based on module permissions
     const filteredItems = section.data.filter(item => {
-      // If item has a moduleKey, check permissions
-      if (item.moduleKey && user?.permissions) {
+      if (!item.moduleKey) return true; // No key = always visible
+
+      // If we have permissions data from server, use it
+      if (user?.permissions) {
         return !!user.permissions[item.moduleKey];
       }
-      return true; // No key means visible to all (who can see the section)
+
+      // Fallback: no permissions data yet (server not updated)
+      // baskan_* modules → only super_admin can see
+      if (item.moduleKey.startsWith('baskan_')) {
+        return user?.role === 'super_admin';
+      }
+      // uye_* modules → visible to all logged-in users
+      if (item.moduleKey.startsWith('uye_')) {
+        return true;
+      }
+      // Unknown modules → hide for safety
+      return user?.role === 'super_admin';
     });
 
     if (filteredItems.length === 0) return null;

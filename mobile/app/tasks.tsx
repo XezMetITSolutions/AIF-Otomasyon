@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl } from 'react-native';
+import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl, Alert } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -9,7 +10,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { fetchTasks } from '@/services/api';
 
 export default function TasksScreen() {
-  const { type } = useLocalSearchParams<{ type: string }>();
+  const params = useLocalSearchParams<{ type: string; scope: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const [tasks, setTasks] = useState<any[]>([]);
@@ -18,14 +19,28 @@ export default function TasksScreen() {
 
   const loadTasks = async () => {
     setLoading(true);
-    const result = await fetchTasks(type);
-    if (result.success) setTasks(result.tasks);
+    const userData = await AsyncStorage.getItem('user');
+    const user = userData ? JSON.parse(userData) : null;
+    
+    const result = await fetchTasks(params.type, user?.id, params.scope);
+    if (result.success) {
+      setTasks(result.tasks);
+    } else {
+      Alert.alert('Hata', result.message || 'Veriler alınamadı.');
+    }
     setLoading(false);
   };
 
-  useEffect(() => { loadTasks(); }, [type]);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadTasks();
+    setRefreshing(false);
+  };
 
-  const title = type === 'izin' ? 'İzin Talepleri' : 'Harcama Talepleri';
+  useEffect(() => { loadTasks(); }, [params.type, params.scope]);
+
+  const title = params.type === 'izin' ? 'İzin Talepleri' : 
+                params.type === 'harcama' ? 'Rezervasyon Talepleri' : 'Talepler';
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -35,22 +50,29 @@ export default function TasksScreen() {
       ) : (
         <FlatList
           data={tasks}
-          keyExtractor={(item) => (item.izin_id || item.harcama_id).toString()}
+          keyExtractor={(item) => (item.izin_id || item.harcama_id || item.talep_id || Math.random()).toString()}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.tint} />}
           renderItem={({ item }) => (
             <Pressable style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <View style={styles.cardHeader}>
-                <Text style={styles.userName}>{item.ad_soyad}</Text>
+                <Text style={styles.userName}>{item.ad_soyad || item.baslik}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: item.durum === 'onaylandi' ? '#10b981' : item.durum === 'beklemede' ? '#f59e0b' : '#ef4444' }]}>
                     <Text style={styles.statusText}>{item.durum.toUpperCase()}</Text>
                 </View>
               </View>
-              <Text style={styles.reason}>{item.sebep || item.aciklama}</Text>
+              <Text style={styles.reason}>{item.sebep || item.aciklama || item.baslik}</Text>
               <View style={styles.cardFooter}>
                 <FontAwesome6 name="calendar" color={theme.tabIconDefault} size={14} />
-                <Text style={styles.dateText}>{item.baslangic_tarihi || item.tarih} {item.bitis_tarihi ? `- ${item.bitis_tarihi}` : ''}</Text>
+                <Text style={styles.dateText}>{item.baslangic_tarihi || item.tarih || item.olusturma_tarihi} {item.bitis_tarihi ? `- ${item.bitis_tarihi}` : ''}</Text>
               </View>
             </Pressable>
           )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <FontAwesome6 name="folder-open" size={50} color={theme.tabIconDefault} />
+              <Text style={styles.emptyText}>Herhangi bir kayıt bulunamadı.</Text>
+            </View>
+          }
           contentContainerStyle={styles.listContent}
         />
       )}
@@ -70,4 +92,6 @@ const styles = StyleSheet.create({
   reason: { fontSize: 14, opacity: 0.7, marginTop: 8, lineHeight: 20 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', marginTop: 12, backgroundColor: 'transparent' },
   dateText: { fontSize: 12, opacity: 0.5, marginLeft: 6 },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 100, backgroundColor: 'transparent' },
+  emptyText: { marginTop: 20, fontSize: 16, opacity: 0.5, textAlign: 'center' },
 });

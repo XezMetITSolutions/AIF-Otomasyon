@@ -1,8 +1,10 @@
 const API_BASE_URL = 'https://aifnet.islamfederasyonu.at/api';
 
-export async function fetchStats() {
+export async function fetchStats(userId?: number) {
   try {
-    const response = await fetch(`${API_BASE_URL}/stats.php`);
+    let url = `${API_BASE_URL}/stats.php`;
+    if (userId) url += `?userId=${userId}`;
+    const response = await fetch(url);
     const data = await response.json();
     return data;
   } catch (error) {
@@ -29,9 +31,12 @@ export async function fetchMeetings() {
   }
 }
 
-export async function fetchTasks(type: string) {
+export async function fetchTasks(type: string, userId?: number, scope?: string) {
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks.php?type=${type}`);
+    let url = `${API_BASE_URL}/tasks.php?type=${type}`;
+    if (userId) url += `&userId=${userId}`;
+    if (scope) url += `&scope=${scope}`;
+    const response = await fetch(url);
     return await response.json();
   } catch (error) {
     return { success: false, message: 'Sunucuya ulaşılamadı.' };
@@ -56,9 +61,33 @@ export async function fetchSubeler() {
   }
 }
 
-export async function fetchProjeler() {
+export async function fetchEtkinlikler() {
   try {
-    const response = await fetch(`${API_BASE_URL}/projeler.php`);
+    const response = await fetch(`${API_BASE_URL}/etkinlikler.php`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
+export async function fetchZiyaretler(userId?: number) {
+  try {
+    let url = `${API_BASE_URL}/ziyaretler.php`;
+    if (userId) url += `?userId=${userId}`;
+    const response = await fetch(url);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
+export async function fetchProjeler(userId?: number, scope?: string) {
+  try {
+    let url = `${API_BASE_URL}/projeler.php`;
+    if (userId || scope) url += '?';
+    if (userId) url += `userId=${userId}`;
+    if (scope) url += `${userId ? '&' : ''}scope=${scope}`;
+    const response = await fetch(url);
     return await response.json();
   } catch (error) {
     return { success: false, message: 'Sunucuya ulaşılamadı.' };
@@ -79,6 +108,36 @@ export async function login(email: string, password: string) {
   } catch (error) {
     console.error('Login Error:', error);
     return { success: false, message: 'Giriş başarısız.' };
+  }
+}
+
+export async function updateProfile(id: number, name: string, email: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile-update.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, name, email }),
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
+export async function changePassword(id: number, oldPassword: string, newPassword: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/change-password.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, old_password: oldPassword, new_password: newPassword }),
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
   }
 }
 

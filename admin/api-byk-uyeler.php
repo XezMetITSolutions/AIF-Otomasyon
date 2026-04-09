@@ -18,7 +18,7 @@ try {
     session_write_close(); 
 
     // Başkan sadece kendi BYK'sını görebilir
-    if ($user['role'] === Auth::ROLE_UYE) {
+    if ($user['role'] === Auth::ROLE_UYE && !$auth->isSuperAdmin()) {
         if (isset($_GET['byk_id']) && $_GET['byk_id'] != $user['byk_id']) {
             throw new Exception('Kendi BYK\'nız dışındaki üyeleri görüntüleyemezsiniz.');
         }

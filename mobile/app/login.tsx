@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, TextInput, Pressable, Alert, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { SymbolView } from 'expo-symbols';
 
 import { Text, View } from '@/components/Themed';
@@ -44,18 +45,18 @@ export default function LoginScreen() {
       style={styles.container}
     >
       <LinearGradient
-        colors={colorScheme === 'dark' ? ['#0f172a', '#1e293b'] : ['#6366f1', '#4f46e5']}
+        colors={colorScheme === 'dark' ? ['#000000', '#004d39'] : ['#00a67d', '#007a5e']}
         style={styles.gradient}
       >
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.title, { color: theme.text }]}>AİFNET Giriş</Text>
           <Text style={[styles.subtitle, { color: theme.text, opacity: 0.6 }]}>
-            Otomasyon sistemine hoş geldiniz.
+            Sisteme giriş yaparak devam edin.
           </Text>
 
           <View style={styles.inputContainer}>
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f8fafc' }]}>
-              <SymbolView name={{ ios: 'envelope.fill', android: 'email', web: 'email' } as any} tintColor={theme.tabIconDefault} size={20} />
+              <FontAwesome6 name="envelope" color={theme.tabIconDefault} size={18} />
               <TextInput
                 style={[styles.input, { color: theme.text }]}
                 placeholder="E-posta"
@@ -68,7 +69,7 @@ export default function LoginScreen() {
             </View>
 
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f8fafc' }]}>
-              <SymbolView name={{ ios: 'lock.fill', android: 'lock', web: 'lock' } as any} tintColor={theme.tabIconDefault} size={20} />
+              <FontAwesome6 name="lock" color={theme.tabIconDefault} size={18} />
               <TextInput
                 style={[styles.input, { color: theme.text }]}
                 placeholder="Şifre"
@@ -83,7 +84,7 @@ export default function LoginScreen() {
           <View style={styles.optionsRow}>
             <Pressable style={styles.rememberRow} onPress={() => setRememberMe(!rememberMe)}>
               <View style={[styles.checkbox, { borderColor: theme.tint, backgroundColor: rememberMe ? theme.tint : 'transparent' }]}>
-                {rememberMe && <SymbolView name={{ ios: 'checkmark', android: 'check', web: 'check' } as any} tintColor="#fff" size={14} />}
+                {rememberMe && <FontAwesome6 name="check" color="#fff" size={10} />}
               </View>
               <Text style={[styles.rememberText, { color: theme.text }]}>Beni Hatırla</Text>
             </Pressable>
@@ -102,7 +103,7 @@ export default function LoginScreen() {
             </Text>
           </Pressable>
 
-          <Text style={[styles.footer, { color: theme.text, opacity: 0.4 }]}>© 2026 AİF Otomasyon</Text>
+          <Text style={[styles.footer, { color: theme.text, opacity: 0.4 }]}>© 2026 AİFNET. Tüm hakları saklıdır.</Text>
         </View>
       </LinearGradient>
     </KeyboardAvoidingView>

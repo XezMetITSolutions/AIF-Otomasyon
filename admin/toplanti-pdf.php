@@ -27,7 +27,7 @@ if (!$toplanti) {
     die('Toplantı bulunamadı');
 }
 
-if ($user['role'] === Auth::ROLE_UYE && $toplanti['byk_id'] != $user['byk_id']) {
+if ($user['role'] === Auth::ROLE_UYE && !$auth->isSuperAdmin() && $toplanti['byk_id'] != $user['byk_id']) {
     die('Erişim reddedildi: Bu toplantının raporunu görüntüleme yetkiniz yok.');
 }
 

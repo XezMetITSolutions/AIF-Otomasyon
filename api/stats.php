@@ -11,6 +11,17 @@ if (!$auth->checkAuth()) {
 }
 
 $db = Database::getInstance();
+// Mobile app doesn't have session, check role from DB if userId is provided
+$isSuperAdmin = false;
+if ($userId) {
+    $userRow = $db->fetch("SELECT r.rol_adi, r.rol_yetki_seviyesi FROM kullanicilar u JOIN roller r ON u.rol_id = r.rol_id WHERE u.kullanici_id = ?", [$userId]);
+    $isSuperAdmin = ($userRow && ($userRow['rol_adi'] === 'super_admin' || (int)$userRow['rol_yetki_seviyesi'] >= 90));
+}
+
+if ($userId && !$isSuperAdmin) {
+    $userWhere = " AND kullanici_id = ?";
+    $params = [$userId];
+}
 
 try {
     try {
@@ -24,8 +35,9 @@ try {
         'toplam_byk' => $toplamByk,
         'toplam_etkinlik' => $db->fetch("SELECT COUNT(*) as count FROM etkinlikler WHERE baslangic_tarihi >= CURDATE()")['count'],
         'toplam_toplanti' => $db->fetch("SELECT COUNT(*) as count FROM toplantilar WHERE durum = 'planlandi'")['count'],
-        'bekleyen_izin' => $db->fetch("SELECT COUNT(*) as count FROM izin_talepleri WHERE durum = 'beklemede'")['count'],
-        'bekleyen_harcama' => $db->fetch("SELECT COUNT(*) as count FROM harcama_talepleri WHERE durum = 'beklemede'")['count'],
+        'bekleyen_izin' => $db->fetch("SELECT COUNT(*) as count FROM izin_talepleri WHERE durum = 'beklemede' $userWhere", $params)['count'],
+        'bekleyen_harcama' => $db->fetch("SELECT COUNT(*) as count FROM harcama_talepleri WHERE durum = 'beklemede' $userWhere", $params)['count'],
+        'toplam_proje' => $db->fetch("SELECT COUNT(*) as count FROM projeler " . ($userId ? "WHERE olusturan_id = ?" : ""), $userId ? [$userId] : [])['count'],
     ];
 
     $son_aktiviteler = $db->fetchAll("

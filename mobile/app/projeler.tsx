@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl } from 'react-native';
-import { Stack } from 'expo-router';
+import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl, Alert } from 'react-native';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -9,6 +10,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { fetchProjeler } from '@/services/api';
 
 export default function ProjelerScreen() {
+  const params = useLocalSearchParams<{ scope: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const [data, setData] = useState<any[]>([]);
@@ -17,12 +19,19 @@ export default function ProjelerScreen() {
 
   const loadData = async () => {
     setLoading(true);
-    const result = await fetchProjeler();
-    if (result.success) setData(result.projeler);
+    const userData = await AsyncStorage.getItem('user');
+    const user = userData ? JSON.parse(userData) : null;
+    
+    const result = await fetchProjeler(user?.id, params.scope);
+    if (result.success) {
+      setData(result.projeler);
+    } else {
+      Alert.alert('Hata', result.message || 'Veriler alınamadı.');
+    }
     setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [params.scope]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>

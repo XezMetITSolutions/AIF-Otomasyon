@@ -1,7 +1,7 @@
 <!-- Katılımcılar Tab İçeriği -->
 <?php
 $currentUserId = $user['id'] ?? $user['kullanici_id'];
-$isCreator = ($toplanti['olusturan_id'] == $currentUserId);
+$isCreator = ($toplanti['olusturan_id'] == $currentUserId || $auth->isSuperAdmin());
 ?>
 
 <!-- Katılım İstatistikleri (Yatay Görünüm) -->
