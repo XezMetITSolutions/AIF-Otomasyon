@@ -19,7 +19,7 @@ try {
 
     // Eğer userId geldiyse ve admin değilse, kullanıcının dahil olduğu grupların ziyaretlerini getir
     if ($userId && !$isSuperAdmin) {
-        $where = "WHERE z.olusturan_id = ? OR z.grup_id IN (SELECT grup_id FROM ziyaret_grup_uyeleri WHERE kullanici_id = ?)";
+        $where = "WHERE (z.olusturan_id = ? OR z.grup_id IN (SELECT grup_id FROM ziyaret_grup_uyeleri WHERE kullanici_id = ?))";
         $params = [$userId, $userId];
     }
 
@@ -29,7 +29,7 @@ try {
         INNER JOIN byk b ON z.byk_id = b.byk_id
         INNER JOIN ziyaret_gruplari g ON z.grup_id = g.grup_id
         LEFT JOIN subeler s ON z.sube_id = s.sube_id
-        $where AND z.ziyaret_tarihi >= CURDATE()
+        $where 
         ORDER BY z.ziyaret_tarihi ASC
         LIMIT 100
     ", $params);
