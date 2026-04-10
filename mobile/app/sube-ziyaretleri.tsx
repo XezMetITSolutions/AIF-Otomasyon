@@ -17,25 +17,27 @@ export default function SubeZiyaretleriScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = async () => {
-    setLoading(true);
-    const userData = await AsyncStorage.getItem('user');
-    const user = userData ? JSON.parse(userData) : null;
-    
-    const result = await fetchZiyaretler(user?.id);
-    if (result.success) {
-      setZiyaretler(result.ziyaretler);
+    try {
+      setLoading(true);
+      const userData = await AsyncStorage.getItem('user');
+      const user = userData ? JSON.parse(userData) : null;
+      
+      const result = await fetchZiyaretler(user?.id);
+      if (result.success) {
+        setZiyaretler(result.ziyaretler);
+      } else {
+        console.error('API Error:', result.message);
+      }
+    } catch (err) {
+      console.error('Fetch Error:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    const userData = await AsyncStorage.getItem('user');
-    const user = userData ? JSON.parse(userData) : null;
-    const result = await fetchZiyaretler(user?.id);
-    if (result.success) {
-      setZiyaretler(result.ziyaretler);
-    }
+    await loadData();
     setRefreshing(false);
   };
 
@@ -44,6 +46,7 @@ export default function SubeZiyaretleriScreen() {
   }, []);
 
   const formatDate = (dateStr: string) => {
+    if (!dateStr) return 'Tarih Belirtilmemiş';
     const date = new Date(dateStr);
     return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
   };
@@ -70,9 +73,11 @@ export default function SubeZiyaretleriScreen() {
                   <Text style={styles.subeName}>{item.byk_adi || 'Bilinmeyen Şube'}</Text>
                   <Text style={styles.grupName}>{item.grup_adi || 'Genel Grup'}</Text>
                 </View>
-                <View style={[styles.statusBadge, { backgroundColor: item.durum === 'tamamlandi' ? '#10b981' : item.durum === 'planlandi' ? '#f59e0b' : '#ef4444' }]}>
-                    <Text style={styles.statusText}>{item.durum.toUpperCase()}</Text>
-                </View>
+                {item.durum && (
+                  <View style={[styles.statusBadge, { backgroundColor: item.durum === 'tamamlandi' ? '#10b981' : item.durum === 'planlandi' ? '#f59e0b' : '#ef4444' }]}>
+                      <Text style={styles.statusText}>{item.durum.toUpperCase()}</Text>
+                  </View>
+                )}
               </View>
               
               <View style={styles.cardFooter}>
