@@ -36,7 +36,13 @@ try {
 
     echo json_encode([
         'success' => true,
-        'ziyaretler' => $ziyaretler
+        'ziyaretler' => $ziyaretler,
+        'debug' => [
+            'userId' => $userId,
+            'isSuperAdmin' => $isSuperAdmin ?? false,
+            'queryWhere' => $whereClause,
+            'params' => $params
+        ]
     ]);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
