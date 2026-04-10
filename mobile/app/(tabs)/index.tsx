@@ -99,8 +99,8 @@ export default function DashboardScreen() {
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.heroContent}>
-            <Text style={styles.heroSubtitle}>AİF Kurumsal</Text>
-            <Text style={styles.heroTitle}>Dijital Otomasyon</Text>
+            <Text style={styles.heroTitle}>"Bir çiçekle bahar olmaz;</Text>
+            <Text style={styles.heroSubtitle}>ama her bahar bir çiçekle başlar."</Text>
             <View style={styles.heroStatusBox}>
               <View style={styles.dot} />
               <Text style={styles.heroStatusText}>Sistem Aktif</Text>
@@ -202,8 +202,8 @@ const styles = StyleSheet.create({
   userNameText: { fontSize: 32, fontWeight: '800', letterSpacing: -1, marginTop: 2 },
   heroCard: { borderRadius: 28, padding: 24, height: 160, justifyContent: 'center', overflow: 'hidden', elevation: 12, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 12 },
   heroContent: { backgroundColor: 'transparent', zIndex: 1 },
-  heroTitle: { color: '#fff', fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
-  heroSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600', marginBottom: 4 },
+  heroTitle: { color: '#fff', fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
+  heroSubtitle: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '600', marginTop: 4, fontStyle: 'italic' },
   heroStatusBox: { flexDirection: 'row', alignItems: 'center', marginTop: 12, backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ade80', marginRight: 6 },
   heroStatusText: { color: '#fff', fontSize: 11, fontWeight: '700' },
