@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/init.php';
 $db = Database::getInstance();
 
 try {
-    // Web panelindeki gibi geniş sorgu kullanıyoruz
+    // Sadece bugünden sonraki etkinlikleri, en yakından uzağa doğru (ASC) getiriyoruz
     $etkinlikler = $db->fetchAll("
         SELECT e.*, 
                COALESCE(b.byk_adi, '-') as byk_adi,
@@ -14,7 +14,8 @@ try {
                COALESCE(b.renk_kodu, e.renk_kodu, '#009872') as byk_renk
         FROM etkinlikler e
         LEFT JOIN byk b ON e.byk_id = b.byk_id
-        ORDER BY e.baslangic_tarihi DESC
+        WHERE e.baslangic_tarihi >= CURDATE()
+        ORDER BY e.baslangic_tarihi ASC
         LIMIT 100
     ");
 

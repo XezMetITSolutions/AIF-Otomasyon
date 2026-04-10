@@ -43,17 +43,9 @@ export default function EtkinliklerScreen() {
   const sections = useMemo(() => {
     if (!etkinlikler || etkinlikler.length === 0) return [];
 
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Sadece günü baz alalım
-
-    // 1. Sadece bugünden sonraki etkinlikleri al ve tarihe göre sırala
-    const upcoming = etkinlikler
-      .filter(item => new Date(item.baslangic_tarihi) >= now)
-      .sort((a, b) => new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime());
-
-    // 2. Gruplandır
+    // 1. Gruplandır (API zaten sıralı ve filtrelenmiş veriyi gönderiyor)
     const sectionsArray: { title: string; data: any[] }[] = [];
-    upcoming.forEach(item => {
+    etkinlikler.forEach(item => {
       const date = new Date(item.baslangic_tarihi);
       const monthYear = date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toUpperCase();
       
