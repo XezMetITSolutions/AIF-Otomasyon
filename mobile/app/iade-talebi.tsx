@@ -183,6 +183,15 @@ export default function IadeTalebiScreen() {
 
   const calculateTotal = () => items.reduce((sum, item) => sum + (parseFloat(item.amount.replace(',', '.')) || 0), 0);
 
+  const getOptions = () => {
+    if (modalType === 'region') return BYK_OPTIONS;
+    if (modalType === 'birim') return BIRIM_OPTIONS;
+    if (modalType === 'type') return TYPE_OPTIONS;
+    if (modalType === 'paymentMode') return PAYMENT_OPTIONS;
+    if (modalType === 'date') return Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+    return [];
+  };
+
   const handleSubmit = async () => {
     if (!iban || calculateTotal() <= 0) { Alert.alert('Hata', 'Lütfen IBAN ve gider kalemlerini giriniz.'); return; }
     setLoading(true);
