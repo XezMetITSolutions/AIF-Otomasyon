@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { fetchEtkinlikler, fetchMeetings } from '@/services/api';
+import { fetchEtkinlikler, fetchMeetings, fetchZiyaretler } from '@/services/api';
 
 const PROJECT_COLORS = {
   primary: '#009872',
