@@ -11,6 +11,8 @@ if (!$auth->checkAuth()) {
 }
 
 $db = Database::getInstance();
+$userId = isset($_GET['userId']) ? (int)$_GET['userId'] : 0;
+
 // Mobile app doesn't have session, check role from DB if userId is provided
 $isSuperAdmin = false;
 if ($userId) {
@@ -18,6 +20,8 @@ if ($userId) {
     $isSuperAdmin = ($userRow && ($userRow['rol_adi'] === 'super_admin' || (int)$userRow['rol_yetki_seviyesi'] >= 90));
 }
 
+$userWhere = "";
+$params = [];
 if ($userId && !$isSuperAdmin) {
     $userWhere = " AND kullanici_id = ?";
     $params = [$userId];
@@ -31,14 +35,22 @@ try {
     }
 
     $stats = [
-        'toplam_kullanici' => $db->fetch("SELECT COUNT(*) as count FROM kullanicilar WHERE aktif = 1")['count'],
+        'toplam_kullanici' => 0,
         'toplam_byk' => $toplamByk,
-        'toplam_etkinlik' => $db->fetch("SELECT COUNT(*) as count FROM etkinlikler WHERE baslangic_tarihi >= CURDATE()")['count'],
-        'toplam_toplanti' => $db->fetch("SELECT COUNT(*) as count FROM toplantilar WHERE durum = 'planlandi'")['count'],
-        'bekleyen_izin' => $db->fetch("SELECT COUNT(*) as count FROM izin_talepleri WHERE durum = 'beklemede' $userWhere", $params)['count'],
-        'bekleyen_harcama' => $db->fetch("SELECT COUNT(*) as count FROM harcama_talepleri WHERE durum = 'beklemede' $userWhere", $params)['count'],
-        'toplam_proje' => $db->fetch("SELECT COUNT(*) as count FROM projeler " . ($userId ? "WHERE olusturan_id = ?" : ""), $userId ? [$userId] : [])['count'],
+        'toplam_etkinlik' => 0,
+        'toplam_toplanti' => 0,
+        'bekleyen_izin' => 0,
+        'bekleyen_harcama' => 0,
+        'toplam_proje' => 0,
     ];
+
+    try { $stats['toplam_kullanici'] = $db->fetch("SELECT COUNT(*) as count FROM kullanicilar WHERE aktif = 1")['count']; } catch(Exception $e) {}
+    try { $stats['toplam_etkinlik'] = $db->fetch("SELECT COUNT(*) as count FROM etkinlikler WHERE baslangic_tarihi >= CURDATE()")['count']; } catch(Exception $e) {}
+    try { $stats['toplam_toplanti'] = $db->fetch("SELECT COUNT(*) as count FROM toplantilar WHERE durum = 'planlandi'")['count']; } catch(Exception $e) {}
+    try { $stats['bekleyen_izin'] = $db->fetch("SELECT COUNT(*) as count FROM izin_talepleri WHERE durum = 'beklemede' $userWhere", $params)['count']; } catch(Exception $e) {}
+    try { $stats['bekleyen_harcama'] = $db->fetch("SELECT COUNT(*) as count FROM harcama_talepleri WHERE durum = 'beklemede' $userWhere", $params)['count']; } catch(Exception $e) {}
+    try { $stats['toplam_proje'] = $db->fetch("SELECT COUNT(*) as count FROM projeler " . ($userId ? "WHERE olusturan_id = ?" : ""), $userId ? [$userId] : [])['count']; } catch(Exception $e) {}
+
 
     $son_aktiviteler = $db->fetchAll("
         SELECT 

@@ -416,28 +416,34 @@ include __DIR__ . '/../includes/header.php';
                                                 class="fas fa-user-circle me-1"></i><?php echo htmlspecialchars($toplanti['olusturan']); ?>
                                         </small>
 
-                                        <?php if ($canManage): ?>
-                                            <div class="btn-group" style="position: relative; z-index: 2;">
-                                                <a href="/panel/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>"
-                                                    class="btn btn-sm btn-outline-primary" title="Düzenle">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
+                                        <div class="d-flex gap-1" style="position: relative; z-index: 2;">
+                                            <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti['toplanti_id']; ?>" 
+                                               class="btn btn-sm btn-outline-success" target="_blank" title="Raporu Görüntüle">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                            <?php if ($canManage): ?>
+                                                <div class="btn-group">
+                                                    <a href="/panel/toplanti-duzenle.php?id=<?php echo $toplanti['toplanti_id']; ?>"
+                                                        class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
 
-                                                <?php if (!$isCancelled && !$isPast): ?>
-                                                    <button type="button" class="btn btn-sm btn-outline-warning"
-                                                        onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')"
-                                                        title="İptal Et">
-                                                        <i class="fas fa-ban"></i>
+                                                    <?php if (!$isCancelled && !$isPast): ?>
+                                                        <button type="button" class="btn btn-sm btn-outline-warning"
+                                                            onclick="cancelMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')"
+                                                            title="İptal Et">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>
+                                                    <?php endif; ?>
+
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        onclick="deleteMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')"
+                                                        title="Sil">
+                                                        <i class="fas fa-trash"></i>
                                                     </button>
-                                                <?php endif; ?>
-
-                                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                                    onclick="deleteMeeting(<?php echo $toplanti['toplanti_id']; ?>, '<?php echo htmlspecialchars(addslashes($toplanti['baslik'])); ?>')"
-                                                    title="Sil">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        <?php endif; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -459,6 +465,7 @@ include __DIR__ . '/../includes/header.php';
                                         <th>Konum</th>
                                         <th>Katılım</th>
                                         <th>Durum</th>
+                                        <th class="text-center">Rapor</th>
                                         <?php if ($canManage): ?>
                                             <th class="text-end pe-4">İşlemler</th><?php endif; ?>
                                     </tr>
@@ -541,6 +548,12 @@ include __DIR__ . '/../includes/header.php';
                                                 <?php else: ?>
                                                     <span class="badge bg-success">Aktif</span>
                                                 <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="/admin/toplanti-pdf.php?id=<?php echo $toplanti['toplanti_id']; ?>" 
+                                                   class="btn btn-sm btn-outline-success" target="_blank" title="Raporu Görüntüle">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
                                             </td>
                                             <?php if ($canManage): ?>
                                                 <td class="text-end pe-4">

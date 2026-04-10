@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl, Alert } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, Link } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
 
 import { Text, View } from '@/components/Themed';
@@ -14,6 +14,7 @@ export default function MeetingsScreen() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'gelecek' | 'gecmis'>('gelecek');
 
   const loadMeetings = async () => {
     setLoading(true);
@@ -39,23 +40,64 @@ export default function MeetingsScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ title: 'Toplantı Yönetimi' }} />
       
+      <View style={StyleSheet.flatten([styles.tabBar, { borderBottomColor: theme.border }])}>
+        <Pressable 
+          style={StyleSheet.flatten([
+            styles.tabItem, 
+            activeTab === 'gelecek' && styles.activeTabItem, 
+            activeTab === 'gelecek' && { borderBottomColor: theme.tint }
+          ])}
+          onPress={() => setActiveTab('gelecek')}
+        >
+          <Text style={StyleSheet.flatten([styles.tabText, { color: activeTab === 'gelecek' ? theme.tint : theme.tabIconDefault }])}>Gelecek</Text>
+        </Pressable>
+        <Pressable 
+          style={StyleSheet.flatten([
+            styles.tabItem, 
+            activeTab === 'gecmis' && styles.activeTabItem, 
+            activeTab === 'gecmis' && { borderBottomColor: theme.tint }
+          ])}
+          onPress={() => setActiveTab('gecmis')}
+        >
+          <Text style={StyleSheet.flatten([styles.tabText, { color: activeTab === 'gecmis' ? theme.tint : theme.tabIconDefault }])}>Geçmiş</Text>
+        </Pressable>
+      </View>
+      
       {loading && !refreshing ? (
         <View style={styles.center}><ActivityIndicator size="large" color={theme.tint} /></View>
       ) : (
         <FlatList
-          data={meetings}
+          data={meetings
+            .filter(m => {
+              const mDate = new Date(m.tarih);
+              const now = new Date();
+              now.setHours(0, 0, 0, 0); // Karşılaştırma için günü baz alalım
+              return activeTab === 'gelecek' ? mDate >= now : mDate < now;
+            })
+            .sort((a, b) => {
+              const dateA = new Date(a.tarih).getTime();
+              const dateB = new Date(b.tarih).getTime();
+              return activeTab === 'gelecek' ? dateA - dateB : dateB - dateA;
+            })
+          }
           keyExtractor={(item) => item.toplanti_id.toString()}
           renderItem={({ item }) => {
             const date = item.tarih ? new Date(item.tarih) : new Date();
             const isValidDate = !isNaN(date.getTime());
             
+            // Saat bilgisini çek (eğer item.saat boşsa tarihten çıkar)
+            const displayTime = item.saat || (isValidDate ? date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '--:--');
+            
             return (
-              <Pressable style={[styles.meetingCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <View style={[styles.dateBox, { backgroundColor: theme.tint + '15' }]}>
-                  <Text style={[styles.dayText, { color: theme.tint }]}>
+              <Link href={`/meeting-detail?id=${item.toplanti_id || 0}`} asChild>
+                <Pressable 
+                  style={StyleSheet.flatten([styles.meetingCard, { backgroundColor: theme.card, borderColor: theme.border }])}
+                >
+                <View style={StyleSheet.flatten([styles.dateBox, { backgroundColor: theme.tint + '15' }])}>
+                  <Text style={StyleSheet.flatten([styles.dayText, { color: theme.tint }])}>
                     {isValidDate ? date.getDate() : '??'}
                   </Text>
-                  <Text style={[styles.monthText, { color: theme.tint }]}>
+                  <Text style={StyleSheet.flatten([styles.monthText, { color: theme.tint }])}>
                     {isValidDate ? date.toLocaleDateString('tr-TR', { month: 'short' }) : '---'}
                   </Text>
                 </View>
@@ -63,21 +105,22 @@ export default function MeetingsScreen() {
                   <Text style={styles.meetingTitle}>{item.baslik || 'Başlıksız Toplantı'}</Text>
                   <View style={styles.meetingDetails}>
                       <FontAwesome6 name="clock" color={theme.tabIconDefault} size={12} />
-                      <Text style={styles.detailText}>{item.saat || '--:--'}</Text>
+                      <Text style={styles.detailText}>{displayTime}</Text>
                       <FontAwesome6 name="user-group" color={theme.tabIconDefault} size={12} style={{marginLeft: 10}} />
                       <Text style={styles.detailText}>{item.katilimci_sayisi || 0} Kişi</Text>
                   </View>
-                  <View style={[styles.statusBadge, { backgroundColor: item.durum === 'tamamlandi' ? '#10b981' : '#f59e0b' }]}>
+                  <View style={StyleSheet.flatten([styles.statusBadge, { backgroundColor: item.durum === 'tamamlandi' ? '#10b981' : item.durum === 'iptal' ? '#ef4444' : '#f59e0b' }])}>
                       <Text style={styles.statusText}>{(item.durum || 'bekliyor').toUpperCase()}</Text>
                   </View>
                 </View>
-                <FontAwesome6 name="chevron-right" color={theme.tabIconDefault} size={14} />
-              </Pressable>
+                  <FontAwesome6 name="chevron-right" color={theme.tabIconDefault} size={14} />
+                </Pressable>
+              </Link>
             );
           }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.tint} />}
           contentContainerStyle={styles.listContent}
-          ListEmptyComponent={<Text style={styles.emptyText}>Toplantı bulunamadı.</Text>}
+          ListEmptyComponent={<Text style={styles.emptyText}>{activeTab === 'gelecek' ? 'Gelecek toplantı bulunamadı.' : 'Geçmiş toplantı bulunamadı.'}</Text>}
         />
       )}
     </View>
@@ -87,6 +130,25 @@ export default function MeetingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  tabBar: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    paddingHorizontal: 8,
+  },
+  tabItem: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTabItem: {
+    borderBottomWidth: 2,
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
   listContent: { padding: 16 },
   meetingCard: {
     flexDirection: 'row',

@@ -31,6 +31,15 @@ export async function fetchMeetings() {
   }
 }
 
+export async function fetchMeetingDetail(id: string | number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/meeting-detail.php?id=${id}`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
+
 export async function fetchTasks(type: string, userId?: number, scope?: string) {
   try {
     let url = `${API_BASE_URL}/tasks.php?type=${type}`;

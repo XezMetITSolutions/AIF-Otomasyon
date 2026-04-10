@@ -144,6 +144,27 @@ export default function MenuScreen() {
             ))}
           </View>
         ))}
+        <View style={styles.section}>
+          <Pressable 
+            style={({ pressed }) => [
+              styles.logoutButton, 
+              { 
+                backgroundColor: theme.card, 
+                borderColor: '#ef444430',
+                opacity: pressed ? 0.7 : 1,
+              }
+            ]}
+            onPress={async () => {
+              await AsyncStorage.removeItem('user');
+              router.replace('/login');
+            }}
+          >
+            <View style={[styles.iconBox, { backgroundColor: '#ef444415' }]}>
+              <FontAwesome6 name="right-from-bracket" color="#ef4444" size={18} />
+            </View>
+            <Text style={[styles.itemTitle, { color: '#ef4444' }]}>Çıkış Yap</Text>
+          </Pressable>
+        </View>
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>
@@ -172,4 +193,17 @@ const styles = StyleSheet.create({
   },
   iconBox: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
   itemTitle: { flex: 1, fontSize: 16, fontWeight: '600' },
+  logoutButton: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    padding: 16, 
+    borderRadius: 20, 
+    marginBottom: 12, 
+    borderWidth: 1,
+    shadowColor: '#ef4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 2,
+  },
 });

@@ -73,6 +73,7 @@ export default function EtkinliklerScreen() {
                     <FontAwesome6 name="location-dot" size={12} color={theme.tabIconDefault} />
                     <Text style={styles.infoText}>{item.konum}</Text>
                   </View>
+                )}
                 <View style={[styles.infoRow, { marginTop: 8 }]}>
                     <View style={[styles.bykBadge, { backgroundColor: item.byk_renk || '#009872' }]}>
                         <Text style={styles.bykText}>{item.byk_adi}</Text>
