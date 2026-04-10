@@ -41,10 +41,22 @@ export default function MeetingsScreen() {
     try {
       setLoading(true);
       
+      // Web platformu veya FileSystem desteklenmiyorsa direkt URL aç
+      if (typeof window !== 'undefined' || !FileSystem.documentDirectory) {
+        const url = `https://aifnet.islamfederasyonu.at/api/toplanti-pdf.php?id=${item.toplanti_id}&download=1`;
+        Linking.openURL(url);
+        return;
+      }
+
       const result = await downloadMeetingReport(item.toplanti_id);
       
       if (!result.success) {
         Alert.alert('Hata', result.message || 'Rapor hazırlanamadı.');
+        return;
+      }
+
+      if (!result.pdf_base64) {
+        Alert.alert('Hata', 'PDF verisi alınamadı.');
         return;
       }
 
@@ -60,17 +72,11 @@ export default function MeetingsScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri);
       } else {
-        // Web platformu veya paylaşım yoksa tarayıcıda aç (yedek)
-        if (typeof window !== 'undefined') {
-          const url = `https://aifnet.islamfederasyonu.at/api/toplanti-pdf.php?id=${item.toplanti_id}&download=1`;
-          Linking.openURL(url);
-        } else {
-          Alert.alert('Hata', 'Paylaşım özelliği bu cihazda mevcut değil.');
-        }
+        Alert.alert('Hata', 'Paylaşım özelliği bu cihazda mevcut değil.');
       }
     } catch (error) {
-      console.error('Report Error:', error);
-      Alert.alert('Hata', 'Rapor açılırken bir hata oluştu.');
+      console.error('Detailed Report Error:', error);
+      Alert.alert('Hata', 'Rapor açılırken sistem hatası oluştu.');
     } finally {
       setLoading(false);
     }
