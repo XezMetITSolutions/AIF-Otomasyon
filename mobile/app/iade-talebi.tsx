@@ -185,6 +185,12 @@ export default function IadeTalebiScreen() {
     } catch (e) {}
   };
 
+  const openSelector = (id: string, type: any) => {
+    setActiveItemId(id);
+    setModalType(type);
+    setModalVisible(true);
+  };
+
   const calculateDistance = async (id: string, roundTrip: boolean) => {
     const item = items.find(i => i.id === id);
     if (!item?.startLoc || !item?.endLoc) {
