@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator, RefreshControl, View as RNView } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import { StyleSheet, ActivityIndicator, RefreshControl, SectionList, Pressable } from 'react-native';
 import { Stack } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
 
@@ -7,6 +7,12 @@ import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { fetchEtkinlikler } from '@/services/api';
+
+const PROJECT_COLORS = {
+  primary: '#009872',
+  secondary: '#004d3a',
+  bgSoft: '#f8fafc',
+};
 
 export default function EtkinliklerScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -27,65 +33,99 @@ export default function EtkinliklerScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     const result = await fetchEtkinlikler();
-    if (result.success) {
-      setEtkinlikler(result.etkinlikler);
-    }
+    if (result.success) setEtkinlikler(result.etkinlikler);
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  const formatDate = (dateStr: string) => {
+  // Takvim Verilerini İşle (Sırala ve Ay Bazlı Gruplandır)
+  const sections = useMemo(() => {
+    if (!etkinlikler || etkinlikler.length === 0) return [];
+
+    // 1. Tarihe göre sırala
+    const sorted = [...etkinlikler].sort((a, b) => 
+      new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime()
+    );
+
+    // 2. Gruplandır
+    const groups: { [key: string]: any[] } = {};
+    sorted.forEach(item => {
+      const date = new Date(item.baslangic_tarihi);
+      const monthYear = date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toUpperCase();
+      if (!groups[monthYear]) groups[monthYear] = [];
+      groups[monthYear].push(item);
+    });
+
+    // 3. SectionList formatına dönüştür
+    return Object.keys(groups).map(monthYear => ({
+      title: monthYear,
+      data: groups[monthYear]
+    }));
+  }, [etkinlikler]);
+
+  const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: colorScheme === 'light' ? PROJECT_COLORS.bgSoft : theme.background }]}>
       <Stack.Screen options={{ title: 'Çalışma Takvimi' }} />
+      
       {loading && !refreshing ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#009872" />
-        </View>
+        <View style={styles.center}><ActivityIndicator size="large" color={PROJECT_COLORS.primary} /></View>
       ) : (
-        <FlatList
-          data={etkinlikler}
+        <SectionList
+          sections={sections}
           keyExtractor={(item) => item.etkinlik_id.toString()}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#009872" />}
-          renderItem={({ item }) => (
-            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-              <View style={styles.dateBadge}>
-                <Text style={styles.dateDay}>{new Date(item.baslangic_tarihi).getDate()}</Text>
-                <Text style={styles.dateMonth}>
-                  {new Date(item.baslangic_tarihi).toLocaleDateString('tr-TR', { month: 'short' }).toUpperCase()}
-                </Text>
-              </View>
-              <View style={styles.cardContent}>
-                <Text style={styles.title}>{item.baslik}</Text>
-                <View style={styles.infoRow}>
-                  <FontAwesome6 name="clock" size={12} color={theme.tabIconDefault} />
-                  <Text style={styles.infoText}>{formatDate(item.baslangic_tarihi)}</Text>
-                </View>
-                {item.konum && (
-                  <View style={styles.infoRow}>
-                    <FontAwesome6 name="location-dot" size={12} color={theme.tabIconDefault} />
-                    <Text style={styles.infoText}>{item.konum}</Text>
-                  </View>
-                )}
-                <View style={[styles.infoRow, { marginTop: 8 }]}>
-                    <View style={[styles.bykBadge, { backgroundColor: item.byk_renk || '#009872' }]}>
-                        <Text style={styles.bykText}>{item.byk_adi}</Text>
-                    </View>
-                </View>
-              </View>
+          stickySectionHeadersEnabled={true}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={PROJECT_COLORS.primary} />}
+          renderSectionHeader={({ section: { title } }) => (
+            <View style={[styles.sectionHeader, { backgroundColor: colorScheme === 'light' ? PROJECT_COLORS.bgSoft : theme.card }]}>
+              <Text style={[styles.sectionHeaderText, { color: PROJECT_COLORS.primary }]}>{title}</Text>
             </View>
           )}
+          renderItem={({ item }) => {
+            const date = new Date(item.baslangic_tarihi);
+            return (
+              <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <View style={styles.dateCol}>
+                  <Text style={[styles.dateDay, { color: theme.text }]}>{date.getDate()}</Text>
+                  <Text style={styles.dateWeekday}>{date.toLocaleDateString('tr-TR', { weekday: 'short' }).toUpperCase()}</Text>
+                </View>
+                
+                <View style={styles.contentCol}>
+                  <View style={styles.titleRow}>
+                    <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{item.baslik}</Text>
+                  </View>
+                  
+                  <View style={styles.detailsRow}>
+                    <View style={styles.detailItem}>
+                      <FontAwesome6 name="clock" size={10} color={PROJECT_COLORS.primary} />
+                      <Text style={styles.detailText}>{formatTime(item.baslangic_tarihi)}</Text>
+                    </View>
+                    {item.konum && (
+                      <View style={[styles.detailItem, { marginLeft: 12 }]}>
+                        <FontAwesome6 name="location-dot" size={10} color="#ef4444" />
+                        <Text style={styles.detailText} numberOfLines={1}>{item.konum}</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.badgeRow}>
+                    <View style={[styles.bykBadge, { backgroundColor: item.byk_renk || PROJECT_COLORS.primary }]}>
+                        <Text style={styles.bykText}>{item.byk_adi}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            );
+          }}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <FontAwesome6 name="calendar-xmark" size={50} color={theme.tabIconDefault} />
-              <Text style={styles.emptyText}>Yakın zamanda etkinlik bulunmuyor.</Text>
+              <FontAwesome6 name="calendar-days" size={60} color={theme.tabIconDefault} style={{opacity: 0.3}} />
+              <Text style={styles.emptyText}>Henüz bir etkinlik planlanmamış.</Text>
             </View>
           }
           contentContainerStyle={styles.listContent}
@@ -98,33 +138,34 @@ export default function EtkinliklerScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  listContent: { padding: 16 },
+  listContent: { paddingBottom: 100 },
+  sectionHeader: { paddingHorizontal: 20, paddingVertical: 12 },
+  sectionHeaderText: { fontSize: 13, fontWeight: '800', letterSpacing: 1.2 },
   card: { 
     flexDirection: 'row', 
-    borderRadius: 20, 
-    marginBottom: 15, 
-    borderWidth: 1, 
-    overflow: 'hidden',
-    padding: 12,
-    alignItems: 'center'
+    marginHorizontal: 16,
+    padding: 16, 
+    borderRadius: 24, 
+    marginBottom: 12, 
+    borderWidth: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
   },
-  dateBadge: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#00987215',
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 15
-  },
-  dateDay: { fontSize: 20, fontWeight: '800', color: '#009872' },
-  dateMonth: { fontSize: 10, fontWeight: '700', color: '#009872', marginTop: -2 },
-  cardContent: { flex: 1, backgroundColor: 'transparent' },
-  title: { fontSize: 16, fontWeight: '700', marginBottom: 6 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4, backgroundColor: 'transparent' },
-  infoText: { fontSize: 12, opacity: 0.6, marginLeft: 6 },
-  bykBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  bykText: { color: 'white', fontSize: 10, fontWeight: '700' },
-  emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 100, backgroundColor: 'transparent' },
-  emptyText: { marginTop: 20, fontSize: 16, opacity: 0.5, textAlign: 'center' }
+  dateCol: { width: 50, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: '#eee', marginRight: 15 },
+  dateDay: { fontSize: 22, fontWeight: '900', marginBottom: 2 },
+  dateWeekday: { fontSize: 10, color: '#94a3b8', fontWeight: '700' },
+  contentCol: { flex: 1 },
+  titleRow: { marginBottom: 6 },
+  title: { fontSize: 15, fontWeight: '700', lineHeight: 20 },
+  detailsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  detailItem: { flexDirection: 'row', alignItems: 'center' },
+  detailText: { fontSize: 11, color: '#64748b', marginLeft: 4, fontWeight: '500' },
+  badgeRow: { flexDirection: 'row' },
+  bykBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  bykText: { color: 'white', fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 120 },
+  emptyText: { marginTop: 20, fontSize: 15, color: '#94a3b8', fontWeight: '600' }
 });
