@@ -60,9 +60,9 @@ export default function DashboardScreen() {
   }
 
   const QUICK_ACTIONS = [
-    { title: 'Harcama', icon: 'money-bill-transfer', color: '#f59e0b', route: '/tasks?type=harcama&scope=my' },
-    { title: 'Toplantılar', icon: 'users-rectangle', color: '#10b981', route: '/meetings' },
     { title: 'Çalışma Takvimi', icon: 'calendar-days', color: '#8b5cf6', route: '/etkinlikler' },
+    { title: 'Toplantılar', icon: 'users-rectangle', color: '#10b981', route: '/meetings' },
+    { title: 'İade Talebi', icon: 'hand-holding-dollar', color: '#f59e0b', route: '/tasks?type=iade&scope=my' },
     { title: 'Şube Ziyaretleri', icon: 'map-location-dot', color: '#06b6d4', route: '/sube-ziyaretleri' },
   ];
 
@@ -125,18 +125,6 @@ export default function DashboardScreen() {
           ))}
         </View>
 
-        <Pressable 
-          style={[styles.announcementCard, { backgroundColor: PROJECT_COLORS.primary }]}
-          onPress={() => router.push('/(tabs)/menu')}
-        >
-          <View style={styles.announcementContent}>
-            <Text style={styles.announcementTitle}>Kurumsal Duyurular</Text>
-            <Text style={styles.announcementDesc}>En son güncellemeleri ve bildirimleri görüntüle</Text>
-          </View>
-          <View style={styles.announcementBtn}>
-            <FontAwesome6 name="arrow-right" size={14} color={PROJECT_COLORS.primary} />
-          </View>
-        </Pressable>
       </View>
       <View style={{ height: 120 }} />
     </ScrollView>
