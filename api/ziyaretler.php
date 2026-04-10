@@ -17,10 +17,13 @@ try {
         $isSuperAdmin = ($userRow && ($userRow['rol_adi'] === 'super_admin' || (int)$userRow['rol_yetki_seviyesi'] >= 90));
     }
 
-    // Eğer userId geldiyse ve admin değilse, kullanıcının dahil olduğu grupların ziyaretlerini getir
+    // Eğer userId geldiyse ve admin değilse, kullanıcının dahil olduğu grupların veya bağlı olduğu BYK'nın ziyaretlerini getir
     if ($userId && !$isSuperAdmin) {
-        $where = "WHERE (z.olusturan_id = ? OR z.grup_id IN (SELECT grup_id FROM ziyaret_grup_uyeleri WHERE kullanici_id = ?))";
-        $params = [$userId, $userId];
+        $where = "WHERE (z.olusturan_id = ? 
+                   OR z.grup_id IN (SELECT grup_id FROM ziyaret_grup_uyeleri WHERE kullanici_id = ?)
+                   OR z.byk_id IN (SELECT byk_id FROM kullanicilar WHERE kullanici_id = ?)
+                  )";
+        $params = [$userId, $userId, $userId];
     }
 
     $ziyaretler = $db->fetchAll("
