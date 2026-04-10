@@ -24,7 +24,6 @@ import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { submitIadeTalebi } from '@/services/api';
 
-const { width } = Dimensions.get('window');
 const PROJECT_COLORS = {
   primary: '#009872',
   secondary: '#004d3a',
@@ -113,6 +112,19 @@ export default function IadeTalebiScreen() {
     })();
   }, []);
 
+  const updateItem = (id: string, field: keyof ExpenseItem, value: any) => {
+    setItems(items.map(i => {
+      if (i.id !== id) return i;
+      const updated = { ...i, [field]: value };
+      if (field === 'net' || field === 'mwst') {
+        const n = parseFloat(updated.net.replace(',', '.')) || 0;
+        const m = parseFloat(updated.mwst.replace(',', '.')) || 0;
+        updated.amount = (n + m).toFixed(2);
+      }
+      return updated;
+    }));
+  };
+
   const pickImage = async (id: string, mode: 'camera' | 'library') => {
     let result;
     if (mode === 'camera') {
@@ -132,19 +144,6 @@ export default function IadeTalebiScreen() {
   };
 
   const removeItem = (id: string) => { if (items.length > 1) setItems(items.filter(i => i.id !== id)); };
-
-  const updateItem = (id: string, field: keyof ExpenseItem, value: any) => {
-    setItems(items.map(i => {
-      if (i.id !== id) return i;
-      const updated = { ...i, [field]: value };
-      if (field === 'net' || field === 'mwst') {
-        const n = parseFloat(updated.net.replace(',', '.')) || 0;
-        const m = parseFloat(updated.mwst.replace(',', '.')) || 0;
-        updated.amount = (n + m).toFixed(2);
-      }
-      return updated;
-    }));
-  };
 
   const fetchSuggestions = async (text: string) => {
     if (text.length < 3) { setSuggestions([]); return; }
@@ -206,7 +205,6 @@ export default function IadeTalebiScreen() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ title: 'İade Talebi', headerTransparent: true, headerTitleStyle: { fontWeight: '900', color: '#fff' } }} />
-      
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={isDark ? ['#0f172a', '#1e293b'] : [PROJECT_COLORS.primary, PROJECT_COLORS.secondary]} style={styles.headerHero}>
             <View style={styles.heroOverlay} />
