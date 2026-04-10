@@ -36,6 +36,7 @@ const TYPE_OPTIONS = [
   'Genel', 'Ulaşım - Kilometre', 'Ulaşım - Faturalı', 'Yemek/İkram', 'Konaklama', 'Malzeme'
 ];
 const PAYMENT_OPTIONS = ['Faturasız', 'Faturalı'];
+const MONTHS = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 
 type ExpenseItem = {
   id: string;
@@ -66,8 +67,9 @@ export default function IadeTalebiScreen() {
   }]);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState<any>(null);
+  const [modalType, setModalType] = useState<'region' | 'birim' | 'type' | 'paymentMode' | 'date' | null>(null);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().split('-')[1]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -99,15 +101,24 @@ export default function IadeTalebiScreen() {
     setItems(items.map(i => i.id === id ? { ...i, [field]: value } : i));
   };
 
-  const openSelector = (id: string, type: 'region' | 'birim' | 'type' | 'paymentMode') => {
+  const openSelector = (id: string, type: any) => {
     setActiveItemId(id);
     setModalType(type);
     setModalVisible(true);
   };
 
   const handleSelect = (value: string) => {
-    if (activeItemId && modalType) {
+    if (activeItemId && modalType && modalType !== 'date') {
       updateItem(activeItemId, modalType, value);
+    }
+    setModalVisible(false);
+  };
+
+  const handleDateSelect = (day: string) => {
+    if (activeItemId) {
+      const year = new Date().getFullYear();
+      const formattedDate = `${year}-${selectedMonth}-${day.padStart(2, '0')}`;
+      updateItem(activeItemId, 'date', formattedDate);
     }
     setModalVisible(false);
   };
@@ -117,6 +128,7 @@ export default function IadeTalebiScreen() {
     if (modalType === 'birim') return BIRIM_OPTIONS;
     if (modalType === 'type') return TYPE_OPTIONS;
     if (modalType === 'paymentMode') return PAYMENT_OPTIONS;
+    if (modalType === 'date') return Array.from({ length: 31 }, (_, i) => (i + 1).toString());
     return [];
   };
 
@@ -166,7 +178,7 @@ export default function IadeTalebiScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor: colorScheme === 'light' ? PROJECT_COLORS.bgSoft : theme.background }]}
     >
-      <Stack.Screen options={{ title: 'İade Talep Formu' }} />
+      <Stack.Screen options={{ title: 'İade Talebi Formu' }} />
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
@@ -188,13 +200,13 @@ export default function IadeTalebiScreen() {
             <View style={styles.row}>
                 <View style={styles.inputGroupHalf}>
                     <Text style={[styles.label, { color: theme.text }]}>Tarih</Text>
-                    <TextInput 
-                    style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9', color: theme.text }]}
-                    value={item.date}
-                    onChangeText={(val) => updateItem(item.id, 'date', val)}
-                    placeholder="YYYY-MM-DD"
-                    placeholderTextColor="#94a3b8"
-                    />
+                    <Pressable 
+                        style={[styles.pickerFake, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9' }]}
+                        onPress={() => openSelector(item.id, 'date')}
+                    >
+                        <Text style={{ color: theme.text, fontWeight: '600' }}>{item.date}</Text>
+                        <FontAwesome6 name="calendar-day" size={12} color={PROJECT_COLORS.primary} />
+                    </Pressable>
                 </View>
                 <View style={styles.inputGroupHalf}>
                     <Text style={[styles.label, { color: theme.text }]}>BYK</Text>
@@ -306,20 +318,44 @@ export default function IadeTalebiScreen() {
         </Pressable>
       </ScrollView>
 
-      {/* Selection Modal */}
+      {/* GLOBAL SELECT MODAL */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={styles.modalBg}>
             <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
                 <View style={styles.modalHeader}>
-                    <Text style={[styles.modalTitle, { color: theme.text }]}>Lütfen Seçin</Text>
+                    <Text style={[styles.modalTitle, { color: theme.text }]}>
+                        {modalType === 'date' ? 'Tarih Seçin' : 'Lütfen Seçin'}
+                    </Text>
                     <Pressable onPress={() => setModalVisible(false)}><FontAwesome6 name="xmark" size={20} color={theme.text} /></Pressable>
                 </View>
+
+                {modalType === 'date' && (
+                    <View style={styles.monthSelector}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                            {MONTHS.map(m => (
+                                <Pressable 
+                                    key={m} 
+                                    onPress={() => setSelectedMonth(m)}
+                                    style={[styles.monthPill, { backgroundColor: selectedMonth === m ? PROJECT_COLORS.primary : (colorScheme === 'dark' ? '#1e293b' : '#f1f5f9') }]}
+                                >
+                                    <Text style={{ color: selectedMonth === m ? '#fff' : theme.text, fontWeight: '700', fontSize: 12 }}>{m}. AY</Text>
+                                </Pressable>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
+                
                 <FlatList 
                     data={getOptions()}
                     keyExtractor={(item) => item}
+                    numColumns={modalType === 'date' ? 4 : 1}
+                    contentContainerStyle={{ paddingBottom: 30 }}
                     renderItem={({ item }) => (
-                        <Pressable style={styles.optionItem} onPress={() => handleSelect(item)}>
-                            <Text style={[styles.optionText, { color: theme.text }]}>{item}</Text>
+                        <Pressable 
+                            style={modalType === 'date' ? styles.dateItem : styles.optionItem} 
+                            onPress={() => modalType === 'date' ? handleDateSelect(item) : handleSelect(item)}
+                        >
+                            <Text style={[modalType === 'date' ? styles.dateText : styles.optionText, { color: theme.text }]}>{item}</Text>
                         </Pressable>
                     )}
                 />
@@ -358,9 +394,13 @@ const styles = StyleSheet.create({
   submitButton: { height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', elevation: 4, shadowColor: PROJECT_COLORS.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10 },
   submitButtonText: { color: '#ffffff', fontSize: 18, fontWeight: '800' },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 25, maxHeight: '70%' },
+  modalContent: { borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 25, maxHeight: '80%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 18, fontWeight: '800' },
+  monthSelector: { marginBottom: 15, paddingBottom: 5 },
+  monthPill: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20, marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
   optionItem: { paddingVertical: 18, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  optionText: { fontSize: 16, fontWeight: '500' }
+  optionText: { fontSize: 16, fontWeight: '500' },
+  dateItem: { flex: 1, height: 50, justifyContent: 'center', alignItems: 'center', margin: 4, borderRadius: 12, backgroundColor: '#f1f5f9', borderMode: 'dark' ? '#1e293b' : '#f1f5f9' },
+  dateText: { fontSize: 16, fontWeight: '700' }
 });
