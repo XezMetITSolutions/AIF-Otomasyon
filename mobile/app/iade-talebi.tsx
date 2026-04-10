@@ -15,6 +15,7 @@ import {
 import { Stack, router } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
