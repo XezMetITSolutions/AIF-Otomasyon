@@ -62,7 +62,7 @@ export default function DashboardScreen() {
   const QUICK_ACTIONS = [
     { title: 'Harcama', icon: 'money-bill-transfer', color: '#f59e0b', route: '/tasks?type=harcama&scope=my' },
     { title: 'Toplantılar', icon: 'users-rectangle', color: '#10b981', route: '/meetings' },
-    { title: 'Raggal', icon: 'calendar-day', color: '#8b5cf6', route: '/raggal' },
+    { title: 'Çalışma Takvimi', icon: 'calendar-days', color: '#8b5cf6', route: '/etkinlikler' },
     { title: 'Şube Ziyaretleri', icon: 'map-location-dot', color: '#06b6d4', route: '/sube-ziyaretleri' },
   ];
 
@@ -101,13 +101,6 @@ export default function DashboardScreen() {
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>"Bir çiçekle bahar olmaz;</Text>
             <Text style={styles.heroSubtitle}>ama her bahar bir çiçekle başlar."</Text>
-            <View style={styles.heroStatusBox}>
-              <View style={styles.dot} />
-              <Text style={styles.heroStatusText}>Sistem Aktif</Text>
-            </View>
-          </View>
-          <View style={styles.heroIconBox}>
-             <FontAwesome6 name="earth-europe" size={100} color="rgba(255,255,255,0.1)" style={styles.heroBgIcon} />
           </View>
         </LinearGradient>
       </View>
@@ -130,32 +123,6 @@ export default function DashboardScreen() {
               <Text style={[styles.actionText, { color: theme.text }]}>{action.title}</Text>
             </Pressable>
           ))}
-        </View>
-
-        <View style={styles.statusSection}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Güncel Durum</Text>
-          <View style={[styles.infoContainer, { backgroundColor: theme.card }]}>
-            <StatusItem 
-                icon="clock" 
-                color="#f59e0b" 
-                label="Bekleyen Talepler" 
-                value={stats?.bekleyen_izin + stats?.bekleyen_harcama || 0} 
-            />
-            <View style={[styles.vDivider, { backgroundColor: theme.border }]} />
-            <StatusItem 
-                icon="calendar-check" 
-                color={PROJECT_COLORS.primary} 
-                label="Toplantılar" 
-                value={stats?.toplam_toplanti || 0} 
-            />
-            <View style={[styles.vDivider, { backgroundColor: theme.border }]} />
-            <StatusItem 
-                icon="rocket" 
-                color="#3b82f6" 
-                label="Projeler" 
-                value={stats?.toplam_proje || 0} 
-            />
-          </View>
         </View>
 
         <Pressable 
