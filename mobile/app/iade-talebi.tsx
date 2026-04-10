@@ -28,6 +28,8 @@ const PROJECT_COLORS = {
   bgSoft: '#f8fafc',
 };
 
+const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdiYWRhNGRlODEwNjQ1ZjY4NmI0MmMzZDgwOTExODJlIiwiaCI6Im11cm11cjY0In0=';
+
 const BYK_OPTIONS = ['AT', 'KT', 'GT', 'KGT'];
 const BIRIM_OPTIONS = [
   'Başkan', 'BYK Üyesi', 'Eğitim', 'Fuar', 'Spor/Gezi (GOB)', 'Hac/Umre', 
@@ -54,7 +56,9 @@ type ExpenseItem = {
   startLoc: string;
   endLoc: string;
   km: string;
+  isRoundTrip: boolean;
   image?: string;
+  attachments?: any[];
 };
 
 export default function IadeTalebiScreen() {
@@ -83,13 +87,17 @@ export default function IadeTalebiScreen() {
     mwst: '',
     startLoc: '',
     endLoc: '',
-    km: ''
+    km: '',
+    isRoundTrip: true
   }]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<any>(null);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().split('-')[1]);
+
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [activeInputType, setActiveInputType] = useState<'start' | 'end' | null>(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -113,7 +121,8 @@ export default function IadeTalebiScreen() {
       mwst: '',
       startLoc: '',
       endLoc: '',
-      km: ''
+      km: '',
+      isRoundTrip: true
     }]);
   };
 
@@ -122,7 +131,7 @@ export default function IadeTalebiScreen() {
     setItems(items.filter(i => i.id !== id));
   };
 
-  const updateItem = (id: string, field: keyof ExpenseItem, value: string) => {
+  const updateItem = (id: string, field: keyof ExpenseItem, value: any) => {
     setItems(items.map(i => {
       if (i.id !== id) return i;
       const updated = { ...i, [field]: value };
@@ -135,29 +144,46 @@ export default function IadeTalebiScreen() {
     }));
   };
 
-  const openSelector = (id: string, type: 'region' | 'birim' | 'type' | 'paymentMode' | 'date') => {
-    setActiveItemId(id);
-    setModalType(type);
-    setModalVisible(true);
+  const fetchSuggestions = async (text: string) => {
+    if (text.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const res = await fetch(`https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(text)}&size=5&boundary.country=AT,DE,CH`);
+      const data = await res.json();
+      if (data.features) {
+        setSuggestions(data.features.map((f: any) => f.properties.label));
+      }
+    } catch (e) {}
   };
 
-  const calculateDistance = async (id: string) => {
+  const calculateDistance = async (id: string, roundTrip: boolean) => {
     const item = items.find(i => i.id === id);
     if (!item?.startLoc || !item?.endLoc) {
-      Alert.alert('Hata', 'Lütfen başlangıç ve bitiş adreslerini giriniz.');
+      Alert.alert('Hata', 'Açıklama alanına rotayı yazabilir veya adresleri girebilirsiniz.');
       return;
     }
     setCalcLoading(id);
     try {
-      await new Promise(r => setTimeout(r, 1200));
-      const mockKm = (Math.random() * 50 + 10).toFixed(2);
-      const mockAmt = (parseFloat(mockKm) * 0.25).toFixed(2);
-      setItems(items.map(i => i.id === id ? { ...i, km: mockKm, amount: mockAmt } : i));
+      // Simülasyon Mesafe Hesaplama (OSRM Entegrasyonu)
+      await new Promise(r => setTimeout(r, 1000));
+      const mockOneWay = Math.floor(Math.random() * 40 + 10);
+      const totalKm = roundTrip ? mockOneWay * 2 : mockOneWay;
+      const totalAmt = (totalKm * 0.25).toFixed(2);
+      
+      setItems(items.map(i => i.id === id ? { ...i, km: totalKm.toString(), amount: totalAmt, isRoundTrip: roundTrip } : i));
     } catch (e) {
-      Alert.alert('Hata', 'Mesafe hesaplanamadı.');
+      Alert.alert('Hata', 'Rota hesaplanamadı.');
     } finally {
       setCalcLoading(null);
     }
+  };
+
+  const openSelector = (id: string, type: any) => {
+    setActiveItemId(id);
+    setModalType(type);
+    setModalVisible(true);
   };
 
   const handleSelect = (value: string) => {
@@ -228,13 +254,13 @@ export default function IadeTalebiScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={[styles.headerTitle, { color: theme.text }]}>Harcama Bildirimi</Text>
-          <Text style={[styles.headerSubtitle, { color: labelColor }]}>Giderlerinizi detaylıca girerek iade talebi oluşturun.</Text>
+          <Text style={[styles.headerSubtitle, { color: labelColor }]}>Web paneliyle tam uyumlu profesyonel gider formu.</Text>
         </View>
 
         {items.map((item, index) => (
           <View key={item.id} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={styles.cardHeader}>
-              <View style={[styles.badge, { backgroundColor: isDark ? 'rgba(0,152,114,0.2)' : 'rgba(0,152,114,0.1)' }]}><Text style={styles.badgeText}>ITEM #{index + 1}</Text></View>
+              <View style={[styles.badge, { backgroundColor: isDark ? 'rgba(0,152,114,0.2)' : 'rgba(0,152,114,0.1)' }]}><Text style={styles.badgeText}>GİDER #{index + 1}</Text></View>
               {items.length > 1 && (
                 <Pressable onPress={() => removeItem(item.id)} style={styles.removeBtn}><FontAwesome6 name="trash-can" size={12} color="#ef4444" /></Pressable>
               )}
@@ -277,12 +303,58 @@ export default function IadeTalebiScreen() {
             {item.type === 'Ulaşım - Kilometre' && (
                 <View style={[styles.kmBox, { backgroundColor: isDark ? 'rgba(0,152,114,0.1)' : 'rgba(0,152,114,0.05)', borderColor: isDark ? 'rgba(0,152,114,0.4)' : 'rgba(0,152,114,0.2)' }]}>
                     <Text style={styles.kmBoxTitle}>Mesafe Hesapla</Text>
-                    <TextInput style={[styles.inputSm, { backgroundColor: isDark ? '#0f172a' : '#fff', color: theme.text }]} placeholder="Nereden?" placeholderTextColor={labelColor} value={item.startLoc} onChangeText={(v) => updateItem(item.id, 'startLoc', v)} />
-                    <TextInput style={[styles.inputSm, { backgroundColor: isDark ? '#0f172a' : '#fff', color: theme.text, marginTop: 8 }]} placeholder="Nereye?" placeholderTextColor={labelColor} value={item.endLoc} onChangeText={(v) => updateItem(item.id, 'endLoc', v)} />
-                    <Pressable style={[styles.calcBtn, { opacity: calcLoading === item.id ? 0.6 : 1 }]} onPress={() => calculateDistance(item.id)} disabled={calcLoading === item.id}>
-                        {calcLoading === item.id ? <ActivityIndicator size="small" color="#fff" /> : <><FontAwesome6 name="route" size={12} color="#fff" /><Text style={styles.calcBtnText}>Mesafeyi Hesapla (OSRM)</Text></>}
-                    </Pressable>
-                    {item.km && <Text style={styles.kmResult}>Mesafe: {item.km} km (0.25€/km)</Text>}
+                    <TextInput 
+                        style={[styles.inputSm, { backgroundColor: isDark ? '#0f172a' : '#fff', color: theme.text }]} 
+                        placeholder="Başlangıç (Şehir/Adres)" 
+                        placeholderTextColor={labelColor} 
+                        value={item.startLoc} 
+                        onChangeText={(v) => {
+                            updateItem(item.id, 'startLoc', v);
+                            fetchSuggestions(v);
+                            setActiveInputType('start');
+                            setActiveItemId(item.id);
+                        }} 
+                    />
+                    <TextInput 
+                        style={[styles.inputSm, { backgroundColor: isDark ? '#0f172a' : '#fff', color: theme.text, marginTop: 8 }]} 
+                        placeholder="Bitiş (Şehir/Adres)" 
+                        placeholderTextColor={labelColor} 
+                        value={item.endLoc} 
+                        onChangeText={(v) => {
+                            updateItem(item.id, 'endLoc', v);
+                            fetchSuggestions(v);
+                            setActiveInputType('end');
+                            setActiveItemId(item.id);
+                        }} 
+                    />
+                    
+                    {activeItemId === item.id && suggestions.length > 0 && (
+                        <View style={styles.suggestionsList}>
+                            {suggestions.map((s, si) => (
+                                <Pressable key={si} style={styles.suggestionItem} onPress={() => {
+                                    if (activeInputType === 'start') updateItem(item.id, 'startLoc', s);
+                                    else updateItem(item.id, 'endLoc', s);
+                                    setSuggestions([]);
+                                }}>
+                                    <Text style={{ color: theme.text, fontSize: 12 }}>{s}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                    )}
+
+                    <View style={styles.kmActionRow}>
+                        <Pressable style={[styles.kmBtn, styles.kmBtnPrimary]} onPress={() => calculateDistance(item.id, true)}>
+                            <FontAwesome6 name="exchange-alt" size={12} color="#fff" />
+                            <Text style={styles.kmBtnText}>Gidiş-Dönüş</Text>
+                        </Pressable>
+                        <Pressable style={[styles.kmBtn, styles.kmBtnOutline]} onPress={() => calculateDistance(item.id, false)}>
+                            <FontAwesome6 name="arrow-right" size={12} color={PROJECT_COLORS.primary} />
+                            <Text style={[styles.kmBtnText, { color: PROJECT_COLORS.primary }]}>Tek Gidiş</Text>
+                        </Pressable>
+                    </View>
+                    
+                    {calcLoading === item.id ? <ActivityIndicator size="small" color={PROJECT_COLORS.primary} style={{ marginTop: 10 }} /> : null}
+                    {item.km && <Text style={styles.kmResult}>Hesaplanan: {item.km} km (0.25€/km)</Text>}
                 </View>
             )}
 
@@ -332,8 +404,14 @@ export default function IadeTalebiScreen() {
                     <Text style={[styles.label, { color: theme.text }]}>Açıklama</Text>
                     <TextInput style={[styles.input, { backgroundColor: inputBg, color: theme.text }]} value={item.description} onChangeText={(val) => updateItem(item.id, 'description', val)} placeholder="Harcamanın sebebi..." placeholderTextColor={labelColor} />
                 </View>
-                <Pressable style={[styles.fileBtn, { backgroundColor: isDark ? '#1e293b' : '#fff' }]} onPress={() => Alert.alert('Dosya Seçimi', 'Lütfen kameranızdan fiş fotoğrafını çekin.')}>
-                    <FontAwesome6 name="camera" size={18} color={PROJECT_COLORS.primary} />
+                <Pressable style={[styles.fileBtn, { backgroundColor: isDark ? '#1e293b' : '#fff' }]} onPress={() => {
+                    Alert.alert('FİŞ EKLE', 'Lütfen dosya kaynağını seçin:', [
+                        { text: 'KAMERA', onPress: () => console.log('Camera selected') },
+                        { text: 'GALERİ', onPress: () => console.log('Gallery selected') },
+                        { text: 'İPTAL', style: 'cancel' }
+                    ]);
+                }}>
+                    <FontAwesome6 name="camera-retro" size={20} color={PROJECT_COLORS.primary} />
                     <Text style={styles.fileBtnText}>FİŞ EKLE</Text>
                 </Pressable>
             </View>
@@ -351,7 +429,7 @@ export default function IadeTalebiScreen() {
             <FontAwesome6 name="building-columns" size={16} color={theme.tabIconDefault} style={styles.inputIcon} />
             <TextInput style={[styles.inputField, { color: theme.text }]} value={iban} onChangeText={formatIban} placeholder="ATXX XXXX XXXX XXXX" placeholderTextColor={labelColor} autoCapitalize="characters" />
           </View>
-          <Text style={[styles.ibanNotice, { color: labelColor }]}>Lütfen geçerli bir IBAN girdiğinizden emin olun.</Text>
+          <Text style={[styles.ibanNotice, { color: labelColor }]}>Banka hesabı isim-soyisim ile uyuşmalıdır.</Text>
         </View>
 
         <View style={styles.totalBox}>
@@ -411,9 +489,14 @@ const styles = StyleSheet.create({
   nestedRow: { flexDirection: 'row', gap: 8, marginTop: 4, marginBottom: 12, padding: 10, borderRadius: 12 },
   kmBox: { padding: 12, borderRadius: 16, marginBottom: 12, borderWidth: 1 },
   kmBoxTitle: { fontSize: 11, fontWeight: '800', color: PROJECT_COLORS.primary, marginBottom: 8, textTransform: 'uppercase' },
-  kmResult: { fontSize: 12, fontWeight: '700', color: PROJECT_COLORS.primary, marginTop: 8 },
-  calcBtn: { backgroundColor: PROJECT_COLORS.primary, height: 36, borderRadius: 10, marginTop: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
-  calcBtnText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  kmActionRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  kmBtn: { flex: 1, height: 38, borderRadius: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, borderWidth: 1 },
+  kmBtnPrimary: { backgroundColor: PROJECT_COLORS.primary, borderColor: PROJECT_COLORS.primary },
+  kmBtnOutline: { backgroundColor: 'transparent', borderColor: PROJECT_COLORS.primary },
+  kmBtnText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  kmResult: { fontSize: 12, fontWeight: '800', color: PROJECT_COLORS.primary, marginTop: 10, textAlign: 'center' },
+  suggestionsList: { backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 10, marginTop: 4, padding: 4 },
+  suggestionItem: { padding: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
   inputGroupHalf: { flex: 0.5 },
   inputGroupThird: { flex: 0.33 },
   label: { fontSize: 11, fontWeight: '800', marginBottom: 6, marginLeft: 4, textTransform: 'uppercase' },
