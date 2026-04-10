@@ -49,20 +49,23 @@ type ExpenseItem = {
   paymentMode: string;
   description: string;
   amount: string;
-  // Detaylı Faturalı Alanlar
   net: string;
   mwst: string;
-  // Kilometre Alanları
   startLoc: string;
   endLoc: string;
   km: string;
-  // Fotoğraf
   image?: string;
 };
 
 export default function IadeTalebiScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
+  
+  const labelColor = isDark ? '#94a3b8' : '#64748b';
+  const inputBg = isDark ? '#1e293b' : '#f1f5f9';
+  const disabledBg = isDark ? '#0f172a' : '#e2e8f0';
+
   const [loading, setLoading] = useState(false);
   const [calcLoading, setCalcLoading] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -123,14 +126,11 @@ export default function IadeTalebiScreen() {
     setItems(items.map(i => {
       if (i.id !== id) return i;
       const updated = { ...i, [field]: value };
-      
-      // Fatura Otomatik Hesaplama
       if (field === 'net' || field === 'mwst') {
         const n = parseFloat(updated.net.replace(',', '.')) || 0;
         const m = parseFloat(updated.mwst.replace(',', '.')) || 0;
         updated.amount = (n + m).toFixed(2);
       }
-      
       return updated;
     }));
   };
@@ -141,16 +141,11 @@ export default function IadeTalebiScreen() {
       Alert.alert('Hata', 'Lütfen başlangıç ve bitiş adreslerini giriniz.');
       return;
     }
-
     setCalcLoading(id);
     try {
-      // OSRM Public API (Demo için basitleştirilmiş koordinat bulma simülasyonu)
-      // Gerçek prodüksiyonda Geocoding API ile koordinat alınmalıdır.
-      // Şimdilik demo mesafe ata (simülasyon)
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 1200));
       const mockKm = (Math.random() * 50 + 10).toFixed(2);
       const mockAmt = (parseFloat(mockKm) * 0.25).toFixed(2);
-      
       setItems(items.map(i => i.id === id ? { ...i, km: mockKm, amount: mockAmt } : i));
     } catch (e) {
       Alert.alert('Hata', 'Mesafe hesaplanamadı.');
@@ -200,21 +195,17 @@ export default function IadeTalebiScreen() {
       Alert.alert('Hata', 'Lütfen geçerli bir IBAN giriniz.');
       return;
     }
-
     const invalidItems = items.filter(i => !i.amount || !i.description);
     if (invalidItems.length > 0) {
       Alert.alert('Hata', 'Lütfen tüm gider kalemlerini doldurunuz.');
       return;
     }
-
     setLoading(true);
     try {
       const total = calculateTotal();
       const result = await submitIadeTalebi(user.id, items, iban, total);
       if (result.success) {
-        Alert.alert('Başarılı', result.message, [
-          { text: 'Tamam', onPress: () => router.back() }
-        ]);
+        Alert.alert('Başarılı', result.message, [{ text: 'Tamam', onPress: () => router.back() }]);
       } else {
         Alert.alert('Hata', result.message);
       }
@@ -226,174 +217,116 @@ export default function IadeTalebiScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[styles.container, { backgroundColor: colorScheme === 'light' ? PROJECT_COLORS.bgSoft : theme.background }]}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ title: 'İade Talebi Pro' }} />
-      
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Harcama Bildirimi</Text>
-          <Text style={styles.headerSubtitle}>Giderlerinizi detaylıca girerek iade talebi oluşturun.</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Harcama Bildirimi</Text>
+          <Text style={[styles.headerSubtitle, { color: labelColor }]}>Giderlerinizi detaylıca girerek iade talebi oluşturun.</Text>
         </View>
 
         {items.map((item, index) => (
           <View key={item.id} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={styles.cardHeader}>
-              <View style={styles.badge}><Text style={styles.badgeText}>ITEM #{index + 1}</Text></View>
+              <View style={[styles.badge, { backgroundColor: isDark ? 'rgba(0,152,114,0.2)' : 'rgba(0,152,114,0.1)' }]}><Text style={styles.badgeText}>ITEM #{index + 1}</Text></View>
               {items.length > 1 && (
-                <Pressable onPress={() => removeItem(item.id)} style={styles.removeBtn}>
-                  <FontAwesome6 name="trash-can" size={14} color="#ef4444" />
-                </Pressable>
+                <Pressable onPress={() => removeItem(item.id)} style={styles.removeBtn}><FontAwesome6 name="trash-can" size={12} color="#ef4444" /></Pressable>
               )}
             </View>
 
-            {/* Row 1: Date & BYK */}
             <View style={styles.row}>
                 <View style={styles.inputGroupHalf}>
                     <Text style={[styles.label, { color: theme.text }]}>Tarih</Text>
-                    <Pressable 
-                        style={[styles.pickerFake, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9' }]}
-                        onPress={() => openSelector(item.id, 'date')}
-                    >
+                    <Pressable style={[styles.pickerFake, { backgroundColor: inputBg }]} onPress={() => openSelector(item.id, 'date')}>
                         <Text style={{ color: theme.text, fontWeight: '600' }}>{item.date}</Text>
                         <FontAwesome6 name="calendar-day" size={12} color={PROJECT_COLORS.primary} />
                     </Pressable>
                 </View>
                 <View style={styles.inputGroupHalf}>
                     <Text style={[styles.label, { color: theme.text }]}>BYK</Text>
-                    <Pressable 
-                        style={[styles.pickerFake, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9' }]}
-                        onPress={() => openSelector(item.id, 'region')}
-                    >
+                    <Pressable style={[styles.pickerFake, { backgroundColor: inputBg }]} onPress={() => openSelector(item.id, 'region')}>
                         <Text style={{ color: theme.text, fontWeight: '600' }}>{item.region}</Text>
-                        <FontAwesome6 name="chevron-down" size={10} color="#94a3b8" />
+                        <FontAwesome6 name="chevron-down" size={10} color={labelColor} />
                     </Pressable>
                 </View>
             </View>
 
-            {/* Row 2: Birim & Type */}
             <View style={styles.row}>
               <View style={styles.inputGroupHalf}>
                 <Text style={[styles.label, { color: theme.text }]}>Birim</Text>
-                <Pressable 
-                    style={[styles.pickerFake, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9' }]}
-                    onPress={() => openSelector(item.id, 'birim')}
-                >
+                <Pressable style={[styles.pickerFake, { backgroundColor: inputBg }]} onPress={() => openSelector(item.id, 'birim')}>
                     <Text style={{ color: theme.text, fontWeight: '600' }} numberOfLines={1}>{item.birim}</Text>
-                    <FontAwesome6 name="chevron-down" size={10} color="#94a3b8" />
+                    <FontAwesome6 name="chevron-down" size={10} color={labelColor} />
                 </Pressable>
               </View>
               <View style={styles.inputGroupHalf}>
                 <Text style={[styles.label, { color: theme.text }]}>Tür</Text>
-                <Pressable 
-                    style={[styles.pickerFake, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9' }]}
-                    onPress={() => openSelector(item.id, 'type')}
-                >
+                <Pressable style={[styles.pickerFake, { backgroundColor: inputBg }]} onPress={() => openSelector(item.id, 'type')}>
                     <Text style={{ color: theme.text, fontWeight: '600' }} numberOfLines={1}>{item.type}</Text>
-                    <FontAwesome6 name="chevron-down" size={10} color="#94a3b8" />
+                    <FontAwesome6 name="chevron-down" size={10} color={labelColor} />
                 </Pressable>
               </View>
             </View>
 
-            {/* Kilometre Alanları (Eğer Tür Km ise) */}
             {item.type === 'Ulaşım - Kilometre' && (
-                <View style={styles.kmBox}>
+                <View style={[styles.kmBox, { backgroundColor: isDark ? 'rgba(0,152,114,0.1)' : 'rgba(0,152,114,0.05)', borderColor: isDark ? 'rgba(0,152,114,0.4)' : 'rgba(0,152,114,0.2)' }]}>
                     <Text style={styles.kmBoxTitle}>Mesafe Hesapla</Text>
-                    <TextInput 
-                        style={[styles.inputSm, { backgroundColor: colorScheme === 'dark' ? '#0f172a' : '#fff' }]}
-                        placeholder="Nereden?"
-                        value={item.startLoc}
-                        onChangeText={(v) => updateItem(item.id, 'startLoc', v)}
-                    />
-                    <TextInput 
-                        style={[styles.inputSm, { backgroundColor: colorScheme === 'dark' ? '#0f172a' : '#fff', marginTop: 8 }]}
-                        placeholder="Nereye?"
-                        value={item.endLoc}
-                        onChangeText={(v) => updateItem(item.id, 'endLoc', v)}
-                    />
-                    <Pressable 
-                        style={[styles.calcBtn, { opacity: calcLoading === item.id ? 0.6 : 1 }]} 
-                        onPress={() => calculateDistance(item.id)}
-                        disabled={calcLoading === item.id}
-                    >
-                        {calcLoading === item.id ? <ActivityIndicator size="small" color="#fff" /> : 
-                        <><FontAwesome6 name="route" size={12} color="#fff" /><Text style={styles.calcBtnText}>Mesafeyi Hesapla (OSRM)</Text></>}
+                    <TextInput style={[styles.inputSm, { backgroundColor: isDark ? '#0f172a' : '#fff', color: theme.text }]} placeholder="Nereden?" placeholderTextColor={labelColor} value={item.startLoc} onChangeText={(v) => updateItem(item.id, 'startLoc', v)} />
+                    <TextInput style={[styles.inputSm, { backgroundColor: isDark ? '#0f172a' : '#fff', color: theme.text, marginTop: 8 }]} placeholder="Nereye?" placeholderTextColor={labelColor} value={item.endLoc} onChangeText={(v) => updateItem(item.id, 'endLoc', v)} />
+                    <Pressable style={[styles.calcBtn, { opacity: calcLoading === item.id ? 0.6 : 1 }]} onPress={() => calculateDistance(item.id)} disabled={calcLoading === item.id}>
+                        {calcLoading === item.id ? <ActivityIndicator size="small" color="#fff" /> : <><FontAwesome6 name="route" size={12} color="#fff" /><Text style={styles.calcBtnText}>Mesafeyi Hesapla (OSRM)</Text></>}
                     </Pressable>
                     {item.km && <Text style={styles.kmResult}>Mesafe: {item.km} km (0.25€/km)</Text>}
                 </View>
             )}
 
-            {/* Row 3: Payment Mode & Amount */}
             <View style={styles.row}>
                 <View style={styles.inputGroupHalf}>
                     <Text style={[styles.label, { color: theme.text }]}>Ödeme Şekli</Text>
-                    <Pressable 
-                        style={[styles.pickerFake, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9' }]}
-                        onPress={() => openSelector(item.id, 'paymentMode')}
-                    >
+                    <Pressable style={[styles.pickerFake, { backgroundColor: inputBg }]} onPress={() => openSelector(item.id, 'paymentMode')}>
                         <Text style={{ color: theme.text, fontWeight: '600' }}>{item.paymentMode}</Text>
-                        <FontAwesome6 name="chevron-down" size={10} color="#94a3b8" />
+                        <FontAwesome6 name="chevron-down" size={10} color={labelColor} />
                     </Pressable>
                 </View>
                 <View style={styles.inputGroupHalf}>
                     <Text style={[styles.label, { color: theme.text }]}>Toplam Tutar (€)</Text>
                     <TextInput 
-                        style={[styles.input, { backgroundColor: (item.paymentMode === 'Faturalı' || item.type === 'Ulaşım - Kilometre') ? '#e2e8f0' : (colorScheme === 'dark' ? '#1e293b' : '#f1f5f9'), color: theme.text, fontWeight: '700' }]}
+                        style={[styles.input, { backgroundColor: (item.paymentMode === 'Faturalı' || item.type === 'Ulaşım - Kilometre') ? disabledBg : inputBg, color: theme.text, fontWeight: '700' }]}
                         value={item.amount}
                         editable={item.paymentMode !== 'Faturalı' && item.type !== 'Ulaşım - Kilometre'}
                         onChangeText={(val) => updateItem(item.id, 'amount', val)}
                         keyboardType="numeric"
                         placeholder="0,00"
+                        placeholderTextColor={labelColor}
                     />
                 </View>
             </View>
 
-            {/* Faturalı Detay Alanları */}
             {item.paymentMode === 'Faturalı' && (
-                <View style={styles.nestedRow}>
+                <View style={[styles.nestedRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }]}>
                     <View style={styles.inputGroupThird}>
-                        <Text style={styles.labelSub}>Net (€)</Text>
-                        <TextInput 
-                            style={[styles.inputSm, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9', color: theme.text }]}
-                            value={item.net}
-                            onChangeText={(v) => updateItem(item.id, 'net', v)}
-                            keyboardType="numeric"
-                            placeholder="Net"
-                        />
+                        <Text style={[styles.labelSub, { color: labelColor }]}>Net (€)</Text>
+                        <TextInput style={[styles.inputSm, { backgroundColor: inputBg, color: theme.text }]} value={item.net} onChangeText={(v) => updateItem(item.id, 'net', v)} keyboardType="numeric" placeholder="Net" placeholderTextColor={labelColor} />
                     </View>
                     <View style={styles.inputGroupThird}>
-                        <Text style={styles.labelSub}>KDV (€)</Text>
-                        <TextInput 
-                            style={[styles.inputSm, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9', color: theme.text }]}
-                            value={item.mwst}
-                            onChangeText={(v) => updateItem(item.id, 'mwst', v)}
-                            keyboardType="numeric"
-                            placeholder="KDV"
-                        />
+                        <Text style={[styles.labelSub, { color: labelColor }]}>KDV (€)</Text>
+                        <TextInput style={[styles.inputSm, { backgroundColor: inputBg, color: theme.text }]} value={item.mwst} onChangeText={(v) => updateItem(item.id, 'mwst', v)} keyboardType="numeric" placeholder="KDV" placeholderTextColor={labelColor} />
                     </View>
                     <View style={styles.inputGroupThird}>
-                        <Text style={styles.labelSub}>BRÜT (€)</Text>
-                        <View style={[styles.inputSm, { backgroundColor: '#e2e8f0', justifyContent: 'center' }]}>
-                             <Text style={{ fontWeight: '700', fontSize: 12 }}>{item.amount || '0.00'}</Text>
+                        <Text style={[styles.labelSub, { color: labelColor }]}>BRÜT (€)</Text>
+                        <View style={[styles.inputSm, { backgroundColor: disabledBg, justifyContent: 'center' }]}>
+                             <Text style={{ fontWeight: '700', fontSize: 13, color: theme.text }}>{item.amount || '0.00'}</Text>
                         </View>
                     </View>
                 </View>
             )}
 
-            {/* Açıklama & Fotoğraf */}
             <View style={styles.footerRow}>
                 <View style={{ flex: 1 }}>
                     <Text style={[styles.label, { color: theme.text }]}>Açıklama</Text>
-                    <TextInput 
-                        style={[styles.input, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9', color: theme.text }]}
-                        value={item.description}
-                        onChangeText={(val) => updateItem(item.id, 'description', val)}
-                        placeholder="Harcamanın sebebi..."
-                    />
+                    <TextInput style={[styles.input, { backgroundColor: inputBg, color: theme.text }]} value={item.description} onChangeText={(val) => updateItem(item.id, 'description', val)} placeholder="Harcamanın sebebi..." placeholderTextColor={labelColor} />
                 </View>
-                <Pressable style={styles.fileBtn} onPress={() => Alert.alert('Dosya Seçimi', 'Lütfen kameranızdan fiş fotoğrafını çekin.')}>
+                <Pressable style={[styles.fileBtn, { backgroundColor: isDark ? '#1e293b' : '#fff' }]} onPress={() => Alert.alert('Dosya Seçimi', 'Lütfen kameranızdan fiş fotoğrafını çekin.')}>
                     <FontAwesome6 name="camera" size={18} color={PROJECT_COLORS.primary} />
                     <Text style={styles.fileBtnText}>FİŞ EKLE</Text>
                 </Pressable>
@@ -408,18 +341,11 @@ export default function IadeTalebiScreen() {
 
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.label, { color: theme.text }]}>IBAN Numaranız</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9' }]}>
+          <View style={[styles.inputWrapper, { backgroundColor: inputBg }]}>
             <FontAwesome6 name="building-columns" size={16} color={theme.tabIconDefault} style={styles.inputIcon} />
-            <TextInput 
-              style={[styles.inputField, { color: theme.text }]}
-              value={iban}
-              onChangeText={formatIban}
-              placeholder="ATXX XXXX XXXX XXXX"
-              placeholderTextColor="#94a3b8"
-              autoCapitalize="characters"
-            />
+            <TextInput style={[styles.inputField, { color: theme.text }]} value={iban} onChangeText={formatIban} placeholder="ATXX XXXX XXXX XXXX" placeholderTextColor={labelColor} autoCapitalize="characters" />
           </View>
-          <Text style={styles.ibanNotice}>Lütfen geçerli bir IBAN girdiğinizden emin olun.</Text>
+          <Text style={[styles.ibanNotice, { color: labelColor }]}>Lütfen geçerli bir IBAN girdiğinizden emin olun.</Text>
         </View>
 
         <View style={styles.totalBox}>
@@ -429,59 +355,34 @@ export default function IadeTalebiScreen() {
             </LinearGradient>
         </View>
 
-        <Pressable 
-          disabled={loading} 
-          onPress={handleSubmit}
-          style={({ pressed }) => [
-            styles.submitButton,
-            { backgroundColor: PROJECT_COLORS.primary, opacity: (pressed || loading) ? 0.8 : 1 }
-          ]}
-        >
+        <Pressable disabled={loading} onPress={handleSubmit} style={({ pressed }) => [styles.submitButton, { backgroundColor: PROJECT_COLORS.primary, opacity: (pressed || loading) ? 0.8 : 1 }]}>
           {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitButtonText}>Talebi Gönder</Text>}
         </Pressable>
       </ScrollView>
 
-      {/* GLOBAL SELECT MODAL */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={styles.modalBg}>
             <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
                 <View style={styles.modalHeader}>
-                    <Text style={[styles.modalTitle, { color: theme.text }]}>
-                        {modalType === 'date' ? 'Tarih Seçin' : 'Seçim Yapın'}
-                    </Text>
+                    <Text style={[styles.modalTitle, { color: theme.text }]}>{modalType === 'date' ? 'Tarih Seçin' : 'Seçim Yapın'}</Text>
                     <Pressable onPress={() => setModalVisible(false)}><FontAwesome6 name="xmark" size={20} color={theme.text} /></Pressable>
                 </View>
-
                 {modalType === 'date' && (
                     <View style={styles.monthSelector}>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                             {MONTHS.map(m => (
-                                <Pressable 
-                                    key={m} 
-                                    onPress={() => setSelectedMonth(m)}
-                                    style={[styles.monthPill, { backgroundColor: selectedMonth === m ? PROJECT_COLORS.primary : (colorScheme === 'dark' ? '#1e293b' : '#f1f5f9') }]}
-                                >
+                                <Pressable key={m} onPress={() => setSelectedMonth(m)} style={[styles.monthPill, { backgroundColor: selectedMonth === m ? PROJECT_COLORS.primary : inputBg, borderColor: theme.border }]}>
                                     <Text style={{ color: selectedMonth === m ? '#fff' : theme.text, fontWeight: '700', fontSize: 12 }}>{m}. AY</Text>
                                 </Pressable>
                             ))}
                         </ScrollView>
                     </View>
                 )}
-                
-                <FlatList 
-                    data={getOptions()}
-                    keyExtractor={(item) => item}
-                    numColumns={modalType === 'date' ? 4 : 1}
-                    contentContainerStyle={{ paddingBottom: 30 }}
-                    renderItem={({ item }) => (
-                        <Pressable 
-                            style={modalType === 'date' ? styles.dateItem : styles.optionItem} 
-                            onPress={() => modalType === 'date' ? handleDateSelect(item) : handleSelect(item)}
-                        >
-                            <Text style={[modalType === 'date' ? styles.dateText : styles.optionText, { color: theme.text }]}>{item}</Text>
-                        </Pressable>
-                    )}
-                />
+                <FlatList data={getOptions()} keyExtractor={(item) => item} numColumns={modalType === 'date' ? 4 : 1} contentContainerStyle={{ paddingBottom: 30 }} renderItem={({ item }) => (
+                    <Pressable style={modalType === 'date' ? [styles.dateItem, { backgroundColor: inputBg }] : styles.optionItem} onPress={() => modalType === 'date' ? handleDateSelect(item) : handleSelect(item)}>
+                        <Text style={[modalType === 'date' ? styles.dateText : styles.optionText, { color: theme.text }]}>{item}</Text>
+                    </Pressable>
+                )} />
             </View>
         </View>
       </Modal>
@@ -493,36 +394,36 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 60 },
   header: { marginBottom: 20, paddingHorizontal: 4 },
-  headerTitle: { fontSize: 28, fontWeight: '900', marginBottom: 4 },
-  headerSubtitle: { fontSize: 13, color: '#64748b', lineHeight: 18 },
+  headerTitle: { fontSize: 26, fontWeight: '900', marginBottom: 4 },
+  headerSubtitle: { fontSize: 13, lineHeight: 18 },
   card: { padding: 16, borderRadius: 24, borderWidth: 1, marginBottom: 16, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' },
-  badge: { backgroundColor: 'rgba(0,152,114,0.1)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   badgeText: { fontSize: 10, fontWeight: '900', color: PROJECT_COLORS.primary },
   removeBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(239, 68, 68, 0.1)', justifyContent: 'center', alignItems: 'center' },
   row: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  nestedRow: { flexDirection: 'row', gap: 8, marginTop: 4, marginBottom: 12, backgroundColor: 'rgba(0,0,0,0.02)', padding: 10, borderRadius: 12 },
-  kmBox: { backgroundColor: 'rgba(0,152,114,0.05)', padding: 12, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(0,152,114,0.2)' },
+  nestedRow: { flexDirection: 'row', gap: 8, marginTop: 4, marginBottom: 12, padding: 10, borderRadius: 12 },
+  kmBox: { padding: 12, borderRadius: 16, marginBottom: 12, borderWidth: 1 },
   kmBoxTitle: { fontSize: 11, fontWeight: '800', color: PROJECT_COLORS.primary, marginBottom: 8, textTransform: 'uppercase' },
   kmResult: { fontSize: 12, fontWeight: '700', color: PROJECT_COLORS.primary, marginTop: 8 },
   calcBtn: { backgroundColor: PROJECT_COLORS.primary, height: 36, borderRadius: 10, marginTop: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   calcBtnText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   inputGroupHalf: { flex: 0.5 },
   inputGroupThird: { flex: 0.33 },
-  label: { fontSize: 11, fontWeight: '800', marginBottom: 6, marginLeft: 4, textTransform: 'uppercase', opacity: 0.7 },
-  labelSub: { fontSize: 10, fontWeight: '700', marginBottom: 4, opacity: 0.6 },
-  input: { height: 48, borderRadius: 14, paddingHorizontal: 14, fontSize: 14, fontWeight: '500' },
-  inputSm: { height: 40, borderRadius: 10, paddingHorizontal: 12, fontSize: 12, fontWeight: '600' },
+  label: { fontSize: 11, fontWeight: '800', marginBottom: 6, marginLeft: 4, textTransform: 'uppercase' },
+  labelSub: { fontSize: 10, fontWeight: '700', marginBottom: 4 },
+  input: { height: 48, borderRadius: 14, paddingHorizontal: 14, fontSize: 14, fontWeight: '600' },
+  inputSm: { height: 40, borderRadius: 10, paddingHorizontal: 12, fontSize: 12, fontWeight: '700' },
   pickerFake: { height: 48, borderRadius: 14, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   footerRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-end', marginTop: 10 },
-  fileBtn: { width: 80, height: 75, borderRadius: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: PROJECT_COLORS.primary, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  fileBtn: { width: 75, height: 75, borderRadius: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: PROJECT_COLORS.primary, justifyContent: 'center', alignItems: 'center' },
   fileBtnText: { fontSize: 9, fontWeight: '800', color: PROJECT_COLORS.primary, marginTop: 6 },
   addButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: PROJECT_COLORS.primary, marginVertical: 10 },
   addButtonText: { marginLeft: 10, color: PROJECT_COLORS.primary, fontWeight: '800', fontSize: 15 },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', height: 60, borderRadius: 18, paddingHorizontal: 16 },
   inputIcon: { marginRight: 12 },
-  inputField: { flex: 1, fontSize: 16, fontWeight: '700' },
-  ibanNotice: { fontSize: 10, color: '#94a3b8', marginTop: 8, textAlign: 'center' },
+  inputField: { flex: 1, fontSize: 16, fontWeight: '800' },
+  ibanNotice: { fontSize: 10, marginTop: 8, textAlign: 'center' },
   totalBox: { marginVertical: 20 },
   totalGrad: { padding: 24, borderRadius: 24, alignItems: 'center' },
   totalLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '600', marginBottom: 4 },
@@ -534,9 +435,9 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   modalTitle: { fontSize: 20, fontWeight: '900' },
   monthSelector: { marginBottom: 15, paddingBottom: 5 },
-  monthPill: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 24, marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
-  optionItem: { paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  monthPill: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 24, marginRight: 8, borderWidth: 1 },
+  optionItem: { paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
   optionText: { fontSize: 17, fontWeight: '600' },
-  dateItem: { flex: 1, height: 60, justifyContent: 'center', alignItems: 'center', margin: 4, borderRadius: 16, backgroundColor: '#f1f5f9' },
+  dateItem: { flex: 1, height: 60, justifyContent: 'center', alignItems: 'center', margin: 4, borderRadius: 16 },
   dateText: { fontSize: 18, fontWeight: '800' }
 });
