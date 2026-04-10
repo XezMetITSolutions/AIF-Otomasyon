@@ -62,7 +62,7 @@ export default function DashboardScreen() {
   const QUICK_ACTIONS = [
     { title: 'Çalışma Takvimi', icon: 'calendar-days', color: '#8b5cf6', route: '/etkinlikler' },
     { title: 'Toplantılar', icon: 'users-rectangle', color: '#10b981', route: '/meetings' },
-    { title: 'İade Talebi', icon: 'hand-holding-dollar', color: '#f59e0b', route: '/tasks?type=iade&scope=my' },
+    { title: 'İade Talebi', icon: 'hand-holding-dollar', color: '#f59e0b', route: '/iade-talebi' },
     { title: 'Şube Ziyaretleri', icon: 'map-location-dot', color: '#06b6d4', route: '/sube-ziyaretleri' },
   ];
 

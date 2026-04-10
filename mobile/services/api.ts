@@ -163,3 +163,19 @@ export async function downloadMeetingReport(id: string | number) {
     return { success: false, message: 'Sunucuya ulaşılamadı.' };
   }
 }
+
+export async function submitIadeTalebi(userId: number, items: any[], iban: string, total: number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/save-iade.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, items, iban, total }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Submit Iade Error:', error);
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}

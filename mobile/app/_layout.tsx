@@ -79,6 +79,7 @@ function RootLayoutNav() {
         <Stack.Screen name="projeler" options={{ title: 'Projeler' }} />
         <Stack.Screen name="sube-ziyaretleri" options={{ title: 'Şube Ziyaretleri' }} />
         <Stack.Screen name="tasks" options={{ title: 'Görevler' }} />
+        <Stack.Screen name="iade-talebi" options={{ title: 'İade Talebi Formu' }} />
       </Stack>
     </ThemeProvider>
   );
