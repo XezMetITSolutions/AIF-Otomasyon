@@ -24,50 +24,58 @@ export default function EtkinliklerScreen() {
   const [user, setUser] = useState<any>(null);
 
   const loadData = async () => {
-    setLoading(true);
-    const userData = await AsyncStorage.getItem('user');
-    const userObj = userData ? JSON.parse(userData) : null;
-    setUser(userObj);
+    try {
+      setLoading(true);
+      const userData = await AsyncStorage.getItem('user');
+      const userObj = userData ? JSON.parse(userData) : null;
+      setUser(userObj);
 
-    // Etkinlikleri, Toplantıları ve Şube Ziyaretlerini paralel çekiyoruz
-    const [etkResult, meetResult, ziyaResult] = await Promise.all([
-      fetchEtkinlikler(),
-      fetchMeetings(userObj?.id),
-      fetchZiyaretler(userObj?.id)
-    ]);
+      // Etkinlikleri, Toplantıları ve Şube Ziyaretlerini paralel çekiyoruz
+      const [etkResult, meetResult, ziyaResult] = await Promise.all([
+        fetchEtkinlikler().catch(() => ({ success: false })),
+        fetchMeetings(userObj?.id).catch(() => ({ success: false })),
+        fetchZiyaretler(userObj?.id).catch(() => ({ success: false }))
+      ]);
 
-    let combined: any[] = [];
-    if (etkResult.success) {
-      combined = [...etkResult.etkinlikler.map((e: any) => ({ ...e, type: 'etkinlik' }))];
-    }
-    if (meetResult.success) {
-      const meetings = meetResult.meetings.map((m: any) => ({ 
-        etkinlik_id: 'm' + m.toplanti_id,
-        baslik: m.konu,
-        baslangic_tarihi: m.toplanti_tarihi,
-        konum: m.mekan,
-        byk_adi: 'TOPLANTI',
-        byk_renk: '#3b82f6',
-        type: 'toplanti'
-      }));
-      combined = [...combined, ...meetings];
-    }
-    if (ziyaResult.success) {
-      const ziyaretler = ziyaResult.ziyaretler.map((z: any) => ({
-        etkinlik_id: 'z' + z.ziyaret_id,
-        baslik: `Şube Ziyareti: ${z.sube_adi || 'Belirtilmemiş'}`,
-        baslangic_tarihi: z.ziyaret_tarihi,
-        konum: z.ziyaret_yeri || '',
-        byk_adi: z.byk_adi || 'ŞUBE',
-        grup_adi: z.grup_adi,
-        byk_renk: z.renk_kodu || '#ef4444',
-        type: 'ziyaret'
-      }));
-      combined = [...combined, ...ziyaretler];
-    }
+      let combined: any[] = [];
+      
+      if (etkResult?.success && Array.isArray(etkResult.etkinlikler)) {
+        combined = [...etkResult.etkinlikler.map((e: any) => ({ ...e, type: 'etkinlik' }))];
+      }
+      
+      if (meetResult?.success && Array.isArray(meetResult.meetings)) {
+        const meetings = meetResult.meetings.map((m: any) => ({ 
+          etkinlik_id: 'm' + m.toplanti_id,
+          baslik: m.konu,
+          baslangic_tarihi: m.toplanti_tarihi,
+          konum: m.mekan,
+          byk_adi: 'TOPLANTI',
+          byk_renk: '#3b82f6',
+          type: 'toplanti'
+        }));
+        combined = [...combined, ...meetings];
+      }
+      
+      if (ziyaResult?.success && Array.isArray(ziyaResult.ziyaretler)) {
+        const ziyaretler = ziyaResult.ziyaretler.map((z: any) => ({
+          etkinlik_id: 'z' + z.ziyaret_id,
+          baslik: `Şube Ziyareti: ${z.sube_adi || 'Belirtilmemiş'}`,
+          baslangic_tarihi: z.ziyaret_tarihi,
+          konum: z.ziyaret_yeri || '',
+          byk_adi: z.byk_adi || 'ŞUBE',
+          grup_adi: z.grup_adi,
+          byk_renk: z.renk_kodu || '#ef4444',
+          type: 'ziyaret'
+        }));
+        combined = [...combined, ...ziyaretler];
+      }
 
-    setData(combined);
-    setLoading(false);
+      setData(combined);
+    } catch (err) {
+      console.error('Agenda loadData failed:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onRefresh = async () => {
