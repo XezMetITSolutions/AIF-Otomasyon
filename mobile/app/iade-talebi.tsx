@@ -211,10 +211,6 @@ export default function IadeTalebiScreen() {
     }
   };
 
-  const openSelector = (id: string, type: any) => {
-    setActiveItemId(id); setModalType(type); setModalVisible(true);
-  };
-
   const handleSelect = (value: string) => {
     if (activeItemId && modalType && modalType !== 'date') updateItem(activeItemId, modalType as any, value);
     setModalVisible(false);
