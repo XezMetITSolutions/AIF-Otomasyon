@@ -7,17 +7,32 @@ $db = Database::getInstance();
 $userId = $_GET['userId'] ?? null;
 
 try {
-    // Filtreleme mantığını geçici olarak esnetiyoruz (Hepsini görsün)
+    $where = ["1=1"];
+    $params = [];
+
+    if ($userId) {
+        $user = $db->fetch("SELECT role FROM kullanicilar WHERE kullanici_id = ?", [$userId]);
+        $isSuperAdmin = ($user && $user['role'] === 'super_admin');
+
+        if (!$isSuperAdmin) {
+            // Sadece dahil olduğu grupları gör
+            $where[] = "(g.baskan_id = ? OR EXISTS (SELECT 1 FROM ziyaret_grup_uyeleri gu WHERE gu.grup_id = z.grup_id AND gu.kullanici_id = ?))";
+            $params[] = $userId;
+            $params[] = $userId;
+        }
+    }
+
+    $whereClause = implode(' AND ', $where);
+
     $ziyaretler = $db->fetchAll("
-        SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu, s.sube_adi, s.adres as sube_adresi
+        SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu
         FROM sube_ziyaretleri z
         INNER JOIN byk b ON z.byk_id = b.byk_id
         INNER JOIN ziyaret_gruplari g ON z.grup_id = g.grup_id
-        LEFT JOIN subeler s ON z.sube_id = s.sube_id
-        WHERE z.ziyaret_tarihi >= '2026-04-01'
-        ORDER BY z.ziyaret_tarihi ASC
+        WHERE $whereClause
+        ORDER BY z.ziyaret_tarihi DESC
         LIMIT 100
-    ");
+    ", $params);
 
     echo json_encode([
         'success' => true,
