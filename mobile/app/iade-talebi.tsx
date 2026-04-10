@@ -70,6 +70,7 @@ export default function IadeTalebiScreen() {
   const isDark = colorScheme === 'dark';
   const labelColor = isDark ? '#94a3b8' : '#64748b';
   const inputBg = isDark ? '#1e293b' : '#f1f5f9';
+  const disabledBg = isDark ? '#0f172a' : '#e2e8f0';
   const cardBg = theme.card;
 
   const [loading, setLoading] = useState(false);
