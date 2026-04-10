@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { StyleSheet, ActivityIndicator, RefreshControl, SectionList, Pressable } from 'react-native';
+import { StyleSheet, ActivityIndicator, RefreshControl, SectionList } from 'react-native';
 import { Stack } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { fetchEtkinlikler } from '@/services/api';
+import { fetchEtkinlikler, fetchMeetings } from '@/services/api';
 
 const PROJECT_COLORS = {
   primary: '#009872',
@@ -17,46 +18,67 @@ const PROJECT_COLORS = {
 export default function EtkinliklerScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
-  const [etkinlikler, setEtkinlikler] = useState<any[]>([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const loadData = async () => {
     setLoading(true);
-    const result = await fetchEtkinlikler();
-    if (result.success) {
-      setEtkinlikler(result.etkinlikler);
+    const userData = await AsyncStorage.getItem('user');
+    const userObj = userData ? JSON.parse(userData) : null;
+    setUser(userObj);
+
+    // Etkinlikleri ve Toplantıları paralel çekiyoruz
+    const [etkResult, meetResult] = await Promise.all([
+      fetchEtkinlikler(),
+      fetchMeetings(userObj?.id)
+    ]);
+
+    let combined: any[] = [];
+    if (etkResult.success) {
+      combined = [...etkResult.etkinlikler.map((e: any) => ({ ...e, type: 'etkinlik' }))];
     }
+    if (meetResult.success) {
+      const meetings = meetResult.meetings.map((m: any) => ({ 
+        etkinlik_id: 'm' + m.toplanti_id,
+        baslik: m.konu,
+        baslangic_tarihi: m.toplanti_tarihi,
+        konum: m.mekan,
+        byk_adi: 'TOPLANTI',
+        byk_renk: '#3b82f6',
+        type: 'toplanti'
+      }));
+      combined = [...combined, ...meetings];
+    }
+
+    setData(combined);
     setLoading(false);
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    const result = await fetchEtkinlikler();
-    if (result.success) setEtkinlikler(result.etkinlikler);
+    await loadData();
     setRefreshing(false);
   };
 
   useEffect(() => { loadData(); }, []);
 
-  // Takvim Verilerini İşle (Sırala ve Ay Bazlı Gruplandır)
   const sections = useMemo(() => {
-    if (!etkinlikler || etkinlikler.length === 0) return [];
+    if (!data || data.length === 0) return [];
 
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    // 1. Kesin Sıralama ve Filtreleme (Bugünden sonrakiler, en yakın en üstte)
-    const sorted = [...etkinlikler]
+    const filtered = data
       .filter(item => {
         const d = new Date(item.baslangic_tarihi);
         return d >= now && !isNaN(d.getTime());
       })
       .sort((a, b) => new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime());
 
-    // 2. Gruplandır (Sırayı bozmadan)
     const sectionsArray: { title: string; data: any[] }[] = [];
-    sorted.forEach(item => {
+    filtered.forEach(item => {
       const date = new Date(item.baslangic_tarihi);
       const monthYear = date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toUpperCase();
       
@@ -69,16 +91,11 @@ export default function EtkinliklerScreen() {
     });
 
     return sectionsArray;
-  }, [etkinlikler]);
-
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  };
+  }, [data]);
 
   return (
     <View style={[styles.container, { backgroundColor: colorScheme === 'light' ? PROJECT_COLORS.bgSoft : theme.background }]}>
-      <Stack.Screen options={{ title: 'Çalışma Takvimi' }} />
+      <Stack.Screen options={{ title: 'Ajanda' }} />
       
       {loading && !refreshing ? (
         <View style={styles.center}><ActivityIndicator size="large" color={PROJECT_COLORS.primary} /></View>
@@ -95,9 +112,11 @@ export default function EtkinliklerScreen() {
           )}
           renderItem={({ item }) => {
             const date = new Date(item.baslangic_tarihi);
+            const isSubeZiyareti = item.baslik.toLowerCase().includes('şube') || item.baslik.toLowerCase().includes('ziyaret');
+            
             return (
               <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <View style={styles.dateCol}>
+                <View style={[styles.dateCol, { borderRightColor: theme.border }]}>
                   <Text style={[styles.dateDay, { color: theme.text }]}>{date.getDate()}</Text>
                   <Text style={styles.dateWeekday}>{date.toLocaleDateString('tr-TR', { weekday: 'short' }).toUpperCase()}</Text>
                 </View>
@@ -108,22 +127,25 @@ export default function EtkinliklerScreen() {
                   </View>
                   
                   <View style={styles.detailsRow}>
-                    <View style={styles.detailItem}>
-                      <FontAwesome6 name="clock" size={10} color={PROJECT_COLORS.primary} />
-                      <Text style={styles.detailText}>{formatTime(item.baslangic_tarihi)}</Text>
-                    </View>
                     {item.konum && (
-                      <View style={[styles.detailItem, { marginLeft: 12 }]}>
-                        <FontAwesome6 name="location-dot" size={10} color="#ef4444" />
+                      <View style={styles.detailItem}>
+                        <FontAwesome6 name="location-dot" size={10} color="#64748b" />
                         <Text style={styles.detailText} numberOfLines={1}>{item.konum}</Text>
                       </View>
                     )}
                   </View>
 
                   <View style={styles.badgeRow}>
-                    <View style={[styles.bykBadge, { backgroundColor: item.byk_renk || PROJECT_COLORS.primary }]}>
-                        <Text style={styles.bykText}>{item.byk_adi}</Text>
+                    <View style={[styles.bykBadge, { backgroundColor: (isSubeZiyareti ? '#ef4444' : (item.byk_renk || PROJECT_COLORS.primary)) + '20' }]}>
+                        <Text style={[styles.bykText, { color: isSubeZiyareti ? '#ef4444' : (item.byk_renk || PROJECT_COLORS.primary) }]}>
+                            {item.byk_adi}
+                        </Text>
                     </View>
+                    {isSubeZiyareti && (
+                        <View style={[styles.bykBadge, { backgroundColor: '#3b82f620', marginLeft: 8 }]}>
+                            <Text style={[styles.bykText, { color: '#3b82f6' }]}>KRİTİK GÖREV</Text>
+                        </View>
+                    )}
                   </View>
                 </View>
               </View>
@@ -132,7 +154,7 @@ export default function EtkinliklerScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <FontAwesome6 name="calendar-days" size={60} color={theme.tabIconDefault} style={{opacity: 0.3}} />
-              <Text style={styles.emptyText}>Henüz bir etkinlik planlanmamış.</Text>
+              <Text style={styles.emptyText}>Henüz bir etkinlik veya toplantı planlanmamış.</Text>
             </View>
           }
           contentContainerStyle={styles.listContent}
@@ -161,18 +183,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
   },
-  dateCol: { width: 50, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: '#eee', marginRight: 15 },
+  dateCol: { width: 50, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, marginRight: 15 },
   dateDay: { fontSize: 22, fontWeight: '900', marginBottom: 2 },
   dateWeekday: { fontSize: 10, color: '#94a3b8', fontWeight: '700' },
   contentCol: { flex: 1 },
-  titleRow: { marginBottom: 6 },
+  titleRow: { marginBottom: 4 },
   title: { fontSize: 15, fontWeight: '700', lineHeight: 20 },
   detailsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   detailItem: { flexDirection: 'row', alignItems: 'center' },
   detailText: { fontSize: 11, color: '#64748b', marginLeft: 4, fontWeight: '500' },
   badgeRow: { flexDirection: 'row' },
-  bykBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  bykText: { color: 'white', fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
+  bykBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  bykText: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
   emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 120 },
   emptyText: { marginTop: 20, fontSize: 15, color: '#94a3b8', fontWeight: '600' }
 });
+
