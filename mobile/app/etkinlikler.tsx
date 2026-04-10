@@ -29,10 +29,11 @@ export default function EtkinliklerScreen() {
     const userObj = userData ? JSON.parse(userData) : null;
     setUser(userObj);
 
-    // Etkinlikleri ve Toplantıları paralel çekiyoruz
-    const [etkResult, meetResult] = await Promise.all([
+    // Etkinlikleri, Toplantıları ve Şube Ziyaretlerini paralel çekiyoruz
+    const [etkResult, meetResult, ziyaResult] = await Promise.all([
       fetchEtkinlikler(),
-      fetchMeetings(userObj?.id)
+      fetchMeetings(userObj?.id),
+      fetchZiyaretler(userObj?.id)
     ]);
 
     let combined: any[] = [];
@@ -50,6 +51,19 @@ export default function EtkinliklerScreen() {
         type: 'toplanti'
       }));
       combined = [...combined, ...meetings];
+    }
+    if (ziyaResult.success) {
+      const ziyaretler = ziyaResult.ziyaretler.map((z: any) => ({
+        etkinlik_id: 'z' + z.ziyaret_id,
+        baslik: `Şube Ziyareti: ${z.sube_adi || 'Belirtilmemiş'}`,
+        baslangic_tarihi: z.ziyaret_tarihi,
+        konum: z.ziyaret_yeri || '',
+        byk_adi: z.byk_adi || 'ŞUBE',
+        grup_adi: z.grup_adi,
+        byk_renk: z.renk_kodu || '#ef4444',
+        type: 'ziyaret'
+      }));
+      combined = [...combined, ...ziyaretler];
     }
 
     setData(combined);
