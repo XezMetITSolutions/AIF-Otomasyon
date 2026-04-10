@@ -135,6 +135,12 @@ export default function IadeTalebiScreen() {
     }));
   };
 
+  const openSelector = (id: string, type: 'region' | 'birim' | 'type' | 'paymentMode' | 'date') => {
+    setActiveItemId(id);
+    setModalType(type);
+    setModalVisible(true);
+  };
+
   const calculateDistance = async (id: string) => {
     const item = items.find(i => i.id === id);
     if (!item?.startLoc || !item?.endLoc) {
