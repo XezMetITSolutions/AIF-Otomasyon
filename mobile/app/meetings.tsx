@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl, Alert } from 'react-native';
+import { StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl, Alert, Linking } from 'react-native';
 import { Stack, router, Link } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { fetchMeetings } from '@/services/api';
+import { fetchMeetings, downloadMeetingReport } from '@/services/api';
 
 export default function MeetingsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -32,6 +35,59 @@ export default function MeetingsScreen() {
     const result = await fetchMeetings();
     if (result.success) setMeetings(result.meetings);
     setRefreshing(false);
+  };
+
+  const handleOpenReport = async (item: any) => {
+    try {
+      setLoading(true);
+      
+      const result = await downloadMeetingReport(item.toplanti_id);
+      
+      if (!result.success) {
+        Alert.alert('Hata', result.message || 'Rapor hazırlanamadı.');
+        return;
+      }
+
+      const filename = result.filename || `Toplanti_Raporu_${item.toplanti_id}.pdf`;
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      
+      // Base64 verisini dosyaya yaz
+      await FileSystem.writeAsStringAsync(fileUri, result.pdf_base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Dosyayı paylaş veya aç
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+      } else {
+        // Web platformu veya paylaşım yoksa tarayıcıda aç (yedek)
+        if (typeof window !== 'undefined') {
+          const url = `https://aifnet.islamfederasyonu.at/api/toplanti-pdf.php?id=${item.toplanti_id}&download=1`;
+          Linking.openURL(url);
+        } else {
+          Alert.alert('Hata', 'Paylaşım özelliği bu cihazda mevcut değil.');
+        }
+      }
+    } catch (error) {
+      console.error('Report Error:', error);
+      Alert.alert('Hata', 'Rapor açılırken bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddToCalendar = (item: any) => {
+    const title = encodeURIComponent(item.baslik || 'AİF Toplantısı');
+    const location = encodeURIComponent(item.konum || 'AİF Genel Merkez');
+    
+    // Tarih formatlama (YYYYMMDDTHHMMSSZ)
+    const date = new Date(item.tarih);
+    const dateStr = date.toISOString().replace(/-|:|\.\d+/g, '');
+    const endDate = new Date(date.getTime() + 60 * 60 * 1000); // +1 saat
+    const endDateStr = endDate.toISOString().replace(/-|:|\.\d+/g, '');
+
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${endDateStr}&details=AİF+Otomasyon+Toplantı+Hatırlatıcısı&location=${location}`;
+    Linking.openURL(url);
   };
 
   useEffect(() => { loadMeetings(); }, []);
@@ -89,8 +145,14 @@ export default function MeetingsScreen() {
             const displayTime = item.saat || (isValidDate ? date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '--:--');
             
             return (
-              <Link href={`/meeting-detail?id=${item.toplanti_id || 0}`} asChild>
                 <Pressable 
+                  onPress={() => {
+                    if (activeTab === 'gecmis') {
+                      handleOpenReport(item);
+                    } else {
+                      handleAddToCalendar(item);
+                    }
+                  }}
                   style={StyleSheet.flatten([styles.meetingCard, { backgroundColor: theme.card, borderColor: theme.border }])}
                 >
                 <View style={StyleSheet.flatten([styles.dateBox, { backgroundColor: theme.tint + '15' }])}>
@@ -115,7 +177,6 @@ export default function MeetingsScreen() {
                 </View>
                   <FontAwesome6 name="chevron-right" color={theme.tabIconDefault} size={14} />
                 </Pressable>
-              </Link>
             );
           }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.tint} />}

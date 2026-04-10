@@ -150,3 +150,16 @@ export async function changePassword(id: number, oldPassword: string, newPasswor
   }
 }
 
+export async function downloadMeetingReport(id: string | number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/mobile-pdf.php?id=${id}`);
+    if (!response.ok) {
+        console.error('Download API HTTP Error:', response.status, response.statusText);
+        return { success: false, message: `Sunucu hatası: ${response.status}` };
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Download API Fetch Error:', error);
+    return { success: false, message: 'Sunucuya ulaşılamadı.' };
+  }
+}
