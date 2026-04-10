@@ -24,12 +24,13 @@ try {
     }
 
     $ziyaretler = $db->fetchAll("
-        SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu
+        SELECT z.*, b.byk_adi, g.grup_adi, g.renk_kodu, s.sube_adi, s.adres as sube_adresi
         FROM sube_ziyaretleri z
         INNER JOIN byk b ON z.byk_id = b.byk_id
         INNER JOIN ziyaret_gruplari g ON z.grup_id = g.grup_id
-        $where
-        ORDER BY z.ziyaret_tarihi DESC
+        LEFT JOIN subeler s ON z.sube_id = s.sube_id
+        $where AND z.ziyaret_tarihi >= CURDATE()
+        ORDER BY z.ziyaret_tarihi ASC
         LIMIT 100
     ", $params);
 

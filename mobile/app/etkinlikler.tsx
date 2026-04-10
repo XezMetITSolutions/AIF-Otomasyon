@@ -1,119 +1,14 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { StyleSheet, ActivityIndicator, RefreshControl, SectionList } from 'react-native';
-import { Stack } from 'expo-router';
-import { FontAwesome6 } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { Text, View } from '@/components/Themed';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { fetchEtkinlikler, fetchMeetings, fetchZiyaretler } from '@/services/api';
-
-const PROJECT_COLORS = {
-  primary: '#009872',
-  secondary: '#004d3a',
-  bgSoft: '#f8fafc',
-};
-
-export default function EtkinliklerScreen() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [user, setUser] = useState<any>(null);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const userData = await AsyncStorage.getItem('user');
-      const userObj = userData ? JSON.parse(userData) : null;
-      setUser(userObj);
-
-      // Etkinlikleri, Toplantıları ve Şube Ziyaretlerini paralel çekiyoruz
-      const [etkResult, meetResult, ziyaResult] = await Promise.all([
-        fetchEtkinlikler().catch(() => ({ success: false })),
-        fetchMeetings(userObj?.id).catch(() => ({ success: false })),
-        fetchZiyaretler(userObj?.id).catch(() => ({ success: false }))
-      ]);
-
-      let combined: any[] = [];
-      
-      if (etkResult?.success && Array.isArray(etkResult.etkinlikler)) {
-        combined = [...etkResult.etkinlikler.map((e: any) => ({ ...e, type: 'etkinlik' }))];
-      }
-      
-      if (meetResult?.success && Array.isArray(meetResult.meetings)) {
-        const meetings = meetResult.meetings.map((m: any) => ({ 
-          etkinlik_id: 'm' + m.toplanti_id,
-          baslik: m.konu,
-          baslangic_tarihi: m.toplanti_tarihi,
-          konum: m.mekan,
-          byk_adi: 'TOPLANTI',
-          byk_renk: '#3b82f6',
-          type: 'toplanti'
-        }));
-        combined = [...combined, ...meetings];
-      }
-      
-      if (ziyaResult?.success && Array.isArray(ziyaResult.ziyaretler)) {
-        const ziyaretler = ziyaResult.ziyaretler.map((z: any) => ({
-          etkinlik_id: 'z' + z.ziyaret_id,
-          baslik: `Şube Ziyareti: ${z.sube_adi || 'Belirtilmemiş'}`,
-          baslangic_tarihi: z.ziyaret_tarihi,
-          konum: z.ziyaret_yeri || '',
-          byk_adi: z.byk_adi || 'ŞUBE',
-          grup_adi: z.grup_adi,
-          byk_renk: z.renk_kodu || '#ef4444',
-          type: 'ziyaret'
-        }));
-        combined = [...combined, ...ziyaretler];
-      }
-
-      setData(combined);
-    } catch (err) {
-      console.error('Agenda loadData failed:', err);
-    } finally {
-      setLoading(false);
-    }
+import { StyleSheet, ActivityIndicator, RefreshControl, SectionList, Linking, Pressable } from 'react-native';
+...
+  const openMap = (address: string) => {
+    if (!address) return;
+    const url = Platform.select({
+      ios: `maps:0,0?q=${encodeURIComponent(address)}`,
+      android: `geo:0,0?q=${encodeURIComponent(address)}`,
+    }) || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    
+    Linking.openURL(url).catch(err => console.error('Maps failed:', err));
   };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
-  };
-
-  useEffect(() => { loadData(); }, []);
-
-  const sections = useMemo(() => {
-    if (!data || data.length === 0) return [];
-
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    const filtered = data
-      .filter(item => {
-        const d = new Date(item.baslangic_tarihi);
-        return d >= now && !isNaN(d.getTime());
-      })
-      .sort((a, b) => new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime());
-
-    const sectionsArray: { title: string; data: any[] }[] = [];
-    filtered.forEach(item => {
-      const date = new Date(item.baslangic_tarihi);
-      const monthYear = date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toUpperCase();
-      
-      const lastSection = sectionsArray[sectionsArray.length - 1];
-      if (lastSection && lastSection.title === monthYear) {
-        lastSection.data.push(item);
-      } else {
-        sectionsArray.push({ title: monthYear, data: [item] });
-      }
-    });
-
-    return sectionsArray;
-  }, [data]);
 
   return (
     <View style={[styles.container, { backgroundColor: colorScheme === 'light' ? PROJECT_COLORS.bgSoft : theme.background }]}>
@@ -134,10 +29,16 @@ export default function EtkinliklerScreen() {
           )}
           renderItem={({ item }) => {
             const date = new Date(item.baslangic_tarihi);
-            const isSubeZiyareti = item.baslik.toLowerCase().includes('şube') || item.baslik.toLowerCase().includes('ziyaret');
+            const isSubeZiyareti = item.type === 'ziyaret' || item.baslik.toLowerCase().includes('şube') || item.baslik.toLowerCase().includes('ziyaret');
             
             return (
-              <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <Pressable 
+                onPress={() => item.type === 'ziyaret' && item.sube_adresi ? openMap(item.sube_adresi) : null}
+                style={({ pressed }) => [
+                  styles.card, 
+                  { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.7 : 1 }
+                ]}
+              >
                 <View style={[styles.dateCol, { borderRightColor: theme.border }]}>
                   <Text style={[styles.dateDay, { color: theme.text }]}>{date.getDate()}</Text>
                   <Text style={styles.dateWeekday}>{date.toLocaleDateString('tr-TR', { weekday: 'short' }).toUpperCase()}</Text>
@@ -165,12 +66,14 @@ export default function EtkinliklerScreen() {
                     </View>
                     {isSubeZiyareti && (
                         <View style={[styles.bykBadge, { backgroundColor: '#3b82f620', marginLeft: 8 }]}>
-                            <Text style={[styles.bykText, { color: '#3b82f6' }]}>KRİTİK GÖREV</Text>
+                            <Text style={[styles.bykText, { color: '#3b82f6' }]}>
+                              {item.type === 'ziyaret' ? 'NAVİGASYONU AÇ' : 'KRİTİK GÖREV'}
+                            </Text>
                         </View>
                     )}
                   </View>
                 </View>
-              </View>
+              </Pressable>
             );
           }}
           ListEmptyComponent={
