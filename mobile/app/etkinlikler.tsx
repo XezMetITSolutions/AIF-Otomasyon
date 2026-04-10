@@ -1,5 +1,121 @@
-import { StyleSheet, ActivityIndicator, RefreshControl, SectionList, Linking, Pressable } from 'react-native';
-...
+import React, { useEffect, useState, useMemo } from 'react';
+import { StyleSheet, ActivityIndicator, RefreshControl, SectionList, Linking, Pressable, Platform } from 'react-native';
+import { Stack } from 'expo-router';
+import { FontAwesome6 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { Text, View } from '@/components/Themed';
+import Colors from '@/constants/Colors';
+import { useColorScheme } from '@/components/useColorScheme';
+import { fetchEtkinlikler, fetchMeetings, fetchZiyaretler } from '@/services/api';
+
+const PROJECT_COLORS = {
+  primary: '#009872',
+  secondary: '#004d3a',
+  bgSoft: '#f8fafc',
+};
+
+export default function EtkinliklerScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const userData = await AsyncStorage.getItem('user');
+      const userObj = userData ? JSON.parse(userData) : null;
+      setUser(userObj);
+
+      // Etkinlikleri, Toplantıları ve Şube Ziyaretlerini paralel çekiyoruz
+      const [etkResult, meetResult, ziyaResult] = await Promise.all([
+        fetchEtkinlikler().catch(() => ({ success: false })),
+        fetchMeetings(userObj?.id).catch(() => ({ success: false })),
+        fetchZiyaretler(userObj?.id).catch(() => ({ success: false }))
+      ]);
+
+      let combined: any[] = [];
+      
+      if (etkResult?.success && Array.isArray(etkResult.etkinlikler)) {
+        combined = [...etkResult.etkinlikler.map((e: any) => ({ ...e, type: 'etkinlik' }))];
+      }
+      
+      if (meetResult?.success && Array.isArray(meetResult.meetings)) {
+        const meetings = meetResult.meetings.map((m: any) => ({ 
+          etkinlik_id: 'm' + m.toplanti_id,
+          baslik: m.konu,
+          baslangic_tarihi: m.toplanti_tarihi,
+          konum: m.mekan,
+          byk_adi: 'TOPLANTI',
+          byk_renk: '#3b82f6',
+          type: 'toplanti'
+        }));
+        combined = [...combined, ...meetings];
+      }
+      
+      if (ziyaResult?.success && Array.isArray(ziyaResult.ziyaretler)) {
+        const ziyaretler = ziyaResult.ziyaretler.map((z: any) => ({
+          etkinlik_id: 'z' + z.ziyaret_id,
+          baslik: `Şube Ziyareti: ${z.sube_adi || 'Belirtilmemiş'}`,
+          baslangic_tarihi: z.ziyaret_tarihi,
+          konum: z.ziyaret_yeri || '',
+          sube_adresi: z.sube_adresi || '',
+          byk_adi: z.byk_adi || 'ŞUBE',
+          grup_adi: z.grup_adi,
+          byk_renk: z.renk_kodu || '#ef4444',
+          type: 'ziyaret'
+        }));
+        combined = [...combined, ...ziyaretler];
+      }
+
+      setData(combined);
+    } catch (err) {
+      console.error('Agenda loadData failed:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  const sections = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const filtered = data
+      .filter(item => {
+        const d = new Date(item.baslangic_tarihi);
+        return d >= now && !isNaN(d.getTime());
+      })
+      .sort((a, b) => new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime());
+
+    const sectionsArray: { title: string; data: any[] }[] = [];
+    filtered.forEach(item => {
+      const date = new Date(item.baslangic_tarihi);
+      const monthYear = date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toUpperCase();
+      
+      const lastSection = sectionsArray[sectionsArray.length - 1];
+      if (lastSection && lastSection.title === monthYear) {
+        lastSection.data.push(item);
+      } else {
+        sectionsArray.push({ title: monthYear, data: [item] });
+      }
+    });
+
+    return sectionsArray;
+  }, [data]);
+
   const openMap = (address: string) => {
     if (!address) return;
     const url = Platform.select({
@@ -123,4 +239,3 @@ const styles = StyleSheet.create({
   emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 120 },
   emptyText: { marginTop: 20, fontSize: 15, color: '#94a3b8', fontWeight: '600' }
 });
-
