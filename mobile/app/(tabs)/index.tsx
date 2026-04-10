@@ -60,10 +60,10 @@ export default function DashboardScreen() {
   }
 
   const QUICK_ACTIONS = [
-    { title: 'İzin Talebi', icon: 'person-walking', color: '#ef4444', route: '/tasks?type=izin&scope=my' },
     { title: 'Harcama', icon: 'money-bill-transfer', color: '#f59e0b', route: '/tasks?type=harcama&scope=my' },
     { title: 'Toplantılar', icon: 'users-rectangle', color: '#10b981', route: '/meetings' },
-    { title: 'Projeler', icon: 'diagram-project', color: '#3b82f6', route: '/projeler?scope=my' },
+    { title: 'Raggal', icon: 'calendar-day', color: '#8b5cf6', route: '/raggal' },
+    { title: 'Şube Ziyaretleri', icon: 'map-location-dot', color: '#06b6d4', route: '/sube-ziyaretleri' },
   ];
 
   return (
@@ -88,7 +88,7 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.welcomeBox}>
-          <Text style={[styles.greetingText, { color: theme.text }]}>Selam,</Text>
+          <Text style={[styles.greetingText, { color: theme.text }]}>Selamün Aleyküm,</Text>
           <Text style={[styles.userNameText, { color: theme.text }]}>{user?.name?.split(' ')[0] || 'Değerli Üyemiz'}</Text>
         </View>
 
