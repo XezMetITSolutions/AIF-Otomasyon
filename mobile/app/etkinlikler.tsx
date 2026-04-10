@@ -43,15 +43,26 @@ export default function EtkinliklerScreen() {
   const sections = useMemo(() => {
     if (!etkinlikler || etkinlikler.length === 0) return [];
 
-    // 1. Gruplandır (API zaten sıralı ve filtrelenmiş veriyi gönderiyor)
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    // 1. Kesin Sıralama ve Filtreleme (Bugünden sonrakiler, en yakın en üstte)
+    const sorted = [...etkinlikler]
+      .filter(item => {
+        const d = new Date(item.baslangic_tarihi);
+        return d >= now && !isNaN(d.getTime());
+      })
+      .sort((a, b) => new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime());
+
+    // 2. Gruplandır (Sırayı bozmadan)
     const sectionsArray: { title: string; data: any[] }[] = [];
-    etkinlikler.forEach(item => {
+    sorted.forEach(item => {
       const date = new Date(item.baslangic_tarihi);
       const monthYear = date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toUpperCase();
       
-      const existingSection = sectionsArray.find(s => s.title === monthYear);
-      if (existingSection) {
-        existingSection.data.push(item);
+      const lastSection = sectionsArray[sectionsArray.length - 1];
+      if (lastSection && lastSection.title === monthYear) {
+        lastSection.data.push(item);
       } else {
         sectionsArray.push({ title: monthYear, data: [item] });
       }
