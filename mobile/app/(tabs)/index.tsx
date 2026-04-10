@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Dimensions, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, Dimensions, Pressable, ActivityIndicator, RefreshControl, Image } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -12,11 +12,12 @@ import { fetchStats } from '@/services/api';
 
 const { width } = Dimensions.get('window');
 
-// Proje Renkleri
 const PROJECT_COLORS = {
   primary: '#009872',
   primaryDark: '#007a5e',
+  secondary: '#004d3a',
   accent: '#f5f5f5',
+  bgSoft: '#f8fafc',
 };
 
 export default function DashboardScreen() {
@@ -60,55 +61,71 @@ export default function DashboardScreen() {
 
   const QUICK_ACTIONS = [
     { title: 'İzin Talebi', icon: 'person-walking', color: '#ef4444', route: '/tasks?type=izin&scope=my' },
-    { title: 'Harcama Talebi', icon: 'file-invoice-dollar', color: '#f59e0b', route: '/tasks?type=harcama&scope=my' },
-    { title: 'Toplantılar', icon: 'users-rectangle', color: PROJECT_COLORS.primary, route: '/meetings' },
-    { title: 'Projelerim', icon: 'list-check', color: '#3b82f6', route: '/projeler?scope=my' },
+    { title: 'Harcama', icon: 'money-bill-transfer', color: '#f59e0b', route: '/tasks?type=harcama&scope=my' },
+    { title: 'Toplantılar', icon: 'users-rectangle', color: '#10b981', route: '/meetings' },
+    { title: 'Projeler', icon: 'diagram-project', color: '#3b82f6', route: '/projeler?scope=my' },
   ];
 
   return (
     <ScrollView 
-      style={[styles.container, { backgroundColor: theme.background }]}
+      style={[styles.container, { backgroundColor: colorScheme === 'light' ? PROJECT_COLORS.bgSoft : theme.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={PROJECT_COLORS.primary} />}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.topSection}>
-        <View style={styles.headerRow}>
-          <View style={styles.welcomeBox}>
-            <Text style={styles.greetingText}>Hoş Geldiniz,</Text>
-            <Text style={styles.userNameText}>{user?.name || 'Kullanıcı'}</Text>
-          </View>
-          <Pressable style={[styles.profileButton, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={() => router.push('/(tabs)/two')}>
-            <FontAwesome6 name="user-gear" size={20} color={theme.text} />
+        <View style={styles.logoRow}>
+          <Image 
+            source={require('@/assets/images/logo.png')} 
+            style={styles.logo} 
+            resizeMode="contain"
+          />
+          <Pressable 
+            style={[styles.profileButton, { backgroundColor: theme.card, borderColor: theme.border }]} 
+            onPress={() => router.push('/(tabs)/menu')}
+          >
+            <FontAwesome6 name="bars-staggered" size={20} color={theme.text} />
           </Pressable>
         </View>
 
+        <View style={styles.welcomeBox}>
+          <Text style={[styles.greetingText, { color: theme.text }]}>Selam,</Text>
+          <Text style={[styles.userNameText, { color: theme.text }]}>{user?.name?.split(' ')[0] || 'Değerli Üyemiz'}</Text>
+        </View>
+
         <LinearGradient
-          colors={[PROJECT_COLORS.primary, PROJECT_COLORS.primaryDark]}
+          colors={[PROJECT_COLORS.primary, PROJECT_COLORS.secondary]}
           style={styles.heroCard}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>AİFNET</Text>
-            <Text style={styles.heroSubtitle}>Yönetim ve Koordinasyon Sistemi</Text>
+            <Text style={styles.heroSubtitle}>AİF Kurumsal</Text>
+            <Text style={styles.heroTitle}>Dijital Otomasyon</Text>
+            <View style={styles.heroStatusBox}>
+              <View style={styles.dot} />
+              <Text style={styles.heroStatusText}>Sistem Aktif</Text>
+            </View>
           </View>
           <View style={styles.heroIconBox}>
-             <FontAwesome6 name="shield-halved" size={70} color="rgba(255,255,255,0.15)" style={styles.heroBgIcon} />
+             <FontAwesome6 name="earth-europe" size={100} color="rgba(255,255,255,0.1)" style={styles.heroBgIcon} />
           </View>
         </LinearGradient>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Hızlı Menü</Text>
+        </View>
+        
         <View style={styles.actionGrid}>
           {QUICK_ACTIONS.map((action, idx) => (
             <Pressable 
               key={idx} 
-              style={[styles.actionCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+              style={[styles.actionCard, { backgroundColor: theme.card, shadowColor: action.color }]}
               onPress={() => router.push(action.route as any)}
             >
               <View style={[styles.actionIcon, { backgroundColor: action.color + '15' }]}>
-                <FontAwesome6 name={action.icon as any} size={22} color={action.color} />
+                <FontAwesome6 name={action.icon as any} size={24} color={action.color} />
               </View>
               <Text style={[styles.actionText, { color: theme.text }]}>{action.title}</Text>
             </Pressable>
@@ -116,45 +133,59 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.statusSection}>
-          <Text style={styles.sectionTitle}>Görev Özeti</Text>
-          <View style={[styles.infoCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <StatusRow icon="hourglass-half" color="#f59e0b" label="Onay Bekleyenler" value={stats?.bekleyen_izin + stats?.bekleyen_harcama || 0} />
-            <View style={[styles.divider, { backgroundColor: theme.border }]} />
-            <StatusRow icon="calendar-days" color={PROJECT_COLORS.primary} label="Aktif Toplantılar" value={stats?.toplam_toplanti || 0} />
-            <View style={[styles.divider, { backgroundColor: theme.border }]} />
-            <StatusRow icon="diagram-project" color="#3b82f6" label="Aktif Projelerim" value={stats?.toplam_proje || 0} />
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Güncel Durum</Text>
+          <View style={[styles.infoContainer, { backgroundColor: theme.card }]}>
+            <StatusItem 
+                icon="clock" 
+                color="#f59e0b" 
+                label="Bekleyen Talepler" 
+                value={stats?.bekleyen_izin + stats?.bekleyen_harcama || 0} 
+            />
+            <View style={[styles.vDivider, { backgroundColor: theme.border }]} />
+            <StatusItem 
+                icon="calendar-check" 
+                color={PROJECT_COLORS.primary} 
+                label="Toplantılar" 
+                value={stats?.toplam_toplanti || 0} 
+            />
+            <View style={[styles.vDivider, { backgroundColor: theme.border }]} />
+            <StatusItem 
+                icon="rocket" 
+                color="#3b82f6" 
+                label="Projeler" 
+                value={stats?.toplam_proje || 0} 
+            />
           </View>
         </View>
 
         <Pressable 
-          style={[styles.announcementCard, { backgroundColor: PROJECT_COLORS.primary + '10' }]}
+          style={[styles.announcementCard, { backgroundColor: PROJECT_COLORS.primary }]}
           onPress={() => router.push('/(tabs)/menu')}
         >
-          <View style={[styles.announcementIcon, { backgroundColor: PROJECT_COLORS.primary }]}>
-            <FontAwesome6 name="bullhorn" size={18} color="#fff" />
-          </View>
           <View style={styles.announcementContent}>
-            <Text style={[styles.announcementTitle, { color: PROJECT_COLORS.primary }]}>Duyurular & Haberler</Text>
-            <Text style={[styles.announcementDesc, { color: PROJECT_COLORS.primary }]}>Biriminizle ilgili güncel gelişmeleri takip edin.</Text>
+            <Text style={styles.announcementTitle}>Kurumsal Duyurular</Text>
+            <Text style={styles.announcementDesc}>En son güncellemeleri ve bildirimleri görüntüle</Text>
           </View>
-          <FontAwesome6 name="chevron-right" size={14} color={PROJECT_COLORS.primary} />
+          <View style={styles.announcementBtn}>
+            <FontAwesome6 name="arrow-right" size={14} color={PROJECT_COLORS.primary} />
+          </View>
         </Pressable>
       </View>
-      <View style={{ height: 100 }} />
+      <View style={{ height: 120 }} />
     </ScrollView>
   );
 }
 
-function StatusRow({ icon, color, label, value }: any) {
+function StatusItem({ icon, color, label, value }: any) {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   return (
-    <View style={styles.statusRow}>
-      <View style={[styles.statusIcon, { backgroundColor: color + '15' }]}>
-        <FontAwesome6 name={icon} size={16} color={color} />
-      </View>
-      <Text style={[styles.statusLabel, { color: theme.text }]}>{label}</Text>
+    <View style={styles.statusItem}>
       <Text style={[styles.statusValue, { color: theme.text }]}>{value}</Text>
+      <Text style={styles.statusLabel}>{label}</Text>
+      <View style={[styles.miniIcon, { backgroundColor: color + '15' }]}>
+        <FontAwesome6 name={icon} size={10} color={color} />
+      </View>
     </View>
   );
 }
@@ -162,34 +193,39 @@ function StatusRow({ icon, color, label, value }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { alignItems: 'center', justifyContent: 'center' },
-  topSection: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 10 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  welcomeBox: { backgroundColor: 'transparent' },
-  greetingText: { fontSize: 16, opacity: 0.6, fontWeight: '500' },
-  userNameText: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginTop: 4 },
-  profileButton: { width: 45, height: 45, borderRadius: 15, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-  heroCard: { borderRadius: 24, padding: 24, height: 130, justifyContent: 'center', overflow: 'hidden', elevation: 8, shadowColor: PROJECT_COLORS.primary, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 15 },
+  topSection: { paddingHorizontal: 20, paddingTop: 50, paddingBottom: 15 },
+  logoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  logo: { width: 80, height: 40 },
+  profileButton: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  welcomeBox: { marginBottom: 25 },
+  greetingText: { fontSize: 18, opacity: 0.5, fontWeight: '500' },
+  userNameText: { fontSize: 32, fontWeight: '800', letterSpacing: -1, marginTop: 2 },
+  heroCard: { borderRadius: 28, padding: 24, height: 160, justifyContent: 'center', overflow: 'hidden', elevation: 12, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 12 },
   heroContent: { backgroundColor: 'transparent', zIndex: 1 },
-  heroTitle: { color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 1 },
-  heroSubtitle: { color: '#fff', fontSize: 13, opacity: 0.8, marginTop: 4 },
-  heroIconBox: { position: 'absolute', right: -10, bottom: -10 },
-  heroBgIcon: { transform: [{ rotate: '-15deg' }] },
+  heroTitle: { color: '#fff', fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
+  heroSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600', marginBottom: 4 },
+  heroStatusBox: { flexDirection: 'row', alignItems: 'center', marginTop: 12, backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ade80', marginRight: 6 },
+  heroStatusText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  heroIconBox: { position: 'absolute', right: -20, bottom: -20 },
+  heroBgIcon: { opacity: 0.3 },
   content: { paddingHorizontal: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 15, marginTop: 25 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, marginTop: 25 },
+  sectionTitle: { fontSize: 20, fontWeight: '800', letterSpacing: -0.5 },
   actionGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  actionCard: { width: (width - 55) / 2, padding: 16, borderRadius: 20, marginBottom: 15, borderWidth: 1, alignItems: 'center' },
-  actionIcon: { width: 50, height: 50, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  actionText: { fontSize: 13, fontWeight: '700' },
+  actionCard: { width: (width - 55) / 2, padding: 20, borderRadius: 24, marginBottom: 15, alignItems: 'center', elevation: 4, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6 },
+  actionIcon: { width: 56, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+  actionText: { fontSize: 14, fontWeight: '700' },
   statusSection: { marginTop: 10 },
-  infoCard: { borderRadius: 24, borderWidth: 1, padding: 8 },
-  statusRow: { flexDirection: 'row', alignItems: 'center', padding: 12 },
-  statusIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  statusLabel: { flex: 1, fontSize: 14, fontWeight: '600' },
-  statusValue: { fontSize: 16, fontWeight: '800' },
-  divider: { height: 1, marginHorizontal: 12 },
-  announcementCard: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 20, marginTop: 20 },
-  announcementIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
+  infoContainer: { flexDirection: 'row', borderRadius: 28, padding: 20, justifyContent: 'space-between', elevation: 2 },
+  statusItem: { alignItems: 'center', flex: 1 },
+  statusLabel: { fontSize: 10, fontWeight: '600', color: '#94a3b8', marginTop: 4, textAlign: 'center' },
+  statusValue: { fontSize: 20, fontWeight: '800' },
+  miniIcon: { padding: 4, borderRadius: 6, marginTop: 6 },
+  vDivider: { width: 1, height: '70%', alignSelf: 'center', opacity: 0.5 },
+  announcementCard: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 28, marginTop: 25, elevation: 6 },
   announcementContent: { flex: 1 },
-  announcementTitle: { fontSize: 15, fontWeight: '800' },
-  announcementDesc: { fontSize: 11, opacity: 0.7, marginTop: 2 },
+  announcementTitle: { fontSize: 17, fontWeight: '800', color: '#fff' },
+  announcementDesc: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  announcementBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
 });
