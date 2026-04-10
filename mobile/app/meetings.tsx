@@ -41,42 +41,19 @@ export default function MeetingsScreen() {
     try {
       setLoading(true);
       
-      // Web platformu veya FileSystem desteklenmiyorsa direkt URL aç
-      if (typeof window !== 'undefined' || !FileSystem.documentDirectory) {
-        const url = `https://aifnet.islamfederasyonu.at/api/toplanti-pdf.php?id=${item.toplanti_id}&download=1`;
-        Linking.openURL(url);
-        return;
-      }
-
-      const result = await downloadMeetingReport(item.toplanti_id);
+      const url = `https://aifnet.islamfederasyonu.at/api/toplanti-pdf.php?id=${item.toplanti_id}`;
       
-      if (!result.success) {
-        Alert.alert('Hata', result.message || 'Rapor hazırlanamadı.');
-        return;
-      }
-
-      if (!result.pdf_base64) {
-        Alert.alert('Hata', 'PDF verisi alınamadı.');
-        return;
-      }
-
-      const filename = result.filename || `Toplanti_Raporu_${item.toplanti_id}.pdf`;
-      const fileUri = `${FileSystem.documentDirectory}${filename}`;
-      
-      // Base64 verisini dosyaya yaz
-      await FileSystem.writeAsStringAsync(fileUri, result.pdf_base64, {
-        encoding: FileSystem.EncodingType.Base64,
+      // In-App Browser kullanarak PDF'i aç. 
+      // Bu yöntem Android/iOS'da en akıcı ve "otomatik" deneyimi sağlar.
+      await WebBrowser.openBrowserAsync(url, {
+        toolbarColor: theme.tint,
+        enableBarCollapsing: true,
+        showTitle: true,
       });
 
-      // Dosyayı paylaş veya aç
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri);
-      } else {
-        Alert.alert('Hata', 'Paylaşım özelliği bu cihazda mevcut değil.');
-      }
     } catch (error) {
-      console.error('Detailed Report Error:', error);
-      Alert.alert('Hata', 'Rapor açılırken sistem hatası oluştu.');
+      console.error('Report Error:', error);
+      Alert.alert('Hata', 'Rapor açılırken bir hata oluştu.');
     } finally {
       setLoading(false);
     }
