@@ -43,25 +43,29 @@ export default function EtkinliklerScreen() {
   const sections = useMemo(() => {
     if (!etkinlikler || etkinlikler.length === 0) return [];
 
-    // 1. Tarihe göre sırala
-    const sorted = [...etkinlikler].sort((a, b) => 
-      new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime()
-    );
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Sadece günü baz alalım
+
+    // 1. Sadece bugünden sonraki etkinlikleri al ve tarihe göre sırala
+    const upcoming = etkinlikler
+      .filter(item => new Date(item.baslangic_tarihi) >= now)
+      .sort((a, b) => new Date(a.baslangic_tarihi).getTime() - new Date(b.baslangic_tarihi).getTime());
 
     // 2. Gruplandır
-    const groups: { [key: string]: any[] } = {};
-    sorted.forEach(item => {
+    const sectionsArray: { title: string; data: any[] }[] = [];
+    upcoming.forEach(item => {
       const date = new Date(item.baslangic_tarihi);
       const monthYear = date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }).toUpperCase();
-      if (!groups[monthYear]) groups[monthYear] = [];
-      groups[monthYear].push(item);
+      
+      const existingSection = sectionsArray.find(s => s.title === monthYear);
+      if (existingSection) {
+        existingSection.data.push(item);
+      } else {
+        sectionsArray.push({ title: monthYear, data: [item] });
+      }
     });
 
-    // 3. SectionList formatına dönüştür
-    return Object.keys(groups).map(monthYear => ({
-      title: monthYear,
-      data: groups[monthYear]
-    }));
+    return sectionsArray;
   }, [etkinlikler]);
 
   const formatTime = (dateStr: string) => {
